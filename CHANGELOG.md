@@ -1,5 +1,8 @@
 # Journal des versions
 
+## v0.9.1
+- **Icône de synchronisation Garmin redessinée** : deux flèches circulaires équilibrées au lieu du glyphe simple, plus lisible dans le petit bouton carré.
+
 ## v0.9.0
 - **Codex** : nouvel écran de collection avec trois onglets — **Bestiaire** (créatures et gardiens découverts, silhouettes inconnues), **Ensembles** (pièces possédées par emplacement, bonus 2/4/6, prochain palier) et **Biomes** (règle, créatures, gardiens et objets découverts).
 - **Suivi des collections** : les gardiens vaincus et les objets ramassés sont enregistrés. Les sauvegardes existantes récupèrent leurs gardiens depuis le bestiaire.

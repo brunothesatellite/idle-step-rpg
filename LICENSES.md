@@ -34,6 +34,11 @@ Les deux polices sont distribuées sous **SIL Open Font License 1.1**. Les texte
 - [`assets/fonts/licenses/OFL-PixelifySans.txt`](assets/fonts/licenses/OFL-PixelifySans.txt)
 - [`assets/fonts/licenses/OFL-PressStart2P.txt`](assets/fonts/licenses/OFL-PressStart2P.txt)
 
+## Icône d'interface - Material Icons (Apache 2.0)
+
+L'icône de synchronisation `android/app/src/main/res/drawable/ic_sync.xml` est dérivée de **Material Icons** (Google), publiée sous **Apache License 2.0** :
+<https://github.com/google/material-design-icons>. Elle est utilisée uniquement comme indicateur de synchronisation dans l'interface.
+
 ## Récapitulatif
 
 | Élément | Titulaire / source | Licence | Usage dans le dépôt |
@@ -44,5 +49,6 @@ Les deux polices sont distribuées sous **SIL Open Font License 1.1**. Les texte
 | Sons 8 bits | brunothesatellite (générés) | CC0 1.0 | `assets/audio/` |
 | Pixelify Sans | The Pixelify Sans Project Authors | OFL 1.1 | `assets/fonts/` |
 | Press Start 2P | The Press Start 2P Project Authors | OFL 1.1 | `assets/fonts/` |
+| Icône sync | Google Material Icons | Apache 2.0 | `android/app/src/main/res/drawable/ic_sync.xml` |
 
 *Dernière mise à jour : novembre 2026.*

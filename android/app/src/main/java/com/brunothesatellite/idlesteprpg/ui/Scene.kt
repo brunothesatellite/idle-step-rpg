@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,13 +50,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -86,10 +87,8 @@ import com.brunothesatellite.idlesteprpg.engine.tierName
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 private data class BiomePalette(
     val top: Color,
@@ -786,30 +785,12 @@ private fun SyncButton(
 
 @Composable
 private fun SyncGlyph(color: Color, modifier: Modifier = Modifier) {
-    Canvas(modifier) {
-        val stroke = 2.dp.toPx()
-        val radius = size.minDimension * 0.34f
-        val center = Offset(size.width / 2f, size.height / 2f)
-        drawArc(
-            color = color,
-            startAngle = -55f,
-            sweepAngle = 275f,
-            useCenter = false,
-            topLeft = Offset(center.x - radius, center.y - radius),
-            size = Size(radius * 2f, radius * 2f),
-            style = Stroke(width = stroke, cap = StrokeCap.Round)
-        )
-        val angle = Math.toRadians(-55.0)
-        val ax = center.x + radius * cos(angle).toFloat()
-        val ay = center.y + radius * sin(angle).toFloat()
-        val arrow = Path().apply {
-            moveTo(ax, ay)
-            lineTo(ax + 5.dp.toPx(), ay - 1.5.dp.toPx())
-            lineTo(ax + 1.5.dp.toPx(), ay + 5.dp.toPx())
-            close()
-        }
-        drawPath(arrow, color)
-    }
+    Icon(
+        painter = painterResource(com.brunothesatellite.idlesteprpg.R.drawable.ic_sync),
+        contentDescription = null,
+        tint = color,
+        modifier = modifier
+    )
 }
 
 @Composable

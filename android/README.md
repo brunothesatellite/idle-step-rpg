@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.9.0** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.9.1** — APK sideloadé pour Pixel 7a (Android 14+).
 
 **Manuel complet :** [`../manuel/index.html`](../manuel/index.html) · accessible dans l'app via `Réglages → Aide → Ouvrir le manuel du jeu`.
 
@@ -103,7 +103,7 @@ Play Protect peut avertir ou bloquer une application inconnue de Google lors de 
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.9.0
+## Limites de cette v0.9.1
 
 - L'historique Garmin est limité à 7 jours et à 100 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON versionné avec copie de secours, pas encore Room.
@@ -118,6 +118,7 @@ Play Protect peut avertir ou bloquer une application inconnue de Google lors de 
 - Spécifications : [docs/specifications-fonctionnelles.md](../docs/specifications-fonctionnelles.md)
 - Architecture et Garmin : [docs/architecture-android-garmin.md](../docs/architecture-android-garmin.md)
 - Licences : [LICENSES.md](../LICENSES.md)
+
 
 
 
