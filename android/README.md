@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.5.3** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.6.0** — APK sideloadé pour Pixel 7a (Android 14+).
 
 ## Ce qui est implémenté
 
@@ -24,6 +24,7 @@ Version Android native du prototype. **v0.5.3** — APK sideloadé pour Pixel 7a
 - **Inventaire avancé** : « Équiper le meilleur », tri/filtres, « Vendre les communs », verrouillage, fusion 3→1, objets non identifiés, ensembles 2/4/6, forge (reforge/amélioration/démontage), effets légendaires, coffre de camp détaillé.
 - **Consommables** : 12 objets de soin, ferveur, bombe et buffs temporaires, butin des monstres/coffres, sac en scène, au camp et en combat.
 - **Ressources visibles** : rations, éclats, or et consommables dans une carte Stats dédiée.
+- **Sons 8 bits** : effets originaux CC0, volume réglable, désactivation et test dans les réglages.
 - **Campement** : combat réinitialisé, veillée gratuite +15 %, soins, coffre, journal et inventaire accessibles.
 - **Contenu** : biomes colorés avec météo, rencontres spéciales (autel, source, marchand, statue, pari), jalons complets, boss uniques 10/25/50/100, bestiaire.
 - **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil, mise à jour in-app.
@@ -85,7 +86,7 @@ Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le tél
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.5.3
+## Limites de cette v0.6.0
 
 - L'historique Garmin est limité à 7 jours et à 20 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON versionné avec copie de secours, pas encore Room.

@@ -1,0 +1,3 @@
+﻿Sons 8 bits de La Marche des Ames
+GÃ©nÃ©rÃ©s proceduralement pour ce projet (aucun asset externe).
+Licence : CC0 1.0 (domaine public).

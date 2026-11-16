@@ -53,4 +53,12 @@ class SettingsStore(context: Context) {
     var onboardingDone: Boolean
         get() = prefs.getBoolean("onboarding_done", false)
         set(value) = prefs.edit().putBoolean("onboarding_done", value).apply()
+
+    var soundsEnabled: Boolean
+        get() = prefs.getBoolean("sounds_enabled", true)
+        set(value) = prefs.edit().putBoolean("sounds_enabled", value).apply()
+
+    var soundVolume: Float
+        get() = prefs.getFloat("sound_volume", 0.6f).coerceIn(0f, 1f)
+        set(value) = prefs.edit().putFloat("sound_volume", value.coerceIn(0f, 1f)).apply()
 }

@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
@@ -62,6 +63,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.engine.FLOOR_METERS
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
@@ -153,6 +155,7 @@ fun Scene(
     val walking = GameEngine.isWalking(state)
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
+    val context = LocalContext.current
     var previousLevel by remember { mutableStateOf(state.level) }
     var levelBanner by remember { mutableStateOf(0) }
 
@@ -161,10 +164,16 @@ fun Scene(
         previousLevel = state.level
         if (state.level > previous) {
             levelBanner = state.level
+            SoundFx.play(context, "level", 0.95f)
             if (vibrations) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             delay(2200)
             levelBanner = 0
         }
+    }
+
+    val bossName = state.fight?.takeIf { it.isBoss }?.enemyName
+    LaunchedEffect(bossName) {
+        if (bossName != null) SoundFx.play(context, "boss", 0.9f)
     }
 
     BoxWithConstraints(modifier.fillMaxSize().background(Ink)) {
@@ -180,7 +189,7 @@ fun Scene(
                     .align(Alignment.BottomEnd)
                     .padding(end = 0.dp, bottom = 58.dp)
                     .width(166.dp)
-                    .height(124.dp)
+                    .height(134.dp)
             )
         }
 
@@ -616,6 +625,7 @@ private fun HeroUnit(
     val stats = statsOf(state)
     val weapon = equipped(state, "weapon")
     val body = equipped(state, "body")
+    val context = LocalContext.current
     val floats = remember { mutableStateListOf<FloatFx>() }
     var previousHp by remember { mutableStateOf(state.hp) }
     var nextId by remember { mutableLongStateOf(0L) }
@@ -625,6 +635,7 @@ private fun HeroUnit(
         previousHp = state.hp
         if (reducedMotion) return@LaunchedEffect
         if (diff < -3.0) {
+            SoundFx.play(context, "hurt", 0.8f)
             floats += FloatFx(
                 id = nextId++,
                 text = "-${(-diff).roundToInt()}",
@@ -734,6 +745,7 @@ private fun EnemyUnit(
     val height = if (fight.isBoss) 148.dp else 108.dp
     val plateWidth = if (fight.isBoss) 154 else 126
     val spriteSize = if (fight.isBoss) 136.dp else 102.dp
+    val context = LocalContext.current
     val floats = remember { mutableStateListOf<FloatFx>() }
     val flash = remember { Animatable(0f) }
     val slash = remember { Animatable(0f) }
@@ -744,6 +756,11 @@ private fun EnemyUnit(
         val damage = previousHp - fight.enemyHp
         previousHp = fight.enemyHp
         if (damage > 0.5) {
+            SoundFx.play(
+                context,
+                if (fight.lastCrit) "crit" else "hit",
+                if (fight.lastCrit) 1f else 0.55f
+            )
             if (!reducedMotion) {
                 floats += FloatFx(
                     id = nextId++,
@@ -978,8 +995,18 @@ private fun GateView(state: GameState, modifier: Modifier = Modifier) {
                 fontSize = 4.5.sp,
                 color = if (active) GoldLight else Muted2,
                 letterSpacing = 0.5.sp,
-                modifier = Modifier.padding(bottom = 5.dp)
+                modifier = Modifier.padding(bottom = 1.dp)
             )
+            if (state.distance < FLOOR_METERS) {
+                val remaining = (FLOOR_METERS - state.distance).roundToInt().coerceAtLeast(0)
+                val waiting = state.stepBank <= 0.0 && state.fight == null
+                Text(
+                    if (waiting) "EN ATTENTE DE PAS" else "À $remaining m",
+                    fontSize = 4.2.sp,
+                    color = if (waiting) Ember else Muted,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+            }
             Row(Modifier.alpha(if (active) 1f else 0.55f)) {
                 listOf(left, middle, right).forEach { bmp ->
                     if (bmp != null) {

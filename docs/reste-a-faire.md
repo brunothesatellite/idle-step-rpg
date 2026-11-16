@@ -1,12 +1,22 @@
 # La Marche des Âmes — reste à faire après la v0.3.1
 
-> **Mise à jour v0.4.0** : la majorité des points P0/P1 et une grande partie du P2
-> sont livrés (robustesse, simulation hors ligne, onboarding, jalons, forge, sets,
-> objets non identifiés, filtres, météo, boss uniques, tests, widget, CI).
+> **Mise à jour v0.6.0** : les sons 8 bits sont livrés (licence CC0, volume réglable,
+> désactivation). Le reste de la liste ci-dessous est conservé comme backlog.
 >
-> Restent principalement : sons intégrés, localisation anglaise, migration Room,
-> publication Play Store, équilibrage long terme, animation de farm à 0 pas et
-> réduction automatique des animations sur batterie faible.
+> **Backlog explicite — pas maintenant** : localisation anglaise, migration Room,
+> publication Play Store (non prévue), équilibrage long terme, farm automatique à
+> 0 pas, réduction automatique des animations sur batterie faible.
+
+## Backlog — non planifié
+
+| Sujet | Décision |
+|---|---|
+| Localisation anglaise | Plus tard, interface française pour l'instant. |
+| Migration Room | Plus tard, sauvegarde JSON versionnée conservée. |
+| Publication Play Store | Non prévue, distribution APK/GitHub. |
+| Équilibrage long terme | À faire après plusieurs semaines de données réelles. |
+| Farm automatique à 0 pas | Plus tard. |
+| Animations réduites automatiquement sur batterie faible | Plus tard. |
 
 Document de travail : fonctionnalités non terminées, écarts avec la spécification,
 dette technique et ordre recommandé.

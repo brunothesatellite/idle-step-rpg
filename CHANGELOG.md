@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.6.0
+- **Sons 8 bits intégrés** : combat, critique, dégâts, niveau, gardien, coffre, consommable, victoire, défaite, forge.
+- Sons originaux générés pour le projet, licence **CC0**.
+- Réglage **Sons on/off**, **volume** et bouton **Tester le son**.
+- Porte du gardien : libellé **« EN ATTENTE DE PAS »** quand il manque des pas avant les 100 m.
+- Backlog : anglais, Room, Play Store, équilibrage, farm 0 pas et batterie faible restent explicitement non planifiés.
+
 ## v0.5.3
 - **Catégorie Consommables** dans l'inventaire et le sac de scène.
 - 12 consommables avec icônes dédiées : soins, ferveur, bombes, buffs temporaires.

@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.data.SaveSummary
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.Item
@@ -54,6 +55,8 @@ data class UiState(
     val quietHours: Boolean = false,
     val autoSellCommons: Boolean = false,
     val onboardingDone: Boolean = true,
+    val soundsEnabled: Boolean = true,
+    val soundVolume: Float = 0.6f,
     val syncLog: List<String> = emptyList(),
     val pendingImport: SaveSummary? = null,
     val dayBanner: String? = null,
@@ -92,7 +95,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 notifyKey = container.settings.notifyKey,
                 quietHours = container.settings.quietHours,
                 autoSellCommons = container.settings.autoSellCommons,
-                onboardingDone = container.settings.onboardingDone
+                onboardingDone = container.settings.onboardingDone,
+                soundsEnabled = container.settings.soundsEnabled,
+                soundVolume = container.settings.soundVolume
             )
         }
         lastKnownDay = game.value.day
@@ -243,7 +248,10 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var outcome: SpecialOutcome? = null
             container.gameRepository.mutate { outcome = GameEngine.useConsumable(it, id) }
-            outcome?.let { _toasts.emit(it.text) }
+            outcome?.let {
+                if (it.good) SoundFx.play(container.context, "consume", 1f)
+                _toasts.emit(it.text)
+            }
         }
     }
 
@@ -327,6 +335,24 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun setAutoSellCommons(value: Boolean) {
         container.settings.autoSellCommons = value
         _ui.update { it.copy(autoSellCommons = value) }
+    }
+
+    fun setSoundsEnabled(value: Boolean) {
+        container.settings.soundsEnabled = value
+        _ui.update { it.copy(soundsEnabled = value) }
+        SoundFx.configure(container.context)
+        if (value) SoundFx.preview(container.context)
+    }
+
+    fun setSoundVolume(value: Float) {
+        val volume = value.coerceIn(0f, 1f)
+        container.settings.soundVolume = volume
+        _ui.update { it.copy(soundVolume = volume) }
+        SoundFx.configure(container.context)
+    }
+
+    fun previewSound() {
+        SoundFx.preview(container.context)
     }
 
     fun completeOnboarding() {
@@ -562,6 +588,13 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var outcome: SpecialOutcome? = null
             container.gameRepository.mutate { outcome = GameEngine.resolveSpecial(it, accept) }
+            outcome?.let {
+                SoundFx.play(
+                    container.context,
+                    if (it.good) "chest" else "ui_tap",
+                    if (it.good) 0.9f else 0.7f
+                )
+            }
             _ui.update { it.copy(specialOutcome = outcome) }
         }
     }
@@ -581,7 +614,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun buyUpgrade(key: String) {
         viewModelScope.launch {
-            container.gameRepository.mutate { GameEngine.buyUpgrade(it, key) }
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.buyUpgrade(it, key) }
+            if (ok) SoundFx.play(container.context, "upgrade", 0.9f)
         }
     }
 

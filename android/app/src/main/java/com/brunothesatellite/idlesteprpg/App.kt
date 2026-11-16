@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg
 
 import android.app.Application
 import android.content.Context
+import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.data.GameRepository
 import com.brunothesatellite.idlesteprpg.data.SettingsStore
 import com.brunothesatellite.idlesteprpg.garmin.GarminClient
@@ -19,6 +20,7 @@ class App : Application() {
         super.onCreate()
         container = AppContainer(this)
         GameNotifications.ensureChannels(this)
+        SoundFx.init(this)
         SyncScheduler.schedule(this)
         MaintenanceScheduler.schedule(this)
     }

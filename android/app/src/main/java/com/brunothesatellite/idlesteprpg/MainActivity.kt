@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.ui.CampOverlay
 import com.brunothesatellite.idlesteprpg.ui.ChestDialog
 import com.brunothesatellite.idlesteprpg.ui.ConsumablesOverlay
@@ -119,6 +121,30 @@ private fun GameRoot(vm: GameViewModel) {
                 android.widget.Toast.LENGTH_SHORT
             ).also { it.show() }
         }
+    }
+
+    var previousChests by remember { mutableStateOf(state.chestsOpened) }
+    LaunchedEffect(state.chestsOpened) {
+        if (state.chestsOpened > previousChests) {
+            SoundFx.play(context, "chest", 0.9f)
+        }
+        previousChests = state.chestsOpened
+    }
+
+    var previousFloor by remember { mutableStateOf(state.floor) }
+    LaunchedEffect(state.floor) {
+        if (state.floor > previousFloor) {
+            SoundFx.play(context, "victory", 0.9f)
+        }
+        previousFloor = state.floor
+    }
+
+    var previousMode by remember { mutableStateOf(state.mode) }
+    LaunchedEffect(state.mode) {
+        if (state.mode == "farmWait" && previousMode != "farmWait") {
+            SoundFx.play(context, "defeat", 0.85f)
+        }
+        previousMode = state.mode
     }
 
     BackHandler(

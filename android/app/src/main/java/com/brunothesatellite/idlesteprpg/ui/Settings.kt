@@ -28,6 +28,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import kotlin.math.roundToInt
 import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
@@ -208,6 +211,47 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     Modifier.fillMaxWidth(),
                     onClick = { vm.restartOnboarding() }
                 )
+            }
+            Spacer(Modifier.height(10.dp))
+            PixelCard(Modifier.fillMaxWidth()) {
+                SectionLabel("Son")
+                Spacer(Modifier.height(5.dp))
+                ToggleRow(
+                    "Sons 8 bits",
+                    "Combat, niveau, coffre, forge et rencontres.",
+                    ui.soundsEnabled
+                ) { vm.setSoundsEnabled(it) }
+                if (ui.soundsEnabled) {
+                    Spacer(Modifier.height(6.dp))
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Volume", fontSize = 8.sp, color = Parchment)
+                        Text(
+                            "${(ui.soundVolume * 100).roundToInt()} %",
+                            fontFamily = Press,
+                            fontSize = 7.sp,
+                            color = Gold
+                        )
+                    }
+                    Slider(
+                        value = ui.soundVolume,
+                        onValueChange = { vm.setSoundVolume(it) },
+                        onValueChangeFinished = { vm.previewSound() },
+                        valueRange = 0f..1f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = GoldLight,
+                            activeTrackColor = Gold,
+                            inactiveTrackColor = Line2
+                        )
+                    )
+                    OverlayAction(
+                        "TESTER LE SON",
+                        Modifier.fillMaxWidth(),
+                        onClick = { vm.previewSound() }
+                    )
+                }
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {

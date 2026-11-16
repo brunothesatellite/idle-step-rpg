@@ -18,7 +18,13 @@ Les sprites de **Dungeon Crawl Stone Soup** utilisés dans `assets/hero`, `asset
 - Détail des fichiers utilisés et des artistes : [`assets/CREDITS.md`](assets/CREDITS.md)
 - Les tuiles listées comme étant sous licence incertaine dans le dépôt source n'ont pas été utilisées.
 
-## Polices — SIL Open Font License 1.1
+## Sons 8 bits - CC0 1.0
+
+Les effets sonores de `assets/audio` et `android/app/src/main/assets/audio` sont
+**générés proceduralement pour ce projet** (aucun asset externe) et publiés sous
+**CC0 1.0 Universal**. Voir `assets/audio/LICENSE.txt`.
+
+## Polices - SIL Open Font License 1.1
 
 - **Pixelify Sans** — Copyright 2021 The Pixelify Sans Project Authors.
 - **Press Start 2P** — Copyright 2012 The Press Start 2P Project Authors (cody@zone38.net), avec le nom réservé « Press Start 2P ».
@@ -35,6 +41,7 @@ Les deux polices sont distribuées sous **SIL Open Font License 1.1**. Les texte
 | Code de la maquette | brunothesatellite | MIT | `index.html`, `styles.css`, `game.js` |
 | Spécifications et textes | brunothesatellite | MIT | `docs/`, `README.md` |
 | Tuiles pixel art | Dungeon Crawl Stone Soup contributors | CC0 1.0 | `assets/` |
+| Sons 8 bits | brunothesatellite (générés) | CC0 1.0 | `assets/audio/` |
 | Pixelify Sans | The Pixelify Sans Project Authors | OFL 1.1 | `assets/fonts/` |
 | Press Start 2P | The Press Start 2P Project Authors | OFL 1.1 | `assets/fonts/` |
 
