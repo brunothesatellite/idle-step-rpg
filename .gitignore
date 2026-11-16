@@ -6,6 +6,9 @@ Desktop.ini
 # Captures et exports temporaires
 shot_*.png
 crop*.png
+android_*.png
+ui*.xml
+*.apk
 *.log
 
 # Outillage local

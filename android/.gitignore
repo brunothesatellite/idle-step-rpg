@@ -1,0 +1,8 @@
+# Android / Gradle (chemins relatifs au dossier android/)
+.gradle/
+build/
+app/build/
+local.properties
+.idea/
+*.iml
+.kotlin/

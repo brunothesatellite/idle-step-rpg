@@ -108,6 +108,44 @@ L'architecture Android proposée (Kotlin/Compose, APK sideloadé, **Garmin Perso
 
 ---
 
+## Version Android (APK)
+
+La version native **v0.1.3** est dans `android/` :
+
+- **Kotlin + Jetpack Compose**, `minSdk 34` (Android 14+), package `com.brunothesatellite.idlesteprpg`.
+- **Texte agrandi (facteur 1,35)** et tableau de bord plus haut pour la lisibilité sur Pixel 7a.
+- Scène pixel art, combats automatiques, gardiens, coffre, campement, inventaire, améliorations, journal.
+- **Garmin Personal API uniquement** : clé personnelle, échange contre un jeton OAuth2 de 24 h, aucun Health Connect.
+- **2FA Garmin dans le navigateur** : l'application ne voit jamais le mot de passe ni le code 2FA.
+- Écran de compte Garmin : clé masquée, date d'expiration modifiable, test/synchronisation, révocation, jeton et dernière sync.
+- Reset quotidien à **00:00 local**, aligné sur Garmin.
+- Clé et jeton chiffrés dans **Android Keystore** ; écran de clé protégé contre les captures.
+- Synchronisation à l'ouverture, bouton manuel et **WorkManager** toutes les 30 minutes.
+
+**Installer la dernière version :** [GitHub Releases](https://github.com/brunothesatellite/idle-step-rpg/releases/latest)
+
+```bash
+adb install -r app-release.apk
+```
+
+Ou télécharger l'APK sur le téléphone et autoriser « Installer des applis inconnues ». Le build de release est signé ; le keystore et ses mots de passe ne sont **pas** dans le dépôt.
+
+**Première ouverture :** aller dans **Compte Garmin** (bouton G ou « Connecter Garmin »), ouvrir Garmin Connect, se connecter avec la 2FA, créer une clé Personal API, la coller dans l'application, puis renseigner sa date d'expiration. Garmin n'expose pas cette date via l'API : c'est l'utilisateur qui la saisit, pour les rappels.
+
+**Build local :**
+
+```bash
+cd android
+# JDK 21 et Android SDK 35 sont nécessaires
+./gradlew :app:assembleRelease
+```
+
+Le build de release lit `../.keystore/keystore.properties` (fichier local ignoré par Git). Sans ce fichier, seul le build debug peut être généré.
+
+> **Sécurité** : ne jamais committer une clé Garmin. Si une clé a été exposée, la révoquer sur Garmin Connect et en créer une nouvelle.
+
+---
+
 ## Arborescence
 
 ```
