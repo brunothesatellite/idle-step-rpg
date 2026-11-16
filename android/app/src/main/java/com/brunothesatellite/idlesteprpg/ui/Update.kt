@@ -81,6 +81,14 @@ fun UpdateDialog(
                     Spacer(Modifier.height(8.dp))
                     Text(error, fontSize = 7.sp, color = Blood, lineHeight = 10.sp)
                 }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Si Android ou Play Protect bloque l'installation, vous pouvez installer " +
+                        "l'APK depuis la page GitHub de la release.",
+                    fontSize = 6.5.sp,
+                    color = Muted2,
+                    lineHeight = 9.sp
+                )
                 Spacer(Modifier.height(12.dp))
                 OverlayAction(
                     if (downloading) "TÉLÉCHARGEMENT…" else "INSTALLER LA MISE À JOUR",

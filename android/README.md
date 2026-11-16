@@ -86,6 +86,8 @@ L'application interroge `https://api.github.com/repos/brunothesatellite/idle-ste
 
 `UpdateChecker` garde la logique de version et de parsing testable ; le téléchargement et l'installation passent par le `GameViewModel`.
 
+Play Protect peut avertir ou bloquer une application inconnue de Google lors de l'installation in-app : l'APK reste installable manuellement depuis la page GitHub de la release, et son SHA-256 est publié dans les notes.
+
 ## Première ouverture Garmin
 
 1. Ouvrir l'application → **Compte Garmin** (bouton `G` ou « Connecter Garmin »).

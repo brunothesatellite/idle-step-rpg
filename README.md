@@ -89,6 +89,8 @@ L’application vérifie les **releases GitHub** et peut installer l’APK sign�
 
 La progression, les réglages et la clé Garmin sont conservés tant que l’APK est signé avec la même clé.
 
+En cas d’avertissement ou de blocage **Play Protect**, installez l’APK manuellement depuis la page GitHub de la release : Android protège les applications inconnues de Google, mais l’APK est signé et son empreinte SHA-256 est publiée.
+
 ---
 
 ## Connecter Garmin (clé Personal API)
