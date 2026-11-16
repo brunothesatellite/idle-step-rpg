@@ -91,7 +91,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     val toasts: SharedFlow<String> = _toasts.asSharedFlow()
 
     @Volatile private var visible = false
-    private var initialized = false
+    private var resuming = false
     private var pendingImportText: String? = null
     private var lastKnownDay: String = ""
     private var lastBiomeKey: String = ""
@@ -126,7 +126,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             while (isActive) {
                 val reportOpen = game.value.offlineReport?.let { it.acknowledgedAt == 0L } == true
-                if (visible && !_ui.value.campOpen && !_ui.value.settingsOpen &&
+                if (visible && !resuming && !_ui.value.campOpen && !_ui.value.settingsOpen &&
                     !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen &&
                     !_ui.value.consumablesOpen
                 ) {
@@ -152,13 +152,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             while (isActive) {
                 delay(5000)
-                container.gameRepository.save()
+                container.gameRepository.markActive()
             }
-        }
-        viewModelScope.launch {
-            delay(350)
-            refreshGarmin()
-            if (container.garminRepository.hasKey()) syncNow(silent = true)
         }
         viewModelScope.launch {
             delay(2_500)
@@ -168,18 +163,49 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun onAppResume() {
-        visible = true
         refreshGarmin()
         checkPendingRelease()
         maybeCheckForUpdates()
         container.ambientMusic.onResume()
-        if (!initialized) {
-            initialized = true
+
+        val now = System.currentTimeMillis()
+        val lastActive = game.value.lastActiveAt
+        val elapsed = if (lastActive > 0L) {
+            (now - lastActive).coerceIn(0L, 7L * 24L * 60L * 60L * 1000L)
+        } else {
+            0L
+        }
+        val state = game.value
+        val canSimulate = elapsed >= 2L * 60L * 1000L &&
+            state.stepBank > 0.0 &&
+            state.mode != "camp" &&
+            state.mode != "special"
+
+        if (!canSimulate) {
+            visible = true
+            viewModelScope.launch { container.gameRepository.markActive() }
+            syncAfterResume()
             return
         }
+
+        resuming = true
+        visible = false
+        viewModelScope.launch {
+            try {
+                container.gameRepository.simulateAbsence(elapsed)
+            } finally {
+                container.gameRepository.markActive()
+                resuming = false
+                visible = true
+                syncAfterResume()
+            }
+        }
+    }
+
+    private fun syncAfterResume() {
         val last = _ui.value.lastSync
         if (container.garminRepository.hasKey() &&
-            (last == 0L || System.currentTimeMillis() - last > 2 * 60_000L)
+            (last == 0L || System.currentTimeMillis() - last > 2L * 60L * 1000L)
         ) {
             syncNow(silent = true)
         }
@@ -189,13 +215,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         visible = false
         container.ambientMusic.onPause()
         viewModelScope.launch {
-            container.gameRepository.mutate { s ->
-                val report = s.offlineReport
-                if (report != null && report.acknowledgedAt == 0L) {
-                    s.offlineReport = report.copy(acknowledgedAt = System.currentTimeMillis())
-                }
-            }
-            container.gameRepository.save()
+            container.gameRepository.markActive()
         }
     }
 

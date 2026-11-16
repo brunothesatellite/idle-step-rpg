@@ -7,7 +7,7 @@
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.10.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.11.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -35,6 +35,7 @@
 - Les **coffres** restent 24 h, deux maximum en attente. Ils ne bloquent jamais la route.
 - Les **serments journaliers**, la **ferveur**, les **consommables**, la **forge**, les **ensembles** et les **rencontres spéciales** ajoutent de la profondeur.
 - Le **reset quotidien** se fait à **00:00 local**, en accord avec le `calendarDate` Garmin.
+- Le **résumé d'absence** fait avancer le jeu pendant la fermeture : 100 % du rythme actif, plafond 60 000 pas / 15 min simulées, avec un écran **« Bon retour »**.
 
 ### Biomes et contenu
 
@@ -89,7 +90,7 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.10.0.apk
+adb install -r La-Marche-des-Ames-v0.11.0.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.

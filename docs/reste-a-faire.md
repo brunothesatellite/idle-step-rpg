@@ -1,5 +1,9 @@
 # La Marche des Âmes — reste à faire après la v0.3.1
 
+> **Mise à jour v0.11.0** : le **résumé d'absence** est livré — consommation de la réserve
+> à 100 % du rythme actif, plafond 60 000 pas / 15 min simulées, overlay « Bon retour »,
+> arrêt sur rencontre spéciale et fusion avec le rattrapage Garmin.
+>
 > **Mise à jour v0.7.0** : 8 biomes illustrés, pools de monstres et tables de butin par biome,
 > 8 ensembles, 2 effets, 4 consommables et paper doll du héros sont livrés.
 >
@@ -144,7 +148,7 @@ Effort : **M**.
 ### 3.7 Accueil et changement de jour
 
 - Bandeau « nouveau jour » à 00:00 avec serments renouvelés.
-- Écran de retour après plusieurs jours : résumé doux, pas de pression.
+- ~~Écran de retour après plusieurs jours : résumé doux, pas de pression.~~ **Livré en v0.11.0** (résumé d'absence « Bon retour »).
 - Notification de rappel quotidien optionnelle.
 
 Effort : **M**.

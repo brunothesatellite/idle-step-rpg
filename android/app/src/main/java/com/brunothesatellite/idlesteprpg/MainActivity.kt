@@ -359,7 +359,14 @@ private fun GameRoot(vm: GameViewModel) {
                 )
             }
             state.offlineReport?.takeIf { it.acknowledgedAt == 0L }?.let { report ->
-                OfflineOverlay(report = report, onDismiss = vm::dismissOfflineReport)
+                OfflineOverlay(
+                    report = report,
+                    onDismiss = vm::dismissOfflineReport,
+                    onOpenJournal = {
+                        vm.dismissOfflineReport()
+                        vm.openJournal()
+                    }
+                )
             }
             ui.pendingImport?.let { summary ->
                 ImportPreviewDialog(

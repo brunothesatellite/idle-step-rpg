@@ -18,6 +18,23 @@ data class OfflineSim(
     val kills: Int
 )
 
+data class AbsenceSim(
+    val elapsedMs: Long,
+    val simulatedMs: Long,
+    val stepsConsumed: Int,
+    val remainingBank: Int,
+    val combats: Int,
+    val bosses: Int,
+    val gold: Int,
+    val floors: Int,
+    val kills: Int,
+    val levels: Int,
+    val chests: Int,
+    val stoppedOnSpecial: Boolean,
+    val skippedCamp: Boolean,
+    val defeated: Boolean
+)
+
 data class SpecialOutcome(
     val text: String,
     val good: Boolean
@@ -159,6 +176,103 @@ object GameEngine {
             gold = max(0, state.gold - startGold),
             floors = max(0, state.floor - startFloor),
             kills = state.kills - startKills
+        )
+    }
+
+    fun simulateAbsence(
+        state: GameState,
+        elapsedMs: Long,
+        capMs: Long = 15L * 60L * 1000L,
+        capSteps: Int = 60_000,
+        dtMs: Double = 500.0
+    ): AbsenceSim {
+        val startBank = state.stepBank.toInt()
+        val startGold = state.gold
+        val startFloor = state.floor
+        val startKills = state.kills
+        val startBosses = state.bosses
+        val startLevel = state.level
+        val startChests = state.chestsOpened
+        val startRetreats = state.retreats
+
+        if (elapsedMs <= 0L || startBank <= 0 || state.mode == "camp" || state.mode == "special") {
+            return AbsenceSim(
+                elapsedMs = elapsedMs,
+                simulatedMs = 0L,
+                stepsConsumed = 0,
+                remainingBank = startBank,
+                combats = 0,
+                bosses = 0,
+                gold = 0,
+                floors = 0,
+                kills = 0,
+                levels = 0,
+                chests = 0,
+                stoppedOnSpecial = state.mode == "special",
+                skippedCamp = state.mode == "camp",
+                defeated = false
+            )
+        }
+
+        val maxIterations = (capMs / dtMs.toLong()).toInt().coerceAtLeast(1)
+        var iterations = 0
+        var stoppedOnSpecial = false
+        while (iterations < maxIterations && state.stepBank > 0.0) {
+            val consumed = (startBank - state.stepBank).toInt().coerceAtLeast(0)
+            if (consumed >= capSteps) break
+            tick(state, dtMs)
+            iterations++
+            if (state.mode == "special") {
+                stoppedOnSpecial = true
+                break
+            }
+            if (state.mode == "camp") break
+        }
+        val consumed = (startBank - state.stepBank).toInt().coerceAtLeast(0)
+        return AbsenceSim(
+            elapsedMs = elapsedMs,
+            simulatedMs = (iterations * dtMs).toLong(),
+            stepsConsumed = consumed,
+            remainingBank = state.stepBank.toInt(),
+            combats = (state.kills - startKills) + (state.bosses - startBosses),
+            bosses = state.bosses - startBosses,
+            gold = max(0, state.gold - startGold),
+            floors = max(0, state.floor - startFloor),
+            kills = state.kills - startKills,
+            levels = (state.level - startLevel).coerceAtLeast(0),
+            chests = (state.chestsOpened - startChests).coerceAtLeast(0),
+            stoppedOnSpecial = stoppedOnSpecial,
+            skippedCamp = false,
+            defeated = state.retreats > startRetreats
+        )
+    }
+
+    fun mergeOfflineReports(a: OfflineReport?, b: OfflineReport?): OfflineReport? {
+        if (a == null) return b
+        if (b == null) return a
+        return a.copy(
+            days = a.days + b.days,
+            steps = a.steps + b.steps,
+            distanceMeters = a.distanceMeters + b.distanceMeters,
+            combats = a.combats + b.combats,
+            gold = a.gold + b.gold,
+            floors = a.floors + b.floors,
+            kills = a.kills + b.kills,
+            minutes = a.minutes + b.minutes,
+            stepsConsumed = a.stepsConsumed + b.stepsConsumed,
+            remainingSteps = b.remainingSteps,
+            bosses = a.bosses + b.bosses,
+            levels = a.levels + b.levels,
+            chests = a.chests + b.chests,
+            reason = when {
+                a.reason.isBlank() -> b.reason
+                b.reason.isBlank() || a.reason == b.reason -> a.reason
+                else -> "mixed"
+            },
+            special = a.special || b.special,
+            defeated = a.defeated || b.defeated,
+            createdAt = minOf(a.createdAt, b.createdAt),
+            acknowledgedAt = 0L
         )
     }
 

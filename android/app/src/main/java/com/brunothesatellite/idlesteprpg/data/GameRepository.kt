@@ -5,6 +5,7 @@ import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
+import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.deepCopy
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.widget.MarcheWidgetProvider
@@ -62,6 +63,7 @@ class GameRepository(private val context: Context) {
         }
         GameEngine.migrate(loaded)
         GameEngine.ensureDay(loaded)
+        if (loaded.lastActiveAt <= 0L) loaded.lastActiveAt = System.currentTimeMillis()
         return loaded
     }
 
@@ -95,6 +97,53 @@ class GameRepository(private val context: Context) {
         GameNotifications.diff(context, before, after)
     }
 
+    suspend fun markActive() {
+        mutate { it.lastActiveAt = System.currentTimeMillis() }
+        save()
+    }
+
+    suspend fun simulateAbsence(elapsedMs: Long): OfflineReport? {
+        val before = _state.value
+        var report: OfflineReport? = null
+        var after: GameState = before
+        mutex.withLock {
+            val s = before.deepCopy()
+            val existing = s.offlineReport?.takeIf { it.acknowledgedAt == 0L }
+            val sim = GameEngine.simulateAbsence(s, elapsedMs)
+            s.lastActiveAt = System.currentTimeMillis()
+            if (sim.simulatedMs > 0L || sim.stepsConsumed > 0) {
+                val absence = OfflineReport(
+                    days = 0,
+                    steps = 0,
+                    distanceMeters = (sim.stepsConsumed / STEPS_PER_METER).toInt(),
+                    combats = sim.combats,
+                    gold = sim.gold,
+                    floors = sim.floors,
+                    kills = sim.kills,
+                    minutes = (elapsedMs / 60_000L).toInt().coerceAtLeast(1),
+                    stepsConsumed = sim.stepsConsumed,
+                    remainingSteps = sim.remainingBank,
+                    bosses = sim.bosses,
+                    levels = sim.levels,
+                    chests = sim.chests,
+                    reason = "absence",
+                    special = sim.stoppedOnSpecial,
+                    defeated = sim.defeated
+                )
+                report = GameEngine.mergeOfflineReports(existing, absence)
+                s.offlineReport = report
+            } else {
+                report = existing
+            }
+            applyAutoSell(s)
+            _state.value = s
+            after = s
+            saveLocked(s)
+        }
+        GameNotifications.diff(context, before, after)
+        return report
+    }
+
     suspend fun ingestSteps(total: Int, date: LocalDate) {
         ingestHistory(mapOf(date.toString() to total), date)
     }
@@ -106,16 +155,30 @@ class GameRepository(private val context: Context) {
         var warnings: List<String> = emptyList()
         mutex.withLock {
             val s = before.deepCopy()
+            val existing = s.offlineReport?.takeIf { it.acknowledgedAt == 0L }
             report = GameEngine.ingestHistory(s, days, today)
             val rawReport = report
             if (rawReport != null) {
-                val sim = GameEngine.simulateOffline(s)
-                report = rawReport.copy(
-                    combats = sim.combats,
-                    gold = sim.gold,
-                    floors = sim.floors,
-                    kills = sim.kills
-                )
+                if (existing != null) {
+                    report = GameEngine.mergeOfflineReports(
+                        existing,
+                        rawReport.copy(reason = "garmin", remainingSteps = s.stepBank.toInt())
+                    )
+                    s.offlineReport = report
+                } else {
+                    val sim = GameEngine.simulateOffline(s)
+                    report = rawReport.copy(
+                        combats = sim.combats,
+                        gold = sim.gold,
+                        floors = sim.floors,
+                        kills = sim.kills,
+                        reason = "garmin",
+                        remainingSteps = s.stepBank.toInt()
+                    )
+                    s.offlineReport = report
+                }
+            } else if (existing != null) {
+                report = existing.copy(remainingSteps = s.stepBank.toInt())
                 s.offlineReport = report
             }
             applyAutoSell(s)

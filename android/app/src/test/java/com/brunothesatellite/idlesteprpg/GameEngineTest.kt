@@ -6,6 +6,7 @@ import com.brunothesatellite.idlesteprpg.engine.FightData
 import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_STEPS_PER_DAY
+import com.brunothesatellite.idlesteprpg.engine.OfflineReport
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
 import com.brunothesatellite.idlesteprpg.engine.oathsFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
@@ -86,6 +87,72 @@ class GameEngineTest {
             Item("codex_test", "Relique de test · VAMPIRISME", "talisman", "rare", "item/misc_box.png", 1)
         )
         assertEquals(true, "Relique de test" in state.discoveredItems)
+    }
+
+    @Test
+    fun absenceSimulationConsumesTheReserve() {
+        val state = GameState().apply {
+            floor = 1
+            level = 50
+            hp = 20_000.0
+            stepBank = 20_000.0
+            mode = "walk"
+            oaths.bossesClaimed = true
+            upgrades.blade = 40
+            upgrades.breath = 40
+            upgrades.swift = 40
+        }
+        val sim = GameEngine.simulateAbsence(state, 10L * 60L * 1000L)
+        assertTrue(sim.stepsConsumed > 0)
+        assertTrue(sim.remainingBank < 20_000)
+        assertTrue(sim.simulatedMs > 0L)
+    }
+
+    @Test
+    fun absenceSimulationRespectsTheStepCap() {
+        val state = GameState().apply {
+            floor = 1
+            level = 50
+            hp = 20_000.0
+            stepBank = 20_000.0
+            mode = "walk"
+            oaths.bossesClaimed = true
+        }
+        val sim = GameEngine.simulateAbsence(state, 60L * 60L * 1000L, capSteps = 1_000)
+        assertTrue(sim.stepsConsumed <= 1_100)
+        assertTrue(sim.remainingBank >= 18_900)
+    }
+
+    @Test
+    fun absenceSimulationSkipsCamp() {
+        val state = GameState().apply {
+            stepBank = 20_000.0
+            mode = "camp"
+        }
+        val sim = GameEngine.simulateAbsence(state, 60L * 60L * 1000L)
+        assertEquals(true, sim.skippedCamp)
+        assertEquals(0, sim.stepsConsumed)
+        assertEquals(20_000, sim.remainingBank)
+    }
+
+    @Test
+    fun offlineReportsMergeIntoOneSummary() {
+        val absence = OfflineReport(
+            days = 0, steps = 0, distanceMeters = 120, combats = 3,
+            gold = 40, floors = 1, kills = 3, minutes = 12,
+            stepsConsumed = 1_200, remainingSteps = 800, reason = "absence"
+        )
+        val garmin = OfflineReport(
+            days = 2, steps = 5_000, distanceMeters = 500,
+            reason = "garmin", remainingSteps = 5_800
+        )
+        val merged = GameEngine.mergeOfflineReports(absence, garmin)!!
+        assertEquals(2, merged.days)
+        assertEquals(5_000, merged.steps)
+        assertEquals(1_200, merged.stepsConsumed)
+        assertEquals(3, merged.combats)
+        assertEquals("mixed", merged.reason)
+        assertEquals(5_800, merged.remainingSteps)
     }
 
     @Test

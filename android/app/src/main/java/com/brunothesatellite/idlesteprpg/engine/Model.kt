@@ -218,6 +218,15 @@ data class OfflineReport(
     val gold: Int = 0,
     val floors: Int = 0,
     val kills: Int = 0,
+    val minutes: Int = 0,
+    val stepsConsumed: Int = 0,
+    val remainingSteps: Int = 0,
+    val bosses: Int = 0,
+    val levels: Int = 0,
+    val chests: Int = 0,
+    val reason: String = "",
+    val special: Boolean = false,
+    val defeated: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val acknowledgedAt: Long = 0L
 )
@@ -293,6 +302,7 @@ data class GameState(
     var special: SpecialData? = null,
     var freeRestDay: String = "",
     var lastStepAt: Long = 0L,
+    var lastActiveAt: Long = 0L,
     var ferveurDecayMs: Double = 0.0,
     var ferveurDecayAt: Long = 0L,
     var totalSteps: Int = 0,

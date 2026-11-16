@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -1137,48 +1138,129 @@ private fun JournalRow(entry: JournalEntry) {
 }
 
 @Composable
-fun OfflineOverlay(report: OfflineReport, onDismiss: () -> Unit) {
+fun OfflineOverlay(
+    report: OfflineReport,
+    onDismiss: () -> Unit,
+    onOpenJournal: (() -> Unit)? = null
+) {
+    val absence = report.minutes > 0 || report.stepsConsumed > 0 ||
+        report.reason == "absence" || report.reason == "mixed"
+    val mixed = report.reason == "mixed" || (report.days > 0 && report.stepsConsumed > 0)
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(
                 Modifier
                     .fillMaxWidth()
+                    .heightIn(max = 620.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Brush.verticalGradient(listOf(Color(0xFF241930), Color(0xFF130E1C))))
                     .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
+                    .verticalScroll(rememberScrollState())
                     .padding(18.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("LE SENTIER A CONTINUÉ", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
-                Text("Récapitulatif hors ligne", fontSize = 7.5.sp, color = Muted)
-                Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    RecapTile(report.days.toString(), "JOURS", Modifier.weight(1f))
-                    RecapTile(formatInt(report.steps), "PAS", Modifier.weight(1f))
-                    RecapTile(formatInt(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
-                }
-                Spacer(Modifier.height(6.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    RecapTile(formatInt(report.combats), "COMBATS", Modifier.weight(1f))
-                    RecapTile(formatInt(report.gold), "OR", Modifier.weight(1f))
-                    RecapTile(formatInt(report.floors), "PALIERS", Modifier.weight(1f))
-                    RecapTile(formatInt(report.kills), "VICTIMES", Modifier.weight(1f))
-                }
-                Spacer(Modifier.height(12.dp))
                 Text(
-                    "Vos pas Garmin des derniers jours ont été récupérés et ajoutés à la marche, " +
-                        "sans double comptage. Plafond de rattrapage : 20 000 pas par synchronisation.",
+                    if (absence) "BON RETOUR" else "LE SENTIER A CONTINUÉ",
+                    fontFamily = Press,
+                    fontSize = 9.sp,
+                    color = GoldLight
+                )
+                Text(
+                    when {
+                        mixed -> "Absence et rattrapage Garmin"
+                        absence -> "Pendant votre absence"
+                        else -> "Récapitulatif hors ligne"
+                    },
+                    fontSize = 7.5.sp,
+                    color = Muted
+                )
+                Spacer(Modifier.height(12.dp))
+                if (absence) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        RecapTile(formatAbsence(report.minutes), "ABSENCE", Modifier.weight(1f))
+                        RecapTile(formatInt(report.stepsConsumed), "PAS CONSOMMÉS", Modifier.weight(1f))
+                        RecapTile(formatInt(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        RecapTile(formatInt(report.combats), "COMBATS", Modifier.weight(1f))
+                        RecapTile(formatInt(report.gold), "OR", Modifier.weight(1f))
+                        RecapTile(formatInt(report.floors), "PALIERS", Modifier.weight(1f))
+                        RecapTile(formatInt(report.bosses), "GARDIENS", Modifier.weight(1f))
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        RecapTile(formatInt(report.levels), "NIVEAUX", Modifier.weight(1f))
+                        RecapTile(formatInt(report.chests), "COFFRES", Modifier.weight(1f))
+                        RecapTile(formatInt(report.remainingSteps), "RÉSERVE", Modifier.weight(1f))
+                    }
+                    if (mixed) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Garmin : ${report.days} jour(s) · ${formatInt(report.steps)} pas importés",
+                            fontSize = 6.8.sp,
+                            color = Gold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        RecapTile(report.days.toString(), "JOURS", Modifier.weight(1f))
+                        RecapTile(formatInt(report.steps), "PAS", Modifier.weight(1f))
+                        RecapTile(formatInt(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        RecapTile(formatInt(report.combats), "COMBATS", Modifier.weight(1f))
+                        RecapTile(formatInt(report.gold), "OR", Modifier.weight(1f))
+                        RecapTile(formatInt(report.floors), "PALIERS", Modifier.weight(1f))
+                        RecapTile(formatInt(report.kills), "VICTIMES", Modifier.weight(1f))
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    when {
+                        mixed -> "Votre réserve de pas et les pas Garmin ont été traités dans le même calcul. Le reste de la réserve vous attend."
+                        absence -> "Votre réserve de pas a été consommée pendant votre absence. Le reste de la réserve vous attend."
+                        else -> "Vos pas Garmin des derniers jours ont été récupérés et ajoutés à la marche, sans double comptage."
+                    },
                     fontSize = 7.sp,
                     color = Muted,
                     textAlign = TextAlign.Center,
                     lineHeight = 10.sp
                 )
-                Spacer(Modifier.height(14.dp))
+                if (report.special) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Une rencontre vous attend sur le sentier.",
+                        fontSize = 7.sp,
+                        color = GoldLight,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                if (report.defeated) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Le héros a été repoussé et a repris des forces.",
+                        fontSize = 7.sp,
+                        color = Blood,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
                 GoldButton("REPRENDRE LA MARCHE", onClick = onDismiss)
+                if (onOpenJournal != null) {
+                    TextButton(onClick = onOpenJournal) {
+                        Text("VOIR LE JOURNAL", fontSize = 7.sp, color = Muted)
+                    }
+                }
             }
         }
     }
 }
+
+private fun formatAbsence(minutes: Int): String =
+    if (minutes >= 60) "${minutes / 60} h ${minutes % 60}" else "$minutes min"
 
 @Composable
 private fun RecapTile(value: String, label: String, modifier: Modifier = Modifier) {

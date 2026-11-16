@@ -195,7 +195,7 @@
 <header class="hero">
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas Garmin deviennent votre progression.</p>
-  <span class="badge">Version 0.10.0 · Android 14+ · Garmin Personal API uniquement</span>
+  <span class="badge">Version 0.11.0 · Android 14+ · Garmin Personal API uniquement</span>
 </header>
 
 <nav class="toc">
@@ -219,6 +219,7 @@
     <li><a href="#reglages">Réglages</a></li>
     <li><a href="#mises-a-jour">Mises à jour</a></li>
     <li><a href="#garmin">Synchronisation Garmin</a></li>
+    <li><a href="#absence">Résumé d'absence</a></li>
     <li><a href="#faq">Questions fréquentes</a></li>
     <li><a href="#donnees">Données et confidentialité</a></li>
     <li><a href="#credits">Licences et crédits</a></li>
@@ -285,6 +286,7 @@
   <h3>Reset à 00:00</h3>
   <p>À minuit local : le compteur du jour, la ferveur, les quotas de rations/éclats et les serments repartent à zéro. La distance déjà parcourue, l'or, l'équipement et les paliers sont conservés.</p>
   <div class="ok"><strong>Astuce :</strong> synchronisez après une marche plutôt que toutes les cinq minutes. La réserve s'écoule ensuite automatiquement en arrière-plan.</div>
+  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de 60 000 pas ou 15 minutes simulées. Voir <a href="#absence">Résumé d'absence</a>.</div>
 </section>
 
 <section id="interface">
@@ -771,8 +773,57 @@
   <div class="warn"><strong>La montre doit avoir synchronisé.</strong> Si Garmin Connect n'a pas reçu vos pas, l'API renvoie l'ancien total. Ouvrez Garmin Connect, attendez la montre, puis resynchronisez.</div>
 </section>
 
+<section id="absence">
+  <h2>19. Résumé d'absence</h2>
+  <figure class="shot">
+    <img src="images/absence_report.jpg" alt="Écran Bon retour affichant l'absence, les pas consommés, les mètres, les combats, l'or, les paliers, les gardiens, les niveaux, les coffres et la réserve restante">
+    <figcaption>L'écran « Bon retour » résume ce qui s'est passé pendant votre absence.</figcaption>
+  </figure>
+  <p>Quand vous fermez l'application avec une réserve de pas, cette réserve continue de s'écouler pendant votre absence. À votre retour, le jeu affiche un écran <strong>« BON RETOUR »</strong> qui résume la marche, les combats et les gains.</p>
+  <h3>Quand le calcul se lance</h3>
+  <ul>
+    <li>L'absence doit durer <strong>au moins 2 minutes</strong>.</li>
+    <li>La réserve de pas doit être <strong>supérieure à zéro</strong>.</li>
+    <li>Le héros ne doit être ni au campement, ni sur une rencontre spéciale.</li>
+    <li>L'onboarding doit être terminé.</li>
+  </ul>
+  <p>En dessous de ces conditions, le jeu reprend simplement là où il s'était arrêté, sans résumé.</p>
+  <h3>Consommation de la réserve</h3>
+  <p>La simulation utilise le <strong>rythme actif normal</strong> (70 ou 140 pas par seconde selon la taille de la réserve), avec deux limites :</p>
+  <div class="kpi">
+    <div><b>60 000</b><span>pas maximum par absence</span></div>
+    <div><b>15 min</b><span>de temps simulé maximum</span></div>
+    <div><b>100 %</b><span>du rythme actif</span></div>
+    <div><b>7 jours</b><span>absence maximale comptée</span></div>
+  </div>
+  <p>La première limite atteinte arrête la simulation. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
+  <h3>Contenu du résumé</h3>
+  <ul>
+    <li>durée de l'absence ;</li>
+    <li>pas consommés et mètres parcourus ;</li>
+    <li>combats, paliers franchis et gardiens vaincus ;</li>
+    <li>or gagné, niveaux gagnés et coffres ouverts ;</li>
+    <li>réserve de pas restante.</li>
+  </ul>
+  <p>Deux boutons : <strong>REPRENDRE LA MARCHE</strong> ferme le résumé, <strong>VOIR LE JOURNAL</strong> ouvre directement le journal des événements.</p>
+  <h3>Rencontre spéciale</h3>
+  <p>Si la simulation tombe sur une <strong>rencontre spéciale</strong>, elle s'arrête immédiatement. Le résumé l'indique (« Une rencontre vous attend sur le sentier »), puis la rencontre s'affiche normalement. Le jeu ne choisit jamais à votre place.</p>
+  <h3>Défaite contre un gardien</h3>
+  <p>Si le héros est repoussé pendant la simulation, le résumé l'indique et vous retrouvez la zone de farm correspondante. Aucun combat n'est résolu automatiquement sans que vous le sachiez.</p>
+  <h3>Fusion avec Garmin</h3>
+  <p>Si une synchronisation Garmin et une absence arrivent en même temps, les deux rapports sont <strong>fusionnés</strong> en un seul écran : les pas Garmin importés et la consommation de la réserve apparaissent ensemble, sans double comptage. Le titre devient alors « Absence et rattrapage Garmin ».</p>
+  <h3>Rapport persistant</h3>
+  <p>Le résumé reste disponible tant que vous n'avez pas appuyé sur <strong>REPRENDRE LA MARCHE</strong>. Quitter l'application ou changer d'écran ne le marque pas comme lu.</p>
+  <div class="warn"><strong>Horloge modifiée.</strong> Pour éviter les abus, l'absence est bornée entre 0 et 7 jours. Un changement d'heure ou une horloge avancée ne peut pas déclencher un gain démesuré.</div>
+  <div class="note"><strong>Ferveur.</strong> Elle décroît selon le temps réel, pas selon le temps simulé. Le résumé ne remplace pas une session active pour entretenir la ferveur.</div>
+</section>
+
 <section id="faq">
-  <h2>19. Questions fréquentes</h2>
+  <h2>20. Questions fréquentes</h2>
+  <details>
+    <summary>Pourquoi le jeu a-t-il avancé pendant que j'étais absent ?</summary>
+    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite de 60 000 pas ou 15 minutes simulées. La réserve restante est conservée. Voir <a href="#absence">Résumé d'absence</a>.</p>
+  </details>
   <details>
     <summary>Le héros est bloqué et n'avance plus.</summary>
     <p>La réserve de pas est probablement à zéro. Le héros repart à la prochaine synchronisation contenant de nouveaux pas. Vérifiez le nombre de pas du jour et la dernière synchronisation.</p>
@@ -812,7 +863,7 @@
 </section>
 
 <section id="donnees">
-  <h2>20. Données et confidentialité</h2>
+  <h2>21. Données et confidentialité</h2>
   <ul>
     <li>La progression, les préférences et la sauvegarde restent sur l'appareil.</li>
     <li>La clé et le jeton Garmin sont chiffrés dans Android Keystore.</li>
@@ -824,7 +875,7 @@
 </section>
 
 <section id="credits">
-  <h2>21. Licences et crédits</h2>
+  <h2>22. Licences et crédits</h2>
   <ul>
     <li><strong>Code et textes :</strong> MIT — brunothesatellite.</li>
     <li><strong>Pixel art :</strong> Dungeon Crawl Stone Soup contributors, CC0 1.0.</li>
@@ -836,7 +887,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.10.0 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.11.0 · <a href="#top">Retour au sommaire</a><br>
   Garmin Personal API uniquement · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

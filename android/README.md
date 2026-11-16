@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.10.0** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.11.0** — APK sideloadé pour Pixel 7a (Android 14+).
 
 **Manuel complet :** [`../manuel/index.html`](../manuel/index.html) · accessible dans l'app via `Réglages → Aide → Ouvrir le manuel du jeu`.
 
@@ -8,6 +8,7 @@ Version Android native du prototype. **v0.10.0** — APK sideloadé pour Pixel 7
 
 - Scène pixel art en **Jetpack Compose** : héros, monstres, élites, gardiens, coffre, porte runique, campement.
 - Boucle de jeu : **10 pas = 1 m**, rencontres tous les 10 m, gardien tous les 100 m, combat automatique, défaite + repli de 20 m + farm, ferveur, rations, éclats, coffres à quota.
+- **Résumé d'absence** : reprise après fermeture, consommation de la réserve à 100 % du rythme actif, plafond 60 000 pas / 15 min simulées, overlay « Bon retour », arrêt sur rencontre spéciale et fusion avec la synchro Garmin.
 - Tableau de bord : **Stats**, **Inventaire** (comparaison/équipement/vente/tri/filtres), **Améliorations**, journal, prochain gardien.
 - **Compte Garmin** : clé personnelle, date d'expiration, test, synchronisation, révocation.
 - **Garmin Personal API uniquement** : aucun Health Connect, aucune autre source de pas.
@@ -104,7 +105,7 @@ Play Protect peut avertir ou bloquer une application inconnue de Google lors de 
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.10.0
+## Limites de cette v0.11.0
 
 - L'historique Garmin est limité à 7 jours et à 100 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON versionné avec copie de secours, pas encore Room.

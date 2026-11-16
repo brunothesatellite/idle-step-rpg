@@ -1,5 +1,18 @@
 # Journal des versions
 
+## v0.11.0
+- **Résumé d'absence** : à la réouverture, la réserve de pas s'écoule pendant la fermeture de l'application et un écran **« Bon retour »** récapitule l'absence.
+- **Consommation** : 100 % du rythme actif, plafonnée à **60 000 pas** ou **15 minutes simulées**, au premier des deux atteint. La réserve restante est conservée.
+- **Déclenchement** : absence d'au moins 2 minutes, réserve non vide, hors camp et hors rencontre spéciale.
+- **Contenu** : durée, pas consommés, mètres, combats, or, paliers, gardiens, niveaux, coffres et réserve restante.
+- **Rencontre spéciale** : la simulation s'arrête dessus et le résumé l'indique, sans résoudre la rencontre à votre place.
+- **Défaite** : repli signalé dans le résumé, zone de farm retrouvée au retour.
+- **Fusion Garmin** : si une synchronisation et une absence arrivent ensemble, un seul rapport combine les pas importés et la réserve.
+- **Rapport persistant** : il reste disponible tant que « REPRENDRE LA MARCHE » n'a pas été utilisé ; quitter l'application ne le marque pas comme lu.
+- **Anti-abus** : absence bornée à 7 jours, ferveur décrémentée selon le temps réel.
+- **Manuel** : nouvelle section 19 avec capture de l'écran « Bon retour ».
+- 74 tests unitaires (dont simulation d'absence, plafond et fusion), lint Android OK.
+
 ## v0.10.0
 - **16 musiques d'ambiance 8 bits** : deux variantes de 3 minutes pour chacun des 8 biomes, générées pour le projet et publiées en **CC0**.
 - **Lecture en boucle** avec démarrage à une position aléatoire à chaque ouverture, pour éviter la redondance.
