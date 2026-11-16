@@ -614,7 +614,11 @@ val GENERIC_LOOT = listOf(
     Item("loot_helm", "Heaume gravé", "head", "rare", "item/helmet3.png", 1, hp = 22, critPct = 3, value = 80),
     Item("loot_glove", "Gants de braise", "hands", "uncommon", "item/glove1.png", 1, atk = 6, value = 55),
     Item("loot_boots", "Bottes de mousse", "feet", "uncommon", "item/boots4_green.png", 1, vitPct = 5, value = 55),
-    Item("loot_ring", "Anneau d'âme", "talisman", "epic", "item/ring-regen.png", 1, regen = 0.4, critPct = 2, value = 140)
+    Item("loot_ring", "Anneau d'âme", "talisman", "epic", "item/ring-regen.png", 1, regen = 0.4, critPct = 2, value = 140),
+    Item("loot_idol", "Idole dorée", "talisman", "rare", "item/04.png", 1, atk = 4, value = 180),
+    Item("loot_art_helm", "Heaume d'art", "head", "epic", "item/helmet_art1.png", 1, hp = 24, critPct = 4, value = 125),
+    Item("loot_reliquary", "Coffret-reliquaire", "talisman", "rare", "item/misc_box.png", 1, hp = 18, regen = 0.3, value = 110),
+    Item("loot_lantern", "Lanterne des âmes", "talisman", "epic", "item/misc_lantern.png", 1, atk = 6, regen = 0.4, value = 145)
 )
 
 val CRYPT_LOOT = listOf(

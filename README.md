@@ -358,3 +358,4 @@ Voir [`docs/reste-a-faire.md`](docs/reste-a-faire.md).
 - **Polices** : Pixelify Sans et Press Start 2P, SIL Open Font License 1.1.
 
 Détails : [`LICENSES.md`](LICENSES.md), [`assets/CREDITS.md`](assets/CREDITS.md).
+

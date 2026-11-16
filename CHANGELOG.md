@@ -116,3 +116,4 @@
 
 ## v0.1.0
 - Première version Android native avec Garmin Personal API.
+

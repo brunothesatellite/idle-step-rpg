@@ -1,5 +1,8 @@
 # La Marche des Âmes — reste à faire après la v0.3.1
 
+> **Mise à jour v0.7.0** : 8 biomes illustrés, pools de monstres et tables de butin par biome,
+> 8 ensembles, 2 effets, 4 consommables et paper doll du héros sont livrés.
+>
 > **Mise à jour v0.6.0** : les sons 8 bits sont livrés (licence CC0, volume réglable,
 > désactivation). Le reste de la liste ci-dessous est conservé comme backlog.
 >
@@ -179,13 +182,12 @@ Effort : **L**.
 
 ### 4.3 Biomes et ambiance
 
-- Tiles, props et pools de monstres propres à chaque biome (aujourd’hui : palette).
-- Météo : neige, cendre, braises, brume animée.
-- Gardiens avec apparence de biome.
-- Transitions de palier.
-- Musique/ambiance sonore.
+- **Livré v0.7.0** : tuiles, sols, props, statues, portes et météo propres à 8 biomes.
+- **Livré v0.7.0** : pools de monstres et tables de butin par biome.
+- **Livré v0.7.0** : boss de biome et ensembles thématiques.
+- Restant : transitions animées entre paliers, musique et ambiance sonore.
 
-Effort : **XL**.
+Effort restant : **M**.
 
 ### 4.4 Combat
 
@@ -202,9 +204,9 @@ Effort : **L**.
 
 ## 5. Contenu et endgame
 
-- Plus de monstres, élites et gardiens (actuellement 7 / 7 / 8 / 8).
-- Biomes au-delà du palier 50 : la spec veut un donjon infini, mais les noms s’arrêtent à « Cimes du Serment ».
-- Boss uniques aux paliers 10, 25, 50, 100.
+- **Livré v0.7.0** : plus de 60 nouvelles créatures, 8 biomes, 32 objets de butin, 8 ensembles.
+- Restant : boucle de biomes au-delà du palier 80 et variantes d'élites nommées.
+- Boss uniques aux paliers 10, 25, 50, 100. **Livré** : boss de biome + jalons.
 - Journal de légende persistant.
 - Bestiaire / collection.
 - Succès et statistiques de vie.
