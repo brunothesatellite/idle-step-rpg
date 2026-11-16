@@ -38,6 +38,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.brunothesatellite.idlesteprpg.ui.CampOverlay
 import com.brunothesatellite.idlesteprpg.ui.ChestDialog
+import com.brunothesatellite.idlesteprpg.ui.ConsumablesOverlay
 import com.brunothesatellite.idlesteprpg.ui.Dashboard
 import com.brunothesatellite.idlesteprpg.ui.DayBanner
 import com.brunothesatellite.idlesteprpg.ui.GarminScreen
@@ -124,12 +125,14 @@ private fun GameRoot(vm: GameViewModel) {
         enabled = ui.campOpen || ui.settingsOpen || ui.prefsOpen ||
             ui.selectedItem != null || ui.chestOpen || ui.journalOpen ||
             state.offlineReport?.acknowledgedAt == 0L || state.special != null ||
-            ui.pendingImport != null || !ui.onboardingDone || ui.specialOutcome != null
+            ui.pendingImport != null || !ui.onboardingDone || ui.specialOutcome != null ||
+            ui.consumablesOpen
     ) {
         when {
             !ui.onboardingDone -> vm.completeOnboarding()
             ui.pendingImport != null -> vm.cancelImport()
             ui.specialOutcome != null -> vm.dismissSpecialOutcome()
+            ui.consumablesOpen -> vm.closeConsumables()
             state.special != null -> vm.resolveSpecial(false)
             state.offlineReport?.acknowledgedAt == 0L -> vm.dismissOfflineReport()
             ui.selectedItem != null -> vm.dismissItem()
@@ -156,6 +159,7 @@ private fun GameRoot(vm: GameViewModel) {
                             state = state,
                             onCamp = vm::openCamp,
                             onChest = vm::openChest,
+                            onConsumables = vm::openConsumables,
                             reducedMotion = ui.reducedMotion,
                             vibrations = ui.vibrations,
                             modifier = Modifier.weight(0.58f).fillMaxHeight()
@@ -175,6 +179,7 @@ private fun GameRoot(vm: GameViewModel) {
                             onEquipBest = vm::equipBest,
                             onWithdrawStash = vm::withdrawStash,
                             onWithdrawStashItem = vm::withdrawStashItem,
+                            onUseConsumable = vm::useConsumable,
                             onSelectTab = { activeTab = it },
                             modifier = Modifier.weight(0.42f).fillMaxHeight()
                         )
@@ -190,6 +195,7 @@ private fun GameRoot(vm: GameViewModel) {
                             state = state,
                             onCamp = vm::openCamp,
                             onChest = vm::openChest,
+                            onConsumables = vm::openConsumables,
                             reducedMotion = ui.reducedMotion,
                             vibrations = ui.vibrations,
                             modifier = Modifier.weight(0.46f)
@@ -209,6 +215,7 @@ private fun GameRoot(vm: GameViewModel) {
                             onEquipBest = vm::equipBest,
                             onWithdrawStash = vm::withdrawStash,
                             onWithdrawStashItem = vm::withdrawStashItem,
+                            onUseConsumable = vm::useConsumable,
                             onSelectTab = { activeTab = it },
                             modifier = Modifier.weight(0.54f)
                         )
@@ -244,6 +251,7 @@ private fun GameRoot(vm: GameViewModel) {
                         vm.closeCamp()
                         activeTab = "inventory"
                     },
+                    onOpenConsumables = vm::openConsumables,
                     onResume = vm::closeCamp
                 )
             }
@@ -277,6 +285,13 @@ private fun GameRoot(vm: GameViewModel) {
                     legend = state.legend,
                     bestiary = state.bestiary,
                     onClose = vm::closeJournal
+                )
+            }
+            if (ui.consumablesOpen) {
+                ConsumablesOverlay(
+                    state = state,
+                    onUse = vm::useConsumable,
+                    onClose = vm::closeConsumables
                 )
             }
             state.special?.let { special ->

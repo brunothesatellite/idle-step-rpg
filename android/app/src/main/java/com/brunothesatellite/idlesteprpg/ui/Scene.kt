@@ -145,6 +145,7 @@ fun Scene(
     state: GameState,
     onCamp: () -> Unit,
     onChest: () -> Unit,
+    onConsumables: () -> Unit,
     reducedMotion: Boolean = false,
     vibrations: Boolean = true,
     modifier: Modifier = Modifier
@@ -209,9 +210,22 @@ fun Scene(
                 onChest,
                 Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 58.dp, end = 10.dp)
+                    .padding(top = 92.dp, end = 10.dp)
             )
         }
+        ConsumablesChip(
+            state,
+            onConsumables,
+            Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 58.dp, end = 10.dp)
+        )
+        BuffTags(
+            state,
+            Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp)
+        )
 
         if (state.fight?.isBoss == true) {
             BossBanner(state)
@@ -977,6 +991,54 @@ private fun GateView(state: GameState, modifier: Modifier = Modifier) {
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConsumablesChip(state: GameState, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val count = state.consumables.values.sum()
+    Row(
+        modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(Ink.copy(alpha = 0.88f))
+            .border(1.dp, if (count > 0) Gold.copy(alpha = 0.5f) else Line, RoundedCornerShape(4.dp))
+            .clickable(onClick = onClick)
+            .semantics { contentDescription = "Sac de consommables" }
+            .padding(horizontal = 7.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AssetIcon("item/cons_potion_red.png", 15.dp)
+        Spacer(Modifier.width(5.dp))
+        Column {
+            Text("SAC", fontFamily = Press, fontSize = 5.sp, color = GoldLight)
+            Text(if (count > 0) "×$count" else "vide", fontSize = 4.8.sp, color = if (count > 0) Ember else Muted2)
+        }
+    }
+}
+
+@Composable
+private fun BuffTags(state: GameState, modifier: Modifier = Modifier) {
+    val now = System.currentTimeMillis()
+    val active = state.buffs.filter { it.expiresAt > now }.take(4)
+    if (active.isEmpty()) return
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        active.forEach { buff ->
+            val seconds = ((buff.expiresAt - now) / 1000L).coerceAtLeast(0L)
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(Ink.copy(alpha = 0.82f))
+                    .border(1.dp, Ember.copy(alpha = 0.5f), RoundedCornerShape(3.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    "${buff.label} ${seconds}s",
+                    fontSize = 4.8.sp,
+                    color = Ember,
+                    maxLines = 1
+                )
             }
         }
     }

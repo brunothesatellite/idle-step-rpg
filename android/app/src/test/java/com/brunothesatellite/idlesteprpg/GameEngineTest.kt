@@ -387,4 +387,57 @@ class GameEngineTest {
         assertTrue(after.atk > before.atk)
         assertTrue(after.maxHp > before.maxHp)
     }
+
+    @Test
+    fun healingConsumableRestoresHpAndIsConsumed() {
+        val state = GameState()
+        state.hp = 10.0
+        state.consumables = mapOf("potion_soin" to 1)
+        val outcome = GameEngine.useConsumable(state, "potion_soin")
+        assertTrue(outcome.good)
+        assertTrue(state.hp > 10.0)
+        assertTrue(state.consumables.isEmpty())
+    }
+
+    @Test
+    fun combatOnlyConsumableIsRejectedOutsideFight() {
+        val state = GameState()
+        state.consumables = mapOf("fiole_rage" to 1)
+        val outcome = GameEngine.useConsumable(state, "fiole_rage")
+        assertEquals(false, outcome.good)
+        assertEquals(1, state.consumables["fiole_rage"])
+    }
+
+    @Test
+    fun combatBuffRaisesAttackAndExpires() {
+        val state = GameState()
+        GameEngine.startBoss(state)
+        state.consumables = mapOf("fiole_rage" to 1)
+        val before = statsOf(state).atk
+        val outcome = GameEngine.useConsumable(state, "fiole_rage")
+        assertTrue(outcome.good)
+        assertTrue(statsOf(state).atk > before)
+        assertTrue(state.buffs.any { it.type == "atk" })
+        state.buffs = state.buffs.map { it.copy(expiresAt = 0L) }
+        assertEquals(before, statsOf(state).atk)
+    }
+
+    @Test
+    fun fireBombDamagesTheEnemy() {
+        val state = GameState()
+        GameEngine.startBoss(state)
+        val hpBefore = state.fight!!.enemyHp
+        state.consumables = mapOf("bombe_feu" to 1)
+        val outcome = GameEngine.useConsumable(state, "bombe_feu")
+        assertTrue(outcome.good)
+        assertTrue(state.fight == null || state.fight!!.enemyHp < hpBefore)
+    }
+
+    @Test
+    fun chestLootCanGrantConsumables() {
+        val state = GameState()
+        state.consumables = emptyMap()
+        GameEngine.dropConsumables(state, "chest", forcedCount = 3)
+        assertEquals(3, state.consumables.values.sum())
+    }
 }

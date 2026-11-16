@@ -1,5 +1,13 @@
 # Journal des versions
 
+## v0.5.3
+- **Catégorie Consommables** dans l'inventaire et le sac de scène.
+- 12 consommables avec icônes dédiées : soins, ferveur, bombes, buffs temporaires.
+- Butin : monstres, gardiens et coffres.
+- Utilisation au camp, en exploration et en combat, avec buffs et compte à rebours.
+- Carte **RESSOURCES** dans Stats : rations, éclats, or, consommables.
+- Camp : héros, tente et feu repositionnés pour rester visibles au-dessus du panneau.
+
 ## v0.4.2
 - Fenêtre **RÉSULTAT** après chaque rencontre spéciale : pari gagné/perdu, achat, offrande, soin.
 - Plus de toasts empilés : un seul toast à la fois, remplacé par le suivant.

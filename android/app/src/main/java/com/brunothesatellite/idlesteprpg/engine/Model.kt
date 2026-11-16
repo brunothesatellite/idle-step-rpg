@@ -81,6 +81,101 @@ data class FightData(
 )
 
 @Serializable
+data class Buff(
+    val type: String,
+    val magnitude: Double,
+    val expiresAt: Long,
+    val label: String
+)
+
+data class ConsumableTemplate(
+    val id: String,
+    val name: String,
+    val icon: String,
+    val rarity: String,
+    val description: String,
+    val effect: String,
+    val magnitude: Double,
+    val durationMs: Long = 0L,
+    val context: String = "both",
+    val value: Int = 0,
+    val secondary: Double = 0.0
+)
+
+val CONSUMABLES = listOf(
+    ConsumableTemplate(
+        "potion_soin", "Potion de soin", "item/cons_potion_red.png", "common",
+        "Rend 30 % des PV max.", "heal_pct", 0.30, context = "both", value = 30
+    ),
+    ConsumableTemplate(
+        "herbe_lune", "Herbe de lune", "item/cons_herb.png", "common",
+        "Rend 12 % des PV et 6 ferveur.", "heal_ferveur", 0.12,
+        context = "both", value = 35, secondary = 6.0
+    ),
+    ConsumableTemplate(
+        "champignon_braise", "Champignon de braise", "item/cons_mushroom.png", "uncommon",
+        "Rend 20 ferveur.", "ferveur", 20.0, context = "both", value = 40
+    ),
+    ConsumableTemplate(
+        "elixir_veilleur", "Élixir du veilleur", "item/cons_elixir.png", "rare",
+        "Restaure tous les PV.", "full_heal", 1.0, context = "both", value = 120
+    ),
+    ConsumableTemplate(
+        "pain_route", "Pain de route", "item/bread_ration.png", "common",
+        "Rend 20 % des PV et 1 ration.", "heal_ration", 0.20,
+        context = "both", value = 25, secondary = 1.0
+    ),
+    ConsumableTemplate(
+        "fiole_rage", "Fiole de rage", "item/misc_orb.png", "uncommon",
+        "ATQ +50 % pendant 20 s.", "buff_atk", 0.50, 20_000,
+        context = "combat", value = 60
+    ),
+    ConsumableTemplate(
+        "ecorce_fer", "Écorce de fer", "item/cons_shield.png", "uncommon",
+        "Dégâts subis −40 % pendant 20 s.", "buff_def", 0.40, 20_000,
+        context = "combat", value = 65
+    ),
+    ConsumableTemplate(
+        "poudre_eclair", "Poudre d'éclair", "item/cons_lightning.png", "uncommon",
+        "VIT +60 % pendant 15 s.", "buff_vit", 0.60, 15_000,
+        context = "combat", value = 60
+    ),
+    ConsumableTemplate(
+        "bombe_feu", "Bombe de feu", "item/cons_bomb.png", "rare",
+        "Inflige immédiatement 2× votre ATQ.", "damage", 2.0,
+        context = "combat", value = 90
+    ),
+    ConsumableTemplate(
+        "elixir_vampire", "Élixir de vampire", "item/cons_potion_purple.png", "rare",
+        "20 % des dégâts rendus en PV pendant 30 s.", "buff_lifesteal", 0.20, 30_000,
+        context = "combat", value = 110
+    ),
+    ConsumableTemplate(
+        "parchemin_critique", "Parchemin critique", "item/cons_scroll.png", "rare",
+        "Critique +50 % pendant 15 s.", "buff_crit", 0.50, 15_000,
+        context = "combat", value = 95
+    ),
+    ConsumableTemplate(
+        "champignon_berserk", "Champignon berserk", "item/cons_mushroom_red.png", "rare",
+        "ATQ +80 %, mais dégâts subis +20 % pendant 15 s.", "berserk", 0.80, 15_000,
+        context = "combat", value = 100, secondary = 0.20
+    )
+)
+
+fun consumableById(id: String): ConsumableTemplate? = CONSUMABLES.firstOrNull { it.id == id }
+
+fun defaultConsumables(): Map<String, Int> = mapOf(
+    "potion_soin" to 2,
+    "herbe_lune" to 1
+)
+
+fun consumableContextLabel(context: String): String = when (context) {
+    "combat" -> "COMBAT"
+    "camp" -> "CAMP"
+    else -> "CAMP & COMBAT"
+}
+
+@Serializable
 data class OathsState(
     var stepsClaimed: Boolean = false,
     var bossesClaimed: Boolean = false,
@@ -185,7 +280,9 @@ data class GameState(
     var weeklySteps: Int = 0,
     var weekKey: String = "",
     var streak: Int = 0,
-    var lastActiveDay: String = ""
+    var lastActiveDay: String = "",
+    var consumables: Map<String, Int> = defaultConsumables(),
+    var buffs: List<Buff> = emptyList()
 )
 
 data class Stats(
@@ -197,7 +294,8 @@ data class Stats(
     val lifesteal: Double = 0.0,
     val damageReduction: Double = 0.0,
     val critDamage: Double = 0.0,
-    val bossDamage: Double = 0.0
+    val bossDamage: Double = 0.0,
+    val damageTaken: Double = 0.0
 ) {
     val attackSpeed: Double get() = vit
     val power: Int
@@ -457,6 +555,18 @@ fun statsOf(state: GameState): Stats {
                 }
             }
         }
+    val now = System.currentTimeMillis()
+    var damageTaken = 0.0
+    state.buffs.filter { it.expiresAt > now }.forEach { buff ->
+        when (buff.type) {
+            "atk" -> atk = (atk * (1.0 + buff.magnitude)).roundToInt()
+            "vit" -> vit *= 1.0 + buff.magnitude
+            "crit" -> crit += (buff.magnitude * 100).roundToInt()
+            "def" -> damageReduction += buff.magnitude
+            "lifesteal" -> lifesteal += buff.magnitude
+            "vulnerable" -> damageTaken += buff.magnitude
+        }
+    }
     return Stats(
         atk = atk,
         maxHp = maxHp,
@@ -464,9 +574,10 @@ fun statsOf(state: GameState): Stats {
         crit = crit,
         regen = regen,
         lifesteal = lifesteal,
-        damageReduction = damageReduction.coerceAtMost(0.5),
+        damageReduction = damageReduction.coerceIn(0.0, 0.7),
         critDamage = critDamage,
-        bossDamage = bossDamage
+        bossDamage = bossDamage,
+        damageTaken = damageTaken
     )
 }
 
@@ -586,5 +697,7 @@ fun GameState.deepCopy(): GameState = copy(
     stash = stash.toList(),
     legend = legend.toList(),
     bestiary = bestiary.toMap(),
+    consumables = consumables.toMap(),
+    buffs = buffs.toList(),
     special = special?.let { it.copy(offer = it.offer?.copy()) }
 )

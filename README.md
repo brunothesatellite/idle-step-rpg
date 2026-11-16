@@ -110,7 +110,7 @@ L'architecture Android proposée (Kotlin/Compose, APK sideloadé, **Garmin Perso
 
 ## Version Android (APK)
 
-La version native **v0.4.2** est dans `android/` :
+La version native **v0.5.3** est dans `android/` :
 
 - **Kotlin + Jetpack Compose**, `minSdk 34` (Android 14+), package `com.brunothesatellite.idlesteprpg`.
 - **Texte ajustable** (Normal / Grand / Très grand), Grand par défaut, mise en page **paysage et tablette**.
@@ -124,6 +124,8 @@ La version native **v0.4.2** est dans `android/` :
 - **Onboarding** en quatre écrans, revoyable depuis les réglages.
 - **Ferveur** qui décroît après 2 h et se rattrape hors ligne, avec aura.
 - **Inventaire avancé** : équiper le meilleur, tri/filtres, vendre les communs, verrouiller, fusionner, objets non identifiés, ensembles, forge, effets légendaires et coffre de camp.
+- **Consommables** : 12 objets de soin, ferveur, bombe et buffs temporaires, butin des monstres/coffres, sac accessible en scène, au camp et en combat.
+- **Ressources visibles** : rations, éclats, or et consommables dans une carte dédiée.
 - **Contenu** : biomes colorés avec météo, rencontres spéciales (autel, source, marchand, statue, pari), jalons complets, boss uniques 10/25/50/100.
 - **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil, mise à jour in-app.
 - **Qualité** : tests moteur, tests Garmin MockWebServer, tests UI Compose, lint et CI Android.

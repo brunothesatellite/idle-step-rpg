@@ -9,6 +9,7 @@ import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.ui.ChestDialog
+import com.brunothesatellite.idlesteprpg.ui.ConsumablesOverlay
 import com.brunothesatellite.idlesteprpg.ui.ItemDialog
 import com.brunothesatellite.idlesteprpg.ui.MarcheTheme
 import com.brunothesatellite.idlesteprpg.ui.OnboardingOverlay
@@ -106,5 +107,21 @@ class OverlayUiTest {
         rule.onNodeWithText("RÉSULTAT").assertExists()
         rule.onNodeWithText("Pari perdu · −100 or").assertExists()
         rule.onNodeWithText("CONTINUER").assertExists()
+    }
+
+    @Test
+    fun consumablesOverlayShowsOwnedItems() {
+        val state = GameState().copy(
+            hp = 10.0,
+            consumables = mapOf("potion_soin" to 2, "fiole_rage" to 1)
+        )
+        rule.setContent {
+            MarcheTheme {
+                ConsumablesOverlay(state = state, onUse = {}, onClose = {})
+            }
+        }
+        rule.onNodeWithText("SAC DE CONSOMMABLES").assertExists()
+        rule.onNodeWithText("Potion de soin").assertExists()
+        rule.onNodeWithText("Fiole de rage").assertExists()
     }
 }

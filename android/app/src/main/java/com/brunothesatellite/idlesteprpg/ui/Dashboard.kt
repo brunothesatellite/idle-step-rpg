@@ -43,6 +43,8 @@ import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.bossFor
+import com.brunothesatellite.idlesteprpg.engine.CONSUMABLES
+import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.itemScore
 import com.brunothesatellite.idlesteprpg.engine.powerOf
@@ -78,6 +80,7 @@ fun Dashboard(
     onEquipBest: () -> Unit,
     onWithdrawStash: () -> Unit,
     onWithdrawStashItem: (Item) -> Unit,
+    onUseConsumable: (String) -> Unit,
     onSelectTab: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -107,7 +110,8 @@ fun Dashboard(
                     onSellCommons,
                     onEquipBest,
                     onWithdrawStash,
-                    onWithdrawStashItem
+                    onWithdrawStashItem,
+                    onUseConsumable
                 )
                 "upgrades" -> UpgradesTab(state, ui, onBuyUpgrade, onOpenSettings)
                 else -> StatsTab(state, ui, onOpenSettings, onSync, onOpenJournal)
@@ -294,6 +298,8 @@ private fun StatsTab(
         )
     }
     Spacer(Modifier.height(5.dp))
+    ResourcesCard(state)
+    Spacer(Modifier.height(5.dp))
     FerveurCard(state)
     Spacer(Modifier.height(5.dp))
     OathsCard(state)
@@ -320,6 +326,34 @@ private fun StatTile(icon: String, label: String, value: String, modifier: Modif
         Column {
             Text(label, fontSize = 5.5.sp, letterSpacing = 0.7.sp, color = Muted)
             Text(value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Parchment, maxLines = 1)
+        }
+    }
+}
+
+@Composable
+private fun ResourcesCard(state: GameState) {
+    PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            ResourceStat("item/meat_ration.png", "RATIONS", "${state.rations} / 24")
+            ResourceStat("item/misc_crystal.png", "ÉCLATS", "${state.shards} / 12")
+            ResourceStat("item/01.png", "OR", formatInt(state.gold))
+            ResourceStat(
+                "item/cons_potion_red.png",
+                "CONSOMMABLES",
+                state.consumables.values.sum().toString()
+            )
+        }
+    }
+}
+
+@Composable
+private fun ResourceStat(icon: String, label: String, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        AssetIcon(icon, 15.dp)
+        Spacer(Modifier.width(4.dp))
+        Column {
+            Text(label, fontSize = 5.sp, letterSpacing = 0.5.sp, color = Muted2)
+            Text(value, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Parchment, maxLines = 1)
         }
     }
 }
@@ -600,22 +634,41 @@ private fun SmallAction(
     text: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    primary: Boolean = false
+    primary: Boolean = false,
+    enabled: Boolean = true
 ) {
     Box(
         modifier
             .height(30.dp)
             .clip(RoundedCornerShape(4.dp))
-            .background(if (primary) Gold else Panel2)
-            .border(1.dp, if (primary) GoldLight else Line2, RoundedCornerShape(4.dp))
-            .clickable(onClick = onClick),
+            .background(
+                when {
+                    !enabled -> Panel3
+                    primary -> Gold
+                    else -> Panel2
+                }
+            )
+            .border(
+                1.dp,
+                when {
+                    !enabled -> Line
+                    primary -> GoldLight
+                    else -> Line2
+                },
+                RoundedCornerShape(4.dp)
+            )
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text,
             fontSize = 7.sp,
             fontWeight = FontWeight.Bold,
-            color = if (primary) Ink else Parchment
+            color = when {
+                !enabled -> Muted2
+                primary -> Ink
+                else -> Parchment
+            }
         )
     }
 }
@@ -627,11 +680,14 @@ private fun InventoryTab(
     onSellCommons: () -> Unit,
     onEquipBest: () -> Unit,
     onWithdrawStash: () -> Unit,
-    onWithdrawStashItem: (Item) -> Unit
+    onWithdrawStashItem: (Item) -> Unit,
+    onUseConsumable: (String) -> Unit
 ) {
     var sort by rememberSaveable { mutableStateOf("score") }
     var slotFilter by rememberSaveable { mutableStateOf("all") }
     var stashOpen by remember { mutableStateOf(false) }
+    var invSection by rememberSaveable { mutableStateOf("gear") }
+    val consumableCount = state.consumables.values.sum()
     val filtered = state.inventory
         .filter { slotFilter == "all" || it.slot == slotFilter }
         .sortedWith(
@@ -648,6 +704,17 @@ private fun InventoryTab(
         Text("ÉQUIPEMENT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Parchment)
         Spacer(Modifier.weight(1f))
         Text("Puissance ${powerOf(state)}", fontSize = 6.5.sp, color = Muted)
+    }
+    Spacer(Modifier.height(5.dp))
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        MiniChip("Équipement", invSection == "gear") { invSection = "gear" }
+        MiniChip("Consommables ($consumableCount)", invSection == "consumables") {
+            invSection = "consumables"
+        }
+    }
+    if (invSection == "consumables") {
+        ConsumablesSection(state, onUseConsumable)
+        return
     }
     Spacer(Modifier.height(5.dp))
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -813,6 +880,112 @@ private fun rarityRank(rarity: String): Int = when (rarity) {
     "rare" -> 3
     "uncommon" -> 2
     else -> 1
+}
+
+@Composable
+private fun ConsumablesSection(state: GameState, onUse: (String) -> Unit) {
+    val stats = statsOf(state)
+    val owned = CONSUMABLES.filter { (state.consumables[it.id] ?: 0) > 0 }
+    Spacer(Modifier.height(9.dp))
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text("CONSOMMABLES", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
+        Spacer(Modifier.weight(1f))
+        Text(
+            "${state.consumables.values.sum()} objet(s) · soins et buffs",
+            fontSize = 6.sp,
+            color = Muted
+        )
+    }
+    Spacer(Modifier.height(4.dp))
+    if (owned.isEmpty()) {
+        Text(
+            "Aucun consommable. Les monstres et les coffres en laissent parfois.",
+            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 7.sp,
+            color = Muted2
+        )
+        return
+    }
+    owned.forEach { template ->
+        val quantity = state.consumables[template.id] ?: 0
+        val usable = when {
+            template.context == "combat" && state.fight == null -> false
+            template.effect == "heal_pct" || template.effect == "full_heal" -> state.hp < stats.maxHp
+            template.effect == "heal_ration" -> state.hp < stats.maxHp
+            template.effect == "ferveur" -> state.ferveur < 100
+            template.effect == "heal_ferveur" -> state.hp < stats.maxHp || state.ferveur < 100
+            else -> true
+        }
+        PixelCard(
+            Modifier.fillMaxWidth(),
+            borderColor = rarityColor(template.rarity).copy(alpha = 0.5f),
+            background = Panel2
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Panel)
+                        .border(1.dp, rarityColor(template.rarity).copy(alpha = 0.6f), RoundedCornerShape(4.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AssetIcon(template.icon, 28.dp)
+                }
+                Spacer(Modifier.width(7.dp))
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            template.name,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Parchment,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("×$quantity", fontFamily = Press, fontSize = 6.sp, color = Gold)
+                    }
+                    Text(
+                        template.description,
+                        fontSize = 6.2.sp,
+                        color = Muted,
+                        lineHeight = 9.sp
+                    )
+                    Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            rarityLabel(template.rarity),
+                            fontSize = 5.sp,
+                            color = rarityColor(template.rarity)
+                        )
+                        Text(
+                            consumableContextLabel(template.context),
+                            fontSize = 5.sp,
+                            color = if (template.context == "combat") Ember else Green
+                        )
+                    }
+                }
+                Spacer(Modifier.width(5.dp))
+                SmallAction(
+                    "UTILISER",
+                    Modifier.width(70.dp),
+                    onClick = { onUse(template.id) },
+                    primary = true,
+                    enabled = usable
+                )
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+    }
+    Text(
+        "Les objets de combat s'utilisent pendant un combat. Les soins et la ferveur servent au camp comme en exploration.",
+        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+        textAlign = TextAlign.Center,
+        fontSize = 5.8.sp,
+        color = Muted2,
+        lineHeight = 8.sp
+    )
 }
 
 @Composable

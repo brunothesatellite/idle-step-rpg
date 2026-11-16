@@ -49,7 +49,9 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -63,6 +65,7 @@ import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.data.SaveSummary
+import com.brunothesatellite.idlesteprpg.engine.CONSUMABLES
 import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
@@ -72,6 +75,7 @@ import com.brunothesatellite.idlesteprpg.engine.OfflineReport
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
 import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
+import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
 import com.brunothesatellite.idlesteprpg.engine.effectDescription
 import com.brunothesatellite.idlesteprpg.engine.effectLabel
 import com.brunothesatellite.idlesteprpg.engine.formatRemaining
@@ -428,9 +432,13 @@ fun CampOverlay(
     onWithdrawStash: () -> Unit,
     onOpenJournal: () -> Unit,
     onOpenInventory: () -> Unit,
+    onOpenConsumables: () -> Unit,
     onResume: () -> Unit
 ) {
     val stats = statsOf(state)
+    var cardHeight by remember { mutableStateOf(0) }
+    val density = LocalDensity.current
+    val heroBottom = with(density) { cardHeight.toDp() } + 16.dp
     Box(
         Modifier
             .fillMaxSize()
@@ -455,18 +463,18 @@ fun CampOverlay(
             // sapins
             drawPath(
                 Path().apply {
-                    moveTo(w * 0.04f, h * 0.58f)
-                    lineTo(w * 0.17f, h * 0.28f)
-                    lineTo(w * 0.30f, h * 0.58f)
+                    moveTo(w * 0.04f, h * 0.54f)
+                    lineTo(w * 0.17f, h * 0.24f)
+                    lineTo(w * 0.30f, h * 0.54f)
                     close()
                 },
                 Color(0xFF0C1018)
             )
             drawPath(
                 Path().apply {
-                    moveTo(w * 0.70f, h * 0.58f)
-                    lineTo(w * 0.84f, h * 0.26f)
-                    lineTo(w * 0.98f, h * 0.58f)
+                    moveTo(w * 0.70f, h * 0.54f)
+                    lineTo(w * 0.84f, h * 0.22f)
+                    lineTo(w * 0.98f, h * 0.54f)
                     close()
                 },
                 Color(0xFF0C1018)
@@ -474,25 +482,25 @@ fun CampOverlay(
             // tente
             drawPath(
                 Path().apply {
-                    moveTo(w * 0.26f, h * 0.61f)
-                    lineTo(w * 0.42f, h * 0.43f)
-                    lineTo(w * 0.58f, h * 0.61f)
+                    moveTo(w * 0.26f, h * 0.54f)
+                    lineTo(w * 0.42f, h * 0.36f)
+                    lineTo(w * 0.58f, h * 0.54f)
                     close()
                 },
                 Color(0xFF3A2B27)
             )
             drawPath(
                 Path().apply {
-                    moveTo(w * 0.38f, h * 0.61f)
-                    lineTo(w * 0.42f, h * 0.54f)
-                    lineTo(w * 0.46f, h * 0.61f)
+                    moveTo(w * 0.38f, h * 0.54f)
+                    lineTo(w * 0.42f, h * 0.47f)
+                    lineTo(w * 0.46f, h * 0.54f)
                     close()
                 },
                 Color(0xFF09060D)
             )
             // feu
             val fx = w * 0.57f
-            val fy = h * 0.66f
+            val fy = h * 0.50f
             drawCircle(
                 Brush.radialGradient(
                     listOf(Color(0x77FF9448), Color(0x22FF9448), Color.Transparent),
@@ -532,12 +540,21 @@ fun CampOverlay(
             Text("L'expédition est en pause", fontSize = 7.5.sp, letterSpacing = 1.sp, color = Muted)
         }
 
+        Box(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 96.dp, bottom = heroBottom)
+                .width(66.dp)
+                .height(10.dp)
+                .clip(RoundedCornerShape(50))
+                .background(Color.Black.copy(alpha = 0.45f))
+        )
         AssetImage(
             "hero/human.png",
             Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 470.dp, end = 50.dp)
-                .size(82.dp)
+                .align(Alignment.BottomEnd)
+                .padding(end = 96.dp, bottom = heroBottom)
+                .size(88.dp)
         )
 
         Text(
@@ -560,6 +577,7 @@ fun CampOverlay(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
+                .onSizeChanged { cardHeight = it.height }
                 .padding(14.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(Ink.copy(alpha = 0.94f))
@@ -621,6 +639,7 @@ fun CampOverlay(
             Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 OverlayAction("JOURNAL", Modifier.weight(1f), onOpenJournal)
                 OverlayAction("INVENTAIRE", Modifier.weight(1f), onOpenInventory)
+                OverlayAction("POTIONS", Modifier.weight(1f), onOpenConsumables)
             }
             Spacer(Modifier.height(7.dp))
             GoldButton("REPRENDRE L'EXPÉDITION", onClick = onResume)
@@ -1368,6 +1387,164 @@ fun SpecialResultDialog(outcome: SpecialOutcome, onDismiss: () -> Unit) {
                 )
                 Spacer(Modifier.height(14.dp))
                 OverlayAction("CONTINUER", Modifier.fillMaxWidth(), onDismiss, primary = true)
+            }
+        }
+    }
+}
+
+@Composable
+fun ConsumablesOverlay(
+    state: GameState,
+    onUse: (String) -> Unit,
+    onClose: () -> Unit
+) {
+    val stats = statsOf(state)
+    val owned = CONSUMABLES.filter { (state.consumables[it.id] ?: 0) > 0 }
+    val now = System.currentTimeMillis()
+    val activeBuffs = state.buffs.filter { it.expiresAt > now }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(Color(0xFF0B0810), Color(0xFF171121), Color(0xFF0B0810))))
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .clickable { }
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("SAC DE CONSOMMABLES", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                    Text(
+                        "${state.consumables.values.sum()} objet(s) · ${activeBuffs.size} effet(s) actif(s)",
+                        fontSize = 7.sp,
+                        color = Muted
+                    )
+                }
+                Text(
+                    "×",
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Panel2)
+                        .border(1.dp, Line2, RoundedCornerShape(4.dp))
+                        .clickable(onClick = onClose)
+                        .padding(top = 3.dp),
+                    textAlign = TextAlign.Center,
+                    fontSize = 18.sp,
+                    color = Muted
+                )
+            }
+            if (activeBuffs.isNotEmpty()) {
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    activeBuffs.take(3).forEach { buff ->
+                        val seconds = ((buff.expiresAt - now) / 1000L).coerceAtLeast(0L)
+                        OverlayAction(
+                            "${buff.label} ${seconds}s",
+                            Modifier.weight(1f),
+                            {},
+                            primary = true,
+                            enabled = false
+                        )
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+            }
+            DividerLine()
+            Column(
+                Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(14.dp)
+            ) {
+                if (owned.isEmpty()) {
+                    Text(
+                        "Aucun consommable. Les monstres et les coffres en laissent parfois.",
+                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                        textAlign = TextAlign.Center,
+                        fontSize = 8.sp,
+                        color = Muted2
+                    )
+                }
+                owned.forEach { template ->
+                    val quantity = state.consumables[template.id] ?: 0
+                    val usable = when {
+                        template.context == "combat" && state.fight == null -> false
+                        template.effect == "heal_pct" || template.effect == "full_heal" -> state.hp < stats.maxHp
+                        template.effect == "heal_ration" -> state.hp < stats.maxHp
+                        template.effect == "ferveur" -> state.ferveur < 100
+                        template.effect == "heal_ferveur" -> state.hp < stats.maxHp || state.ferveur < 100
+                        else -> true
+                    }
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Panel)
+                            .border(1.dp, rarityColor(template.rarity).copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Panel2)
+                                .border(1.dp, rarityColor(template.rarity).copy(alpha = 0.6f), RoundedCornerShape(4.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AssetIcon(template.icon, 28.dp)
+                        }
+                        Spacer(Modifier.width(7.dp))
+                        Column(Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    template.name,
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Parchment,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text("×$quantity", fontFamily = Press, fontSize = 6.sp, color = Gold)
+                            }
+                            Text(template.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
+                            Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(rarityLabel(template.rarity), fontSize = 5.sp, color = rarityColor(template.rarity))
+                                Text(
+                                    consumableContextLabel(template.context),
+                                    fontSize = 5.sp,
+                                    color = if (template.context == "combat") Ember else Green
+                                )
+                            }
+                        }
+                        Spacer(Modifier.width(6.dp))
+                        OverlayAction(
+                            "UTILISER",
+                            Modifier.width(86.dp),
+                            { onUse(template.id) },
+                            primary = true,
+                            enabled = usable
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Les soins et la ferveur servent au camp comme en exploration. Les objets de combat exigent un combat en cours.",
+                    fontSize = 6.3.sp,
+                    color = Muted2,
+                    lineHeight = 9.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(20.dp))
             }
         }
     }

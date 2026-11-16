@@ -59,7 +59,8 @@ data class UiState(
     val dayBanner: String? = null,
     val updateTag: String? = null,
     val updateUrl: String? = null,
-    val specialOutcome: SpecialOutcome? = null
+    val specialOutcome: SpecialOutcome? = null,
+    val consumablesOpen: Boolean = false
 )
 
 class GameViewModel(private val container: AppContainer) : ViewModel() {
@@ -100,7 +101,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             while (isActive) {
                 val reportOpen = game.value.offlineReport?.let { it.acknowledgedAt == 0L } == true
                 if (visible && !_ui.value.campOpen && !_ui.value.settingsOpen &&
-                    !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen
+                    !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen &&
+                    !_ui.value.consumablesOpen
                 ) {
                     container.gameRepository.tick(100.0)
                 }
@@ -230,6 +232,20 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         _ui.update { it.copy(journalOpen = true, selectedItem = null, campOpen = false) }
     }
     fun closeJournal() { _ui.update { it.copy(journalOpen = false) } }
+
+    fun openConsumables() {
+        _ui.update { it.copy(consumablesOpen = true, selectedItem = null) }
+    }
+
+    fun closeConsumables() { _ui.update { it.copy(consumablesOpen = false) } }
+
+    fun useConsumable(id: String) {
+        viewModelScope.launch {
+            var outcome: SpecialOutcome? = null
+            container.gameRepository.mutate { outcome = GameEngine.useConsumable(it, id) }
+            outcome?.let { _toasts.emit(it.text) }
+        }
+    }
 
     fun openPreferences() {
         _ui.update {

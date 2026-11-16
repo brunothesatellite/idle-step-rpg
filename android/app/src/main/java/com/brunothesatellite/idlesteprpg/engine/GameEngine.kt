@@ -166,6 +166,10 @@ object GameEngine {
     fun tick(state: GameState, dtMs: Double) {
         ensureDay(state)
         expireChests(state)
+        val now = System.currentTimeMillis()
+        if (state.buffs.any { it.expiresAt <= now }) {
+            state.buffs = state.buffs.filter { it.expiresAt > now }
+        }
         tickFerveur(state, dtMs)
         val s = statsOf(state)
         state.hp = state.hp.coerceIn(0.0, s.maxHp.toDouble())
@@ -356,6 +360,158 @@ object GameEngine {
         state.mode = "walk"
         state.nextFight += 10
         return finalOutcome
+    }
+
+    fun addConsumable(state: GameState, id: String, quantity: Int = 1) {
+        if (quantity <= 0) return
+        val current = state.consumables[id] ?: 0
+        state.consumables = state.consumables + (id to min(99, current + quantity))
+    }
+
+    private fun addBuff(
+        state: GameState,
+        type: String,
+        magnitude: Double,
+        durationMs: Long,
+        label: String
+    ) {
+        val expiresAt = System.currentTimeMillis() + durationMs
+        state.buffs = state.buffs.filter { it.type != type } +
+            Buff(type, magnitude, expiresAt, label)
+    }
+
+    fun useConsumable(state: GameState, id: String): SpecialOutcome {
+        val template = consumableById(id)
+            ?: return SpecialOutcome("Consommable inconnu.", false)
+        val count = state.consumables[id] ?: 0
+        if (count <= 0) return SpecialOutcome("Aucun ${template.name}.", false)
+        if (template.context == "combat" && state.fight == null) {
+            return SpecialOutcome("${template.name} · utilisable en combat uniquement.", false)
+        }
+        val stats = statsOf(state)
+        val maxHp = stats.maxHp.toDouble()
+        var message: String
+        when (template.effect) {
+            "heal_pct" -> {
+                if (state.hp >= maxHp) return SpecialOutcome("PV déjà complets.", false)
+                val heal = maxHp * template.magnitude
+                state.hp = min(maxHp, state.hp + heal)
+                message = "+${heal.roundToInt()} PV"
+            }
+            "heal_ferveur" -> {
+                if (state.hp >= maxHp && state.ferveur >= 100) {
+                    return SpecialOutcome("PV et ferveur déjà au maximum.", false)
+                }
+                val heal = maxHp * template.magnitude
+                state.hp = min(maxHp, state.hp + heal)
+                state.ferveur = min(100, state.ferveur + template.secondary.toInt())
+                state.lastStepAt = System.currentTimeMillis()
+                message = "+${heal.roundToInt()} PV · +${template.secondary.toInt()} ferveur"
+            }
+            "ferveur" -> {
+                if (state.ferveur >= 100) return SpecialOutcome("Ferveur déjà au maximum.", false)
+                state.ferveur = min(100, state.ferveur + template.magnitude.toInt())
+                state.lastStepAt = System.currentTimeMillis()
+                message = "+${template.magnitude.toInt()} ferveur"
+            }
+            "full_heal" -> {
+                if (state.hp >= maxHp) return SpecialOutcome("PV déjà complets.", false)
+                state.hp = maxHp
+                message = "PV complets"
+            }
+            "heal_ration" -> {
+                if (state.hp >= maxHp) return SpecialOutcome("PV déjà complets.", false)
+                val heal = maxHp * template.magnitude
+                state.hp = min(maxHp, state.hp + heal)
+                state.rations = min(24, state.rations + template.secondary.toInt())
+                message = "+${heal.roundToInt()} PV · +${template.secondary.toInt()} ration"
+            }
+            "damage" -> {
+                val fight = state.fight
+                    ?: return SpecialOutcome("${template.name} · utilisable en combat uniquement.", false)
+                val damage = (stats.atk * template.magnitude).roundToInt()
+                fight.enemyHp -= damage
+                message = "$damage dégâts"
+                if (fight.enemyHp <= 0) victory(state, fight)
+            }
+            "buff_atk" -> {
+                addBuff(state, "atk", template.magnitude, template.durationMs, "RAGE")
+                message = "ATQ +${(template.magnitude * 100).roundToInt()} % · ${template.durationMs / 1000} s"
+            }
+            "buff_def" -> {
+                addBuff(state, "def", template.magnitude, template.durationMs, "ÉCORCE")
+                message = "Dégâts −${(template.magnitude * 100).roundToInt()} % · ${template.durationMs / 1000} s"
+            }
+            "buff_vit" -> {
+                addBuff(state, "vit", template.magnitude, template.durationMs, "VIF")
+                message = "VIT +${(template.magnitude * 100).roundToInt()} % · ${template.durationMs / 1000} s"
+            }
+            "buff_crit" -> {
+                addBuff(state, "crit", template.magnitude, template.durationMs, "CRIT")
+                message = "Critique +${(template.magnitude * 100).roundToInt()} % · ${template.durationMs / 1000} s"
+            }
+            "buff_lifesteal" -> {
+                addBuff(state, "lifesteal", template.magnitude, template.durationMs, "VAMP")
+                message = "Vol de vie +${(template.magnitude * 100).roundToInt()} % · ${template.durationMs / 1000} s"
+            }
+            "berserk" -> {
+                addBuff(state, "atk", template.magnitude, template.durationMs, "BERSERK")
+                addBuff(state, "vulnerable", template.secondary, template.durationMs, "FRAGILE")
+                message = "ATQ +${(template.magnitude * 100).roundToInt()} % · vulnérable"
+            }
+            else -> return SpecialOutcome("Effet inconnu.", false)
+        }
+        val next = state.consumables.toMutableMap()
+        if (count <= 1) next.remove(id) else next[id] = count - 1
+        state.consumables = next
+        state.journal = addJournal(state, "Consommé · ${template.name} · $message", "good")
+        return SpecialOutcome("${template.name} · $message", true)
+    }
+
+    private fun rollConsumable(floor: Int, rich: Boolean): ConsumableTemplate {
+        val weighted = CONSUMABLES.map { template ->
+            val base = when (template.rarity) {
+                "common" -> 60.0
+                "uncommon" -> 28.0
+                "rare" -> 10.0 + min(15, floor / 4)
+                else -> 4.0
+            }
+            val boost = if (rich && template.rarity != "common") 1.6 else 1.0
+            template to base * boost
+        }
+        val total = weighted.sumOf { it.second }
+        var roll = rnd.nextDouble() * total
+        for ((template, weight) in weighted) {
+            roll -= weight
+            if (roll <= 0.0) return template
+        }
+        return weighted.last().first
+    }
+
+    fun dropConsumables(state: GameState, source: String, forcedCount: Int = 0) {
+        val chance = when (source) {
+            "boss" -> 1.0
+            "chest" -> 0.70
+            else -> 0.18
+        }
+        if (forcedCount <= 0 && rnd.nextDouble() > chance) return
+        val quantity = if (forcedCount > 0) forcedCount else when (source) {
+            "boss" -> rnd.nextInt(1, 3)
+            "chest" -> rnd.nextInt(1, 3)
+            else -> 1
+        }
+        val rich = source != "mob" || state.floor >= 10
+        val names = mutableListOf<String>()
+        repeat(quantity) {
+            val template = rollConsumable(state.floor, rich)
+            addConsumable(state, template.id)
+            names += template.name
+        }
+        if (names.isNotEmpty()) {
+            val text = names.groupingBy { it }.eachCount()
+                .entries.joinToString(" · ") { "${it.key} ×${it.value}" }
+            state.journal = addJournal(state, "Butin · $text", "good")
+        }
     }
 
     fun ingestSteps(state: GameState, totalSteps: Int, date: LocalDate = LocalDate.now()) {
@@ -688,7 +844,7 @@ object GameEngine {
             dmg *= 1.8
             f.specialMs = 8000.0
         }
-        dmg *= (1.0 - s.damageReduction)
+        dmg *= (1.0 - s.damageReduction) * (1.0 + s.damageTaken)
         state.hp -= dmg
         if (f.isBoss && f.modifier == "VOLEUR") {
             val stolen = max(1, (dmg * 0.5).roundToInt())
@@ -730,6 +886,7 @@ object GameEngine {
             state.distance = 0.0
             state.nextFight = 10
             addLoot(state, lootItem(state.floor, "rare"))
+            dropConsumables(state, "boss")
             state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
             if (clearedFloor % 10 == 0) {
                 state.shards += 5
@@ -758,6 +915,7 @@ object GameEngine {
             state.mode = "walk"
             state.nextFight += 10
             state.journal = addJournal(state, "${f.enemyName} vaincu · +$earned or", "good")
+            dropConsumables(state, "mob")
             if (rnd.nextDouble() < 0.18) spawnChest(state)
         }
     }
@@ -817,6 +975,12 @@ object GameEngine {
         state.chestsToday++
         state.chestsOpened++
         addLoot(state, lootItem(state.floor, c.rarity))
+        val extra = when (c.type) {
+            "bois" -> 1
+            "fer" -> rnd.nextInt(1, 3)
+            else -> rnd.nextInt(2, 4)
+        }
+        dropConsumables(state, "chest", extra)
         state.chest = state.chestQueue.firstOrNull()
         if (state.chestQueue.isNotEmpty()) state.chestQueue = state.chestQueue.drop(1)
         state.mode = "walk"
