@@ -109,8 +109,9 @@ Pièces de héros supplémentaires, même export `releases/Nov-2015`, **CC0 1.0*
 
 - `player/hand1/` : `hand_axe2` (`weapon_axe`), `great_mace2` (`weapon_mace`), `great_staff` (`weapon_staff`), `dagger_slant` (`weapon_dagger`), `lance` (`weapon_spear`), `black_whip` (`weapon_whip`), `great_sword_slant` (`weapon_greatsword`)
 - `player/body/` : `leather2` (`body_leather`), `green_chain` (`body_mail`), `plate_black` (`body_plate`), `coat_black` (`body_coat`), `robe_blue` (`body_robe`), `mesh_black` (`body_mesh_black`), `metal_blue` (`body_metal_blue`)
-- `player/head/` : `hood_black2` (`head_hood`), `helm_red` (`head_helm`), `crown_gold1` (`head_crown`)
-- `player/legs/` : `leg_armour01` (`legs_plate`), `pants_black` (`legs_cloth`)
+- `body_mail_gray` : dérivé CC0 de `green_chain`, recoloré en acier.
+- `player/head/` : `hood_black2` (`head_hood`), `hood_green` (`head_hood_green`), `fhelm_gray3` (`head_helm_gray`), `crown_gold1` (`head_crown`)
+- `player/legs/` : `leg_armour01` (`legs_plate`), `leg_armour03` (`legs_mail`), `pants_black` (`legs_cloth`)
 - `player/boots/` : `middle_gray` (`boots_metal`), `middle_brown3` (`boots_leather`)
 
 ---

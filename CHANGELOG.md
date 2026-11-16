@@ -1,5 +1,10 @@
 # Journal des versions
 
+## v0.8.1
+- **Correction du paper doll** : les heaumes rares/épiques utilisent désormais un vrai casque au lieu d'une couche de cheveux rouges. Les heaumes communs/inhabituels gardent le casque vert, les légendaires le heaume à cornes.
+- **Couches d'armure distinctes** : cotte de mailles en acier, plate sombre, cuir, robe, carapace et armure de glace ont maintenant des sprites différents.
+- **Casques et bottes différenciés** : heaume gravé, capuche elfique, casque vert, bottes de mousse, bottes des cimes et bottes de cuir/métal ne partagent plus la même couche.
+
 ## v0.8.0
 - **Inventaire lisible** : barre de synchronisation compacte sur les onglets Inventaire/Améliorations, emplacements équipés cliquables et libellé d'ensemble sur les cartes de butin.
 - **Paper doll fidèle** : l'apparence suit désormais la famille d'objet (épée, hache, masse, bâton, dague, lance, fouet ; cuir, maille, plate, robe ; capuche, heaume, couronne ; bottes de cuir ou de métal).

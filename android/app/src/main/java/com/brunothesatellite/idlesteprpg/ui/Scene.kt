@@ -856,17 +856,16 @@ private fun heroBodyLayer(body: Item?): String? {
             "hero/body_robe.png"
         icon.contains("ice_dragon") -> "hero/body_metal_blue.png"
         icon.contains("shadow_dragon") -> "hero/body_mesh_black.png"
-        icon.contains("gold_dragon") || icon.contains("scale_mail") || icon.contains("ring_mail") ->
+        name.contains("plate") || name.contains("harnois") || name.contains("carapace") ||
+            icon.contains("plate") || icon.contains("gold_dragon") ->
             "hero/body_plate.png"
+        name.contains("maille") || name.contains("cotte") ||
+            icon.contains("scale_mail") || icon.contains("ring_mail") ->
+            "hero/body_mail_gray.png"
         name.contains("cuir") || name.contains("peau") || name.contains("écorce") ||
             name.contains("mousse") || name.contains("feuille") ||
             icon.contains("leather") || icon.contains("animal_skin") ->
             "hero/body_leather.png"
-        name.contains("maille") || name.contains("cotte") ->
-            "hero/body_mail.png"
-        name.contains("plate") || name.contains("harnois") || name.contains("carapace") ||
-            icon.contains("plate") ->
-            "hero/body_plate.png"
         name.contains("tunique") || name.contains("manteau") || name.contains("veste") ||
             icon.contains("coat") ->
             "hero/body_coat.png"
@@ -884,12 +883,20 @@ private fun heroHeadLayer(head: Item?): String? {
         name.contains("capuche") || name.contains("masque") || icon.contains("hood") ->
             "hero/head_hood.png"
         name.contains("couronne") || icon.contains("crown") -> "hero/head_crown.png"
+        name.contains("elfique") -> "hero/head_hood_green.png"
+        name.contains("art") -> "hero/helm_plume.png"
+        name.contains("gravé") || name.contains("grave") || name.contains("cryptes") ->
+            "hero/head_helm_gray.png"
         name.contains("plume") -> "hero/helm_plume.png"
         name.contains("heaume") || name.contains("casque") ||
             icon.contains("helmet") || icon.contains("helm") ->
-            if (high) "hero/head_helm.png" else "hero/helm_green.png"
+            when {
+                head.rarity == "legendary" -> "hero/horned.png"
+                high -> "hero/head_helm_gray.png"
+                else -> "hero/helm_green.png"
+            }
         head.rarity == "legendary" -> "hero/horned.png"
-        high -> "hero/helm_plume.png"
+        high -> "hero/head_helm_gray.png"
         else -> "hero/helm_green.png"
     }
 }
@@ -900,10 +907,12 @@ private fun heroBootsLayer(feet: Item?): String? {
     val icon = feet.icon.lowercase()
     return when {
         name.contains("mousse") -> "hero/middle_green.png"
+        name.contains("cime") || name.contains("givre") || name.contains("glace") ->
+            "hero/boots_metal.png"
+        name.contains("soie") || name.contains("limier") || name.contains("feuille") ||
+            name.contains("cuir") || icon.contains("leather") -> "hero/boots_leather.png"
         name.contains("métal") || name.contains("fer") || name.contains("acier") ||
             icon.contains("metal") -> "hero/boots_metal.png"
-        name.contains("cuir") || name.contains("feuille") ||
-            icon.contains("leather") -> "hero/boots_leather.png"
         feet.rarity == "epic" || feet.rarity == "rare" || feet.rarity == "legendary" ->
             "hero/middle_green.png"
         else -> "hero/middle_brown2.png"
@@ -915,10 +924,10 @@ private fun heroLegsLayer(body: Item?): String? {
     val name = body.name.lowercase()
     val icon = body.icon.lowercase()
     return when {
-        name.contains("plate") || name.contains("harnois") || name.contains("maille") ||
-            name.contains("cotte") || icon.contains("plate") || icon.contains("mail") ||
-            icon.contains("scale_mail") || icon.contains("ring_mail") ->
-            "hero/legs_plate.png"
+        name.contains("plate") || name.contains("harnois") || name.contains("carapace") ||
+            icon.contains("plate") || icon.contains("gold_dragon") -> "hero/legs_plate.png"
+        name.contains("maille") || name.contains("cotte") ||
+            icon.contains("scale_mail") || icon.contains("ring_mail") -> "hero/legs_mail.png"
         name.contains("robe") || name.contains("suaire") || name.contains("tunique") ||
             name.contains("manteau") || icon.contains("robe") || icon.contains("coat") ->
             "hero/legs_cloth.png"

@@ -203,11 +203,12 @@ class ModelTest {
             "hero/weapon_axe.png", "hero/weapon_mace.png", "hero/weapon_staff.png",
             "hero/weapon_dagger.png", "hero/weapon_spear.png", "hero/weapon_whip.png",
             "hero/weapon_greatsword.png",
-            "hero/body_leather.png", "hero/body_mail.png", "hero/body_plate.png",
-            "hero/body_coat.png", "hero/body_robe.png",
+            "hero/body_leather.png", "hero/body_mail.png", "hero/body_mail_gray.png",
+            "hero/body_plate.png", "hero/body_coat.png", "hero/body_robe.png",
             "hero/body_mesh_black.png", "hero/body_metal_blue.png",
-            "hero/head_hood.png", "hero/head_helm.png", "hero/head_crown.png",
-            "hero/legs_plate.png", "hero/legs_cloth.png",
+            "hero/head_hood.png", "hero/head_hood_green.png", "hero/head_helm_gray.png",
+            "hero/head_crown.png",
+            "hero/legs_plate.png", "hero/legs_mail.png", "hero/legs_cloth.png",
             "hero/boots_metal.png", "hero/boots_leather.png"
         )
         listOf("crypts", "catacombs", "ash", "forge", "peaks", "woods", "abyss", "throne")
