@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.6.2
+- **Mises à jour depuis GitHub** : vérification automatique au lancement (une fois par 24 h, active par défaut) et vérification manuelle dans `Réglages → Mises à jour`.
+- **Installation in-app** : téléchargement de l'APK de la release, vérification **SHA-256** quand l'empreinte est publiée, puis installation confirmée via Android (FileProvider).
+- **Après installation** : l'application propose d'ouvrir la page GitHub de la release pour lire les changements.
+- Option pour désactiver la vérification automatique ; les versions ignorées ne réapparaissent pas seules.
+- 12 tests unitaires ajoutés pour la comparaison de versions, le parsing des releases et le SHA-256.
+
 ## v0.6.1
 - **Manuel utilisateur complet** en HTML (`manuel/index.html`) et intégré à l'application via `Réglages → Aide`.
 - 11 captures d'écran et explication de toutes les mécaniques.

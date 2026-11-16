@@ -7,7 +7,7 @@
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.6.1 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.6.2 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -70,10 +70,24 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.6.1.apk
+adb install -r La-Marche-des-Ames-v0.6.2.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.
+
+---
+
+## Mises à jour de l’application
+
+L’application vérifie les **releases GitHub** et peut installer l’APK signé sans Play Store.
+
+- **Vérification automatique** : active par défaut, au plus une fois toutes les 24 h au lancement.
+- **Vérification manuelle** : `Réglages → Mises à jour → Vérifier maintenant`.
+- **Téléchargement** : l’APK de la release est téléchargé dans le cache, puis vérifié par **SHA-256** quand l’empreinte est publiée dans les notes.
+- **Installation** : toujours confirmée par vous. Android peut demander d’autoriser « Installer des applications inconnues » pour La Marche des Âmes.
+- **Après installation** : l’application propose d’ouvrir la **page GitHub de la release** pour lire les changements.
+
+La progression, les réglages et la clé Garmin sont conservés tant que l’APK est signé avec la même clé.
 
 ---
 
@@ -196,6 +210,7 @@ WorkManager ──► GarminSyncWorker (30 min)
 - **Android Keystore** pour la clé et le jeton.
 - **SoundPool** pour les sons 8 bits.
 - **WebView native** pour le manuel hors ligne.
+- **FileProvider** pour installer les APK téléchargés depuis GitHub Releases.
 
 ### Paquets principaux
 
@@ -205,6 +220,7 @@ WorkManager ──► GarminSyncWorker (30 min)
 | `GameViewModel.kt` | État UI, tick 100 ms, synchronisation, réglages, overlays. |
 | `MainActivity.kt` | Composition racine, navigation entre scène et tableau de bord. |
 | `ManualActivity.kt` | Manuel HTML hors ligne. |
+| `update/UpdateChecker.kt` | Releases GitHub, comparaison de versions, SHA-256, téléchargement de l’APK. |
 | `engine/Model.kt` | État sérialisable, objets, consommables, buffs, ensembles, stats. |
 | `engine/GameEngine.kt` | Pas, combat, coffres, camp, forge, rencontres, simulation hors ligne. |
 | `data/GameRepository.kt` | Persistance JSON, copie de secours, import/export, tick, mutations. |

@@ -217,6 +217,7 @@
     <li><a href="#progression">Progression et contenu</a></li>
     <li><a href="#journal">Journal, légende, bestiaire</a></li>
     <li><a href="#reglages">Réglages</a></li>
+    <li><a href="#mises-a-jour">Mises à jour</a></li>
     <li><a href="#garmin">Synchronisation Garmin</a></li>
     <li><a href="#faq">Questions fréquentes</a></li>
     <li><a href="#donnees">Données et confidentialité</a></li>
@@ -582,14 +583,29 @@
     <li><strong>Vendre les communs automatiquement :</strong> convertit les communs au ramassage.</li>
     <li><strong>Sauvegarde :</strong> exporter, importer avec aperçu, effacer la progression.</li>
     <li><strong>Journal de synchronisation :</strong> derniers résultats Garmin.</li>
-    <li><strong>Vérifier les mises à jour :</strong> interroge GitHub Releases.</li>
+    <li><strong>Vérifier les mises à jour :</strong> carte dédiée, avec vérification automatique quotidienne facultative.</li>
     <li><strong>Manuel du jeu :</strong> ouvre ce guide dans l'application.</li>
     <li><strong>Licences et confidentialité :</strong> liens vers les documents du dépôt.</li>
   </ul>
 </section>
 
+<section id="mises-a-jour">
+  <h2>17. Mises à jour</h2>
+  <p>L'application se met à jour directement depuis les <strong>releases GitHub</strong>, sans Play Store.</p>
+  <ul>
+    <li><strong>Vérification automatique :</strong> active par défaut. Elle interroge GitHub au plus une fois toutes les 24 h, au lancement de l'application.</li>
+    <li><strong>Vérification manuelle :</strong> <code>Réglages → Mises à jour → Vérifier maintenant</code>.</li>
+    <li>Quand une version plus récente existe, un dialogue affiche la version disponible et propose <strong>Installer la mise à jour</strong>.</li>
+    <li>L'APK signé est téléchargé depuis GitHub dans le cache de l'application, puis <strong>vérifié par SHA-256</strong> lorsque l'empreinte est publiée dans les notes de release.</li>
+    <li>Android demande toujours votre <strong>confirmation</strong> avant d'installer l'APK. La première fois, autorisez « Installer des applications inconnues » pour La Marche des Âmes.</li>
+    <li>Une mise à jour installée avec la même signature <strong>conserve la progression, les réglages et la clé Garmin</strong>.</li>
+    <li>Après l'installation, l'application propose d'<strong>ouvrir la page GitHub de la release</strong> pour lire les changements. Vous pouvez aussi choisir « Plus tard ».</li>
+  </ul>
+  <div class="warn"><strong>Pas de mise à jour silencieuse.</strong> Rien ne s'installe sans votre accord : le téléchargement ne démarre qu'après le bouton Installer, et Android affiche son propre écran de confirmation.</div>
+</section>
+
 <section id="garmin">
-  <h2>17. Synchronisation Garmin</h2>
+  <h2>18. Synchronisation Garmin</h2>
   <figure class="shot">
     <img src="images/garmin.jpg" alt="Carte Compte Garmin connecté avec boutons Synchroniser et Gérer la clé">
     <figcaption>Compte Garmin connecté : synchronisation manuelle et gestion de la clé.</figcaption>
@@ -613,7 +629,7 @@
 </section>
 
 <section id="faq">
-  <h2>18. Questions fréquentes</h2>
+  <h2>19. Questions fréquentes</h2>
   <details>
     <summary>Le héros est bloqué et n'avance plus.</summary>
     <p>La réserve de pas est probablement à zéro. Le héros repart à la prochaine synchronisation contenant de nouveaux pas. Vérifiez le nombre de pas du jour et la dernière synchronisation.</p>
@@ -653,7 +669,7 @@
 </section>
 
 <section id="donnees">
-  <h2>19. Données et confidentialité</h2>
+  <h2>20. Données et confidentialité</h2>
   <ul>
     <li>La progression, les préférences et la sauvegarde restent sur l'appareil.</li>
     <li>La clé et le jeton Garmin sont chiffrés dans Android Keystore.</li>
@@ -665,7 +681,7 @@
 </section>
 
 <section id="credits">
-  <h2>20. Licences et crédits</h2>
+  <h2>21. Licences et crédits</h2>
   <ul>
     <li><strong>Code et textes :</strong> MIT — brunothesatellite.</li>
     <li><strong>Pixel art :</strong> Dungeon Crawl Stone Soup contributors, CC0 1.0.</li>
@@ -677,7 +693,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.6.1 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.6.2 · <a href="#top">Retour au sommaire</a><br>
   Garmin Personal API uniquement · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

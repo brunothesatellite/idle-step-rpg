@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.6.1** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.6.2** — APK sideloadé pour Pixel 7a (Android 14+).
 
 **Manuel complet :** [`../manuel/index.html`](../manuel/index.html) · accessible dans l'app via `Réglages → Aide → Ouvrir le manuel du jeu`.
 
@@ -29,7 +29,8 @@ Version Android native du prototype. **v0.6.1** — APK sideloadé pour Pixel 7a
 - **Sons 8 bits** : effets originaux CC0, volume réglable, désactivation et test dans les réglages.
 - **Campement** : combat réinitialisé, veillée gratuite +15 %, soins, coffre, journal et inventaire accessibles.
 - **Contenu** : biomes colorés avec météo, rencontres spéciales (autel, source, marchand, statue, pari), jalons complets, boss uniques 10/25/50/100, bestiaire.
-- **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil, mise à jour in-app.
+- **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil.
+- **Mises à jour GitHub** : vérification automatique quotidienne (désactivable) et manuelle, téléchargement de l'APK signé, vérification SHA-256, installation confirmée par l'utilisateur via FileProvider, puis proposition d'ouvrir la release pour lire les changements.
 - **Qualité** : tests moteur, tests Garmin MockWebServer, tests UI Compose, lint, CI Android, workflow de release signée conditionnel.
 - WorkManager : synchro toutes les 30 minutes, maintenance coffres/clé toutes les 15 minutes.
 
@@ -73,6 +74,18 @@ adb install -r app/build/outputs/apk/release/app-release.apk
 
 Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le téléphone (autoriser les applications inconnues).
 
+## Mises à jour
+
+L'application interroge `https://api.github.com/repos/brunothesatellite/idle-step-rpg/releases/latest` :
+
+- vérification automatique au plus une fois par 24 h, désactivable dans les réglages ;
+- vérification manuelle dans `Réglages → Mises à jour` ;
+- téléchargement de l'APK de la release, vérification SHA-256 si l'empreinte est dans les notes ;
+- installation via `FileProvider` après confirmation Android (`REQUEST_INSTALL_PACKAGES`) ;
+- après redémarrage, proposition d'ouvrir la page GitHub de la release installée.
+
+`UpdateChecker` garde la logique de version et de parsing testable ; le téléchargement et l'installation passent par le `GameViewModel`.
+
 ## Première ouverture Garmin
 
 1. Ouvrir l'application → **Compte Garmin** (bouton `G` ou « Connecter Garmin »).
@@ -88,15 +101,15 @@ Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le tél
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.6.1
+## Limites de cette v0.6.2
 
 - L'historique Garmin est limité à 7 jours et à 100 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON versionné avec copie de secours, pas encore Room.
 - L'interface est en français uniquement.
-- Pas encore de sons intégrés : les alertes passent par les notifications et les vibrations.
 - La publication Play Store est préparée mais pas effectuée ; l'APK reste sideloadé.
 - L'équilibrage est celui de la démonstration et sera à affiner sur plusieurs semaines.
 - La synchronisation dépend de Garmin Connect : la montre doit avoir poussé ses pas.
+- La mise à jour in-app dépend de l'autorisation Android « Installer des applications inconnues » pour La Marche des Âmes.
 
 ## Documents
 

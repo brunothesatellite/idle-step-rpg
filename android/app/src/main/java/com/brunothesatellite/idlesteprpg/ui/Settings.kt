@@ -255,6 +255,58 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
+                SectionLabel("Mises à jour")
+                Spacer(Modifier.height(5.dp))
+                ToggleRow(
+                    "Vérification automatique",
+                    "Une fois par jour au lancement. L'installation reste toujours confirmée par vous.",
+                    ui.autoUpdateCheck
+                ) { vm.setAutoUpdateCheck(it) }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    lastCheckLabel(ui.lastUpdateCheckAt),
+                    fontSize = 6.8.sp,
+                    color = Muted
+                )
+                Spacer(Modifier.height(6.dp))
+                OverlayAction(
+                    if (ui.updateChecking) "VÉRIFICATION…" else "VÉRIFIER MAINTENANT",
+                    Modifier.fillMaxWidth(),
+                    onClick = { vm.checkForUpdate(manual = true) },
+                    enabled = !ui.updateChecking
+                )
+                ui.availableUpdate?.let { info ->
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Version ${info.tag} disponible.",
+                        fontSize = 7.sp,
+                        color = GoldLight
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    OverlayAction(
+                        "INSTALLER ${info.tag}",
+                        Modifier.fillMaxWidth(),
+                        onClick = vm::installUpdate,
+                        primary = true
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    OverlayAction(
+                        "VOIR LA RELEASE",
+                        Modifier.fillMaxWidth(),
+                        onClick = { vm.openRelease(info.releaseUrl) }
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "L'APK est téléchargé depuis les releases GitHub et vérifié par SHA-256 " +
+                        "quand l'empreinte est publiée.",
+                    fontSize = 6.5.sp,
+                    color = Muted2,
+                    lineHeight = 9.sp
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            PixelCard(Modifier.fillMaxWidth()) {
                 SectionLabel("Aide")
                 Spacer(Modifier.height(5.dp))
                 OverlayAction(
@@ -338,20 +390,6 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     color = Muted,
                     lineHeight = 10.sp
                 )
-                Spacer(Modifier.height(6.dp))
-                OverlayAction(
-                    "VÉRIFIER LES MISES À JOUR",
-                    Modifier.fillMaxWidth(),
-                    onClick = { vm.checkForUpdate() }
-                )
-                if (ui.updateTag != null && ui.updateUrl != null) {
-                    Spacer(Modifier.height(4.dp))
-                    OverlayAction("OUVRIR ${ui.updateTag}", Modifier.fillMaxWidth(), {
-                        runCatching {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ui.updateUrl)))
-                        }
-                    }, primary = true)
-                }
                 Spacer(Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                     OverlayAction(
@@ -457,4 +495,13 @@ private fun ToggleRow(
             )
         }
     }
+}
+
+private fun lastCheckLabel(timestamp: Long): String {
+    if (timestamp <= 0L) return "Dernière vérification : jamais"
+    val formatter = java.time.format.DateTimeFormatter
+        .ofPattern("dd/MM/yyyy HH:mm")
+        .withZone(java.time.ZoneId.systemDefault())
+    val value = formatter.format(java.time.Instant.ofEpochMilli(timestamp))
+    return "Dernière vérification : $value"
 }

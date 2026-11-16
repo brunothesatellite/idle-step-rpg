@@ -235,7 +235,7 @@ Effort : **XL**, à découper.
 | Grands écrans | Paysage et tablette : la spec prévoit un tableau de bord élargi. Aujourd’hui portrait uniquement. | L |
 | Widget / raccourci | Widget pas du jour + bouton synchroniser. | M |
 | Play Store | AAB, fiche, politique de confidentialité, signature Play. Optionnel si sideload suffit. | L |
-| Mise à jour in-app | Vérifier la dernière release GitHub et proposer le téléchargement. | S |
+| Mise à jour in-app | **Livré v0.6.2** : release GitHub, vérification quotidienne/manuelle, APK SHA-256, installation confirmée, lien vers les notes après mise à jour. Restant : vérification périodique en arrière-plan via WorkManager. | S |
 
 ---
 

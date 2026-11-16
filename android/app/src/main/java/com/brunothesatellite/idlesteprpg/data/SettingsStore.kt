@@ -61,4 +61,24 @@ class SettingsStore(context: Context) {
     var soundVolume: Float
         get() = prefs.getFloat("sound_volume", 0.6f).coerceIn(0f, 1f)
         set(value) = prefs.edit().putFloat("sound_volume", value.coerceIn(0f, 1f)).apply()
+
+    var autoUpdateCheck: Boolean
+        get() = prefs.getBoolean("auto_update_check", true)
+        set(value) = prefs.edit().putBoolean("auto_update_check", value).apply()
+
+    var lastUpdateCheckAt: Long
+        get() = prefs.getLong("last_update_check", 0L)
+        set(value) = prefs.edit().putLong("last_update_check", value).apply()
+
+    var dismissedUpdateTag: String
+        get() = prefs.getString("dismissed_update_tag", "").orEmpty()
+        set(value) = prefs.edit().putString("dismissed_update_tag", value).apply()
+
+    var pendingReleaseTag: String
+        get() = prefs.getString("pending_release_tag", "").orEmpty()
+        set(value) = prefs.edit().putString("pending_release_tag", value).apply()
+
+    var pendingReleaseUrl: String
+        get() = prefs.getString("pending_release_url", "").orEmpty()
+        set(value) = prefs.edit().putString("pending_release_url", value).apply()
 }

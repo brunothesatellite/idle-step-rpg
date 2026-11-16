@@ -51,10 +51,12 @@ import com.brunothesatellite.idlesteprpg.ui.JournalOverlay
 import com.brunothesatellite.idlesteprpg.ui.MarcheTheme
 import com.brunothesatellite.idlesteprpg.ui.OfflineOverlay
 import com.brunothesatellite.idlesteprpg.ui.OnboardingOverlay
+import com.brunothesatellite.idlesteprpg.ui.PostUpdateDialog
 import com.brunothesatellite.idlesteprpg.ui.Scene
 import com.brunothesatellite.idlesteprpg.ui.SettingsOverlay
 import com.brunothesatellite.idlesteprpg.ui.SpecialDialog
 import com.brunothesatellite.idlesteprpg.ui.SpecialResultDialog
+import com.brunothesatellite.idlesteprpg.ui.UpdateDialog
 
 class MainActivity : ComponentActivity() {
 
@@ -152,10 +154,12 @@ private fun GameRoot(vm: GameViewModel) {
             ui.selectedItem != null || ui.chestOpen || ui.journalOpen ||
             state.offlineReport?.acknowledgedAt == 0L || state.special != null ||
             ui.pendingImport != null || !ui.onboardingDone || ui.specialOutcome != null ||
-            ui.consumablesOpen
+            ui.consumablesOpen || ui.availableUpdate != null || ui.postUpdateTag != null
     ) {
         when {
             !ui.onboardingDone -> vm.completeOnboarding()
+            ui.availableUpdate != null -> vm.dismissUpdate()
+            ui.postUpdateTag != null -> vm.dismissPostUpdate()
             ui.pendingImport != null -> vm.cancelImport()
             ui.specialOutcome != null -> vm.dismissSpecialOutcome()
             ui.consumablesOpen -> vm.closeConsumables()
@@ -342,6 +346,25 @@ private fun GameRoot(vm: GameViewModel) {
                     summary = summary,
                     onConfirm = vm::confirmImport,
                     onCancel = vm::cancelImport
+                )
+            }
+            ui.availableUpdate?.let { info ->
+                UpdateDialog(
+                    info = info,
+                    currentVersion = BuildConfig.VERSION_NAME,
+                    downloading = ui.updateDownloading,
+                    progress = ui.updateProgress,
+                    error = ui.updateError,
+                    onInstall = vm::installUpdate,
+                    onLater = vm::dismissUpdate,
+                    onRelease = { vm.openRelease(info.releaseUrl) }
+                )
+            }
+            if (ui.postUpdateTag != null) {
+                PostUpdateDialog(
+                    tag = ui.postUpdateTag!!,
+                    onOpenRelease = vm::openPostUpdateRelease,
+                    onDismiss = vm::dismissPostUpdate
                 )
             }
             if (!ui.onboardingDone) {

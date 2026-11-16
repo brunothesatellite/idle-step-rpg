@@ -1,6 +1,9 @@
 package com.brunothesatellite.idlesteprpg
 
+import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -11,6 +14,8 @@ import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.engine.Upgrades
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
+import com.brunothesatellite.idlesteprpg.update.UpdateChecker
+import com.brunothesatellite.idlesteprpg.update.UpdateInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,11 +28,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.time.Instant
 import java.time.LocalDate
-import java.net.HttpURLConnection
-import java.net.URL
-import org.json.JSONObject
 
 data class UiState(
     val campOpen: Boolean = false,
@@ -60,8 +63,15 @@ data class UiState(
     val syncLog: List<String> = emptyList(),
     val pendingImport: SaveSummary? = null,
     val dayBanner: String? = null,
-    val updateTag: String? = null,
-    val updateUrl: String? = null,
+    val autoUpdateCheck: Boolean = true,
+    val lastUpdateCheckAt: Long = 0L,
+    val updateChecking: Boolean = false,
+    val availableUpdate: UpdateInfo? = null,
+    val updateDownloading: Boolean = false,
+    val updateProgress: Float = 0f,
+    val updateError: String? = null,
+    val postUpdateTag: String? = null,
+    val postUpdateUrl: String? = null,
     val specialOutcome: SpecialOutcome? = null,
     val consumablesOpen: Boolean = false
 )
@@ -97,7 +107,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 autoSellCommons = container.settings.autoSellCommons,
                 onboardingDone = container.settings.onboardingDone,
                 soundsEnabled = container.settings.soundsEnabled,
-                soundVolume = container.settings.soundVolume
+                soundVolume = container.settings.soundVolume,
+                autoUpdateCheck = container.settings.autoUpdateCheck,
+                lastUpdateCheckAt = container.settings.lastUpdateCheckAt
             )
         }
         lastKnownDay = game.value.day
@@ -134,11 +146,18 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             refreshGarmin()
             if (container.garminRepository.hasKey()) syncNow(silent = true)
         }
+        viewModelScope.launch {
+            delay(2_500)
+            if (_ui.value.onboardingDone) maybeCheckForUpdates()
+        }
+        checkPendingRelease()
     }
 
     fun onAppResume() {
         visible = true
         refreshGarmin()
+        checkPendingRelease()
+        maybeCheckForUpdates()
         if (!initialized) {
             initialized = true
             return
@@ -446,33 +465,155 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         _ui.update { it.copy(pendingImport = null) }
     }
 
-    fun checkForUpdate() {
+    fun checkForUpdate(manual: Boolean = false) {
+        if (_ui.value.updateChecking) return
+        _ui.update { it.copy(updateChecking = true, updateError = null) }
         viewModelScope.launch {
-            val release = withContext(Dispatchers.IO) {
-                runCatching {
-                    val connection = URL(
-                        "https://api.github.com/repos/brunothesatellite/idle-step-rpg/releases/latest"
-                    ).openConnection() as HttpURLConnection
-                    connection.connectTimeout = 10_000
-                    connection.readTimeout = 10_000
-                    connection.setRequestProperty("Accept", "application/vnd.github+json")
-                    connection.setRequestProperty("User-Agent", "LaMarcheDesAmes")
-                    val body = connection.inputStream.bufferedReader().use { it.readText() }
-                    JSONObject(body)
-                }.getOrNull()
+            val info = UpdateChecker.fetchLatest()
+            val now = System.currentTimeMillis()
+            container.settings.lastUpdateCheckAt = now
+            if (info != null && UpdateChecker.isNewer(BuildConfig.VERSION_NAME, info.version)) {
+                val show = manual || container.settings.dismissedUpdateTag != info.tag
+                _ui.update {
+                    it.copy(
+                        updateChecking = false,
+                        lastUpdateCheckAt = now,
+                        availableUpdate = if (show) info else null
+                    )
+                }
+                if (manual) _toasts.emit("Mise à jour ${info.tag} disponible.")
+            } else {
+                _ui.update {
+                    it.copy(
+                        updateChecking = false,
+                        lastUpdateCheckAt = now,
+                        availableUpdate = null
+                    )
+                }
+                if (manual) {
+                    _toasts.emit(
+                        if (info == null) "Vérification impossible. Réessayez plus tard."
+                        else "Vous avez la dernière version."
+                    )
+                }
             }
-            val tag = release?.optString("tag_name")?.takeIf { it.isNotBlank() }
-            val url = release?.optString("html_url")?.takeIf { it.isNotBlank() }
-            if (tag == null) {
-                _toasts.emit("Vérification impossible. Réessayez plus tard.")
+        }
+    }
+
+    private fun maybeCheckForUpdates() {
+        if (!_ui.value.onboardingDone) return
+        if (!container.settings.autoUpdateCheck) return
+        val elapsed = System.currentTimeMillis() - container.settings.lastUpdateCheckAt
+        if (elapsed in 0 until 24L * 60L * 60L * 1000L) return
+        checkForUpdate(manual = false)
+    }
+
+    fun setAutoUpdateCheck(value: Boolean) {
+        container.settings.autoUpdateCheck = value
+        _ui.update { it.copy(autoUpdateCheck = value) }
+        if (value) maybeCheckForUpdates()
+    }
+
+    fun dismissUpdate() {
+        _ui.value.availableUpdate?.let {
+            container.settings.dismissedUpdateTag = it.tag
+        }
+        _ui.update { it.copy(availableUpdate = null, updateError = null) }
+    }
+
+    fun openRelease(url: String) {
+        runCatching {
+            container.context.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
+    }
+
+    private fun checkPendingRelease() {
+        val tag = container.settings.pendingReleaseTag
+        val url = container.settings.pendingReleaseUrl
+        if (tag.isBlank() || url.isBlank()) return
+        if (UpdateChecker.isNewer(BuildConfig.VERSION_NAME, tag.removePrefix("v"))) return
+        container.settings.pendingReleaseTag = ""
+        container.settings.pendingReleaseUrl = ""
+        _ui.update { it.copy(postUpdateTag = tag, postUpdateUrl = url) }
+    }
+
+    fun dismissPostUpdate() {
+        _ui.update { it.copy(postUpdateTag = null, postUpdateUrl = null) }
+    }
+
+    fun openPostUpdateRelease() {
+        val url = _ui.value.postUpdateUrl
+        if (url != null) openRelease(url)
+        dismissPostUpdate()
+    }
+
+    fun installUpdate() {
+        val info = _ui.value.availableUpdate ?: return
+        if (_ui.value.updateDownloading) return
+        val context = container.context
+        if (!context.packageManager.canRequestPackageInstalls()) {
+            _ui.update {
+                it.copy(updateError = "Autorisez l'installation depuis cette application, puis réessayez.")
+            }
+            runCatching {
+                context.startActivity(
+                    Intent(
+                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:${context.packageName}")
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+            return
+        }
+        _ui.update {
+            it.copy(updateDownloading = true, updateProgress = 0f, updateError = null)
+        }
+        viewModelScope.launch {
+            var lastProgress = -1f
+            val file = UpdateChecker.downloadApk(context, info) { progress ->
+                if (progress - lastProgress >= 0.01f || progress >= 1f) {
+                    lastProgress = progress
+                    _ui.update { it.copy(updateProgress = progress) }
+                }
+            }
+            if (file == null) {
+                _ui.update {
+                    it.copy(
+                        updateDownloading = false,
+                        updateError = "Téléchargement ou vérification impossible."
+                    )
+                }
                 return@launch
             }
-            if (tag != "v${BuildConfig.VERSION_NAME}") {
-                _ui.update { it.copy(updateTag = tag, updateUrl = url) }
-                _toasts.emit("Mise à jour $tag disponible.")
-            } else {
-                _ui.update { it.copy(updateTag = null, updateUrl = null) }
-                _toasts.emit("Vous avez la dernière version.")
+            _ui.update { it.copy(updateDownloading = false, updateProgress = 1f) }
+            container.settings.pendingReleaseTag = info.tag
+            container.settings.pendingReleaseUrl = info.releaseUrl
+            launchInstaller(file)
+        }
+    }
+
+    private fun launchInstaller(file: File) {
+        val context = container.context
+        runCatching {
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, "application/vnd.android.package-archive")
+                    .addFlags(
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                            Intent.FLAG_ACTIVITY_NEW_TASK
+                    )
+            )
+        }.onFailure {
+            _ui.update { state ->
+                state.copy(updateError = "Installation impossible : ${it.message ?: "erreur inconnue"}")
             }
         }
     }
