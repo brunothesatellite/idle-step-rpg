@@ -5,6 +5,10 @@ Les pas réels du joueur font avancer un pèlerin dans un donjon infini. Le hér
 
 > **Prototype de démonstration.** Aucune donnée de marche réelle n'est lue : la maquette simule le compteur de pas pour rendre la boucle jouable immédiatement.
 
+**Voir la maquette en ligne :** [brunothesatellite.github.io/idle-step-rpg](https://brunothesatellite.github.io/idle-step-rpg/)
+
+**Dépôt :** [github.com/brunothesatellite/idle-step-rpg](https://github.com/brunothesatellite/idle-step-rpg)
+
 ---
 
 ## Lancer la maquette
