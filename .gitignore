@@ -12,3 +12,9 @@ crop*.png
 node_modules/
 .env
 .env.*
+
+# Secrets de signature Android
+.keystore/
+*.jks
+*.keystore
+keystore.properties

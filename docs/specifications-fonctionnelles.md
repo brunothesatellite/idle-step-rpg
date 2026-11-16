@@ -143,7 +143,7 @@ Marcher
 
 ### 4.3 Boucle de rétention — la semaine
 
-- **Chaque jour** : reset à 04:00, nouveaux serments, nouvelle ferveur.
+- **Chaque jour** : reset à 00:00, nouveaux serments, nouvelle ferveur.
 - **Chaque palier** : nouveau gardien, nouveau butin, nouveau décor.
 - **Chaque 10 paliers** : jalon permanent (bonus d'or, apparence du feu de camp, titre).
 - **Chaque semaine** : bilan de marche, meilleur palier, équipement légendaire potentiel.
@@ -154,7 +154,7 @@ Marcher
 
 | Terme | Définition |
 |---|---|
-| **Pas** | Unité de base. Pas valides du jour, comptés depuis 04:00 heure locale. |
+| **Pas** | Unité de base. Pas valides du jour, comptés depuis 00:00 heure locale. |
 | **Distance** | Conversion des pas en mètres. 10 pas = 1 m. |
 | **Palier** | Un étage de donjon, long de 100 m (1 000 pas). |
 | **Segment** | Tranche de 10 m entre deux rencontres. |
@@ -425,7 +425,7 @@ Un gardien de palier `P` est de niveau `P + 2` pour ses points de vie ; son atta
 - La ferveur est une jauge de **0 à 100**, alimentée par les **pas du jour**.
 - **1 point de ferveur par 50 pas.** 5 000 pas remplissent la jauge.
 - Les pas au-delà de 100 points de ferveur ne sont pas perdus : ils continuent d'alimenter rations, éclats et progression.
-- La ferveur est **quotidienne** : elle repart de 0 à 04:00 heure locale.
+- La ferveur est **quotidienne** : elle repart de 0 à 00:00 heure locale.
 
 ### 9.2 Effets
 
@@ -775,7 +775,7 @@ Le score sert à comparer les builds, jamais à calculer les dégâts.
 
 ### 14.4 Serments journaliers
 
-Trois objectifs optionnels, renouvelés à 04:00, récompensés en or, XP et éclats :
+Trois objectifs optionnels, renouvelés à 00:00, récompensés en or, XP et éclats :
 
 | Serment | Exemple | Récompense |
 |---|---|---|
@@ -785,7 +785,7 @@ Trois objectifs optionnels, renouvelés à 04:00, récompensés en or, XP et éc
 
 - Les serments ne bloquent aucune progression.
 - Ils s'affichent dans l'onglet Stats et dans le journal.
-- Un serment non accompli disparaît à 04:00 sans pénalité.
+- Un serment non accompli disparaît à 00:00 sans pénalité.
 
 ---
 
@@ -956,7 +956,7 @@ De haut en bas :
 |---|---|
 | **0 pas dans la journée** | Aucune progression. Le héros farme la dernière halte 20 min, puis veille. Aucune punition. |
 | **Permission refusée** | Le jeu affiche une explication, propose de réessayer, et permet de consulter le jeu. La synchronisation manuelle reste possible si le téléphone fournit un compteur. |
-| **Changement de jour à 04:00** | Les pas de la veille restent acquis dans la distance déjà parcourue. Le compteur du jour, la ferveur, les plafonds de rations/éclats et les serments repartent à zéro. |
+| **Changement de jour à 00:00** | Les pas de la veille restent acquis dans la distance déjà parcourue. Le compteur du jour, la ferveur, les plafonds de rations/éclats et les serments repartent à zéro. |
 | **Changement de fuseau** | La journée suit l'heure locale. Aucun pas n'est compté deux fois. |
 | **Changement d'appareil** | Les pas déjà synchronisés ne sont pas rejoués. La progression (or, stuff, paliers) est conservée. |
 | **Fermeture pendant un combat** | Au retour, le héros reprend à la dernière halte avec 50 % de PV. Le combat est abandonné sans perte. |
@@ -1047,7 +1047,7 @@ De haut en bas :
 12. Les améliorations ont un coût croissant et un effet immédiat.
 13. L'inventaire permet de comparer, équiper, verrouiller et vendre.
 14. L'écran est divisé en scène (haut) et tableau de bord (bas) avec les onglets Stats, Inventaire, Améliorations et le bouton de synchronisation.
-15. Les pas sont réinitialisés à 04:00 sans perte de progression.
+15. Les pas sont réinitialisés à 00:00 sans perte de progression.
 16. Aucun état ne bloque définitivement le joueur.
 17. L'interface respecte les zones tactiles, les contrastes et les modes d'accessibilité.
 18. Les ressources sont conservées après fermeture et reprise.

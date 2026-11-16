@@ -99,12 +99,12 @@ Cette maquette est une **tranche verticale de présentation**, pas un build de p
 - les pas sont simulés (pas de capteur réel) ;
 - les combats sont raccourcis pour être observables en quelques secondes ;
 - le farm de halte dure trois ennemis au lieu de vingt minutes ;
-- pas encore de sauvegarde, de reset quotidien à 04:00 ni de récupération hors ligne détaillée ;
+- pas encore de sauvegarde, de reset quotidien à 00:00 ni de récupération hors ligne détaillée ;
 - l'équilibrage est celui de la démonstration, pas la courbe finale.
 
 Les règles complètes, les formules, les tableaux d'équilibrage, les cas limites, l'accessibilité et les critères d'acceptation sont dans **[docs/specifications-fonctionnelles.md](docs/specifications-fonctionnelles.md)**.
 
-L'architecture Android proposée (Kotlin/Compose, APK sideloadé, Garmin Personal API, 2FA et jeton OAuth, Health Connect, WorkManager) est détaillée dans **[docs/architecture-android-garmin.md](docs/architecture-android-garmin.md)**.
+L'architecture Android proposée (Kotlin/Compose, APK sideloadé, **Garmin Personal API uniquement**, 2FA, jeton OAuth, clé et date d'expiration, WorkManager, sans Health Connect) est détaillée dans **[docs/architecture-android-garmin.md](docs/architecture-android-garmin.md)**.
 
 ---
 
