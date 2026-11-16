@@ -1,0 +1,14 @@
+# Système
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Captures et exports temporaires
+shot_*.png
+crop*.png
+*.log
+
+# Outillage local
+node_modules/
+.env
+.env.*

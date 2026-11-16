@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0710">
+<meta name="description" content="La Marche des Âmes — maquette interactive d'un idle step RPG fantasy en pixel art. Vos pas réels font avancer un pèlerin dans un donjon infini.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230b0810'/%3E%3Cpath d='M7 1h2v3h1v2h1v2h1v3h-1v2H9v1H7v-1H5v-2H4V8h1V6h1V4h1z' fill='%23ff9448'/%3E%3Cpath d='M7 8h2v3h1v2H6v-2H5V9h2z' fill='%23ffd06b'/%3E%3C/svg%3E">
+<title>La Marche des Âmes — Maquette interactive</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="ambient ambient-a"></div>
+<div class="ambient ambient-b"></div>
+
+<main class="stage">
+
+  <!-- ================= PRESENTATION (desktop) ================= -->
+  <aside class="intro">
+    <div class="introTag"><span></span>PROTOTYPE INTERACTIF</div>
+    <div class="brandRow">
+      <div class="brandFlame" aria-hidden="true">
+        <svg viewBox="0 0 24 32" shape-rendering="crispEdges"><path d="M10 0h4v4h2v4h2v2h2v4h2v6h-2v4h-4v4h-4v2H8v-2H4v-4H2v-6H0v-4h2v-2h2V8h2V4h4V0zm0 12H8v4H6v6h2v4h4v2h4v-2h2v-4h2v-4h-2v-2h-2v-4h-2v4h-2v2H10v-6z" fill="currentColor"/></svg>
+      </div>
+      <div>
+        <h1>LA MARCHE<br><span>DES ÂMES</span></h1>
+        <p class="tagline">Idle step RPG · Fantasy sombre</p>
+      </div>
+    </div>
+
+    <p class="pitch">Vos pas réels font avancer un pèlerin dans un donjon sans fin. Il marche seul, combat seul, tombe parfois — et se relève toujours vingt mètres plus tôt, là où le farm est plus doux.</p>
+
+    <ul class="featureList">
+      <li><span class="feat ico-steps"></span><div><b>10 pas = 1 mètre</b><small>100 m par palier, un gardien tous les 100 m.</small></div></li>
+      <li><span class="feat ico-flame"></span><div><b>La ferveur du jour</b><small>Plus vous marchez, plus le héros frappe vite.</small></div></li>
+      <li><span class="feat ico-camp"></span><div><b>Un feu, jamais loin</b><small>Améliorer, comparer, soigner. Puis repartir.</small></div></li>
+    </ul>
+
+    <div class="introNote">
+      <div class="noteLine"><span>MAQUETTE</span><b>390 × 844</b></div>
+      <p>Interface réelle, simulation de marche et de combat. Les onglets, le camp, les achats, l'équipement et le forçage de coffre sont jouables.</p>
+    </div>
+
+    <div class="credits">
+      <span class="dot"></span>
+      <p>Pixel art <b>CC0</b> — Dungeon Crawl Stone Soup tiles<br>Polices Pixelify Sans &amp; Press Start 2P (OFL)</p>
+    </div>
+  </aside>
+
+  <!-- ================= DEVICE ================= -->
+  <div class="deviceWrap">
+    <div class="device">
+      <div class="sideKey keyPower"></div>
+      <div class="sideKey keyVolUp"></div>
+      <div class="sideKey keyVolDown"></div>
+
+      <div class="screen" id="screen">
+        <!-- BARRE D'ÉTAT -->
+        <div class="statusbar">
+          <span class="clock">21:47</span>
+          <div class="notch"></div>
+          <div class="statusIcons">
+            <span class="signal"><i></i><i></i><i></i><i></i></span>
+            <span class="wifi"></span>
+            <span class="battery"><i></i></span>
+          </div>
+        </div>
+
+        <!-- ================= SCÈNE ================= -->
+        <section class="scene" id="scene" aria-label="Scène du donjon">
+          <div class="wall"></div>
+          <div class="wallShade"></div>
+
+          <div class="arches">
+            <div class="arch arch1">
+              <img class="archStatue" src="assets/env/statue_ancient_hero.png" alt="">
+              <span class="archPedestal"></span>
+              <span class="archLight"></span>
+            </div>
+            <div class="arch arch2">
+              <img class="archStatue" src="assets/env/statue_dragon.png" alt="">
+              <span class="archPedestal"></span>
+              <span class="archLight"></span>
+            </div>
+            <div class="arch arch3">
+              <img class="archStatue" src="assets/env/statue_sword.png" alt="">
+              <span class="archPedestal"></span>
+              <span class="archLight"></span>
+            </div>
+          </div>
+
+          <div class="hangBanner hb1"><span class="hbBar"></span><span class="hbCloth"></span><span class="hbRune"></span></div>
+          <div class="hangBanner hb2"><span class="hbBar"></span><span class="hbCloth"></span><span class="hbRune"></span></div>
+          <div class="chain c1"></div><div class="chain c2"></div><div class="chain c3"></div>
+
+          <div class="column columnLeft"><img src="assets/env/crumbled_column_1.png" alt=""></div>
+
+          <div class="torch torch1"><span class="torchGlow"></span><span class="torchFlame"></span><span class="torchSpark s1"></span><span class="torchSpark s2"></span></div>
+          <div class="torch torch2"><span class="torchGlow"></span><span class="torchFlame"></span><span class="torchSpark s1"></span><span class="torchSpark s2"></span></div>
+          <div class="torch torch3"><span class="torchGlow"></span><span class="torchFlame"></span><span class="torchSpark s1"></span><span class="torchSpark s2"></span></div>
+
+          <img class="ambientBat bat1" src="assets/mon/bat.png" alt="">
+          <img class="ambientBat bat2" src="assets/mon/bat.png" alt="">
+
+          <div class="gateFrame" id="gateFrame">
+            <span class="gateRune"></span>
+            <span class="gateLabel">GARDIEN</span>
+            <div class="gateGlow"></div>
+            <div class="gate" id="gate">
+              <img src="assets/env/gate_closed_left.png" alt="">
+              <img src="assets/env/gate_closed_middle.png" alt="">
+              <img src="assets/env/gate_closed_right.png" alt="">
+            </div>
+          </div>
+
+          <div class="halte" aria-hidden="true"><span></span><span></span><span></span></div>
+
+          <div class="ground">
+            <div class="groundTop"></div>
+            <div class="groundTiles" id="groundTiles"></div>
+            <div class="groundBlood"></div>
+            <div class="fgRocks"><span class="r1"></span><span class="r2"></span><span class="r3"></span></div>
+          </div>
+
+          <div class="fog fog1"></div>
+          <div class="fog fog2"></div>
+          <div class="vignette"></div>
+
+          <!-- HUD -->
+          <div class="sceneTop">
+            <div class="floorChip"><span class="chipDot"></span>PALIER <b id="floorNum">03</b></div>
+            <div class="biomeName" id="biomeName">CRYPTES DE VAEL</div>
+            <div class="topRight">
+              <div class="goldPill"><img src="assets/item/01.png" alt=""><b id="goldTop">1 240</b></div>
+              <button class="campBtn" id="campBtn" aria-label="Ouvrir le feu de camp" title="Feu de camp — pause, soin et gestion">
+                <svg viewBox="0 0 20 24" shape-rendering="crispEdges" aria-hidden="true"><path d="M8 0h4v4h2v4h2v2h2v6h-2v4h-4v2H8v-2H4v-4H2v-6H0v-2h2V8h2V4h4V0zm0 10H6v4H4v4h2v4h3v1h3v-1h2v-4h1v-4h-1v-2h-2v-2h-1v4H9v-4z" fill="currentColor"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="progressWrap">
+            <div class="progressTrack">
+              <div class="progressFill" id="progressFill"></div>
+              <div class="progressTicks"></div>
+              <span class="progressBoss" aria-hidden="true">
+                <svg viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M5 2h6v1h2v2h1v6h-2v2h-1v1h-1v-2H6v2H5v-1H4v-2H2V5h1V3h2V2zm0 4v2h2V6H5zm4 0v2h2V6H9z" fill="currentColor"/></svg>
+              </span>
+            </div>
+            <span class="distLabel" id="distLabel">66 / 100 m</span>
+          </div>
+
+          <!-- UNITÉS -->
+          <div class="unit heroUnit" id="heroUnit">
+            <div class="plate">
+              <div class="plateTop"><span class="uName">KAELEN</span><span class="uLevel">NIV.04</span></div>
+              <div class="hpTrack"><i id="heroHp"></i></div>
+            </div>
+            <div class="spriteWrap heroSpriteWrap">
+              <img class="sprite heroSprite" src="assets/hero/human.png" alt="Kaelen, le pèlerin">
+              <img class="heroBlade" src="assets/hero/broadsword.png" alt="">
+              <img class="heroShield" src="assets/hero/buckler_round.png" alt="">
+              <span class="ferveurAura"></span>
+            </div>
+            <div class="unitShadow"></div>
+          </div>
+
+          <div class="unit enemyUnit" id="enemyUnit" aria-live="polite">
+            <div class="plate enemyPlate">
+              <div class="plateTop"><span class="uName" id="enemyName">GOBELIN</span><span class="uLevel" id="enemyLevel">NIV.03</span></div>
+              <div class="hpTrack enemyHpTrack"><i id="enemyHp"></i></div>
+            </div>
+            <div class="spriteWrap enemySpriteWrap">
+              <img class="sprite enemySprite" id="enemySprite" src="assets/mon/goblin.png" alt="">
+              <span class="eliteTag" id="eliteTag">ÉLITE</span>
+            </div>
+            <div class="unitShadow"></div>
+          </div>
+
+          <!-- COFFRE -->
+          <button class="chest" id="chestBtn" aria-label="Ouvrir le coffre">
+            <span class="chestGlow"></span>
+            <svg class="chestSvg" viewBox="0 0 24 20" shape-rendering="crispEdges" aria-hidden="true">
+              <rect x="2" y="6" width="20" height="12" fill="#4a2a13"/>
+              <rect x="3" y="7" width="18" height="4" fill="#7a4a22"/>
+              <rect x="3" y="11" width="18" height="6" fill="#5c3518"/>
+              <rect x="2" y="9" width="20" height="2" fill="#3a1f0d"/>
+              <rect x="4" y="4" width="16" height="3" fill="#8a5528"/>
+              <rect x="5" y="3" width="14" height="2" fill="#6b3f1d"/>
+              <rect x="4" y="4" width="16" height="1" fill="#a56a32"/>
+              <rect x="1" y="8" width="2" height="8" fill="#c79a4a"/>
+              <rect x="21" y="8" width="2" height="8" fill="#c79a4a"/>
+              <rect x="0" y="11" width="24" height="2" fill="#e8c27a"/>
+              <rect x="10" y="9" width="4" height="5" fill="#2a1a0e"/>
+              <rect x="10" y="10" width="4" height="3" fill="#e8c27a"/>
+              <rect x="11" y="11" width="2" height="2" fill="#3a240e"/>
+              <rect x="2" y="17" width="20" height="2" fill="#2a160b"/>
+              <rect x="3" y="5" width="2" height="3" fill="#3a1f0d"/>
+              <rect x="19" y="5" width="2" height="3" fill="#3a1f0d"/>
+            </svg>
+            <span class="chestLock">
+              <svg viewBox="0 0 10 12" shape-rendering="crispEdges"><path d="M3 0h4v1h1v1h1v3H8V3H7V2H3v1H2v2H1V2h1V1h1V0z" fill="currentColor"/><rect x="1" y="5" width="8" height="7" fill="currentColor"/></svg>
+            </span>
+          </button>
+
+          <div class="fxLayer" id="fxLayer"></div>
+          <div class="farmTag" id="farmTag">ZONE DE REPLI · FARM</div>
+          <div class="banner" id="banner"><b id="bannerTitle">PALIER SCELLÉ</b><span id="bannerSub">Le chemin s'ouvre</span></div>
+          <div class="redFlash" id="redFlash"></div>
+
+          <div class="bottomHud">
+            <div class="ferveurPill">
+              <span class="ferveurFlame" aria-hidden="true">
+                <svg viewBox="0 0 14 18" shape-rendering="crispEdges"><path d="M6 0h2v2h1v2h1v2h1v1h1v4h-1v2h-2v2H6v1H5v-1H3v-2H2v-2H1V8h1V6h1V4h1V2h2V0zm0 7H5v3H4v3h1v2h1v1h2v-1h1v-2h1V9h-1V7H8v2H7V7z" fill="currentColor"/></svg>
+              </span>
+              <div class="ferveurInfo">
+                <div class="ferveurTop"><span>Ferveur</span><b id="ferveurVal">62</b></div>
+                <div class="ferveurTrack"><i id="ferveurFill"></i></div>
+              </div>
+              <span class="ferveurTier" id="ferveurTier">Fournaise</span>
+            </div>
+            <div class="stepsPill">
+              <span class="bootIco" aria-hidden="true">
+                <svg viewBox="0 0 12 16" shape-rendering="crispEdges"><path d="M2 0h4v3h1v3H6v2h1v1h4v2H9v2H3v-1H2V8H1V3h1V0z" fill="currentColor"/></svg>
+              </span>
+              <div><b id="stepsTop">3 124</b><span>pas aujourd'hui</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TABLEAU DE BORD ================= -->
+        <section class="dash">
+          <header class="dashHead">
+            <div class="avatarBox">
+              <img src="assets/hero/human.png" alt="Avatar de Kaelen">
+              <span class="avatarLvl" id="avatarLvl">04</span>
+            </div>
+            <div class="identity">
+              <div class="nameRow"><b>Kaelen</b><span class="heroTitle">le Pèlerin</span></div>
+              <div class="xpRow">
+                <div class="xpTrack"><i id="xpFill"></i></div>
+                <span id="xpText">132 / 207</span>
+              </div>
+            </div>
+            <div class="wallet">
+              <span class="resPill" title="Éclats d'âme"><img src="assets/item/misc_crystal.png" alt=""><b id="shardsTop">7</b></span>
+              <span class="resPill" title="Rations"><img src="assets/item/meat_ration.png" alt=""><b id="rationsTop">9</b></span>
+            </div>
+          </header>
+
+          <nav class="tabs" role="tablist">
+            <button class="tab active" data-tab="stats" role="tab" aria-selected="true">Stats</button>
+            <button class="tab" data-tab="inventory" role="tab" aria-selected="false">Inventaire<span class="tabBadge" id="invCount">8</span></button>
+            <button class="tab" data-tab="upgrades" role="tab" aria-selected="false">Améliorations</button>
+          </nav>
+
+          <div class="panelScroll" id="panelScroll">
+            <!-- STATS -->
+            <section class="tabPanel active" id="panel-stats" role="tabpanel">
+              <div class="powerCard">
+                <div>
+                  <span class="eyebrow">PUISSANCE</span>
+                  <div class="powerValue"><b id="powerVal">128</b><span class="powerTrend" id="powerTrend">▲ 6</span></div>
+                </div>
+                <div class="powerRank"><span>RANG</span><b>V</b></div>
+              </div>
+
+              <div class="statRow">
+                <div class="statCard">
+                  <img src="assets/item/long_sword3.png" alt="">
+                  <span>ATQ</span><b id="statAtk">54</b>
+                </div>
+                <div class="statCard">
+                  <img src="assets/fx/heart.png" alt="">
+                  <span>PV</span><b id="statHp">408</b>
+                </div>
+                <div class="statCard">
+                  <img src="assets/item/boots4_green.png" alt="">
+                  <span>VIT</span><b id="statVit">1,14</b>
+                </div>
+              </div>
+
+              <div class="ferveurCard">
+                <div class="ferveurCardTop">
+                  <span class="miniFlame">
+                    <svg viewBox="0 0 14 18" shape-rendering="crispEdges"><path d="M6 0h2v2h1v2h1v2h1v1h1v4h-1v2h-2v2H6v1H5v-1H3v-2H2v-2H1V8h1V6h1V4h1V2h2V0zm0 7H5v3H4v3h1v2h1v1h2v-1h1v-2h1V9h-1V7H8v2H7V7z" fill="currentColor"/></svg>
+                  </span>
+                  <b>Ferveur</b>
+                  <span class="ferveurCardVal"><b id="ferveurCardVal">62</b> / 100</span>
+                  <span class="tierChip" id="ferveurCardTier">Fournaise</span>
+                </div>
+                <div class="segGauge" id="segGauge" aria-hidden="true"></div>
+                <div class="ferveurBonus">
+                  <span>VIT <b id="bonusVit">+24,8 %</b></span>
+                  <span>RÉGÉN <b id="bonusRegen">+49,6 %</b></span>
+                  <span>CRIT <b id="bonusCrit">+1,2 %</b></span>
+                </div>
+              </div>
+
+              <div class="oathCard">
+                <div class="cardHead"><b>Serments du jour</b><span id="oathCount">1 / 3</span></div>
+                <div class="oathList" id="oathList"></div>
+              </div>
+
+              <div class="journalCard">
+                <div class="cardHead"><b>Journal</b><span>3 récents</span></div>
+                <div class="journalList" id="journalList"></div>
+              </div>
+            </section>
+
+            <!-- INVENTAIRE -->
+            <section class="tabPanel" id="panel-inventory" role="tabpanel">
+              <div class="invHead">
+                <b>Équipement</b>
+                <span>Puissance <b id="invPower">128</b></span>
+              </div>
+              <div class="slots" id="equipSlots"></div>
+              <div class="invSubHead">
+                <b>Butin <span id="invSubCount">8 objets</span></b>
+                <button class="btnSmall" id="sellCommons">VENDRE LES COMMUNS</button>
+              </div>
+              <div class="invGrid" id="invGrid"></div>
+              <p class="invHint">Touchez un objet pour comparer · Coffre de camp <b id="stashInfo">8 / 20</b></p>
+            </section>
+
+            <!-- AMÉLIORATIONS -->
+            <section class="tabPanel" id="panel-upgrades" role="tabpanel">
+              <div class="upHead">
+                <div><span class="eyebrow">FEU DE CAMP</span><b>Forger la marche</b></div>
+                <span class="upGold"><img src="assets/item/01.png" alt=""><b id="upGold">1 240</b></span>
+              </div>
+              <div class="upList" id="upList"></div>
+              <div class="nextBoss" id="nextBoss"></div>
+            </section>
+          </div>
+
+          <footer class="syncBar">
+            <div class="syncMeta">
+              <span id="lastSync">Dernière synchro · 21:42</span>
+              <span class="pendingSteps">≈ <b id="unsynced">1 240</b> pas en attente</span>
+            </div>
+            <button class="syncBtn" id="syncBtn">
+              <span class="syncIcon" aria-hidden="true">
+                <svg viewBox="0 0 18 22" shape-rendering="crispEdges"><path d="M3 0h6v3h2v3h-2v3h2v2h4v3h2v4h-3v3H8v1H4v-2H2v-4H1V9H0V4h1V1h2V0z" fill="currentColor"/></svg>
+              </span>
+              <span class="syncText"><b>SYNCHRONISER LES PAS</b><small>10 pas = 1 m · conversion immédiate</small></span>
+              <span class="syncBadge" id="syncBadge">+1 240</span>
+            </button>
+          </footer>
+        </section>
+
+        <!-- ================= CAMPEMENT ================= -->
+        <div class="campOverlay hidden" id="campOverlay">
+          <div class="campSky">
+            <div class="campStars" id="campStars"></div>
+            <div class="moon"></div>
+            <div class="campTrees">
+              <img src="assets/env/tree1_red.png" alt="" class="ctree t1">
+              <img src="assets/env/tree1_red.png" alt="" class="ctree t2">
+              <img src="assets/env/tree1_red.png" alt="" class="ctree t3">
+            </div>
+            <div class="tent">
+              <div class="tentBody"></div>
+              <div class="tentDoor"></div>
+              <span class="tentPole"></span>
+            </div>
+            <div class="campFire">
+              <span class="fireGlow"></span>
+              <span class="fireFlame f1"></span>
+              <span class="fireFlame f2"></span>
+              <span class="fireFlame f3"></span>
+              <span class="fireSparks"></span>
+              <span class="log log1"></span>
+              <span class="log log2"></span>
+            </div>
+            <img class="campHero" src="assets/hero/human.png" alt="Kaelen au repos">
+            <button class="campClose" id="campClose" aria-label="Fermer le camp">×</button>
+            <div class="campSceneTitle">
+              <span>LE FEU VEILLE</span>
+              <small>L'expédition est en pause</small>
+            </div>
+            <div class="campPending"><span class="bootIco small"></span><b id="campPending">0</b> pas en attente</div>
+          </div>
+
+          <div class="campPanel">
+            <div class="campSums">
+              <div><span>Palier</span><b id="campFloor">03</b></div>
+              <div><span>Distance</span><b id="campDist">62 m</b></div>
+              <div><span>Ferveur</span><b id="campFerv">62</b></div>
+            </div>
+            <div class="campActions">
+              <button class="campAction" id="restBtn">
+                <img src="assets/item/meat_ration.png" alt="">
+                <span class="caText"><b>Se reposer</b><small>+40 % PV · 1 ration</small></span>
+                <span class="caCount" id="restCount">9</span>
+              </button>
+              <button class="campAction" id="shardBtn">
+                <img src="assets/item/misc_crystal.png" alt="">
+                <span class="caText"><b>Se ressourcer</b><small>PV complets · 1 éclat</small></span>
+                <span class="caCount" id="shardCount">7</span>
+              </button>
+              <button class="campAction" id="campInvBtn">
+                <img src="assets/item/scale_mail1.png" alt="">
+                <span class="caText"><b>Gérer l'équipement</b><small>Comparer, équiper, vendre</small></span>
+                <span class="caArrow">›</span>
+              </button>
+            </div>
+            <button class="resumeBtn" id="resumeBtn">REPRENDRE L'EXPÉDITION</button>
+            <div class="campJournal">
+              <div class="campTipHead"><span>DERNIÈRES BRAISES</span><em>JOURNAL</em></div>
+              <div class="campJournalList" id="campJournalList"></div>
+            </div>
+            <div class="campRun">
+              <div><span>PAS DU JOUR</span><b id="campSteps">3 130</b></div>
+              <div><span>OR GAGNÉ</span><b id="campGoldEarned">0</b></div>
+              <div><span>GARDIENS</span><b id="campBossKills">0</b></div>
+            </div>
+            <div class="campTip">
+              <div class="campTipHead"><span>CONSEIL DU FEU</span><em>VEILLÉE</em></div>
+              <p>« La défaite n'est qu'un détour. Vingt mètres en arrière, les ennemis sont plus faibles — et l'or coule encore. »</p>
+              <small id="campLastEvent">Dernière braise · Palier 2 scellé</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= FICHE OBJET ================= -->
+        <div class="sheetWrap hidden" id="itemSheet">
+          <div class="scrim" data-close="item"></div>
+          <div class="sheet">
+            <div class="sheetHandle"></div>
+            <div class="sheetHead">
+              <div class="sheetIcon rarity-rare" id="sheetIconWrap"><img id="sheetIcon" src="assets/item/greatsword1.png" alt=""></div>
+              <div class="sheetTitle">
+                <span class="rarityTag" id="sheetRarity">RARE</span>
+                <h3 id="sheetName">Épée ancienne</h3>
+                <span id="sheetMeta">Arme · Niv. 4</span>
+              </div>
+              <button class="sheetClose" data-close="item" aria-label="Fermer">×</button>
+            </div>
+            <div class="sheetStats" id="sheetStats"></div>
+            <div class="compareBox">
+              <div class="cmpCol"><span>ÉQUIPÉ</span><b id="cmpEq">+14 ATQ</b></div>
+              <div class="cmpArrow">→</div>
+              <div class="cmpCol"><span>NOUVEAU</span><b id="cmpNew">+24 ATQ</b></div>
+            </div>
+            <div class="deltaRow" id="sheetDeltas"></div>
+            <div class="sheetActions">
+              <button class="btnGhost" id="sellBtn">VENDRE <span id="sellVal">+64 or</span></button>
+              <button class="btnGold" id="equipBtn">ÉQUIPER</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= FICHE COFFRE ================= -->
+        <div class="sheetWrap hidden" id="chestSheet">
+          <div class="scrim" data-close="chest"></div>
+          <div class="sheet chestSheet">
+            <div class="sheetHandle"></div>
+            <div class="chestArt">
+              <span class="chestArtGlow"></span>
+              <svg class="chestSvg large" viewBox="0 0 24 20" shape-rendering="crispEdges" aria-hidden="true">
+                <rect x="2" y="6" width="20" height="12" fill="#4a2a13"/>
+                <rect x="3" y="7" width="18" height="4" fill="#7a4a22"/>
+                <rect x="3" y="11" width="18" height="6" fill="#5c3518"/>
+                <rect x="2" y="9" width="20" height="2" fill="#3a1f0d"/>
+                <rect x="4" y="4" width="16" height="3" fill="#8a5528"/>
+                <rect x="5" y="3" width="14" height="2" fill="#6b3f1d"/>
+                <rect x="4" y="4" width="16" height="1" fill="#a56a32"/>
+                <rect x="1" y="8" width="2" height="8" fill="#c79a4a"/>
+                <rect x="21" y="8" width="2" height="8" fill="#c79a4a"/>
+                <rect x="0" y="11" width="24" height="2" fill="#e8c27a"/>
+                <rect x="10" y="9" width="4" height="5" fill="#2a1a0e"/>
+                <rect x="10" y="10" width="4" height="3" fill="#e8c27a"/>
+                <rect x="11" y="11" width="2" height="2" fill="#3a240e"/>
+                <rect x="2" y="17" width="20" height="2" fill="#2a160b"/>
+                <rect x="3" y="5" width="2" height="3" fill="#3a1f0d"/>
+                <rect x="19" y="5" width="2" height="3" fill="#3a1f0d"/>
+              </svg>
+            </div>
+            <span class="rarityTag" id="chestRarity">COFFRE DE FER</span>
+            <h3 id="chestTitle">Serrure de 400 pas</h3>
+            <p class="chestDesc" id="chestDesc">Consacrer vos pas fige la marche jusqu'à l'ouverture. La progression de la serrure est conservée.</p>
+            <div class="lockGauge"><i id="chestProgress"></i></div>
+            <div class="lockMeta"><span id="chestCount">0 / 400 pas</span><span id="chestRewards">180 or · 1 objet rare</span></div>
+            <div class="sheetActions">
+              <button class="btnGhost" data-close="chest">PLUS TARD</button>
+              <button class="btnGold" id="chestForce">CONSACRER MES PAS</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+    <div class="deviceCaption"><span></span>Maquette jouable — aucune donnée réelle n'est lue<span></span></div>
+  </div>
+</main>
+
+<script src="game.js"></script>
+</body>
+</html>
+
