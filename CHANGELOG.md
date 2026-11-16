@@ -9,6 +9,7 @@
 - **2 nouveaux effets d'objet** : Vitalité et Précision.
 - **4 nouveaux consommables** : Potion de hâte, Potion de force, Potion de régénération et Viande séchée.
 - **Héros en paper doll** : l'équipement visible change le casque, l'armure, les bottes et l'arme affichés.
+- **Retour visuel d'impact adouci** : halo radial autour de l'ennemi au lieu d'un grand carré translucide sur les fonds sombres.
 - **Assets CC0 DCSS** vérifiés contre la liste des licences incertaines ; crédits mis à jour.
 - 60 tests unitaires, dont les nouveaux tests de biomes, pools, butin, ensembles et présence des assets.
 

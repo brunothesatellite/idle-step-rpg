@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -1039,8 +1040,13 @@ private fun EnemyUnit(
                 Modifier
                     .size(spriteSize)
                     .align(Alignment.BottomCenter)
-                    .alpha(flash.value)
-                    .background(Color(0xFFFFF1D0), RoundedCornerShape(8.dp))
+                    .alpha(flash.value * 0.7f)
+                    .background(
+                        Brush.radialGradient(
+                            listOf(Color(0xFFFFF1D0), Color(0x33FFF1D0), Color.Transparent)
+                        ),
+                        CircleShape
+                    )
             )
             Canvas(Modifier.size(spriteSize).align(Alignment.BottomCenter)) {
                 val p = slash.value
