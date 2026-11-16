@@ -7,7 +7,8 @@ Les pas réels du joueur font avancer un pèlerin dans un donjon infini. Le hér
 
 **Voir la maquette en ligne :** [brunothesatellite.github.io/idle-step-rpg](https://brunothesatellite.github.io/idle-step-rpg/)
 
-**Dépôt :** [github.com/brunothesatellite/idle-step-rpg](https://github.com/brunothesatellite/idle-step-rpg)
+**Dépôt :** [github.com/brunothesatellite/idle-step-rpg](https://github.com/brunothesatellite/idle-step-rpg)  
+**Licence :** [MIT](LICENSE)
 
 ---
 
@@ -103,6 +104,8 @@ Cette maquette est une **tranche verticale de présentation**, pas un build de p
 
 Les règles complètes, les formules, les tableaux d'équilibrage, les cas limites, l'accessibilité et les critères d'acceptation sont dans **[docs/specifications-fonctionnelles.md](docs/specifications-fonctionnelles.md)**.
 
+L'architecture Android proposée (Kotlin/Compose, APK sideloadé, Garmin Personal API, 2FA et jeton OAuth, Health Connect, WorkManager) est détaillée dans **[docs/architecture-android-garmin.md](docs/architecture-android-garmin.md)**.
+
 ---
 
 ## Arborescence
@@ -112,8 +115,11 @@ idle-step-rpg/
 ├── index.html                     # la maquette
 ├── styles.css                     # direction artistique, scène, tableau de bord
 ├── game.js                        # simulation, combats, camp, inventaire
+├── LICENSE                        # MIT
+├── LICENSES.md                    # récapitulatif des licences
 ├── docs/
-│   └── specifications-fonctionnelles.md
+│   ├── specifications-fonctionnelles.md
+│   └── architecture-android-garmin.md
 ├── assets/
 │   ├── hero/                      # héros et pièces d'équipement visuel
 │   ├── mon/                       # monstres et gardiens
@@ -131,7 +137,7 @@ idle-step-rpg/
 
 - **Pixel art** : [Dungeon Crawl Stone Soup — tiles](https://github.com/crawl/tiles), export `releases/Nov-2015`, publié sous **CC0 1.0**. Voir `assets/CREDITS.md` et le README du dépôt source pour les tuiles exclues de la réutilisation.
 - **Polices** : **Pixelify Sans** et **Press Start 2P**, Google Fonts, **SIL Open Font License 1.1**. Textes complets dans `assets/fonts/licenses/`.
-- **Code, textes et direction artistique originale** : © 2026 brunothesatellite — tous droits réservés, publication de démonstration. Voir `LICENSES.md`.
+- **Code, textes et direction artistique originale** : © 2026 brunothesatellite, sous **licence MIT**. Voir `LICENSE`.
 - **Aucune ressource propriétaire** n'est utilisée.
 
 Le récapitulatif complet des licences est dans **[LICENSES.md](LICENSES.md)**.

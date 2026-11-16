@@ -2,11 +2,13 @@
 
 ## Code, textes et direction artistique
 
-**© 2026 brunothesatellite — Tous droits réservés.**
+**MIT License — © 2026 brunothesatellite.**
 
-Le code de la maquette (`index.html`, `styles.css`, `game.js`), les spécifications fonctionnelles, le README et la direction artistique originale (mise en scène, interface, coffre SVG) sont publiés à des fins de démonstration et de portfolio. Aucune licence de réutilisation, de modification ou de redistribution n'est accordée sans autorisation écrite.
+Le code de la maquette (`index.html`, `styles.css`, `game.js`), les spécifications fonctionnelles, le README et la direction artistique originale (mise en scène, interface, coffre SVG) sont distribués sous **licence MIT**. Le texte intégral est dans [`LICENSE`](LICENSE).
 
-> Pour rendre le code réutilisable, le titulaire peut ajouter une licence explicite (MIT, Apache 2.0, etc.). En l'absence d'une telle licence, le droit d'auteur s'applique par défaut.
+Vous pouvez utiliser, modifier, distribuer et vendre des copies du code, à condition de conserver la mention de copyright et le texte de la licence. Le logiciel est fourni sans garantie.
+
+> Le code source de la maquette est une démonstration de game design. Les ressources tierces conservent leurs propres licences, décrites ci-dessous.
 
 ## Pixel art — CC0 1.0
 
@@ -30,8 +32,8 @@ Les deux polices sont distribuées sous **SIL Open Font License 1.1**. Les texte
 
 | Élément | Titulaire / source | Licence | Usage dans le dépôt |
 |---|---|---|---|
-| Code de la maquette | brunothesatellite | Tous droits réservés | `index.html`, `styles.css`, `game.js` |
-| Spécifications et textes | brunothesatellite | Tous droits réservés | `docs/`, `README.md` |
+| Code de la maquette | brunothesatellite | MIT | `index.html`, `styles.css`, `game.js` |
+| Spécifications et textes | brunothesatellite | MIT | `docs/`, `README.md` |
 | Tuiles pixel art | Dungeon Crawl Stone Soup contributors | CC0 1.0 | `assets/` |
 | Pixelify Sans | The Pixelify Sans Project Authors | OFL 1.1 | `assets/fonts/` |
 | Press Start 2P | The Press Start 2P Project Authors | OFL 1.1 | `assets/fonts/` |
