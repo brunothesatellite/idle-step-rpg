@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -60,13 +61,16 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.brunothesatellite.idlesteprpg.engine.FLOOR_METERS
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.biomeFor
 import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
+import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.formatRemaining
+import com.brunothesatellite.idlesteprpg.engine.milestoneBonus
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.tierIndex
 import com.brunothesatellite.idlesteprpg.engine.tierName
@@ -76,15 +80,78 @@ import kotlinx.coroutines.launch
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
+private data class BiomePalette(
+    val top: Color,
+    val mid: Color,
+    val bottom: Color,
+    val wallTint: Color,
+    val torch: Color,
+    val torchLight: Color,
+    val torchDeep: Color,
+    val floorTop: Color,
+    val floorBottom: Color,
+    val groundEdge: Color,
+    val groundEdgeDeep: Color,
+    val groundLine: Color,
+    val ambient: Color,
+    val ambientCount: Int
+)
+
+private fun biomePalette(floor: Int): BiomePalette = when {
+    floor <= 10 -> BiomePalette(
+        top = Color(0xFF07050C), mid = Color(0xFF151022), bottom = Color(0xFF09060F),
+        wallTint = Color(0xFF3A2C4C),
+        torch = Color(0xFFFF9448), torchLight = Color(0xFFFFD479), torchDeep = Color(0xFF8F2D19),
+        floorTop = Color(0xFF17101D), floorBottom = Color(0xFF08050C),
+        groundEdge = Color(0xFF4A3C56), groundEdgeDeep = Color(0xFF2A2035), groundLine = Color(0xFF6A5678),
+        ambient = Color(0xFFB09AC8), ambientCount = 14
+    )
+    floor <= 20 -> BiomePalette(
+        top = Color(0xFF03090A), mid = Color(0xFF0B1A18), bottom = Color(0xFF050D0C),
+        wallTint = Color(0xFF23524A),
+        torch = Color(0xFF5FD8B0), torchLight = Color(0xFFB8F5D9), torchDeep = Color(0xFF1B6B52),
+        floorTop = Color(0xFF10201D), floorBottom = Color(0xFF050C0A),
+        groundEdge = Color(0xFF2F5A50), groundEdgeDeep = Color(0xFF17332D), groundLine = Color(0xFF4E8A7A),
+        ambient = Color(0xFF8EE8C6), ambientCount = 22
+    )
+    floor <= 30 -> BiomePalette(
+        top = Color(0xFF0C0705), mid = Color(0xFF221410), bottom = Color(0xFF0A0605),
+        wallTint = Color(0xFF6B3A22),
+        torch = Color(0xFFFF7A3D), torchLight = Color(0xFFFFC27A), torchDeep = Color(0xFF6B2410),
+        floorTop = Color(0xFF241713), floorBottom = Color(0xFF0B0706),
+        groundEdge = Color(0xFF6A3F2C), groundEdgeDeep = Color(0xFF3A2118), groundLine = Color(0xFF9A5B3C),
+        ambient = Color(0xFFFFB07A), ambientCount = 34
+    )
+    floor <= 40 -> BiomePalette(
+        top = Color(0xFF05080F), mid = Color(0xFF111C2E), bottom = Color(0xFF04060A),
+        wallTint = Color(0xFF2E4A6B),
+        torch = Color(0xFF6FA8FF), torchLight = Color(0xFFB8D8FF), torchDeep = Color(0xFF25406B),
+        floorTop = Color(0xFF131C2A), floorBottom = Color(0xFF05070C),
+        groundEdge = Color(0xFF3A5470), groundEdgeDeep = Color(0xFF1C2C40), groundLine = Color(0xFF5C82A8),
+        ambient = Color(0xFF8FC4FF), ambientCount = 26
+    )
+    else -> BiomePalette(
+        top = Color(0xFF0A0E16), mid = Color(0xFF1C2A3D), bottom = Color(0xFF070A10),
+        wallTint = Color(0xFF5C7A99),
+        torch = Color(0xFFB9D9FF), torchLight = Color(0xFFF0F8FF), torchDeep = Color(0xFF4A6B8A),
+        floorTop = Color(0xFF1E2A38), floorBottom = Color(0xFF080B11),
+        groundEdge = Color(0xFF6B8299), groundEdgeDeep = Color(0xFF354556), groundLine = Color(0xFF9AB4C8),
+        ambient = Color(0xFFE4F2FF), ambientCount = 60
+    )
+}
+
 @Composable
 fun Scene(
     state: GameState,
     onCamp: () -> Unit,
     onChest: () -> Unit,
+    reducedMotion: Boolean = false,
+    vibrations: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val walking = GameEngine.isWalking(state)
     val density = LocalDensity.current
+    val haptic = LocalHapticFeedback.current
     var previousLevel by remember { mutableStateOf(state.level) }
     var levelBanner by remember { mutableStateOf(0) }
 
@@ -93,6 +160,7 @@ fun Scene(
         previousLevel = state.level
         if (state.level > previous) {
             levelBanner = state.level
+            if (vibrations) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             delay(2200)
             levelBanner = 0
         }
@@ -104,7 +172,7 @@ fun Scene(
 
         SceneBackground(state, density.density)
 
-        if (state.distance >= 85 || state.fight?.isBoss == true) {
+        if (state.fight == null && state.distance >= 85) {
             GateView(
                 state,
                 Modifier
@@ -118,19 +186,25 @@ fun Scene(
         TopHud(state, onCamp, Modifier.align(Alignment.TopStart))
         ProgressHeader(state, Modifier.align(Alignment.TopStart).padding(top = 38.dp))
 
-        HeroUnit(state, walking, Modifier.align(Alignment.BottomStart).padding(start = 18.dp, bottom = 58.dp))
+        HeroUnit(
+            state,
+            walking,
+            reducedMotion,
+            Modifier.align(Alignment.BottomStart).padding(start = 18.dp, bottom = 58.dp)
+        )
 
         state.fight?.let { fight ->
             key(fight.enemyName, fight.enemyLevel, fight.isBoss, fight.farm) {
                 EnemyUnit(
                     fight,
+                    reducedMotion,
                     Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 58.dp)
                 )
             }
         }
 
         if (state.chest != null && state.mode != "fight" && state.mode != "boss") {
-            ChestButton(state, onChest, Modifier.align(Alignment.BottomCenter).padding(bottom = 62.dp).offset(x = 48.dp))
+            ChestButton(state, onChest, Modifier.align(Alignment.BottomCenter).padding(bottom = 62.dp))
         }
 
         if (state.fight?.isBoss == true) {
@@ -175,6 +249,7 @@ private fun SceneBackground(state: GameState, density: Float) {
     val statueHero = rememberAsset("env/statue_ancient_hero.png")
     val statueDragon = rememberAsset("env/statue_dragon.png")
     val statueSword = rememberAsset("env/statue_sword.png")
+    val palette = biomePalette(state.floor)
 
     Canvas(Modifier.fillMaxSize()) {
         val w = size.width
@@ -186,7 +261,7 @@ private fun SceneBackground(state: GameState, density: Float) {
 
         drawRect(
             Brush.verticalGradient(
-                listOf(Color(0xFF07050C), Color(0xFF151022), Color(0xFF09060F))
+                listOf(palette.top, palette.mid, palette.bottom)
             )
         )
 
@@ -206,6 +281,7 @@ private fun SceneBackground(state: GameState, density: Float) {
                 }
                 y += tile
             }
+            drawRect(palette.wallTint.copy(alpha = 0.16f))
         }
 
         drawRect(
@@ -280,7 +356,11 @@ private fun SceneBackground(state: GameState, density: Float) {
             val cy = h * 0.32f
             drawCircle(
                 brush = Brush.radialGradient(
-                    listOf(Color(0x55FF9448), Color(0x11FF9448), Color.Transparent),
+                    listOf(
+                        palette.torch.copy(alpha = 0.33f),
+                        palette.torch.copy(alpha = 0.07f),
+                        Color.Transparent
+                    ),
                     center = Offset(cx, cy),
                     radius = 72.dp.toPx()
                 ),
@@ -294,7 +374,7 @@ private fun SceneBackground(state: GameState, density: Float) {
                 quadraticBezierTo(cx - 7.dp.toPx(), cy - 1.dp.toPx(), cx, cy - 9.dp.toPx())
                 close()
             }
-            drawPath(flame, Brush.verticalGradient(listOf(GoldLight, Ember, Color(0xFF8F2D19))))
+            drawPath(flame, Brush.verticalGradient(listOf(palette.torchLight, palette.torch, palette.torchDeep)))
             drawRoundRect(
                 color = Color(0xFF3A2414),
                 topLeft = Offset(cx - 3.dp.toPx(), cy + 9.dp.toPx()),
@@ -305,7 +385,7 @@ private fun SceneBackground(state: GameState, density: Float) {
 
         // sol
         drawRect(
-            Brush.verticalGradient(listOf(Color(0xFF17101D), Color(0xFF08050C))),
+            Brush.verticalGradient(listOf(palette.floorTop, palette.floorBottom)),
             topLeft = Offset(0f, groundTop),
             size = Size(w, h - groundTop)
         )
@@ -328,16 +408,28 @@ private fun SceneBackground(state: GameState, density: Float) {
             }
         }
         drawRect(
-            Brush.verticalGradient(listOf(Color(0xFF4A3C56), Color(0xFF2A2035))),
+            Brush.verticalGradient(listOf(palette.groundEdge, palette.groundEdgeDeep)),
             topLeft = Offset(0f, groundTop - 2.dp.toPx()),
             size = Size(w, 4.dp.toPx())
         )
         drawLine(
-            color = Color(0xFF6A5678),
+            color = palette.groundLine,
             start = Offset(0f, groundTop - 2.dp.toPx()),
             end = Offset(w, groundTop - 2.dp.toPx()),
             strokeWidth = 1.dp.toPx()
         )
+
+        if (palette.ambientCount > 0) {
+            val random = java.util.Random((state.floor / 10).toLong() + 41L)
+            repeat(palette.ambientCount) {
+                val radius = if (random.nextBoolean()) 1.dp.toPx() else 1.8.dp.toPx()
+                drawCircle(
+                    color = palette.ambient.copy(alpha = 0.20f + random.nextFloat() * 0.25f),
+                    radius = radius,
+                    center = Offset(random.nextFloat() * w, random.nextFloat() * h * 0.82f)
+                )
+            }
+        }
 
         // rochers de premier plan
         drawCircle(Color(0xFF0A0710), radius = 38.dp.toPx(), center = Offset(w * 0.04f, h + 8.dp.toPx()))
@@ -484,8 +576,15 @@ private fun UnitPlate(
 }
 
 @Composable
-private fun HeroUnit(state: GameState, walking: Boolean, modifier: Modifier = Modifier) {
+private fun HeroUnit(
+    state: GameState,
+    walking: Boolean,
+    reducedMotion: Boolean,
+    modifier: Modifier = Modifier
+) {
     val stats = statsOf(state)
+    val weapon = equipped(state, "weapon")
+    val body = equipped(state, "body")
     val floats = remember { mutableStateListOf<FloatFx>() }
     var previousHp by remember { mutableStateOf(state.hp) }
     var nextId by remember { mutableLongStateOf(0L) }
@@ -493,6 +592,7 @@ private fun HeroUnit(state: GameState, walking: Boolean, modifier: Modifier = Mo
     LaunchedEffect(state.hp) {
         val diff = state.hp - previousHp
         previousHp = state.hp
+        if (reducedMotion) return@LaunchedEffect
         if (diff < -3.0) {
             floats += FloatFx(
                 id = nextId++,
@@ -524,6 +624,14 @@ private fun HeroUnit(state: GameState, walking: Boolean, modifier: Modifier = Mo
             Modifier.size(100.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
+            if (!reducedMotion && state.ferveur > 0) {
+                FerveurAura(
+                    ferveur = state.ferveur,
+                    modifier = Modifier
+                        .size(104.dp)
+                        .align(Alignment.BottomCenter)
+                )
+            }
             Box(
                 Modifier
                     .align(Alignment.BottomCenter)
@@ -537,7 +645,7 @@ private fun HeroUnit(state: GameState, walking: Boolean, modifier: Modifier = Mo
                 Modifier
                     .size(96.dp)
                     .align(Alignment.BottomCenter)
-                    .offset(y = if (walking) bob.dp else 0.dp)
+                    .offset(y = if (walking && !reducedMotion) bob.dp else 0.dp)
             )
             AssetImage(
                 "hero/buckler_round.png",
@@ -555,6 +663,26 @@ private fun HeroUnit(state: GameState, walking: Boolean, modifier: Modifier = Mo
                     .offset(x = (-1).dp, y = (-21).dp)
                     .graphicsLayer(rotationZ = 10f)
             )
+            weapon?.let {
+                Box(
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = (-7).dp, y = (-58).dp)
+                        .size(7.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(rarityColor(it.rarity))
+                )
+            }
+            body?.let {
+                Box(
+                    Modifier
+                        .align(Alignment.BottomStart)
+                        .offset(x = 12.dp, y = (-34).dp)
+                        .size(6.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(rarityColor(it.rarity))
+                )
+            }
             floats.forEach { fx ->
                 key(fx.id) {
                     Box(Modifier.align(Alignment.TopCenter)) {
@@ -569,6 +697,7 @@ private fun HeroUnit(state: GameState, walking: Boolean, modifier: Modifier = Mo
 @Composable
 private fun EnemyUnit(
     fight: com.brunothesatellite.idlesteprpg.engine.FightData,
+    reducedMotion: Boolean,
     modifier: Modifier = Modifier
 ) {
     val height = if (fight.isBoss) 148.dp else 108.dp
@@ -584,20 +713,24 @@ private fun EnemyUnit(
         val damage = previousHp - fight.enemyHp
         previousHp = fight.enemyHp
         if (damage > 0.5) {
-            floats += FloatFx(
-                id = nextId++,
-                text = "-${damage.roundToInt()}",
-                color = Color(0xFFFFC6B8),
-                drift = ((nextId % 5) - 2) * 7f
-            )
+            if (!reducedMotion) {
+                floats += FloatFx(
+                    id = nextId++,
+                    text = "-${damage.roundToInt()}",
+                    color = Color(0xFFFFC6B8),
+                    drift = ((nextId % 5) - 2) * 7f
+                )
+            }
             coroutineScope {
                 launch {
                     flash.snapTo(0.55f)
                     flash.animateTo(0f, tween(220))
                 }
-                launch {
-                    slash.snapTo(0f)
-                    slash.animateTo(1f, tween(260, easing = LinearEasing))
+                if (!reducedMotion) {
+                    launch {
+                        slash.snapTo(0f)
+                        slash.animateTo(1f, tween(260, easing = LinearEasing))
+                    }
                 }
             }
         }
@@ -617,7 +750,7 @@ private fun EnemyUnit(
             Modifier.height(height).width(if (fight.isBoss) 140.dp else 112.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
-            if (fight.isBoss && fight.enemyHp < fight.enemyMaxHp * 0.5) {
+            if (fight.isBoss && fight.enemyHp < fight.enemyMaxHp * 0.5 && !reducedMotion) {
                 BossAura(Modifier.size(spriteSize).align(Alignment.BottomCenter))
             }
             Box(
@@ -721,6 +854,35 @@ private fun BossAura(modifier: Modifier = Modifier) {
         drawCircle(
             brush = Brush.radialGradient(
                 listOf(Color(0xAAFF6B3A).copy(alpha = 0.5f * pulse), Color(0x33FF9448), Color.Transparent),
+                center = center,
+                radius = radius
+            ),
+            radius = radius,
+            center = center
+        )
+    }
+}
+
+@Composable
+private fun FerveurAura(ferveur: Int, modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "ferveur")
+    val pulse by transition.animateFloat(
+        initialValue = 0.55f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "ferveurPulse"
+    )
+    val strength = (ferveur / 100f).coerceIn(0.15f, 1f)
+    Canvas(modifier) {
+        val center = Offset(size.width / 2f, size.height * 0.62f)
+        val radius = size.minDimension * 0.55f
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(
+                    Ember.copy(alpha = 0.34f * strength * pulse),
+                    Color(0x22FF6B3A),
+                    Color.Transparent
+                ),
                 center = center,
                 radius = radius
             ),
@@ -928,6 +1090,9 @@ private fun BossBanner(state: GameState) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("GARDIEN DU PALIER", fontFamily = Press, fontSize = 7.sp, color = Blood)
             Text("${fight.enemyName} · Niv. ${fight.enemyLevel}", fontSize = 7.sp, color = Muted)
+            if (fight.modifier.isNotBlank()) {
+                Text("MODIFICATEUR · ${fight.modifier}", fontSize = 5.5.sp, color = Ember)
+            }
         }
     }
 }

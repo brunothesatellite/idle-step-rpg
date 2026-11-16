@@ -44,6 +44,7 @@ import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.powerOf
 import com.brunothesatellite.idlesteprpg.engine.rarityLabel
+import com.brunothesatellite.idlesteprpg.engine.rankLabel
 import com.brunothesatellite.idlesteprpg.engine.slotLabel
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.tierName
@@ -65,8 +66,12 @@ fun Dashboard(
     onOpenSettings: () -> Unit,
     onOpenCamp: () -> Unit,
     onOpenJournal: () -> Unit,
+    onOpenPreferences: () -> Unit,
     onBuyUpgrade: (String) -> Unit,
     onSelectItem: (Item) -> Unit,
+    onSellCommons: () -> Unit,
+    onEquipBest: () -> Unit,
+    onWithdrawStash: () -> Unit,
     onSelectTab: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -82,7 +87,7 @@ fun Dashboard(
             )
             .border(1.dp, Gold.copy(alpha = 0.24f), RoundedCornerShape(0.dp))
     ) {
-        DashboardHeader(state, ui, onOpenSettings)
+        DashboardHeader(state, ui, onOpenSettings, onOpenPreferences)
         Tabs(tab) {
             tab = it
             onSelectTab(it)
@@ -95,7 +100,13 @@ fun Dashboard(
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             when (tab) {
-                "inventory" -> InventoryTab(state, onSelectItem)
+                "inventory" -> InventoryTab(
+                    state,
+                    onSelectItem,
+                    onSellCommons,
+                    onEquipBest,
+                    onWithdrawStash
+                )
                 "upgrades" -> UpgradesTab(state, ui, onBuyUpgrade, onOpenSettings)
                 else -> StatsTab(state, ui, onOpenSettings, onSync, onOpenJournal)
             }
@@ -105,7 +116,12 @@ fun Dashboard(
 }
 
 @Composable
-private fun DashboardHeader(state: GameState, ui: UiState, onOpenSettings: () -> Unit) {
+private fun DashboardHeader(
+    state: GameState,
+    ui: UiState,
+    onOpenSettings: () -> Unit,
+    onOpenPreferences: () -> Unit
+) {
     val stats = statsOf(state)
     Row(
         Modifier
@@ -174,6 +190,18 @@ private fun DashboardHeader(state: GameState, ui: UiState, onOpenSettings: () ->
                     contentAlignment = Alignment.Center
                 ) {
                     Text("G", fontFamily = Press, fontSize = 8.sp, color = if (ui.connected) Green else Gold)
+                }
+                Box(
+                    Modifier
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Panel2)
+                        .border(1.dp, Line2, RoundedCornerShape(4.dp))
+                        .clickable(onClick = onOpenPreferences)
+                        .semantics { contentDescription = "Réglages" },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("⚙", fontSize = 11.sp, color = Gold)
                 }
             }
         }
@@ -248,7 +276,7 @@ private fun StatsTab(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("RANG", fontSize = 5.sp, letterSpacing = 1.sp, color = Muted)
-                Text("V", fontFamily = Press, fontSize = 14.sp, color = Gold)
+                Text(rankLabel(state.floor), fontFamily = Press, fontSize = 14.sp, color = Gold)
             }
         }
     }
@@ -542,7 +570,13 @@ private fun SmallAction(
 }
 
 @Composable
-private fun InventoryTab(state: GameState, onSelectItem: (Item) -> Unit) {
+private fun InventoryTab(
+    state: GameState,
+    onSelectItem: (Item) -> Unit,
+    onSellCommons: () -> Unit,
+    onEquipBest: () -> Unit,
+    onWithdrawStash: () -> Unit
+) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text("ÉQUIPEMENT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Parchment)
         Spacer(Modifier.weight(1f))
@@ -576,11 +610,16 @@ private fun InventoryTab(state: GameState, onSelectItem: (Item) -> Unit) {
             }
         }
     }
+    Spacer(Modifier.height(7.dp))
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+        SmallAction("Équiper le meilleur", Modifier.weight(1.35f), onEquipBest, primary = true)
+        SmallAction("Vendre les communs", Modifier.weight(1f), onSellCommons)
+    }
     Spacer(Modifier.height(9.dp))
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text("BUTIN", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
         Spacer(Modifier.weight(1f))
-        Text("${state.inventory.size} objets", fontSize = 6.sp, color = Muted)
+        Text("${state.inventory.size} / 24 objets", fontSize = 6.sp, color = Muted)
     }
     Spacer(Modifier.height(4.dp))
     state.inventory.chunked(3).forEach { row ->
@@ -592,8 +631,29 @@ private fun InventoryTab(state: GameState, onSelectItem: (Item) -> Unit) {
         }
         Spacer(Modifier.height(4.dp))
     }
+    if (state.stash.isNotEmpty()) {
+        PixelCard(
+            Modifier.fillMaxWidth(),
+            borderColor = Gold.copy(alpha = 0.35f),
+            background = Panel2
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    SectionLabel("Coffre de camp")
+                    Text(
+                        "${state.stash.size} objet(s) en réserve · inventaire plein",
+                        fontSize = 6.5.sp,
+                        color = Muted
+                    )
+                }
+                Spacer(Modifier.width(6.dp))
+                SmallAction("RÉCUPÉRER", Modifier.width(92.dp), onWithdrawStash)
+            }
+        }
+        Spacer(Modifier.height(5.dp))
+    }
     Text(
-        "Touchez un objet pour comparer avant de l'équiper.",
+        "Touchez un objet pour comparer avant de l'équiper. Les objets verrouillés ne peuvent pas être vendus.",
         modifier = Modifier.fillMaxWidth(),
         textAlign = TextAlign.Center,
         fontSize = 6.sp,

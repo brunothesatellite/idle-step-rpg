@@ -3,9 +3,11 @@ package com.brunothesatellite.idlesteprpg
 import android.app.Application
 import android.content.Context
 import com.brunothesatellite.idlesteprpg.data.GameRepository
+import com.brunothesatellite.idlesteprpg.data.SettingsStore
 import com.brunothesatellite.idlesteprpg.garmin.GarminClient
 import com.brunothesatellite.idlesteprpg.garmin.GarminRepository
 import com.brunothesatellite.idlesteprpg.garmin.SecretStore
+import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.sync.SyncScheduler
 
 class App : Application() {
@@ -15,11 +17,13 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        GameNotifications.ensureChannels(this)
         SyncScheduler.schedule(this)
     }
 }
 
-class AppContainer(context: Context) {
+class AppContainer(val context: Context) {
+    val settings = SettingsStore(context)
     val gameRepository = GameRepository(context)
     val secretStore = SecretStore(context)
     val garminClient = GarminClient()

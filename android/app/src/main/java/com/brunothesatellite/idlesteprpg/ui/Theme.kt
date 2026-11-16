@@ -69,12 +69,12 @@ private val typography = Typography(
 )
 
 @Composable
-fun MarcheTheme(content: @Composable () -> Unit) {
+fun MarcheTheme(fontScale: Float = 1.35f, content: @Composable () -> Unit) {
     val density = LocalDensity.current
     CompositionLocalProvider(
         LocalDensity provides Density(
             density = density.density,
-            fontScale = density.fontScale * 1.35f
+            fontScale = density.fontScale * fontScale
         )
     ) {
         MaterialTheme(

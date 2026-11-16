@@ -110,16 +110,22 @@ L'architecture Android proposée (Kotlin/Compose, APK sideloadé, **Garmin Perso
 
 ## Version Android (APK)
 
-La version native **v0.2.0** est dans `android/` :
+La version native **v0.3.0** est dans `android/` :
 
 - **Kotlin + Jetpack Compose**, `minSdk 34` (Android 14+), package `com.brunothesatellite.idlesteprpg`.
-- **Texte agrandi (facteur 1,35)** et tableau de bord plus haut pour la lisibilité sur Pixel 7a.
-- **Icône adaptative ronde** plein cadre et **porte du gardien** affichée seulement dans les 15 derniers mètres (ou pendant le combat de gardien).
+- **Texte ajustable** (Normal / Grand / Très grand), Grand par défaut, et tableau de bord plus haut pour la lisibilité sur Pixel 7a.
+- **Icône adaptative ronde** plein cadre et **porte du gardien** affichée seulement dans les 15 derniers mètres, hors combat.
 - **Historique Garmin 7 jours** importé sans double comptage, avec **récapitulatif hors ligne** (jours, pas, mètres).
-- **Serments journaliers** : marche 3 000 pas, 1 gardien, 1 coffre, récompenses automatiques et renouvellement à 00:00.
-- **Retour de combat** : dégâts flottants, flash de coup, estafilade, bannière de niveau, phase 2 et bénédiction du gardien.
+- **Serments journaliers variables** : marche, gardiens et coffres, récompenses automatiques et renouvellement à 00:00.
+- **Retour de combat** : dégâts flottants, flash de coup, estafilade, bannière de niveau, phase 2, bénédiction et modificateurs de gardien.
 - **Journal complet** défilant avec filtres (favorables, alertes, neutres).
 - **Coffres** conservés 24 h, 2 en attente maximum, compte à rebours et badge de file.
+- **Réglages** : taille du texte, notifications on/off, animations réduites, vibrations, journal de synchronisation, export/import et effacement.
+- **Notifications** : clé Garmin à 30/7/1 jour, gardien, niveau, serments et coffre qui expire.
+- **Ferveur** qui décroît après 2 h sans pas, avec aura dans la scène.
+- **Inventaire avancé** : équiper le meilleur en un geste, vendre les communs, verrouiller, fusionner, effets légendaires et coffre de camp.
+- **Contenu** : biomes colorés, rencontres spéciales (autel, source, marchand, statue), jalons tous les 10 paliers.
+- **Sauvegarde locale** : export/import JSON, copie de secours automatique et CI Android.
 - Scène pixel art, combats automatiques, gardiens, coffre, campement, inventaire, améliorations, journal.
 - **Garmin Personal API uniquement** : clé personnelle, échange contre un jeton OAuth2 de 24 h, aucun Health Connect.
 - **2FA Garmin dans le navigateur** : l'application ne voit jamais le mot de passe ni le code 2FA.

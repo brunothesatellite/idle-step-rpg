@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.2.0** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.3.0** — APK sideloadé pour Pixel 7a (Android 14+).
 
 ## Ce qui est implémenté
 
@@ -14,10 +14,17 @@ Version Android native du prototype. **v0.2.0** — APK sideloadé pour Pixel 7a
 - Jeton OAuth2 Bearer **24 h**, sans refresh token : renouvellement automatique avec la clé.
 - Reset quotidien à **00:00 local**, aligné sur `calendarDate` Garmin.
 - **Historique Garmin 7 jours** : ledger par jour, rattrapage idempotent, plafond de 20 000 pas par synchronisation, récapitulatif hors ligne.
-- **Serments journaliers** : 3 000 pas, 1 gardien, 1 coffre ; récompenses en or, éclats et objet, renouvelés à 00:00.
-- **Combat animé** : dégâts/soins flottants, flash de coup, estafilade, bannière de niveau, aura de phase 2 et bénédiction +25 %.
+- **Serments journaliers variables** : marche, gardiens et coffres ; récompenses en or, éclats et objet, renouvelés à 00:00.
+- **Combat animé** : dégâts/soins flottants, flash de coup, estafilade, bannière de niveau, aura de phase 2, bénédiction +25 % et modificateurs de gardien.
 - **Journal complet** : 80 événements, filtres favorables / alertes / neutres.
 - **Coffres** : expiration 24 h, 2 en attente maximum, compte à rebours et progression conservée.
+- **Réglages** : taille du texte, notifications on/off, animations réduites, vibrations, journal de synchronisation, export/import, effacement de la progression.
+- **Notifications** : clé Garmin 30/7/1 jour, gardien, niveau, serments et coffre qui expire.
+- **Ferveur** : décroissance après 2 h sans pas et aura dans la scène.
+- **Inventaire avancé** : « Équiper le meilleur », « Vendre les communs », verrouillage, fusion 3→1, effets légendaires (vampirisme, rempart, frénésie, chasse), coffre de camp.
+- **Campement** : veillée gratuite quotidienne, soins, coffre de camp.
+- **Contenu** : biomes colorés tous les 10 paliers, rencontres spéciales (autel, source, marchand, statue), jalons et rang.
+- **Sauvegarde locale** : export/import JSON, copie de secours automatique et workflow GitHub Actions (tests + APK debug).
 - WorkManager toutes les 30 minutes + synchro à l'ouverture + bouton manuel.
 
 ## Prérequis de build
@@ -75,12 +82,13 @@ Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le tél
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.2.0
+## Limites de cette v0.3.0
 
-- MVP jouable, pas encore de notifications de gardien ni de réglages de taille de texte.
 - L'historique Garmin est limité à 7 jours et à 20 000 pas de rattrapage par synchronisation.
-- L'équilibrage est celui de la démonstration.
+- La base reste un fichier JSON atomique (avec copie de secours), pas encore Room.
+- L'équilibrage est celui de la démonstration et sera à affiner sur plusieurs semaines.
 - La synchronisation dépend de Garmin Connect : la montre doit avoir poussé ses pas.
+- Pas de sons pour l'instant ; les alertes passent par les notifications et les vibrations.
 
 ## Documents
 

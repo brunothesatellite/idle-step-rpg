@@ -2,7 +2,11 @@ package com.brunothesatellite.idlesteprpg
 
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
+import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_STEPS_PER_DAY
+import com.brunothesatellite.idlesteprpg.engine.SpecialData
+import com.brunothesatellite.idlesteprpg.engine.oathsFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -148,5 +152,127 @@ class GameEngineTest {
         assertNotNull(state.chest)
         assertTrue(state.chestQueue.isEmpty())
         assertTrue(state.journal.any { it.text.contains("disparu après 24 h") })
+    }
+
+    @Test
+    fun ferveurDecaysAfterTwoHoursWithoutSteps() {
+        val state = GameState()
+        state.ferveur = 20
+        state.lastStepAt = System.currentTimeMillis() - 2L * 60L * 60L * 1000L - 5_000L
+        GameEngine.tick(state, 10 * 60_000.0)
+        assertTrue(state.ferveur < 20)
+    }
+
+    @Test
+    fun equipBestSelectsStrongestPerSlot() {
+        val state = GameState()
+        val strong = Item(
+            id = "strong_weapon",
+            name = "Lame de test",
+            slot = "weapon",
+            rarity = "legendary",
+            icon = "item/long_sword3.png",
+            level = 10,
+            atk = 120,
+            effect = "vampirisme",
+            value = 999
+        )
+        state.inventory = state.inventory + strong
+        val equippedBefore = state.equipment.first { it.slot == "weapon" }.id
+        val swaps = GameEngine.equipBest(state)
+        assertTrue(swaps >= 1)
+        assertEquals("strong_weapon", state.equipment.first { it.slot == "weapon" }.id)
+        assertTrue(state.inventory.any { it.id == equippedBefore })
+    }
+
+    @Test
+    fun effectStatsAreAggregated() {
+        val state = GameState()
+        state.equipment = state.equipment.map {
+            if (it.slot == "weapon") it.copy(effect = "vampirisme") else it
+        } + Item(
+            id = "guard",
+            name = "Rempart",
+            slot = "body",
+            rarity = "epic",
+            icon = "item/plate1.png",
+            level = 5,
+            hp = 40,
+            effect = "rempart",
+            value = 100
+        )
+        val stats = statsOf(state)
+        assertTrue(stats.lifesteal > 0)
+        assertTrue(stats.damageReduction > 0)
+    }
+
+    @Test
+    fun lockedItemsAreNotSoldAndCommonsCanBeBulkSold() {
+        val state = GameState()
+        state.inventory = listOf(
+            Item("common_locked", "Commun verrouillé", "weapon", "common", "item/spear2.png", 1, atk = 2, value = 10, locked = true),
+            Item("common_free", "Commun libre", "weapon", "common", "item/spear2.png", 1, atk = 2, value = 12)
+        )
+        assertEquals(false, GameEngine.sellItem(state, "common_locked"))
+        val gold = GameEngine.sellCommons(state)
+        assertEquals(12, gold)
+        assertTrue(state.inventory.any { it.id == "common_locked" })
+        assertTrue(state.inventory.none { it.id == "common_free" })
+    }
+
+    @Test
+    fun fusionNeedsThreeAndRaisesRarity() {
+        val state = GameState()
+        state.inventory = (1..3).map {
+            Item("rare_$it", "Rare $it", "weapon", "rare", "item/mace2.png", 3, atk = 10 + it, value = 50)
+        }
+        val fused = GameEngine.fuseItem(state, "rare_1")
+        assertNotNull(fused)
+        assertEquals("epic", fused!!.rarity)
+        assertEquals(1, state.inventory.size)
+        assertEquals(fused.id, state.inventory.first().id)
+    }
+
+    @Test
+    fun fullInventoryGoesToCampStash() {
+        val state = GameState()
+        state.inventory = (1..INVENTORY_CAP).map {
+            Item("fill_$it", "Objet $it", "talisman", "common", "item/ring-regen.png", 1, value = 1)
+        }
+        GameEngine.addLoot(
+            state,
+            Item("overflow", "Trop-plein", "talisman", "rare", "item/ring-regen.png", 1, value = 20)
+        )
+        assertEquals(INVENTORY_CAP, state.inventory.size)
+        assertEquals(1, state.stash.size)
+        val moved = GameEngine.withdrawStash(state)
+        assertEquals(0, moved)
+    }
+
+    @Test
+    fun specialEncounterResolvesStatue() {
+        val state = GameState()
+        state.gold = 200
+        state.mode = "special"
+        state.special = SpecialData(
+            type = "statue",
+            title = "STATUE",
+            text = "Test",
+            acceptLabel = "PRIER",
+            goldCost = 100,
+            rewardText = "+15 ferveur"
+        )
+        GameEngine.resolveSpecial(state, true)
+        assertEquals(100, state.gold)
+        assertEquals(15, state.ferveur)
+        assertNull(state.special)
+        assertEquals("walk", state.mode)
+    }
+
+    @Test
+    fun dailyOathsVaryWithTheDate() {
+        val seen = (1..40).map { oathsFor(LocalDate.of(2026, 1, 1).plusDays(it.toLong())).stepsTarget }.toSet()
+        assertTrue(seen.all { it in setOf(2_500, 3_000, 3_500, 4_000) })
+        assertTrue(seen.size > 1)
     }
 }

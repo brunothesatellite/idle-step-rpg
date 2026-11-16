@@ -1,11 +1,14 @@
 package com.brunothesatellite.idlesteprpg
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.Upgrades
+import com.brunothesatellite.idlesteprpg.notify.GameNotifications
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,12 +19,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 
 data class UiState(
     val campOpen: Boolean = false,
     val settingsOpen: Boolean = false,
+    val prefsOpen: Boolean = false,
     val journalOpen: Boolean = false,
     val selectedItem: Item? = null,
     val chestOpen: Boolean = false,
@@ -31,7 +36,12 @@ data class UiState(
     val tokenExpiry: Instant? = null,
     val lastSync: Long = 0L,
     val lastError: String = "",
-    val lastAdded: Int = 0
+    val lastAdded: Int = 0,
+    val textScale: Float = 1.35f,
+    val reducedMotion: Boolean = false,
+    val vibrations: Boolean = true,
+    val notificationsEnabled: Boolean = true,
+    val syncLog: List<String> = emptyList()
 )
 
 class GameViewModel(private val container: AppContainer) : ViewModel() {
@@ -48,10 +58,21 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     private var initialized = false
 
     init {
+        _ui.update {
+            it.copy(
+                textScale = container.settings.textScale,
+                reducedMotion = container.settings.reducedMotion,
+                vibrations = container.settings.vibrations,
+                notificationsEnabled = container.settings.notificationsEnabled
+            )
+        }
         refreshGarmin()
         viewModelScope.launch {
             while (isActive) {
-                if (visible && !_ui.value.campOpen && !_ui.value.settingsOpen) {
+                val reportOpen = game.value.offlineReport?.let { it.acknowledgedAt == 0L } == true
+                if (visible && !_ui.value.campOpen && !_ui.value.settingsOpen &&
+                    !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen
+                ) {
                     container.gameRepository.tick(100.0)
                 }
                 delay(100)
@@ -59,7 +80,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         }
         viewModelScope.launch {
             while (isActive) {
-                delay(2000)
+                delay(5000)
                 container.gameRepository.save()
             }
         }
@@ -87,7 +108,15 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun onAppPause() {
         visible = false
-        viewModelScope.launch { container.gameRepository.save() }
+        viewModelScope.launch {
+            container.gameRepository.mutate { s ->
+                val report = s.offlineReport
+                if (report != null && report.acknowledgedAt == 0L) {
+                    s.offlineReport = report.copy(acknowledgedAt = System.currentTimeMillis())
+                }
+            }
+            container.gameRepository.save()
+        }
     }
 
     fun refreshGarmin() {
@@ -97,9 +126,11 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 keyExpiry = container.garminRepository.keyExpiry(),
                 tokenExpiry = container.garminRepository.tokenExpiry(),
                 lastSync = container.garminRepository.lastSync(),
-                lastError = container.garminRepository.lastError()
+                lastError = container.garminRepository.lastError(),
+                syncLog = container.garminRepository.syncLog()
             )
         }
+        container.garminRepository.checkKeyExpiryNotice()
     }
 
     fun syncNow(silent: Boolean = false) {
@@ -151,9 +182,144 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun openJournal() { _ui.update { it.copy(journalOpen = true) } }
     fun closeJournal() { _ui.update { it.copy(journalOpen = false) } }
 
+    fun openPreferences() {
+        _ui.update {
+            it.copy(
+                prefsOpen = true,
+                syncLog = container.garminRepository.syncLog()
+            )
+        }
+    }
+
+    fun closePreferences() { _ui.update { it.copy(prefsOpen = false) } }
+
+    fun setTextScale(value: Float) {
+        container.settings.textScale = value
+        _ui.update { it.copy(textScale = value) }
+    }
+
+    fun setReducedMotion(value: Boolean) {
+        container.settings.reducedMotion = value
+        _ui.update { it.copy(reducedMotion = value) }
+    }
+
+    fun setVibrations(value: Boolean) {
+        container.settings.vibrations = value
+        _ui.update { it.copy(vibrations = value) }
+    }
+
+    fun setNotificationsEnabled(value: Boolean) {
+        container.settings.notificationsEnabled = value
+        _ui.update { it.copy(notificationsEnabled = value) }
+        if (!value) GameNotifications.cancelAll(container.context)
+    }
+
     fun dismissOfflineReport() {
         viewModelScope.launch {
             container.gameRepository.mutate { it.offlineReport = null }
+        }
+    }
+
+    fun clearProgress() {
+        viewModelScope.launch {
+            container.gameRepository.reset()
+            _ui.update { it.copy(selectedItem = null, chestOpen = false) }
+            _toasts.emit("Progression effacée. La clé Garmin est conservée.")
+        }
+    }
+
+    fun exportTo(uri: Uri) {
+        viewModelScope.launch {
+            val ok = runCatching {
+                val text = container.gameRepository.exportJson()
+                withContext(Dispatchers.IO) {
+                    container.context.contentResolver.openOutputStream(uri)?.use {
+                        it.write(text.toByteArray(Charsets.UTF_8))
+                    } ?: error("Flux indisponible")
+                }
+            }.isSuccess
+            _toasts.emit(if (ok) "Sauvegarde exportée." else "Export impossible.")
+        }
+    }
+
+    fun importFrom(uri: Uri) {
+        viewModelScope.launch {
+            val text = runCatching {
+                withContext(Dispatchers.IO) {
+                    container.context.contentResolver.openInputStream(uri)?.bufferedReader()?.use {
+                        it.readText()
+                    }
+                }
+            }.getOrNull()
+            val ok = text != null && container.gameRepository.importJson(text)
+            if (ok) {
+                _ui.update { it.copy(selectedItem = null, chestOpen = false, campOpen = false) }
+            }
+            _toasts.emit(if (ok) "Sauvegarde importée." else "Fichier de sauvegarde invalide.")
+        }
+    }
+
+    fun equipBest() {
+        viewModelScope.launch {
+            var swaps = 0
+            container.gameRepository.mutate { swaps = GameEngine.equipBest(it) }
+            _toasts.emit(
+                if (swaps > 0) "$swaps pièce(s) équipée(s)." else "Votre équipement est déjà optimal."
+            )
+        }
+    }
+
+    fun sellCommons() {
+        viewModelScope.launch {
+            var gold = 0
+            container.gameRepository.mutate { gold = GameEngine.sellCommons(it) }
+            _toasts.emit(
+                if (gold > 0) "Objets communs vendus · +$gold or." else "Aucun objet commun à vendre."
+            )
+        }
+    }
+
+    fun toggleLock(item: Item) {
+        viewModelScope.launch {
+            container.gameRepository.mutate { GameEngine.toggleLock(it, item.id) }
+            val updated = container.gameRepository.state.value.inventory.firstOrNull { it.id == item.id }
+            _ui.update { it.copy(selectedItem = updated) }
+        }
+    }
+
+    fun fuse(item: Item) {
+        viewModelScope.launch {
+            var fused: Item? = null
+            container.gameRepository.mutate { fused = GameEngine.fuseItem(it, item.id) }
+            _ui.update { it.copy(selectedItem = null) }
+            _toasts.emit(
+                if (fused != null) "Fusion réussie."
+                else "Il faut 3 objets du même emplacement et de même rareté."
+            )
+        }
+    }
+
+    fun withdrawStash() {
+        viewModelScope.launch {
+            var moved = 0
+            container.gameRepository.mutate { moved = GameEngine.withdrawStash(it) }
+            _toasts.emit(
+                if (moved > 0) "$moved objet(s) récupéré(s)." else "Inventaire plein ou coffre vide."
+            )
+        }
+    }
+
+    fun freeRest() {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.freeRest(it) }
+            _toasts.emit(if (ok) "Veillée gratuite." else "Veillée déjà utilisée ou PV complets.")
+        }
+    }
+
+    fun resolveSpecial(accept: Boolean) {
+        viewModelScope.launch {
+            container.gameRepository.mutate { GameEngine.resolveSpecial(it, accept) }
         }
     }
 

@@ -68,7 +68,10 @@ import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.JournalEntry
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
+import com.brunothesatellite.idlesteprpg.engine.SpecialData
 import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
+import com.brunothesatellite.idlesteprpg.engine.effectDescription
+import com.brunothesatellite.idlesteprpg.engine.effectLabel
 import com.brunothesatellite.idlesteprpg.engine.formatRemaining
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.powerOf
@@ -88,9 +91,14 @@ fun ItemDialog(
     state: GameState,
     onDismiss: () -> Unit,
     onEquip: () -> Unit,
-    onSell: () -> Unit
+    onSell: () -> Unit,
+    onToggleLock: () -> Unit,
+    onFuse: () -> Unit
 ) {
     val equippedItem = equipped(state, item.slot)
+    val fusionCount = state.inventory.count {
+        it.slot == item.slot && it.rarity == item.rarity && !it.locked
+    }
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(
@@ -116,7 +124,15 @@ fun ItemDialog(
                     Column(Modifier.weight(1f)) {
                         Text(rarityLabel(item.rarity), fontSize = 5.5.sp, letterSpacing = 1.sp, color = rarityColor(item.rarity))
                         Text(item.name, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Parchment)
-                        Text("${slotLabel(item.slot)} · Niv. ${item.level}", fontSize = 7.sp, color = Muted)
+                        Text(
+                            "${slotLabel(item.slot)} · Niv. ${item.level}" +
+                                if (item.locked) " · VERROUILLÉ" else "",
+                            fontSize = 7.sp,
+                            color = if (item.locked) Ember else Muted
+                        )
+                        if (item.effect.isNotBlank()) {
+                            Text(effectLabel(item.effect), fontSize = 6.sp, color = Legendary)
+                        }
                     }
                     Text(
                         "×",
@@ -163,9 +179,42 @@ fun ItemDialog(
                         Text(statLine(item), fontSize = 6.5.sp, color = GoldLight, maxLines = 2, textAlign = TextAlign.End)
                     }
                 }
+                if (item.effect.isNotBlank()) {
+                    Spacer(Modifier.height(5.dp))
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Legendary.copy(alpha = 0.08f))
+                            .border(1.dp, Legendary.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                            .padding(6.dp)
+                    ) {
+                        Text(effectLabel(item.effect), fontSize = 6.sp, letterSpacing = 0.6.sp, color = Legendary)
+                        Text(effectDescription(item.effect), fontSize = 6.5.sp, color = Parchment.copy(alpha = 0.8f))
+                    }
+                }
                 Spacer(Modifier.height(9.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    OverlayAction("VENDRE +${formatInt(item.value)} or", Modifier.weight(0.85f), onSell)
+                    OverlayAction(
+                        if (item.locked) "DÉVERROUILLER" else "VERROUILLER",
+                        Modifier.weight(1f),
+                        onToggleLock
+                    )
+                    OverlayAction(
+                        "FUSIONNER $fusionCount/3",
+                        Modifier.weight(1f),
+                        onFuse,
+                        enabled = fusionCount >= 3 && !item.locked
+                    )
+                }
+                Spacer(Modifier.height(5.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OverlayAction(
+                        if (item.locked) "VERROUILLÉ" else "VENDRE +${formatInt(item.value)} or",
+                        Modifier.weight(0.85f),
+                        onSell,
+                        enabled = !item.locked
+                    )
                     OverlayAction("ÉQUIPER", Modifier.weight(1.15f), onEquip, primary = true)
                 }
             }
@@ -277,6 +326,8 @@ fun CampOverlay(
     state: GameState,
     onRest: () -> Unit,
     onShard: () -> Unit,
+    onFreeRest: () -> Unit,
+    onWithdrawStash: () -> Unit,
     onResume: () -> Unit
 ) {
     val stats = statsOf(state)
@@ -438,6 +489,26 @@ fun CampOverlay(
                 enabled = state.shards > 0 && state.hp < stats.maxHp,
                 onClick = onShard
             )
+            Spacer(Modifier.height(4.dp))
+            CampAction(
+                "Veillée gratuite",
+                "+25 % PV · une fois par jour",
+                "fx/heart.png",
+                if (state.freeRestDay == state.day) "UTILISÉE" else "GRATUIT",
+                enabled = state.freeRestDay != state.day && state.hp < stats.maxHp,
+                onClick = onFreeRest
+            )
+            if (state.stash.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                CampAction(
+                    "Coffre de camp",
+                    "Récupérer les objets en réserve",
+                    "item/misc_crystal.png",
+                    state.stash.size.toString(),
+                    enabled = state.inventory.size < 24,
+                    onClick = onWithdrawStash
+                )
+            }
             Spacer(Modifier.height(7.dp))
             GoldButton("REPRENDRE L'EXPÉDITION", onClick = onResume)
             Spacer(Modifier.height(6.dp))
@@ -910,6 +981,105 @@ private fun RecapTile(value: String, label: String, modifier: Modifier = Modifie
     ) {
         Text(value, fontFamily = Press, fontSize = 8.sp, color = GoldLight, maxLines = 1)
         Text(label, fontSize = 5.5.sp, letterSpacing = 0.7.sp, color = Muted)
+    }
+}
+
+@Composable
+fun SpecialDialog(
+    special: SpecialData,
+    state: GameState,
+    onAccept: () -> Unit,
+    onDecline: () -> Unit
+) {
+    val affordable = when (special.type) {
+        "autel" -> state.shards >= special.shardCost
+        "source" -> state.rations >= special.rationCost
+        "marchand", "statue" -> state.gold >= special.goldCost
+        else -> false
+    }
+    Dialog(onDismissRequest = onDecline, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.fillMaxWidth().padding(22.dp), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Brush.verticalGradient(listOf(Color(0xFF2A1A22), Color(0xFF130E1C))))
+                    .border(1.dp, Ember.copy(alpha = 0.75f), RoundedCornerShape(12.dp))
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(special.title, fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    special.text,
+                    fontSize = 8.sp,
+                    color = Parchment.copy(alpha = 0.85f),
+                    textAlign = TextAlign.Center,
+                    lineHeight = 11.sp
+                )
+                special.offer?.let { offer ->
+                    Spacer(Modifier.height(9.dp))
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(Panel)
+                            .border(1.dp, rarityColor(offer.rarity).copy(alpha = 0.6f), RoundedCornerShape(5.dp))
+                            .padding(7.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AssetImage(offer.icon, Modifier.size(30.dp))
+                        Spacer(Modifier.width(7.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(offer.name, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Parchment)
+                            Text(rarityLabel(offer.rarity) + " · " + statLine(offer), fontSize = 6.sp, color = Muted, maxLines = 2)
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (special.goldCost > 0) {
+                        SpecialCost("${formatInt(special.goldCost)} or", state.gold >= special.goldCost)
+                    }
+                    if (special.shardCost > 0) {
+                        SpecialCost("${special.shardCost} éclat(s)", state.shards >= special.shardCost)
+                    }
+                    if (special.rationCost > 0) {
+                        SpecialCost("${special.rationCost} ration", state.rations >= special.rationCost)
+                    }
+                }
+                Spacer(Modifier.height(7.dp))
+                Text(
+                    "Récompense : ${special.rewardText}",
+                    fontSize = 6.8.sp,
+                    color = GoldLight,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(10.dp))
+                OverlayAction(
+                    special.acceptLabel,
+                    Modifier.fillMaxWidth(),
+                    onAccept,
+                    primary = affordable,
+                    enabled = affordable
+                )
+                Spacer(Modifier.height(5.dp))
+                OverlayAction(special.refuseLabel, Modifier.fillMaxWidth(), onDecline)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpecialCost(label: String, affordable: Boolean) {
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(3.dp))
+            .background(if (affordable) Panel2 else Blood.copy(alpha = 0.14f))
+            .border(1.dp, if (affordable) Line else Blood.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
+            .padding(horizontal = 6.dp, vertical = 3.dp)
+    ) {
+        Text(label, fontSize = 6.5.sp, color = if (affordable) Gold else Blood)
     }
 }
 

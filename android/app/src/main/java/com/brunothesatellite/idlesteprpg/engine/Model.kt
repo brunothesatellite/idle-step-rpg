@@ -15,7 +15,11 @@ const val MAX_STEPS_PER_DAY = 60_000
 const val HISTORY_DAYS = 7
 const val HISTORY_IMPORT_CAP = 20_000
 const val CHEST_LIFETIME_MS = 24L * 60L * 60L * 1000L
+const val CHEST_WARNING_MS = 60L * 60L * 1000L
 const val MAX_PENDING_CHESTS = 2
+const val INVENTORY_CAP = 24
+const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
+const val FERVEUR_DECAY_STEP_MS = 180_000.0
 
 @Serializable
 data class Upgrades(
@@ -37,7 +41,9 @@ data class Item(
     val vitPct: Int = 0,
     val critPct: Int = 0,
     val regen: Double = 0.0,
-    val value: Int = 0
+    val value: Int = 0,
+    val effect: String = "",
+    val locked: Boolean = false
 )
 
 @Serializable
@@ -65,7 +71,8 @@ data class FightData(
     var enemyTimerMs: Double = 900.0,
     var elapsedMs: Double = 0.0,
     var specialMs: Double = 8000.0,
-    var usedRation: Boolean = false
+    var usedRation: Boolean = false,
+    var modifier: String = ""
 )
 
 @Serializable
@@ -83,7 +90,22 @@ data class OfflineReport(
     val days: Int,
     val steps: Int,
     val distanceMeters: Int,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val acknowledgedAt: Long = 0L
+)
+
+@Serializable
+data class SpecialData(
+    val type: String,
+    val title: String,
+    val text: String,
+    val acceptLabel: String,
+    val refuseLabel: String = "PASSER",
+    val goldCost: Int = 0,
+    val shardCost: Int = 0,
+    val rationCost: Int = 0,
+    val offer: Item? = null,
+    val rewardText: String = ""
 )
 
 @Serializable
@@ -94,7 +116,8 @@ data class ChestData(
     var goldMin: Int,
     var goldMax: Int,
     var rarity: String = "uncommon",
-    var expiresAt: Long = 0L
+    var expiresAt: Long = 0L,
+    var expiryNotified: Boolean = false
 )
 
 @Serializable
@@ -137,7 +160,12 @@ data class GameState(
     var bossesToday: Int = 0,
     var chestsToday: Int = 0,
     var oaths: OathsState = OathsState(),
-    var chestQueue: List<ChestData> = emptyList()
+    var chestQueue: List<ChestData> = emptyList(),
+    var stash: List<Item> = emptyList(),
+    var special: SpecialData? = null,
+    var freeRestDay: String = "",
+    var lastStepAt: Long = 0L,
+    var ferveurDecayMs: Double = 0.0
 )
 
 data class Stats(
@@ -145,9 +173,15 @@ data class Stats(
     val maxHp: Int,
     val vit: Double,
     val crit: Int,
-    val regen: Double
+    val regen: Double,
+    val lifesteal: Double = 0.0,
+    val damageReduction: Double = 0.0,
+    val critDamage: Double = 0.0,
+    val bossDamage: Double = 0.0
 ) {
     val attackSpeed: Double get() = vit
+    val power: Int
+        get() = (atk * 2 + maxHp / 4.0 + vit * 20 + crit + regen * 10).roundToInt()
 }
 
 data class MobTemplate(val name: String, val icon: String)
@@ -255,30 +289,106 @@ fun rarityLabel(r: String): String = when (r) {
     else -> "COMMUN"
 }
 
+fun nextRarity(r: String): String = when (r) {
+    "common" -> "uncommon"
+    "uncommon" -> "rare"
+    "rare" -> "epic"
+    else -> "legendary"
+}
+
+val ITEM_EFFECTS = listOf("vampirisme", "rempart", "frenesie", "chasse")
+
+fun effectLabel(effect: String): String = when (effect) {
+    "vampirisme" -> "VAMPIRISME"
+    "rempart" -> "REMPART"
+    "frenesie" -> "FRÉNÉSIE"
+    "chasse" -> "CHASSE"
+    else -> ""
+}
+
+fun effectDescription(effect: String): String = when (effect) {
+    "vampirisme" -> "+8 % des dégâts infligés rendus en PV"
+    "rempart" -> "−10 % de dégâts subis"
+    "frenesie" -> "+40 % de dégâts critiques"
+    "chasse" -> "+25 % de dégâts contre les gardiens"
+    else -> ""
+}
+
+fun itemScore(item: Item): Int {
+    val effectBonus = when (item.effect) {
+        "vampirisme" -> 30
+        "rempart" -> 38
+        "frenesie" -> 30
+        "chasse" -> 26
+        else -> 0
+    }
+    return (item.atk * 2 + item.hp * 0.25 + item.vitPct * 3 +
+        item.critPct * 4 + item.regen * 20 + effectBonus).roundToInt()
+}
+
+fun oathsFor(date: LocalDate): OathsState {
+    val seed = date.dayOfYear
+    val steps = listOf(2_500, 3_000, 3_500, 4_000)[seed % 4]
+    return OathsState(
+        stepsTarget = steps,
+        bossesTarget = if (seed % 3 == 0) 2 else 1,
+        chestsTarget = if (seed % 4 == 0) 2 else 1
+    )
+}
+
+fun rankLabel(floor: Int): String = when {
+    floor >= 50 -> "VI"
+    floor >= 40 -> "V"
+    floor >= 30 -> "IV"
+    floor >= 20 -> "III"
+    floor >= 10 -> "II"
+    else -> "I"
+}
+
+fun milestoneBonus(floor: Int): Int = floor / 10
+
 fun equipped(state: GameState, slot: String): Item? = state.equipment.firstOrNull { it.slot == slot }
 
 fun statsOf(state: GameState): Stats {
-    var atk = 18 + 3 * (state.level - 1) + 3 * state.upgrades.blade
-    var maxHp = 150 + 18 * (state.level - 1) + 30 * state.upgrades.breath
+    val milestone = milestoneBonus(state.floor)
+    var atk = 18 + 3 * (state.level - 1) + 3 * state.upgrades.blade + 2 * milestone
+    var maxHp = 150 + 18 * (state.level - 1) + 30 * state.upgrades.breath + 12 * milestone
     var vit = 1.0 + 0.01 * (state.level - 1) + 0.025 * state.upgrades.swift
     var crit = 10
     var regen = 0.6
+    var lifesteal = 0.0
+    var damageReduction = 0.0
+    var critDamage = 0.0
+    var bossDamage = 0.0
     state.equipment.forEach {
         atk += it.atk
         maxHp += it.hp
         vit += it.vitPct / 100.0
         crit += it.critPct
         regen += it.regen
+        when (it.effect) {
+            "vampirisme" -> lifesteal += 0.08
+            "rempart" -> damageReduction += 0.10
+            "frenesie" -> critDamage += 0.40
+            "chasse" -> bossDamage += 0.25
+        }
     }
-    return Stats(atk, maxHp, vit, crit, regen)
+    return Stats(
+        atk = atk,
+        maxHp = maxHp,
+        vit = vit,
+        crit = crit,
+        regen = regen,
+        lifesteal = lifesteal,
+        damageReduction = damageReduction.coerceAtMost(0.5),
+        critDamage = critDamage,
+        bossDamage = bossDamage
+    )
 }
 
 fun xpNext(level: Int): Int = (120 * 1.2.pow(level - 1)).roundToInt()
 
-fun powerOf(state: GameState): Int {
-    val s = statsOf(state)
-    return (s.atk * 2 + s.maxHp / 4.0 + s.vit * 20 + s.crit + s.regen * 10).roundToInt()
-}
+fun powerOf(state: GameState): Int = statsOf(state).power
 
 fun tierName(ferveur: Int): String = when {
     ferveur >= 100 -> "Âme ardente"
@@ -382,5 +492,7 @@ fun GameState.deepCopy(): GameState = copy(
     oaths = oaths.copy(),
     stepLedger = stepLedger.toMap(),
     offlineReport = offlineReport?.copy(),
-    chestQueue = chestQueue.map { it.copy() }
+    chestQueue = chestQueue.map { it.copy() },
+    stash = stash.toList(),
+    special = special?.copy(offer = special?.offer?.copy())
 )
