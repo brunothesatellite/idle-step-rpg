@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.3.0** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.3.1** — APK sideloadé pour Pixel 7a (Android 14+).
 
 ## Ce qui est implémenté
 
@@ -82,7 +82,7 @@ Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le tél
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.3.0
+## Limites de cette v0.3.1
 
 - L'historique Garmin est limité à 7 jours et à 20 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON atomique (avec copie de secours), pas encore Room.
@@ -95,3 +95,4 @@ Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le tél
 - Spécifications : [docs/specifications-fonctionnelles.md](../docs/specifications-fonctionnelles.md)
 - Architecture et Garmin : [docs/architecture-android-garmin.md](../docs/architecture-android-garmin.md)
 - Licences : [LICENSES.md](../LICENSES.md)
+

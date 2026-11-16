@@ -175,17 +175,26 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         _toasts.tryEmit("Clé Garmin supprimée de l'appareil.")
     }
 
-    fun openCamp() { _ui.update { it.copy(campOpen = true) } }
+    fun openCamp() {
+        _ui.update { it.copy(campOpen = true, selectedItem = null, chestOpen = false, journalOpen = false) }
+    }
     fun closeCamp() { _ui.update { it.copy(campOpen = false) } }
-    fun openSettings() { _ui.update { it.copy(settingsOpen = true) } }
+    fun openSettings() {
+        _ui.update { it.copy(settingsOpen = true, selectedItem = null, chestOpen = false) }
+    }
     fun closeSettings() { _ui.update { it.copy(settingsOpen = false) } }
-    fun openJournal() { _ui.update { it.copy(journalOpen = true) } }
+    fun openJournal() {
+        _ui.update { it.copy(journalOpen = true, selectedItem = null, campOpen = false) }
+    }
     fun closeJournal() { _ui.update { it.copy(journalOpen = false) } }
 
     fun openPreferences() {
         _ui.update {
             it.copy(
                 prefsOpen = true,
+                selectedItem = null,
+                chestOpen = false,
+                campOpen = false,
                 syncLog = container.garminRepository.syncLog()
             )
         }

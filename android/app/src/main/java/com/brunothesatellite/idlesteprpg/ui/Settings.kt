@@ -65,6 +65,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
         Modifier
             .fillMaxSize()
             .background(Brush.verticalGradient(listOf(Color(0xFF0B0810), Color(0xFF171121), Color(0xFF0B0810))))
+            .clickable { }
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {

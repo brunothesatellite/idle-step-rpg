@@ -110,7 +110,7 @@ L'architecture Android proposée (Kotlin/Compose, APK sideloadé, **Garmin Perso
 
 ## Version Android (APK)
 
-La version native **v0.3.0** est dans `android/` :
+La version native **v0.3.1** est dans `android/` :
 
 - **Kotlin + Jetpack Compose**, `minSdk 34` (Android 14+), package `com.brunothesatellite.idlesteprpg`.
 - **Texte ajustable** (Normal / Grand / Très grand), Grand par défaut, et tableau de bord plus haut pour la lisibilité sur Pixel 7a.
@@ -195,3 +195,4 @@ Le récapitulatif complet des licences est dans **[LICENSES.md](LICENSES.md)**.
 ---
 
 *La Marche des Âmes — maquette de game design, 2026.*
+
