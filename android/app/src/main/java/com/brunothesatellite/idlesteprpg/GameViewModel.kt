@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.brunothesatellite.idlesteprpg.data.SaveSummary
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.Upgrades
@@ -22,6 +23,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
+import java.net.HttpURLConnection
+import java.net.URL
+import org.json.JSONObject
 
 data class UiState(
     val campOpen: Boolean = false,
@@ -41,7 +45,19 @@ data class UiState(
     val reducedMotion: Boolean = false,
     val vibrations: Boolean = true,
     val notificationsEnabled: Boolean = true,
-    val syncLog: List<String> = emptyList()
+    val notifyBoss: Boolean = true,
+    val notifyLevel: Boolean = true,
+    val notifyOaths: Boolean = true,
+    val notifyChest: Boolean = true,
+    val notifyKey: Boolean = true,
+    val quietHours: Boolean = false,
+    val autoSellCommons: Boolean = false,
+    val onboardingDone: Boolean = true,
+    val syncLog: List<String> = emptyList(),
+    val pendingImport: SaveSummary? = null,
+    val dayBanner: String? = null,
+    val updateTag: String? = null,
+    val updateUrl: String? = null
 )
 
 class GameViewModel(private val container: AppContainer) : ViewModel() {
@@ -56,6 +72,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     @Volatile private var visible = false
     private var initialized = false
+    private var pendingImportText: String? = null
+    private var lastKnownDay: String = ""
 
     init {
         _ui.update {
@@ -63,9 +81,18 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 textScale = container.settings.textScale,
                 reducedMotion = container.settings.reducedMotion,
                 vibrations = container.settings.vibrations,
-                notificationsEnabled = container.settings.notificationsEnabled
+                notificationsEnabled = container.settings.notificationsEnabled,
+                notifyBoss = container.settings.notifyBoss,
+                notifyLevel = container.settings.notifyLevel,
+                notifyOaths = container.settings.notifyOaths,
+                notifyChest = container.settings.notifyChest,
+                notifyKey = container.settings.notifyKey,
+                quietHours = container.settings.quietHours,
+                autoSellCommons = container.settings.autoSellCommons,
+                onboardingDone = container.settings.onboardingDone
             )
         }
+        lastKnownDay = game.value.day
         refreshGarmin()
         viewModelScope.launch {
             while (isActive) {
@@ -75,6 +102,15 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 ) {
                     container.gameRepository.tick(100.0)
                 }
+                val today = game.value.day
+                if (lastKnownDay.isNotBlank() && today.isNotBlank() && today != lastKnownDay) {
+                    _ui.update { it.copy(dayBanner = "Nouveau jour · serments renouvelés") }
+                    viewModelScope.launch {
+                        delay(6_000)
+                        _ui.update { it.copy(dayBanner = null) }
+                    }
+                }
+                lastKnownDay = today
                 delay(100)
             }
         }
@@ -176,7 +212,12 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun openCamp() {
-        _ui.update { it.copy(campOpen = true, selectedItem = null, chestOpen = false, journalOpen = false) }
+        viewModelScope.launch {
+            container.gameRepository.mutate { GameEngine.prepareCamp(it) }
+            _ui.update {
+                it.copy(campOpen = true, selectedItem = null, chestOpen = false, journalOpen = false)
+            }
+        }
     }
     fun closeCamp() { _ui.update { it.copy(campOpen = false) } }
     fun openSettings() {
@@ -197,6 +238,18 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 campOpen = false,
                 syncLog = container.garminRepository.syncLog()
             )
+        }
+    }
+
+    fun openScreen(screen: String?) {
+        when (screen) {
+            "garmin" -> openSettings()
+            "chest" -> if (game.value.chest != null) {
+                _ui.update { it.copy(chestOpen = true, selectedItem = null) }
+            }
+            "camp" -> openCamp()
+            "journal" -> openJournal()
+            else -> Unit
         }
     }
 
@@ -221,6 +274,51 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         container.settings.notificationsEnabled = value
         _ui.update { it.copy(notificationsEnabled = value) }
         if (!value) GameNotifications.cancelAll(container.context)
+    }
+
+    fun setNotifyBoss(value: Boolean) {
+        container.settings.notifyBoss = value
+        _ui.update { it.copy(notifyBoss = value) }
+    }
+
+    fun setNotifyLevel(value: Boolean) {
+        container.settings.notifyLevel = value
+        _ui.update { it.copy(notifyLevel = value) }
+    }
+
+    fun setNotifyOaths(value: Boolean) {
+        container.settings.notifyOaths = value
+        _ui.update { it.copy(notifyOaths = value) }
+    }
+
+    fun setNotifyChest(value: Boolean) {
+        container.settings.notifyChest = value
+        _ui.update { it.copy(notifyChest = value) }
+    }
+
+    fun setNotifyKey(value: Boolean) {
+        container.settings.notifyKey = value
+        _ui.update { it.copy(notifyKey = value) }
+    }
+
+    fun setQuietHours(value: Boolean) {
+        container.settings.quietHours = value
+        _ui.update { it.copy(quietHours = value) }
+    }
+
+    fun setAutoSellCommons(value: Boolean) {
+        container.settings.autoSellCommons = value
+        _ui.update { it.copy(autoSellCommons = value) }
+    }
+
+    fun completeOnboarding() {
+        container.settings.onboardingDone = true
+        _ui.update { it.copy(onboardingDone = true) }
+    }
+
+    fun restartOnboarding() {
+        container.settings.onboardingDone = false
+        _ui.update { it.copy(onboardingDone = false, prefsOpen = false) }
     }
 
     fun dismissOfflineReport() {
@@ -252,6 +350,10 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun importFrom(uri: Uri) {
+        inspectImport(uri)
+    }
+
+    fun inspectImport(uri: Uri) {
         viewModelScope.launch {
             val text = runCatching {
                 withContext(Dispatchers.IO) {
@@ -260,11 +362,74 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                     }
                 }
             }.getOrNull()
-            val ok = text != null && container.gameRepository.importJson(text)
-            if (ok) {
-                _ui.update { it.copy(selectedItem = null, chestOpen = false, campOpen = false) }
+            val summary = text?.let { container.gameRepository.inspectJson(it) }
+            if (text == null || summary == null) {
+                pendingImportText = null
+                _ui.update { it.copy(pendingImport = null) }
+                _toasts.emit("Fichier de sauvegarde invalide ou incompatible.")
+            } else {
+                pendingImportText = text
+                _ui.update { it.copy(pendingImport = summary) }
             }
-            _toasts.emit(if (ok) "Sauvegarde importée." else "Fichier de sauvegarde invalide.")
+        }
+    }
+
+    fun confirmImport() {
+        val text = pendingImportText ?: return
+        viewModelScope.launch {
+            val ok = container.gameRepository.importJson(text)
+            pendingImportText = null
+            if (ok) {
+                _ui.update {
+                    it.copy(
+                        pendingImport = null,
+                        selectedItem = null,
+                        chestOpen = false,
+                        campOpen = false,
+                        prefsOpen = false
+                    )
+                }
+                _toasts.emit("Sauvegarde importée.")
+            } else {
+                _ui.update { it.copy(pendingImport = null) }
+                _toasts.emit("Import impossible.")
+            }
+        }
+    }
+
+    fun cancelImport() {
+        pendingImportText = null
+        _ui.update { it.copy(pendingImport = null) }
+    }
+
+    fun checkForUpdate() {
+        viewModelScope.launch {
+            val release = withContext(Dispatchers.IO) {
+                runCatching {
+                    val connection = URL(
+                        "https://api.github.com/repos/brunothesatellite/idle-step-rpg/releases/latest"
+                    ).openConnection() as HttpURLConnection
+                    connection.connectTimeout = 10_000
+                    connection.readTimeout = 10_000
+                    connection.setRequestProperty("Accept", "application/vnd.github+json")
+                    connection.setRequestProperty("User-Agent", "LaMarcheDesAmes")
+                    val body = connection.inputStream.bufferedReader().use { it.readText() }
+                    JSONObject(body)
+                }.getOrNull()
+            }
+            val tag = release?.optString("tag_name")?.takeIf { it.isNotBlank() }
+            val url = release?.optString("html_url")?.takeIf { it.isNotBlank() }
+            if (tag == null) {
+                _toasts.emit("Vérification impossible. Réessayez plus tard.")
+                return@launch
+            }
+            if (tag != "v${BuildConfig.VERSION_NAME}") {
+                _ui.update { it.copy(updateTag = tag, updateUrl = url) }
+                _toasts.emit("Mise à jour $tag disponible.")
+            } else {
+                _ui.update { it.copy(updateTag = null, updateUrl = null) }
+                _toasts.emit("Vous avez la dernière version.")
+            }
         }
     }
 
@@ -315,6 +480,55 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             _toasts.emit(
                 if (moved > 0) "$moved objet(s) récupéré(s)." else "Inventaire plein ou coffre vide."
             )
+        }
+    }
+
+    fun withdrawStashItem(item: Item) {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.withdrawStashItem(it, item.id) }
+            _toasts.emit(if (ok) "${item.name} récupéré." else "Inventaire plein.")
+        }
+    }
+
+    private fun refreshSelected(itemId: String) {
+        val updated = container.gameRepository.state.value.inventory.firstOrNull { it.id == itemId }
+        _ui.update { it.copy(selectedItem = updated) }
+    }
+
+    fun identifyItem(item: Item) {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.identifyItem(it, item.id) }
+            refreshSelected(item.id)
+            _toasts.emit(if (ok) "Objet identifié." else "1 éclat requis.")
+        }
+    }
+
+    fun rerollEffect(item: Item) {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.rerollEffect(it, item.id) }
+            refreshSelected(item.id)
+            _toasts.emit(if (ok) "Affixe reforgé." else "2 éclats requis.")
+        }
+    }
+
+    fun upgradeItem(item: Item) {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.upgradeItem(it, item.id) }
+            refreshSelected(item.id)
+            _toasts.emit(if (ok) "Objet amélioré." else "Or ou éclat insuffisant.")
+        }
+    }
+
+    fun dismantleItem(item: Item) {
+        viewModelScope.launch {
+            var shards = 0
+            container.gameRepository.mutate { shards = GameEngine.dismantleItem(it, item.id) }
+            _ui.update { it.copy(selectedItem = null) }
+            _toasts.emit(if (shards > 0) "Objet démonté · +$shards éclat(s)." else "Objet verrouillé.")
         }
     }
 

@@ -62,6 +62,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
+import com.brunothesatellite.idlesteprpg.data.SaveSummary
 import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
@@ -73,6 +74,8 @@ import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
 import com.brunothesatellite.idlesteprpg.engine.effectDescription
 import com.brunothesatellite.idlesteprpg.engine.effectLabel
 import com.brunothesatellite.idlesteprpg.engine.formatRemaining
+import com.brunothesatellite.idlesteprpg.engine.setBonusDescription
+import com.brunothesatellite.idlesteprpg.engine.setLabel
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.powerOf
 import com.brunothesatellite.idlesteprpg.engine.rarityLabel
@@ -93,11 +96,19 @@ fun ItemDialog(
     onEquip: () -> Unit,
     onSell: () -> Unit,
     onToggleLock: () -> Unit,
-    onFuse: () -> Unit
+    onFuse: () -> Unit,
+    onIdentify: () -> Unit,
+    onReroll: () -> Unit,
+    onUpgrade: () -> Unit,
+    onDismantle: () -> Unit
 ) {
     val equippedItem = equipped(state, item.slot)
     val fusionCount = state.inventory.count {
-        it.slot == item.slot && it.rarity == item.rarity && !it.locked
+        it.slot == item.slot && it.rarity == item.rarity && !it.locked && it.identified
+    }
+    val setCount = if (item.setName.isBlank()) 0 else {
+        state.equipment.count { it.setName == item.setName } +
+            if (state.inventory.any { it.id == item.id }) 1 else 0
     }
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
@@ -122,16 +133,33 @@ fun ItemDialog(
                     }
                     Spacer(Modifier.width(9.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(rarityLabel(item.rarity), fontSize = 5.5.sp, letterSpacing = 1.sp, color = rarityColor(item.rarity))
-                        Text(item.name, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Parchment)
+                        Text(
+                            if (item.identified) rarityLabel(item.rarity) else "NON IDENTIFIÉ",
+                            fontSize = 5.5.sp,
+                            letterSpacing = 1.sp,
+                            color = if (item.identified) rarityColor(item.rarity) else Ember
+                        )
+                        Text(
+                            if (item.identified) item.name else "Objet mystérieux",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Parchment
+                        )
                         Text(
                             "${slotLabel(item.slot)} · Niv. ${item.level}" +
                                 if (item.locked) " · VERROUILLÉ" else "",
                             fontSize = 7.sp,
                             color = if (item.locked) Ember else Muted
                         )
-                        if (item.effect.isNotBlank()) {
+                        if (item.identified && item.effect.isNotBlank()) {
                             Text(effectLabel(item.effect), fontSize = 6.sp, color = Legendary)
+                        }
+                        if (item.identified && item.setName.isNotBlank()) {
+                            Text(
+                                "${setLabel(item.setName)} · ${setCount}/6",
+                                fontSize = 5.8.sp,
+                                color = Blue
+                            )
                         }
                     }
                     Text(
@@ -149,73 +177,139 @@ fun ItemDialog(
                 Spacer(Modifier.height(8.dp))
                 DividerLine()
                 Spacer(Modifier.height(6.dp))
-                StatRow("ATQ", if (item.atk != 0) "+${item.atk}" else "—")
-                StatRow("PV", if (item.hp != 0) "+${item.hp}" else "—")
-                StatRow("% VIT", if (item.vitPct != 0) "+${item.vitPct}" else "—")
-                StatRow("% critique", if (item.critPct != 0) "+${item.critPct}" else "—")
-                StatRow("Régénération", if (item.regen != 0.0) "+${"%.1f".format(item.regen)}" else "—")
-                StatRow("Valeur", "${formatInt(item.value)} or")
-                Spacer(Modifier.height(4.dp))
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Panel)
-                        .padding(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("ÉQUIPÉ", fontSize = 5.5.sp, color = Muted2)
-                        Text(
-                            equippedItem?.let { statLine(it) } ?: "Emplacement vide",
-                            fontSize = 6.5.sp,
-                            color = Parchment.copy(alpha = 0.75f),
-                            maxLines = 2
-                        )
-                    }
-                    Text("→", color = Gold, fontSize = 12.sp)
-                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                        Text("NOUVEAU", fontSize = 5.5.sp, color = Muted2)
-                        Text(statLine(item), fontSize = 6.5.sp, color = GoldLight, maxLines = 2, textAlign = TextAlign.End)
-                    }
-                }
-                if (item.effect.isNotBlank()) {
+                if (!item.identified) {
+                    Text(
+                        "Un éclat d'âme suffit pour révéler les statistiques, l'effet et l'ensemble de cet objet.",
+                        fontSize = 7.sp,
+                        color = Muted,
+                        lineHeight = 10.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OverlayAction("IDENTIFIER · 1 ÉCLAT", Modifier.fillMaxWidth(), onIdentify, primary = true)
                     Spacer(Modifier.height(5.dp))
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Legendary.copy(alpha = 0.08f))
-                            .border(1.dp, Legendary.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
-                            .padding(6.dp)
-                    ) {
-                        Text(effectLabel(item.effect), fontSize = 6.sp, letterSpacing = 0.6.sp, color = Legendary)
-                        Text(effectDescription(item.effect), fontSize = 6.5.sp, color = Parchment.copy(alpha = 0.8f))
-                    }
-                }
-                Spacer(Modifier.height(9.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    OverlayAction(
-                        if (item.locked) "DÉVERROUILLER" else "VERROUILLER",
-                        Modifier.weight(1f),
-                        onToggleLock
-                    )
-                    OverlayAction(
-                        "FUSIONNER $fusionCount/3",
-                        Modifier.weight(1f),
-                        onFuse,
-                        enabled = fusionCount >= 3 && !item.locked
-                    )
-                }
-                Spacer(Modifier.height(5.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     OverlayAction(
                         if (item.locked) "VERROUILLÉ" else "VENDRE +${formatInt(item.value)} or",
-                        Modifier.weight(0.85f),
+                        Modifier.fillMaxWidth(),
                         onSell,
                         enabled = !item.locked
                     )
-                    OverlayAction("ÉQUIPER", Modifier.weight(1.15f), onEquip, primary = true)
+                } else {
+                    StatRow("ATQ", if (item.atk != 0) "+${item.atk}" else "—")
+                    StatRow("PV", if (item.hp != 0) "+${item.hp}" else "—")
+                    StatRow("% VIT", if (item.vitPct != 0) "+${item.vitPct}" else "—")
+                    StatRow("% critique", if (item.critPct != 0) "+${item.critPct}" else "—")
+                    StatRow("Régénération", if (item.regen != 0.0) "+${"%.1f".format(item.regen)}" else "—")
+                    StatRow("Valeur", "${formatInt(item.value)} or")
+                    Spacer(Modifier.height(4.dp))
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Panel)
+                            .padding(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("ÉQUIPÉ", fontSize = 5.5.sp, color = Muted2)
+                            Text(
+                                equippedItem?.let { statLine(it) } ?: "Emplacement vide",
+                                fontSize = 6.5.sp,
+                                color = Parchment.copy(alpha = 0.75f),
+                                maxLines = 2
+                            )
+                        }
+                        Text("→", color = Gold, fontSize = 12.sp)
+                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                            Text("NOUVEAU", fontSize = 5.5.sp, color = Muted2)
+                            Text(statLine(item), fontSize = 6.5.sp, color = GoldLight, maxLines = 2, textAlign = TextAlign.End)
+                        }
+                    }
+                    if (item.setName.isNotBlank()) {
+                        Spacer(Modifier.height(5.dp))
+                        val tier = when {
+                            setCount >= 6 -> 6
+                            setCount >= 4 -> 4
+                            else -> 2
+                        }
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Blue.copy(alpha = 0.08f))
+                                .border(1.dp, Blue.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                                .padding(6.dp)
+                        ) {
+                            Text(
+                                "${setLabel(item.setName)} · $setCount/6",
+                                fontSize = 6.sp,
+                                letterSpacing = 0.5.sp,
+                                color = Blue
+                            )
+                            Text(
+                                if (setCount >= 2) setBonusDescription(item.setName, tier)
+                                else "2 pièces : ${setBonusDescription(item.setName, 2)}",
+                                fontSize = 6.3.sp,
+                                color = Parchment.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                    if (item.effect.isNotBlank()) {
+                        Spacer(Modifier.height(5.dp))
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Legendary.copy(alpha = 0.08f))
+                                .border(1.dp, Legendary.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                                .padding(6.dp)
+                        ) {
+                            Text(effectLabel(item.effect), fontSize = 6.sp, letterSpacing = 0.6.sp, color = Legendary)
+                            Text(effectDescription(item.effect), fontSize = 6.5.sp, color = Parchment.copy(alpha = 0.8f))
+                        }
+                    }
+                    Spacer(Modifier.height(9.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        OverlayAction(
+                            if (item.locked) "DÉVERROUILLER" else "VERROUILLER",
+                            Modifier.weight(1f),
+                            onToggleLock
+                        )
+                        OverlayAction(
+                            "FUSIONNER $fusionCount/3",
+                            Modifier.weight(1f),
+                            onFuse,
+                            enabled = fusionCount >= 3 && !item.locked
+                        )
+                    }
+                    if (state.bosses > 0) {
+                        Spacer(Modifier.height(5.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            OverlayAction("REFORGER · 2", Modifier.weight(1f), onReroll)
+                            OverlayAction(
+                                "AMÉLIORER · ${formatInt(GameEngine.upgradeCost(item))}",
+                                Modifier.weight(1.2f),
+                                onUpgrade
+                            )
+                            OverlayAction("DÉMONTER", Modifier.weight(0.9f), onDismantle, danger = true)
+                        }
+                    } else {
+                        Text(
+                            "La forge se débloque après le premier gardien vaincu.",
+                            fontSize = 6.sp,
+                            color = Muted2,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(5.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        OverlayAction(
+                            if (item.locked) "VERROUILLÉ" else "VENDRE +${formatInt(item.value)} or",
+                            Modifier.weight(0.85f),
+                            onSell,
+                            enabled = !item.locked
+                        )
+                        OverlayAction("ÉQUIPER", Modifier.weight(1.15f), onEquip, primary = true)
+                    }
                 }
             }
         }
@@ -305,7 +399,10 @@ fun ChestDialog(
                         enabled = false
                     )
                     Spacer(Modifier.height(4.dp))
-                    OverlayAction("ARRÊTER LE FORÇAGE", Modifier.fillMaxWidth(), onStop)
+                    OverlayAction("ARRÊTER LE FORÇAGE", Modifier.fillMaxWidth(), {
+                        onStop()
+                        onDismiss()
+                    })
                 } else {
                     OverlayAction(
                         if (chest.progress > 0) "REPRENDRE LE FORÇAGE" else "CONSACRER MES PAS",
@@ -315,7 +412,7 @@ fun ChestDialog(
                     )
                 }
                 Spacer(Modifier.height(4.dp))
-                OverlayAction("PLUS TARD", Modifier.fillMaxWidth(), onDismiss)
+                OverlayAction("CONTINUER LA MARCHE", Modifier.fillMaxWidth(), onDismiss)
             }
         }
     }
@@ -328,6 +425,8 @@ fun CampOverlay(
     onShard: () -> Unit,
     onFreeRest: () -> Unit,
     onWithdrawStash: () -> Unit,
+    onOpenJournal: () -> Unit,
+    onOpenInventory: () -> Unit,
     onResume: () -> Unit
 ) {
     val stats = statsOf(state)
@@ -472,6 +571,13 @@ fun CampOverlay(
                 CampSummary("FERVEUR", state.ferveur.toString())
                 CampSummary("PV", "${state.hp.toInt()} / ${stats.maxHp}")
             }
+            Spacer(Modifier.height(4.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                CampSummary("PAS EN ATTENTE", formatInt(state.stepBank.toInt()))
+                CampSummary("OR", formatInt(state.gold))
+                CampSummary("SÉRIE", "${state.streak.coerceAtLeast(1)} j")
+                CampSummary("TOTAL", formatInt(state.totalSteps))
+            }
             Spacer(Modifier.height(7.dp))
             CampAction(
                 "Se reposer",
@@ -493,7 +599,7 @@ fun CampOverlay(
             Spacer(Modifier.height(4.dp))
             CampAction(
                 "Veillée gratuite",
-                "+25 % PV · une fois par jour",
+                "+15 % PV · une fois par jour",
                 "fx/heart.png",
                 if (state.freeRestDay == state.day) "UTILISÉE" else "GRATUIT",
                 enabled = state.freeRestDay != state.day && state.hp < stats.maxHp,
@@ -509,6 +615,11 @@ fun CampOverlay(
                     enabled = state.inventory.size < 24,
                     onClick = onWithdrawStash
                 )
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                OverlayAction("JOURNAL", Modifier.weight(1f), onOpenJournal)
+                OverlayAction("INVENTAIRE", Modifier.weight(1f), onOpenInventory)
             }
             Spacer(Modifier.height(7.dp))
             GoldButton("REPRENDRE L'EXPÉDITION", onClick = onResume)
@@ -805,7 +916,13 @@ private fun GarminInfoRow(label: String, value: String, valueColor: Color = Parc
 }
 
 @Composable
-fun JournalOverlay(journal: List<JournalEntry>, onClose: () -> Unit) {
+fun JournalOverlay(
+    journal: List<JournalEntry>,
+    legend: List<JournalEntry>,
+    bestiary: Map<String, Int>,
+    onClose: () -> Unit
+) {
+    var tab by remember { mutableStateOf("journal") }
     var filter by remember { mutableStateOf("all") }
     val filtered = when (filter) {
         "good" -> journal.filter { it.type == "good" }
@@ -828,7 +945,15 @@ fun JournalOverlay(journal: List<JournalEntry>, onClose: () -> Unit) {
             ) {
                 Column(Modifier.weight(1f)) {
                     Text("JOURNAL DE LA MARCHE", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
-                    Text("${journal.size} événements conservés", fontSize = 7.sp, color = Muted)
+                    Text(
+                        when (tab) {
+                            "legend" -> "${legend.size} entrée(s) de légende"
+                            "bestiary" -> "${bestiary.size} créature(s) connue(s)"
+                            else -> "${journal.size} événements conservés"
+                        },
+                        fontSize = 7.sp,
+                        color = Muted
+                    )
                 }
                 Text(
                     "×",
@@ -849,23 +974,50 @@ fun JournalOverlay(journal: List<JournalEntry>, onClose: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 listOf(
-                    "all" to "Tous",
-                    "good" to "Favorables",
-                    "bad" to "Alertes",
-                    "neutral" to "Neutres"
+                    "journal" to "Journal",
+                    "legend" to "Légende",
+                    "bestiary" to "Bestiaire"
                 ).forEach { (key, label) ->
-                    val active = filter == key
+                    val active = tab == key
                     Box(
                         Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(4.dp))
                             .background(if (active) Gold.copy(alpha = 0.16f) else Panel)
                             .border(1.dp, if (active) Gold.copy(alpha = 0.6f) else Line, RoundedCornerShape(4.dp))
-                            .clickable { filter = key }
+                            .clickable { tab = key }
                             .padding(vertical = 5.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(label, fontSize = 6.5.sp, color = if (active) GoldLight else Muted, maxLines = 1)
+                    }
+                }
+            }
+            if (tab == "journal") {
+                Spacer(Modifier.height(5.dp))
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    listOf(
+                        "all" to "Tous",
+                        "good" to "Favorables",
+                        "bad" to "Alertes",
+                        "neutral" to "Neutres"
+                    ).forEach { (key, label) ->
+                        val active = filter == key
+                        Box(
+                            Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (active) Gold.copy(alpha = 0.12f) else Panel.copy(alpha = 0.6f))
+                                .border(1.dp, if (active) Gold.copy(alpha = 0.45f) else Line, RoundedCornerShape(4.dp))
+                                .clickable { filter = key }
+                                .padding(vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(label, fontSize = 5.8.sp, color = if (active) GoldLight else Muted, maxLines = 1)
+                        }
                     }
                 }
             }
@@ -877,22 +1029,52 @@ fun JournalOverlay(journal: List<JournalEntry>, onClose: () -> Unit) {
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
-                if (filtered.isEmpty()) {
-                    Text(
-                        "Aucun événement dans ce filtre.",
-                        modifier = Modifier.fillMaxWidth().padding(top = 30.dp),
-                        textAlign = TextAlign.Center,
-                        fontSize = 8.sp,
-                        color = Muted2
-                    )
-                }
-                filtered.forEach { entry ->
-                    JournalRow(entry)
+                when (tab) {
+                    "legend" -> {
+                        if (legend.isEmpty()) {
+                            EmptyJournal("Aucun jalon pour l'instant. Franchi un palier multiple de 10.")
+                        }
+                        legend.forEach { entry -> JournalRow(entry) }
+                    }
+                    "bestiary" -> {
+                        if (bestiary.isEmpty()) {
+                            EmptyJournal("Aucune créature vaincue pour l'instant.")
+                        }
+                        bestiary.entries.sortedByDescending { it.value }.forEach { (name, kills) ->
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 5.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(name, fontSize = 8.sp, color = Parchment)
+                                Text("× $kills", fontFamily = Press, fontSize = 7.sp, color = Gold)
+                            }
+                            DividerLine()
+                        }
+                    }
+                    else -> {
+                        if (filtered.isEmpty()) {
+                            EmptyJournal("Aucun événement dans ce filtre.")
+                        }
+                        filtered.forEach { entry -> JournalRow(entry) }
+                    }
                 }
                 Spacer(Modifier.height(16.dp))
             }
         }
     }
+}
+
+@Composable
+private fun EmptyJournal(text: String) {
+    Text(
+        text,
+        modifier = Modifier.fillMaxWidth().padding(top = 30.dp),
+        textAlign = TextAlign.Center,
+        fontSize = 8.sp,
+        color = Muted2
+    )
 }
 
 @Composable
@@ -955,6 +1137,13 @@ fun OfflineOverlay(report: OfflineReport, onDismiss: () -> Unit) {
                     RecapTile(formatInt(report.steps), "PAS", Modifier.weight(1f))
                     RecapTile(formatInt(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
                 }
+                Spacer(Modifier.height(6.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    RecapTile(formatInt(report.combats), "COMBATS", Modifier.weight(1f))
+                    RecapTile(formatInt(report.gold), "OR", Modifier.weight(1f))
+                    RecapTile(formatInt(report.floors), "PALIERS", Modifier.weight(1f))
+                    RecapTile(formatInt(report.kills), "VICTIMES", Modifier.weight(1f))
+                }
                 Spacer(Modifier.height(12.dp))
                 Text(
                     "Vos pas Garmin des derniers jours ont été récupérés et ajoutés à la marche, " +
@@ -987,6 +1176,70 @@ private fun RecapTile(value: String, label: String, modifier: Modifier = Modifie
 }
 
 @Composable
+fun DayBanner(text: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(Ink.copy(alpha = 0.94f))
+            .border(1.dp, Gold.copy(alpha = 0.55f), RoundedCornerShape(4.dp))
+            .padding(horizontal = 14.dp, vertical = 7.dp)
+    ) {
+        Text(text, fontSize = 7.sp, color = GoldLight, maxLines = 1)
+    }
+}
+
+@Composable
+fun ImportPreviewDialog(
+    summary: SaveSummary,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
+    Dialog(onDismissRequest = onCancel, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Brush.verticalGradient(listOf(Color(0xFF241930), Color(0xFF130E1C))))
+                    .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
+                    .padding(18.dp)
+            ) {
+                Text("IMPORTER CETTE SAUVEGARDE ?", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                Spacer(Modifier.height(8.dp))
+                ImportRow("Niveau", summary.level.toString())
+                ImportRow("Palier", summary.floor.toString())
+                ImportRow("Or", formatInt(summary.gold))
+                ImportRow("Jour", summary.day.ifBlank { "—" })
+                ImportRow("Objets", summary.items.toString())
+                ImportRow("Version", "v${summary.version}")
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "La progression actuelle sera remplacée. La clé Garmin et les réglages restent inchangés.",
+                    fontSize = 7.sp,
+                    color = Blood,
+                    lineHeight = 10.sp
+                )
+                Spacer(Modifier.height(12.dp))
+                OverlayAction("REMPLACER LA PROGRESSION", Modifier.fillMaxWidth(), onConfirm, primary = true)
+                Spacer(Modifier.height(5.dp))
+                OverlayAction("ANNULER", Modifier.fillMaxWidth(), onCancel)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImportRow(label: String, value: String) {
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, fontSize = 7.5.sp, color = Muted)
+        Text(value, fontSize = 8.sp, color = Parchment)
+    }
+}
+
+@Composable
 fun SpecialDialog(
     special: SpecialData,
     state: GameState,
@@ -996,7 +1249,7 @@ fun SpecialDialog(
     val affordable = when (special.type) {
         "autel" -> state.shards >= special.shardCost
         "source" -> state.rations >= special.rationCost
-        "marchand", "statue" -> state.gold >= special.goldCost
+        "marchand", "statue", "risque" -> state.gold >= special.goldCost
         else -> false
     }
     Dialog(onDismissRequest = onDecline, properties = DialogProperties(usePlatformDefaultWidth = false)) {

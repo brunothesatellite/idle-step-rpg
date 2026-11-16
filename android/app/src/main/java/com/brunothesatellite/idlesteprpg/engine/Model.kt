@@ -20,6 +20,8 @@ const val MAX_PENDING_CHESTS = 2
 const val INVENTORY_CAP = 24
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
+const val MAX_STEPS_PER_MINUTE = 250
+const val SAVE_VERSION = 2
 
 @Serializable
 data class Upgrades(
@@ -43,7 +45,9 @@ data class Item(
     val regen: Double = 0.0,
     val value: Int = 0,
     val effect: String = "",
-    val locked: Boolean = false
+    val locked: Boolean = false,
+    val identified: Boolean = true,
+    val setName: String = ""
 )
 
 @Serializable
@@ -72,7 +76,8 @@ data class FightData(
     var elapsedMs: Double = 0.0,
     var specialMs: Double = 8000.0,
     var usedRation: Boolean = false,
-    var modifier: String = ""
+    var modifier: String = "",
+    var lastCrit: Boolean = false
 )
 
 @Serializable
@@ -90,6 +95,10 @@ data class OfflineReport(
     val days: Int,
     val steps: Int,
     val distanceMeters: Int,
+    val combats: Int = 0,
+    val gold: Int = 0,
+    val floors: Int = 0,
+    val kills: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),
     val acknowledgedAt: Long = 0L
 )
@@ -122,7 +131,7 @@ data class ChestData(
 
 @Serializable
 data class GameState(
-    var version: Int = 1,
+    var version: Int = SAVE_VERSION,
     var floor: Int = 1,
     var distance: Double = 0.0,
     var nextFight: Int = 10,
@@ -165,7 +174,18 @@ data class GameState(
     var special: SpecialData? = null,
     var freeRestDay: String = "",
     var lastStepAt: Long = 0L,
-    var ferveurDecayMs: Double = 0.0
+    var ferveurDecayMs: Double = 0.0,
+    var ferveurDecayAt: Long = 0L,
+    var totalSteps: Int = 0,
+    var kills: Int = 0,
+    var chestsOpened: Int = 0,
+    var goldEarned: Int = 0,
+    var legend: List<JournalEntry> = emptyList(),
+    var bestiary: Map<String, Int> = emptyMap(),
+    var weeklySteps: Int = 0,
+    var weekKey: String = "",
+    var streak: Int = 0,
+    var lastActiveDay: String = ""
 )
 
 data class Stats(
@@ -195,7 +215,10 @@ val EASY_MOBS = listOf(
     MobTemplate("Loup noir", "mon/wolf.png"),
     MobTemplate("Araignée", "mon/spider.png"),
     MobTemplate("Goule", "mon/ghoul.png"),
-    MobTemplate("Scorpion", "mon/scorpion.png")
+    MobTemplate("Scorpion", "mon/scorpion.png"),
+    MobTemplate("Cafard géant", "mon/giant_cockroach.png"),
+    MobTemplate("Grenouille géante", "mon/giant_frog.png"),
+    MobTemplate("Ver des tombes", "mon/worm.png")
 )
 
 val MID_MOBS = listOf(
@@ -205,7 +228,9 @@ val MID_MOBS = listOf(
     MobTemplate("Hobgobelin", "mon/hobgoblin.png"),
     MobTemplate("Naga", "mon/naga.png"),
     MobTemplate("Diablotin", "mon/crimson_imp.png"),
-    MobTemplate("Manticore", "mon/manticore.png")
+    MobTemplate("Manticore", "mon/manticore.png"),
+    MobTemplate("Élémentaire de feu", "mon/fire_elemental.png"),
+    MobTemplate("Démon solaire", "mon/sun_demon.png")
 )
 
 val HARD_MOBS = listOf(
@@ -216,7 +241,9 @@ val HARD_MOBS = listOf(
     MobTemplate("Griffon", "mon/griffon.png"),
     MobTemplate("Golem de fer", "mon/iron_golem.png"),
     MobTemplate("Vampire", "mon/vampire.png"),
-    MobTemplate("Spectre", "mon/ghost.png")
+    MobTemplate("Spectre", "mon/ghost.png"),
+    MobTemplate("Hydre mineure", "mon/hydra1.png"),
+    MobTemplate("Sigmund le reclus", "mon/sigmund.png")
 )
 
 val BOSSES = listOf(
@@ -227,7 +254,9 @@ val BOSSES = listOf(
     BossTemplate("Balrug", "mon/balrug.png"),
     BossTemplate("Cerebov", "mon/cerebov.png"),
     BossTemplate("Dragon d'orage", "mon/storm_dragon.png"),
-    BossTemplate("Liche ancienne", "mon/lich.png")
+    BossTemplate("Liche ancienne", "mon/lich.png"),
+    BossTemplate("Sigmund, gardien fou", "mon/sigmund.png"),
+    BossTemplate("Démon solaire", "mon/sun_demon.png")
 )
 
 val LOOT_TEMPLATES = listOf(
@@ -297,6 +326,35 @@ fun nextRarity(r: String): String = when (r) {
 }
 
 val ITEM_EFFECTS = listOf("vampirisme", "rempart", "frenesie", "chasse")
+
+val ITEM_SETS = listOf("veilleur", "braise", "givre")
+
+fun setLabel(name: String): String = when (name) {
+    "veilleur" -> "SERVICE DU VEILLEUR"
+    "braise" -> "BRAISE ANCIENNE"
+    "givre" -> "SERMENT DE GIVRE"
+    else -> ""
+}
+
+fun setBonusDescription(name: String, pieces: Int): String {
+    if (pieces < 2) return ""
+    return when (name) {
+        "veilleur" -> if (pieces >= 6) "+30 ATQ, +90 PV" else if (pieces >= 4) "+20 ATQ, +60 PV" else "+10 ATQ, +30 PV"
+        "braise" -> if (pieces >= 6) "+9 % crit., +15 % vol de vie" else if (pieces >= 4) "+6 % crit., +10 % vol de vie" else "+3 % crit., +5 % vol de vie"
+        "givre" -> if (pieces >= 6) "+15 % VIT, +0,9 PV/s" else if (pieces >= 4) "+10 % VIT, +0,6 PV/s" else "+5 % VIT, +0,3 PV/s"
+        else -> ""
+    }
+}
+
+fun titleFor(floor: Int): String = when {
+    floor >= 100 -> "Légende des Âmes"
+    floor >= 50 -> "Souverain des Cimes"
+    floor >= 40 -> "Gardien de la Forge"
+    floor >= 30 -> "Marcheur de Cendre"
+    floor >= 20 -> "Pèlerin des Abysses"
+    floor >= 10 -> "Veilleur des Cryptes"
+    else -> "Pèlerin"
+}
 
 fun effectLabel(effect: String): String = when (effect) {
     "vampirisme" -> "VAMPIRISME"
@@ -373,6 +431,32 @@ fun statsOf(state: GameState): Stats {
             "chasse" -> bossDamage += 0.25
         }
     }
+    state.equipment
+        .filter { it.setName.isNotBlank() }
+        .groupingBy { it.setName }
+        .eachCount()
+        .forEach { (setName, count) ->
+            if (count < 2) return@forEach
+            val tier = when {
+                count >= 6 -> 3
+                count >= 4 -> 2
+                else -> 1
+            }
+            when (setName) {
+                "veilleur" -> {
+                    atk += 10 * tier
+                    maxHp += 30 * tier
+                }
+                "braise" -> {
+                    crit += 3 * tier
+                    lifesteal += 0.05 * tier
+                }
+                "givre" -> {
+                    vit += 0.05 * tier
+                    regen += 0.3 * tier
+                }
+            }
+        }
     return Stats(
         atk = atk,
         maxHp = maxHp,
@@ -414,7 +498,13 @@ fun biomeFor(floor: Int): String = when {
     else -> "CIMES DU SERMENT"
 }
 
-fun bossFor(floor: Int): BossTemplate = BOSSES[((floor - 1) % BOSSES.size)]
+fun bossFor(floor: Int): BossTemplate = when {
+    floor % 100 == 0 -> BossTemplate("L'Âme Première", "mon/cerebov.png")
+    floor % 50 == 0 -> BossTemplate("Seigneur de la Forge", "mon/iron_giant.png")
+    floor % 25 == 0 -> BossTemplate("Mère des Abysses", "mon/jormungandr.png")
+    floor % 10 == 0 -> BossTemplate("Roi des Cryptes", "mon/lich.png")
+    else -> BOSSES[((floor - 1) % BOSSES.size)]
+}
 
 fun upgradeCost(key: String, currentLevel: Int): Int {
     val (base, mult) = when (key) {
@@ -494,5 +584,7 @@ fun GameState.deepCopy(): GameState = copy(
     offlineReport = offlineReport?.copy(),
     chestQueue = chestQueue.map { it.copy() },
     stash = stash.toList(),
-    special = special?.copy(offer = special?.offer?.copy())
+    legend = legend.toList(),
+    bestiary = bestiary.toMap(),
+    special = special?.let { it.copy(offer = it.offer?.copy()) }
 )

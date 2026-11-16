@@ -19,7 +19,8 @@ data class SyncResult(
     val message: String,
     val total: Int = 0,
     val added: Int = 0,
-    val needsKey: Boolean = false
+    val needsKey: Boolean = false,
+    val retryAt: Long = 0L
 )
 
 class GarminRepository(
@@ -118,6 +119,15 @@ class GarminRepository(
         if (key == null) {
             return@withContext SyncResult(false, "Aucune clé Garmin enregistrée.", needsKey = true)
         }
+        val retryAt = prefs.getLong(KEY_RETRY_AT, 0L)
+        if (retryAt > System.currentTimeMillis()) {
+            val minutes = ((retryAt - System.currentTimeMillis()) / 60_000L).coerceAtLeast(1L)
+            return@withContext SyncResult(
+                false,
+                "Limite Garmin atteinte. Réessayez dans $minutes min.",
+                retryAt = retryAt
+            )
+        }
         try {
             var token = secrets.token()
             var expiry = secrets.tokenExpiresAt()
@@ -154,6 +164,7 @@ class GarminRepository(
             prefs.edit()
                 .putLong(KEY_LAST_SYNC, System.currentTimeMillis())
                 .putString(KEY_LAST_ERROR, "")
+                .remove(KEY_RETRY_AT)
                 .apply()
             val message = when {
                 report != null -> "Rattrapage Garmin · ${report.days} jour(s), ${report.steps} pas"
@@ -162,9 +173,23 @@ class GarminRepository(
             logSync("OK · +$added pas · total $total")
             SyncResult(true, message, total = total, added = added)
         } catch (e: GarminException) {
-            logSync("ERREUR ${e.code} · ${e.message}")
-            prefs.edit().putString(KEY_LAST_ERROR, e.message).apply()
-            SyncResult(false, e.message, needsKey = e.code == 401)
+            val retry = if (e.code == 429) {
+                val delay = (e.retryAfterSeconds.takeIf { it > 0 } ?: 900L) * 1000L
+                val at = System.currentTimeMillis() + delay
+                prefs.edit().putLong(KEY_RETRY_AT, at).apply()
+                at
+            } else {
+                0L
+            }
+            val message = if (e.code == 429) {
+                val minutes = ((retry - System.currentTimeMillis()) / 60_000L).coerceAtLeast(1L)
+                "Limite Garmin atteinte. Réessayez dans $minutes min."
+            } else {
+                e.message
+            }
+            logSync("ERREUR ${e.code} · $message")
+            prefs.edit().putString(KEY_LAST_ERROR, message).apply()
+            SyncResult(false, message, needsKey = e.code == 401, retryAt = retry)
         } catch (e: Exception) {
             val message = if (e is IOException) {
                 "Réseau indisponible. Dernière synchronisation conservée."
@@ -184,6 +209,7 @@ class GarminRepository(
             .remove(KEY_LAST_SYNC)
             .remove(KEY_LAST_ERROR)
             .remove(KEY_NOTICES)
+            .remove(KEY_RETRY_AT)
             .apply()
     }
 
@@ -193,6 +219,7 @@ class GarminRepository(
         private const val KEY_LAST_ERROR = "last_error"
         private const val KEY_NOTICES = "key_notices"
         private const val KEY_SYNC_LOG = "sync_log"
+        private const val KEY_RETRY_AT = "retry_at"
     }
 }
 

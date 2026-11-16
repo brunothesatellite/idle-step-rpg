@@ -1,5 +1,13 @@
 # La Marche des Âmes — reste à faire après la v0.3.1
 
+> **Mise à jour v0.4.0** : la majorité des points P0/P1 et une grande partie du P2
+> sont livrés (robustesse, simulation hors ligne, onboarding, jalons, forge, sets,
+> objets non identifiés, filtres, météo, boss uniques, tests, widget, CI).
+>
+> Restent principalement : sons intégrés, localisation anglaise, migration Room,
+> publication Play Store, équilibrage long terme, animation de farm à 0 pas et
+> réduction automatique des animations sur batterie faible.
+
 Document de travail : fonctionnalités non terminées, écarts avec la spécification,
 dette technique et ordre recommandé.
 

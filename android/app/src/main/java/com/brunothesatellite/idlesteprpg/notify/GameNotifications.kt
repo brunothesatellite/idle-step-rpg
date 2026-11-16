@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.brunothesatellite.idlesteprpg.MainActivity
 import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import java.time.LocalTime
 
 object GameNotifications {
 
@@ -65,6 +66,7 @@ object GameNotifications {
             post(
                 context, ID_LEVEL, "Niveau ${after.level}",
                 "Kaelen se renforce. Nouvelles stats disponibles.",
+                category = "level",
                 vibration = vibrationsEnabled(context)
             )
         }
@@ -73,6 +75,7 @@ object GameNotifications {
             post(
                 context, ID_BOSS, "Gardien du palier",
                 "${boss?.enemyName ?: "Un gardien"} vous attend au palier ${after.floor}.",
+                category = "boss",
                 vibration = vibrationsEnabled(context)
             )
         }
@@ -82,6 +85,7 @@ object GameNotifications {
             post(
                 context, ID_OATH_STEPS, "Serment de marche accompli",
                 "Récompense : 150 or et 1 éclat.",
+                category = "oaths",
                 vibration = vibrationsEnabled(context)
             )
         }
@@ -89,6 +93,7 @@ object GameNotifications {
             post(
                 context, ID_OATH_BOSS, "Serment de chasse accompli",
                 "Récompense : 250 or et 2 éclats.",
+                category = "oaths",
                 vibration = vibrationsEnabled(context)
             )
         }
@@ -96,6 +101,7 @@ object GameNotifications {
             post(
                 context, ID_OATH_CHEST, "Serment de curiosité accompli",
                 "Récompense : 100 or et un objet inhabituel.",
+                category = "oaths",
                 vibration = vibrationsEnabled(context)
             )
         }
@@ -105,12 +111,17 @@ object GameNotifications {
         post(
             context, ID_CHEST, "Coffre bientôt perdu",
             "$message. Ouvrez-le ou forcez sa serrure avant expiration.",
+            category = "chest",
+            screen = "chest",
             vibration = vibrationsEnabled(context)
         )
     }
 
     fun keyExpiry(context: Context, message: String) {
-        post(context, ID_KEY, "Compte Garmin", message, account = true, vibration = true)
+        post(
+            context, ID_KEY, "Compte Garmin", message,
+            account = true, category = "key", screen = "garmin", vibration = true
+        )
     }
 
     fun post(
@@ -119,9 +130,12 @@ object GameNotifications {
         title: String,
         text: String,
         account: Boolean = false,
+        category: String = "general",
+        screen: String? = null,
         vibration: Boolean = true
     ) {
         if (!notificationsEnabled(context)) return
+        if (!categoryEnabled(context, category)) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
             PackageManager.PERMISSION_GRANTED
@@ -129,17 +143,19 @@ object GameNotifications {
             return
         }
         ensureChannels(context)
+        val quiet = !account && quietHoursEnabled(context) && inQuietHours()
         val channel = when {
             account -> CHANNEL_ACCOUNT
-            vibration -> CHANNEL_ALERTS
-            else -> CHANNEL_ALERTS_SILENT
+            quiet || !vibration -> CHANNEL_ALERTS_SILENT
+            else -> CHANNEL_ALERTS
         }
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            if (screen != null) putExtra("open_screen", screen)
         }
         val pending = PendingIntent.getActivity(
             context,
-            0,
+            id,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -164,6 +180,27 @@ object GameNotifications {
     private fun notificationsEnabled(context: Context): Boolean =
         context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
             .getBoolean("notifications", true)
+
+    private fun quietHoursEnabled(context: Context): Boolean =
+        context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+            .getBoolean("quiet_hours", false)
+
+    private fun categoryEnabled(context: Context, category: String): Boolean {
+        val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        return when (category) {
+            "boss" -> prefs.getBoolean("notify_boss", true)
+            "level" -> prefs.getBoolean("notify_level", true)
+            "oaths" -> prefs.getBoolean("notify_oaths", true)
+            "chest" -> prefs.getBoolean("notify_chest", true)
+            "key" -> prefs.getBoolean("notify_key", true)
+            else -> true
+        }
+    }
+
+    private fun inQuietHours(): Boolean {
+        val hour = LocalTime.now().hour
+        return hour >= 22 || hour < 8
+    }
 
     fun cancelAll(context: Context) {
         runCatching {

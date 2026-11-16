@@ -158,8 +158,8 @@ class GameEngineTest {
     fun ferveurDecaysAfterTwoHoursWithoutSteps() {
         val state = GameState()
         state.ferveur = 20
-        state.lastStepAt = System.currentTimeMillis() - 2L * 60L * 60L * 1000L - 5_000L
-        GameEngine.tick(state, 10 * 60_000.0)
+        state.lastStepAt = System.currentTimeMillis() - 2L * 60L * 60L * 1000L - 10 * 60_000L
+        GameEngine.tick(state, 100.0)
         assertTrue(state.ferveur < 20)
     }
 
@@ -274,5 +274,97 @@ class GameEngineTest {
         val seen = (1..40).map { oathsFor(LocalDate.of(2026, 1, 1).plusDays(it.toLong())).stepsTarget }.toSet()
         assertTrue(seen.all { it in setOf(2_500, 3_000, 3_500, 4_000) })
         assertTrue(seen.size > 1)
+    }
+
+    @Test
+    fun campResetsTheCurrentFight() {
+        val state = GameState()
+        GameEngine.startBoss(state)
+        val fight = state.fight!!
+        fight.enemyHp = 10.0
+        fight.enemyTimerMs = 1.0
+        GameEngine.prepareCamp(state)
+        assertEquals(fight.enemyMaxHp, state.fight!!.enemyHp, 0.001)
+        assertEquals(380.0, state.fight!!.heroTimerMs, 0.001)
+        assertTrue(state.journal.any { it.text.contains("combat réinitialisé") })
+    }
+
+    @Test
+    fun offlineSimulationConsumesTheBank() {
+        val state = GameState()
+        state.stepBank = 5_000.0
+        state.distance = 0.0
+        state.nextFight = 10
+        val sim = GameEngine.simulateOffline(state, maxIterations = 200)
+        assertTrue(sim.combats >= 0)
+        assertTrue(state.stepBank < 5_000.0)
+    }
+
+    @Test
+    fun streakAndWeeklyStepsAdvance() {
+        val state = GameState()
+        val day1 = LocalDate.of(2026, 11, 16)
+        val day2 = LocalDate.of(2026, 11, 17)
+        GameEngine.ensureDay(state, day1)
+        GameEngine.ingestSteps(state, 1_000, day1)
+        assertEquals(1_000, state.weeklySteps)
+        assertEquals(1_000, state.totalSteps)
+        GameEngine.ensureDay(state, day2)
+        assertEquals(2, state.streak)
+    }
+
+    @Test
+    fun stepRateIsCappedPerSync() {
+        val state = GameState()
+        state.lastSync = System.currentTimeMillis()
+        state.lastStepAt = state.lastSync
+        GameEngine.ingestSteps(state, 12_000, LocalDate.of(2026, 11, 16))
+        assertTrue(state.stepBank <= 5_000.0)
+    }
+
+    @Test
+    fun forgeOperationsWork() {
+        val state = GameState()
+        state.shards = 12
+        state.gold = 10_000
+        state.bosses = 1
+        state.inventory = listOf(
+            Item("forge", "Lame", "weapon", "rare", "item/long_sword3.png", 3, atk = 12, value = 80)
+        )
+        assertTrue(GameEngine.rerollEffect(state, "forge"))
+        val upgradedBefore = state.inventory.first().level
+        assertTrue(GameEngine.upgradeItem(state, "forge"))
+        assertEquals(upgradedBefore + 1, state.inventory.first().level)
+        val shardsBefore = state.shards
+        val gained = GameEngine.dismantleItem(state, "forge")
+        assertEquals(3, gained)
+        assertTrue(state.shards >= shardsBefore)
+        assertTrue(state.inventory.isEmpty())
+    }
+
+    @Test
+    fun unidentifiedItemCannotBeEquipped() {
+        val state = GameState()
+        val mystery = Item(
+            "mystery", "Mystère", "weapon", "epic", "item/mace2.png", 3,
+            atk = 50, value = 100, identified = false
+        )
+        state.inventory = state.inventory + mystery
+        assertEquals(false, GameEngine.equipItem(state, "mystery"))
+        assertTrue(state.shards > 0)
+        assertTrue(GameEngine.identifyItem(state, "mystery"))
+        assertTrue(state.inventory.first { it.id == "mystery" }.identified)
+    }
+
+    @Test
+    fun setBonusesApply() {
+        val state = GameState()
+        state.equipment = state.equipment.map {
+            it.copy(setName = "veilleur")
+        }
+        val before = statsOf(GameState())
+        val after = statsOf(state)
+        assertTrue(after.atk > before.atk)
+        assertTrue(after.maxHp > before.maxHp)
     }
 }

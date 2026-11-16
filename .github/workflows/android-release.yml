@@ -1,0 +1,56 @@
+name: Android Release Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make wrapper executable
+        run: chmod +x android/gradlew
+
+      - name: Decode signing material
+        if: env.KEYSTORE_BASE64 != ''
+        run: |
+          mkdir -p .keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > .keystore/idle-step-rpg-release.jks
+          cat > .keystore/keystore.properties <<EOF
+          storeFile=idle-step-rpg-release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: Build signed release
+        if: env.KEYSTORE_BASE64 != ''
+        working-directory: android
+        run: ./gradlew :app:assembleRelease --console=plain --no-daemon
+
+      - name: Upload release APK
+        if: env.KEYSTORE_BASE64 != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-signed
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error

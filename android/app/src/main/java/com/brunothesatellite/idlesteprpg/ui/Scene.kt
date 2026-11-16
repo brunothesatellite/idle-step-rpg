@@ -203,8 +203,14 @@ fun Scene(
             }
         }
 
-        if (state.chest != null && state.mode != "fight" && state.mode != "boss") {
-            ChestButton(state, onChest, Modifier.align(Alignment.BottomCenter).padding(bottom = 62.dp))
+        if (state.chest != null) {
+            ChestChip(
+                state,
+                onChest,
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 58.dp, end = 10.dp)
+            )
         }
 
         if (state.fight?.isBoss == true) {
@@ -250,6 +256,13 @@ private fun SceneBackground(state: GameState, density: Float) {
     val statueDragon = rememberAsset("env/statue_dragon.png")
     val statueSword = rememberAsset("env/statue_sword.png")
     val palette = biomePalette(state.floor)
+    val weather = rememberInfiniteTransition(label = "weather")
+    val drift by weather.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(9000, easing = LinearEasing), RepeatMode.Restart),
+        label = "drift"
+    )
 
     Canvas(Modifier.fillMaxSize()) {
         val w = size.width
@@ -423,10 +436,14 @@ private fun SceneBackground(state: GameState, density: Float) {
             val random = java.util.Random((state.floor / 10).toLong() + 41L)
             repeat(palette.ambientCount) {
                 val radius = if (random.nextBoolean()) 1.dp.toPx() else 1.8.dp.toPx()
+                val baseX = random.nextFloat() * w
+                val baseY = random.nextFloat() * h * 0.82f
+                val y = (baseY + drift * h * 0.25f) % (h * 0.82f)
+                val x = (baseX + drift * w * 0.04f) % w
                 drawCircle(
                     color = palette.ambient.copy(alpha = 0.20f + random.nextFloat() * 0.25f),
                     radius = radius,
-                    center = Offset(random.nextFloat() * w, random.nextFloat() * h * 0.82f)
+                    center = Offset(x, y)
                 )
             }
         }
@@ -716,8 +733,8 @@ private fun EnemyUnit(
             if (!reducedMotion) {
                 floats += FloatFx(
                     id = nextId++,
-                    text = "-${damage.roundToInt()}",
-                    color = Color(0xFFFFC6B8),
+                    text = "-${damage.roundToInt()}" + if (fight.lastCrit) " !" else "",
+                    color = if (fight.lastCrit) GoldLight else Color(0xFFFFC6B8),
                     drift = ((nextId % 5) - 2) * 7f
                 )
             }
@@ -961,6 +978,42 @@ private fun GateView(state: GameState, modifier: Modifier = Modifier) {
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ChestChip(state: GameState, onChest: () -> Unit, modifier: Modifier = Modifier) {
+    val chest = state.chest ?: return
+    val pending = 1 + state.chestQueue.size
+    Row(
+        modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(Ink.copy(alpha = 0.88f))
+            .border(1.dp, Gold.copy(alpha = 0.55f), RoundedCornerShape(4.dp))
+            .clickable(onClick = onChest)
+            .semantics { contentDescription = "Coffre en attente" }
+            .padding(horizontal = 7.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier
+                .size(16.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(Gold.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("C", fontFamily = Press, fontSize = 5.sp, color = GoldLight)
+        }
+        Spacer(Modifier.width(5.dp))
+        Column {
+            Text(
+                "COFFRE" + if (pending > 1) " ×$pending" else "",
+                fontFamily = Press,
+                fontSize = 5.sp,
+                color = GoldLight
+            )
+            Text(formatRemaining(chestRemainingMs(chest)), fontSize = 4.8.sp, color = Ember)
         }
     }
 }

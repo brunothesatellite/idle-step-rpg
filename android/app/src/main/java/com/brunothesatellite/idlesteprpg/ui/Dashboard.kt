@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,12 +44,14 @@ import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.equipped
+import com.brunothesatellite.idlesteprpg.engine.itemScore
 import com.brunothesatellite.idlesteprpg.engine.powerOf
 import com.brunothesatellite.idlesteprpg.engine.rarityLabel
 import com.brunothesatellite.idlesteprpg.engine.rankLabel
 import com.brunothesatellite.idlesteprpg.engine.slotLabel
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.tierName
+import com.brunothesatellite.idlesteprpg.engine.titleFor
 import com.brunothesatellite.idlesteprpg.engine.upgradeCost
 import com.brunothesatellite.idlesteprpg.engine.upgradeDesc
 import com.brunothesatellite.idlesteprpg.engine.upgradeIcon
@@ -62,6 +66,7 @@ import kotlin.math.roundToInt
 fun Dashboard(
     state: GameState,
     ui: UiState,
+    activeTab: String,
     onSync: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenCamp: () -> Unit,
@@ -72,11 +77,10 @@ fun Dashboard(
     onSellCommons: () -> Unit,
     onEquipBest: () -> Unit,
     onWithdrawStash: () -> Unit,
+    onWithdrawStashItem: (Item) -> Unit,
     onSelectTab: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var tab by rememberSaveable { mutableStateOf("stats") }
-
     Column(
         modifier
             .fillMaxSize()
@@ -88,10 +92,7 @@ fun Dashboard(
             .border(1.dp, Gold.copy(alpha = 0.24f), RoundedCornerShape(0.dp))
     ) {
         DashboardHeader(state, ui, onOpenSettings, onOpenPreferences)
-        Tabs(tab) {
-            tab = it
-            onSelectTab(it)
-        }
+        Tabs(activeTab, onSelectTab)
         Column(
             Modifier
                 .weight(1f)
@@ -99,13 +100,14 @@ fun Dashboard(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            when (tab) {
+            when (activeTab) {
                 "inventory" -> InventoryTab(
                     state,
                     onSelectItem,
                     onSellCommons,
                     onEquipBest,
-                    onWithdrawStash
+                    onWithdrawStash,
+                    onWithdrawStashItem
                 )
                 "upgrades" -> UpgradesTab(state, ui, onBuyUpgrade, onOpenSettings)
                 else -> StatsTab(state, ui, onOpenSettings, onSync, onOpenJournal)
@@ -158,7 +160,7 @@ private fun DashboardHeader(
             Row(verticalAlignment = Alignment.Bottom) {
                 Text("Kaelen", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Parchment)
                 Spacer(Modifier.width(5.dp))
-                Text("le Pèlerin", fontSize = 7.5.sp, color = Muted)
+                Text(titleFor(state.floor), fontSize = 7.5.sp, color = Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Row(Modifier.fillMaxWidth().padding(top = 3.dp), verticalAlignment = Alignment.CenterVertically) {
                 MiniBar(
@@ -296,6 +298,8 @@ private fun StatsTab(
     Spacer(Modifier.height(5.dp))
     OathsCard(state)
     Spacer(Modifier.height(5.dp))
+    AchievementsCard(state)
+    Spacer(Modifier.height(5.dp))
     JournalCard(state, onOpenJournal)
     Spacer(Modifier.height(5.dp))
     GarminCard(ui, onOpenSettings, onSync)
@@ -378,6 +382,11 @@ private fun OathsCard(state: GameState) {
             Text("$done / 3", fontFamily = Press, fontSize = 6.5.sp, color = if (done == 3) Green else Ember)
         }
         Spacer(Modifier.height(4.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Série ${state.streak.coerceAtLeast(1)} jour(s)", fontSize = 5.8.sp, color = if (state.streak >= 7) Gold else Muted2)
+            Text("${formatInt(state.weeklySteps)} pas cette semaine", fontSize = 5.8.sp, color = Muted2)
+        }
+        Spacer(Modifier.height(3.dp))
         OathRow(
             "Marche",
             "${state.stepsToday.coerceAtMost(oaths.stepsTarget)} / ${oaths.stepsTarget} pas",
@@ -399,6 +408,48 @@ private fun OathsCard(state: GameState) {
             "100 or · objet",
             "item/misc_crystal.png"
         )
+    }
+}
+
+@Composable
+private fun AchievementsCard(state: GameState) {
+    val items = listOf(
+        "Premier gardien vaincu" to (state.bosses > 0),
+        "10 coffres ouverts" to (state.chestsOpened >= 10),
+        "Palier 10 atteint" to (state.floor >= 10),
+        "50 000 pas cumulés" to (state.totalSteps >= 50_000),
+        "Série de 7 jours" to (state.streak >= 7)
+    )
+    PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            SectionLabel("Exploits")
+            Spacer(Modifier.weight(1f))
+            Text(
+                "${items.count { it.second }} / ${items.size}",
+                fontFamily = Press,
+                fontSize = 6.sp,
+                color = if (items.all { it.second }) Green else Muted
+            )
+        }
+        Spacer(Modifier.height(3.dp))
+        items.forEach { (label, done) ->
+            Row(
+                Modifier.fillMaxWidth().padding(vertical = 1.8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    if (done) "✓" else "○",
+                    fontSize = 7.sp,
+                    color = if (done) Green else Muted2,
+                    modifier = Modifier.width(12.dp)
+                )
+                Text(
+                    label,
+                    fontSize = 6.5.sp,
+                    color = if (done) Parchment else Muted2
+                )
+            }
+        }
     }
 }
 
@@ -575,8 +626,24 @@ private fun InventoryTab(
     onSelectItem: (Item) -> Unit,
     onSellCommons: () -> Unit,
     onEquipBest: () -> Unit,
-    onWithdrawStash: () -> Unit
+    onWithdrawStash: () -> Unit,
+    onWithdrawStashItem: (Item) -> Unit
 ) {
+    var sort by rememberSaveable { mutableStateOf("score") }
+    var slotFilter by rememberSaveable { mutableStateOf("all") }
+    var stashOpen by remember { mutableStateOf(false) }
+    val filtered = state.inventory
+        .filter { slotFilter == "all" || it.slot == slotFilter }
+        .sortedWith(
+            when (sort) {
+                "rarity" -> compareByDescending<Item> { rarityRank(it.rarity) }
+                    .thenByDescending { itemScore(it) }
+                "level" -> compareByDescending<Item> { it.level }
+                    .thenByDescending { itemScore(it) }
+                else -> compareByDescending { itemScore(it) }
+            }
+        )
+
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text("ÉQUIPEMENT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Parchment)
         Spacer(Modifier.weight(1f))
@@ -597,6 +664,9 @@ private fun InventoryTab(
                         if (item != null) rarityColor(item.rarity).copy(alpha = 0.65f) else Line,
                         RoundedCornerShape(4.dp)
                     )
+                    .semantics {
+                        contentDescription = "${slotLabel(slot)} : ${item?.name ?: "vide"}"
+                    }
                     .padding(3.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -615,14 +685,53 @@ private fun InventoryTab(
         SmallAction("Équiper le meilleur", Modifier.weight(1.35f), onEquipBest, primary = true)
         SmallAction("Vendre les communs", Modifier.weight(1f), onSellCommons)
     }
+    Spacer(Modifier.height(7.dp))
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        MiniChip("Score", sort == "score") { sort = "score" }
+        MiniChip("Rareté", sort == "rarity") { sort = "rarity" }
+        MiniChip("Niveau", sort == "level") { sort = "level" }
+    }
+    Spacer(Modifier.height(4.dp))
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        MiniChip("Tous", slotFilter == "all") { slotFilter = "all" }
+        listOf(
+            "weapon" to "Arme",
+            "head" to "Tête",
+            "body" to "Torse",
+            "hands" to "Mains",
+            "feet" to "Bottes",
+            "talisman" to "Talisman"
+        ).forEach { (slot, label) ->
+            MiniChip(label, slotFilter == slot) { slotFilter = slot }
+        }
+    }
     Spacer(Modifier.height(9.dp))
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text("BUTIN", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
         Spacer(Modifier.weight(1f))
-        Text("${state.inventory.size} / 24 objets", fontSize = 6.sp, color = Muted)
+        Text(
+            "${state.inventory.size} / 24 objets · ${filtered.size} affiché(s)",
+            fontSize = 6.sp,
+            color = Muted
+        )
     }
     Spacer(Modifier.height(4.dp))
-    state.inventory.chunked(3).forEach { row ->
+    if (filtered.isEmpty()) {
+        Text(
+            "Aucun objet dans ce filtre.",
+            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 7.sp,
+            color = Muted2
+        )
+    }
+    filtered.chunked(3).forEach { row ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             row.forEach { item ->
                 InventoryCard(item, Modifier.weight(1f)) { onSelectItem(item) }
@@ -647,7 +756,44 @@ private fun InventoryTab(
                     )
                 }
                 Spacer(Modifier.width(6.dp))
-                SmallAction("RÉCUPÉRER", Modifier.width(92.dp), onWithdrawStash)
+                SmallAction(
+                    if (stashOpen) "FERMER" else "VOIR",
+                    Modifier.width(70.dp),
+                    onClick = { stashOpen = !stashOpen }
+                )
+            }
+            if (stashOpen) {
+                Spacer(Modifier.height(6.dp))
+                state.stash.forEach { item ->
+                    Row(
+                        Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AssetIcon(item.icon, 18.dp)
+                        Spacer(Modifier.width(5.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                if (item.identified) item.name else "Objet mystérieux",
+                                fontSize = 6.5.sp,
+                                color = Parchment,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                rarityLabel(item.rarity) + if (item.locked) " · VERROU" else "",
+                                fontSize = 5.2.sp,
+                                color = if (item.locked) Ember else rarityColor(item.rarity)
+                            )
+                        }
+                        SmallAction(
+                            "PRENDRE",
+                            Modifier.width(74.dp),
+                            onClick = { onWithdrawStashItem(item) }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                SmallAction("TOUT PRENDRE", Modifier.fillMaxWidth(), onWithdrawStash, primary = true)
             }
         }
         Spacer(Modifier.height(5.dp))
@@ -661,6 +807,28 @@ private fun InventoryTab(
     )
 }
 
+private fun rarityRank(rarity: String): Int = when (rarity) {
+    "legendary" -> 5
+    "epic" -> 4
+    "rare" -> 3
+    "uncommon" -> 2
+    else -> 1
+}
+
+@Composable
+private fun MiniChip(label: String, active: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(if (active) Gold.copy(alpha = 0.16f) else Panel)
+            .border(1.dp, if (active) Gold.copy(alpha = 0.55f) else Line, RoundedCornerShape(4.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 7.dp, vertical = 4.dp)
+    ) {
+        Text(label, fontSize = 5.8.sp, color = if (active) GoldLight else Muted, maxLines = 1)
+    }
+}
+
 @Composable
 private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Column(
@@ -668,21 +836,45 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
             .height(62.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(Panel)
-            .border(1.dp, rarityColor(item.rarity).copy(alpha = 0.62f), RoundedCornerShape(4.dp))
+            .border(
+                1.dp,
+                if (item.locked) Ember.copy(alpha = 0.7f) else rarityColor(item.rarity).copy(alpha = 0.62f),
+                RoundedCornerShape(4.dp)
+            )
             .clickable(onClick = onClick)
+            .semantics {
+                contentDescription = if (item.identified) {
+                    "${item.name}, ${rarityLabel(item.rarity)}"
+                } else {
+                    "Objet non identifié"
+                }
+            }
             .padding(vertical = 3.dp, horizontal = 3.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         AssetIcon(item.icon, 27.dp)
         Text(
-            item.name,
+            if (item.identified) item.name else "Objet mystérieux",
             fontSize = 6.sp,
             color = Parchment.copy(alpha = 0.85f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
-        Text(rarityLabel(item.rarity), fontSize = 4.5.sp, color = rarityColor(item.rarity), maxLines = 1)
+        Text(
+            when {
+                item.locked -> "VERROU"
+                !item.identified -> "NON IDENTIFIÉ"
+                else -> rarityLabel(item.rarity)
+            },
+            fontSize = 4.5.sp,
+            color = when {
+                item.locked -> Ember
+                !item.identified -> Ember
+                else -> rarityColor(item.rarity)
+            },
+            maxLines = 1
+        )
     }
 }
 

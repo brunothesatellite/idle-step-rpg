@@ -1,8 +1,11 @@
 package com.brunothesatellite.idlesteprpg.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -142,6 +145,53 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                         permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 }
+                if (ui.notificationsEnabled) {
+                    ToggleRow("Gardien", "Quand un gardien de palier apparaît.", ui.notifyBoss) {
+                        vm.setNotifyBoss(it)
+                    }
+                    ToggleRow("Niveau", "Chaque montée de niveau.", ui.notifyLevel) {
+                        vm.setNotifyLevel(it)
+                    }
+                    ToggleRow("Serments", "Quand un serment est accompli.", ui.notifyOaths) {
+                        vm.setNotifyOaths(it)
+                    }
+                    ToggleRow("Coffres", "Un coffre va bientôt expirer.", ui.notifyChest) {
+                        vm.setNotifyChest(it)
+                    }
+                    ToggleRow("Clé Garmin", "Expiration à 30/7/1 jour.", ui.notifyKey) {
+                        vm.setNotifyKey(it)
+                    }
+                    ToggleRow("Heures calmes", "22:00–08:00 : alertes sans vibration.", ui.quietHours) {
+                        vm.setQuietHours(it)
+                    }
+                    val granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED
+                    if (!granted) {
+                        Text(
+                            "La permission Android est refusée : ouvrez les réglages système pour l'autoriser.",
+                            fontSize = 6.5.sp,
+                            color = Blood,
+                            lineHeight = 9.sp
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        OverlayAction(
+                            "OUVRIR LES RÉGLAGES SYSTÈME",
+                            Modifier.fillMaxWidth(),
+                            onClick = {
+                                runCatching {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                        }
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
                 ToggleRow(
                     "Animations réduites",
                     "Supprime le balancement, les auras et les nombres flottants.",
@@ -152,6 +202,22 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     "Vibre pour les notifications d'alerte.",
                     ui.vibrations
                 ) { vm.setVibrations(it) }
+                Spacer(Modifier.height(4.dp))
+                OverlayAction(
+                    "REVOIR L'ONBOARDING",
+                    Modifier.fillMaxWidth(),
+                    onClick = { vm.restartOnboarding() }
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            PixelCard(Modifier.fillMaxWidth()) {
+                SectionLabel("Inventaire")
+                Spacer(Modifier.height(5.dp))
+                ToggleRow(
+                    "Vendre les communs automatiquement",
+                    "Les objets communs non verrouillés sont convertis en or au ramassage.",
+                    ui.autoSellCommons
+                ) { vm.setAutoSellCommons(it) }
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
@@ -214,6 +280,51 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     color = Muted,
                     lineHeight = 10.sp
                 )
+                Spacer(Modifier.height(6.dp))
+                OverlayAction(
+                    "VÉRIFIER LES MISES À JOUR",
+                    Modifier.fillMaxWidth(),
+                    onClick = { vm.checkForUpdate() }
+                )
+                if (ui.updateTag != null && ui.updateUrl != null) {
+                    Spacer(Modifier.height(4.dp))
+                    OverlayAction("OUVRIR ${ui.updateTag}", Modifier.fillMaxWidth(), {
+                        runCatching {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ui.updateUrl)))
+                        }
+                    }, primary = true)
+                }
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    OverlayAction(
+                        "LICENCES",
+                        Modifier.weight(1f),
+                        onClick = {
+                            runCatching {
+                                context.startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://github.com/brunothesatellite/idle-step-rpg/blob/main/LICENSES.md")
+                                    )
+                                )
+                            }
+                        }
+                    )
+                    OverlayAction(
+                        "CONFIDENTIALITÉ",
+                        Modifier.weight(1.3f),
+                        onClick = {
+                            runCatching {
+                                context.startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://github.com/brunothesatellite/idle-step-rpg/blob/main/docs/privacy.md")
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     "Code sous licence MIT · ressources CC0/OFL",

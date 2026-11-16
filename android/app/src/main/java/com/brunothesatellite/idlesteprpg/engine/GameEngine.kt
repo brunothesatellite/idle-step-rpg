@@ -1,22 +1,65 @@
 package com.brunothesatellite.idlesteprpg.engine
 
 import java.time.LocalDate
+import java.time.temporal.IsoFields
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 import kotlin.random.Random
+
+data class OfflineSim(
+    val combats: Int,
+    val gold: Int,
+    val floors: Int,
+    val kills: Int
+)
 
 object GameEngine {
 
     private val rnd = Random.Default
 
+    fun migrate(state: GameState): GameState {
+        if (state.totalSteps <= 0 && state.stepLedger.isNotEmpty()) {
+            state.totalSteps = state.stepLedger.values.sum()
+        }
+        if (state.lastActiveDay.isBlank()) state.lastActiveDay = state.day
+        if (state.version < SAVE_VERSION) state.version = SAVE_VERSION
+        return state
+    }
+
+    private fun weekKey(date: LocalDate): String =
+        "${date.get(IsoFields.WEEK_BASED_YEAR)}-${date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)}"
+
+    private fun advanceStreak(state: GameState, date: LocalDate) {
+        val last = runCatching { LocalDate.parse(state.lastActiveDay) }.getOrNull()
+        state.streak = when {
+            last == null -> 1
+            last == date -> state.streak.coerceAtLeast(1)
+            last.plusDays(1) == date -> state.streak + 1
+            else -> 1
+        }
+        state.lastActiveDay = date.toString()
+    }
+
+    private fun resetWeekIfNeeded(state: GameState, date: LocalDate) {
+        val key = weekKey(date)
+        if (state.weekKey != key) {
+            state.weekKey = key
+            state.weeklySteps = 0
+        }
+    }
+
     fun ensureDay(state: GameState, date: LocalDate = LocalDate.now()) {
         val d = date.toString()
         migrateChests(state)
+        resetWeekIfNeeded(state, date)
         if (state.day.isEmpty()) {
             state.day = d
             state.hp = statsOf(state).maxHp.toDouble()
+            advanceStreak(state, date)
             return
         }
         if (state.day != d) {
@@ -25,6 +68,7 @@ object GameEngine {
             state.processedSteps = 0
             state.ferveur = 0
             state.ferveurDecayMs = 0.0
+            state.ferveurDecayAt = 0L
             state.genRations = 0
             state.genShards = 0
             state.lastAdded = 0
@@ -32,8 +76,12 @@ object GameEngine {
             state.chestsToday = 0
             state.oaths = oathsFor(date)
             state.special = null
+            advanceStreak(state, date)
             pruneLedger(state, date)
             state.journal = addJournal(state, "Nouveau jour — 00:00 · serments renouvelés", "neutral")
+            if (state.streak > 1) {
+                state.journal = addJournal(state, "Série de ${state.streak} jours de marche", "good")
+            }
         }
     }
 
@@ -42,6 +90,60 @@ object GameEngine {
         if (state.stepLedger.keys.any { it < cutoff }) {
             state.stepLedger = state.stepLedger.filterKeys { it >= cutoff }
         }
+    }
+
+    fun prepareCamp(state: GameState) {
+        if (state.mode == "chest") state.mode = "walk"
+        if (state.mode == "farmWait") {
+            state.mode = "walk"
+            state.farmWaitMs = 0.0
+        }
+        state.farmKills = 0
+        state.fight?.let { f ->
+            f.enemyHp = f.enemyMaxHp
+            f.heroTimerMs = 380.0
+            f.enemyTimerMs = f.enemyIntervalMs.toDouble()
+            f.elapsedMs = 0.0
+            f.specialMs = 8000.0
+            f.usedRation = false
+            f.lastCrit = false
+            state.hp = max(state.hp, statsOf(state).maxHp * 0.5)
+            state.journal = addJournal(state, "Camp · combat réinitialisé", "neutral")
+        }
+    }
+
+    fun goldGain(state: GameState, base: Int): Int =
+        (base * (1.0 + 0.05 * milestoneBonus(state.floor))).roundToInt()
+
+    fun addLegend(state: GameState, text: String, type: String = "good") {
+        state.legend = (listOf(JournalEntry(text, nowTime(), type)) + state.legend).take(120)
+    }
+
+    private fun recordKill(state: GameState, name: String) {
+        state.kills++
+        state.bestiary = state.bestiary + (name to ((state.bestiary[name] ?: 0) + 1))
+    }
+
+    fun simulateOffline(
+        state: GameState,
+        maxIterations: Int = 900,
+        dtMs: Double = 500.0
+    ): OfflineSim {
+        val startGold = state.gold
+        val startFloor = state.floor
+        val startKills = state.kills
+        val startBosses = state.bosses
+        var iterations = 0
+        while (iterations < maxIterations && state.stepBank > 0.0 && state.mode != "special") {
+            tick(state, dtMs)
+            iterations++
+        }
+        return OfflineSim(
+            combats = (state.kills - startKills) + (state.bosses - startBosses),
+            gold = max(0, state.gold - startGold),
+            floors = max(0, state.floor - startFloor),
+            kills = state.kills - startKills
+        )
     }
 
     private fun migrateChests(state: GameState) {
@@ -83,24 +185,34 @@ object GameEngine {
     }
 
     private fun tickFerveur(state: GameState, dtMs: Double) {
+        val now = System.currentTimeMillis()
         if (state.ferveur <= 0) {
             state.ferveurDecayMs = 0.0
+            state.ferveurDecayAt = now
             return
         }
-        val now = System.currentTimeMillis()
         if (state.lastStepAt <= 0L) {
             state.lastStepAt = now
+            state.ferveurDecayAt = now
             return
         }
-        if (now - state.lastStepAt < FERVEUR_GRACE_MS) {
+        val graceEnd = state.lastStepAt + FERVEUR_GRACE_MS
+        val from = max(graceEnd, if (state.ferveurDecayAt > 0L) state.ferveurDecayAt else graceEnd)
+        val elapsed = now - from
+        if (elapsed <= 0L) {
+            state.ferveurDecayAt = now
             state.ferveurDecayMs = 0.0
             return
         }
-        state.ferveurDecayMs += dtMs
-        while (state.ferveurDecayMs >= FERVEUR_DECAY_STEP_MS && state.ferveur > 0) {
-            state.ferveurDecayMs -= FERVEUR_DECAY_STEP_MS
-            state.ferveur--
+        val total = state.ferveurDecayMs + elapsed.toDouble()
+        val points = (total / FERVEUR_DECAY_STEP_MS).toInt()
+        if (points > 0) {
+            state.ferveur = max(0, state.ferveur - points)
+            state.ferveurDecayMs = total - points * FERVEUR_DECAY_STEP_MS
+        } else {
+            state.ferveurDecayMs = total
         }
+        state.ferveurDecayAt = now
     }
 
     private fun tickWalk(state: GameState, dtMs: Double) {
@@ -122,7 +234,7 @@ object GameEngine {
     private fun maybeStartSpecial(state: GameState): Boolean {
         if (state.special != null) return false
         if (rnd.nextDouble() >= 0.08) return false
-        val type = listOf("autel", "source", "marchand", "statue").random(rnd)
+        val type = listOf("autel", "source", "marchand", "statue", "risque").random(rnd)
         state.special = when (type) {
             "autel" -> SpecialData(
                 type = type,
@@ -152,6 +264,14 @@ object GameEngine {
                     rewardText = offer.name
                 )
             }
+            "risque" -> SpecialData(
+                type = type,
+                title = "COFFRE SCELLÉ",
+                text = "Une serrure sans clé. Le métal vibre faiblement.",
+                acceptLabel = "PARIER 100 OR",
+                goldCost = 100,
+                rewardText = "300 or ou rien"
+            )
             else -> SpecialData(
                 type = type,
                 title = "STATUE DU SERMENT",
@@ -169,6 +289,7 @@ object GameEngine {
     fun resolveSpecial(state: GameState, accept: Boolean) {
         val special = state.special ?: return
         var done = false
+        var customMessage: String? = null
         if (accept) {
             when (special.type) {
                 "autel" -> if (state.shards >= special.shardCost) {
@@ -193,11 +314,22 @@ object GameEngine {
                     state.shards = min(12, state.shards + 1)
                     done = true
                 }
+                "risque" -> if (state.gold >= special.goldCost) {
+                    state.gold -= special.goldCost
+                    if (rnd.nextDouble() < 0.45) {
+                        state.gold += 300
+                        state.goldEarned += 200
+                        done = true
+                        customMessage = "Pari gagné · +300 or"
+                    } else {
+                        customMessage = "Pari perdu · −100 or"
+                    }
+                }
             }
         }
         state.journal = addJournal(
             state,
-            when {
+            customMessage ?: when {
                 done -> "${special.title} · ${special.rewardText}"
                 accept -> "${special.title} · ressource insuffisante"
                 else -> "${special.title} · passé sans s'arrêter"
@@ -248,12 +380,20 @@ object GameEngine {
         }
 
         if (todayAdded > 0) {
+            val now = System.currentTimeMillis()
+            val minutes = max(1L, (now - state.lastSync) / 60_000L)
+            val allowed = max(5_000, MAX_STEPS_PER_MINUTE * minutes.toInt())
+            val accepted = min(todayAdded, allowed)
+            val ignored = todayAdded - accepted
             state.stepsToday = todayTotal
             state.processedSteps = max(state.processedSteps, todayTotal)
-            state.ferveur = min(100, state.ferveur + (todayAdded + 49) / 50)
-            state.lastStepAt = System.currentTimeMillis()
+            state.ferveur = min(100, state.ferveur + (accepted + 49) / 50)
+            state.lastStepAt = now
             state.ferveurDecayMs = 0.0
-            state.stepBank += todayAdded
+            state.ferveurDecayAt = now
+            state.stepBank += accepted
+            state.totalSteps += accepted
+            state.weeklySteps += accepted
             val nr = min(24, todayTotal / 200)
             val ns = min(12, todayTotal / 500)
             if (nr > state.genRations) {
@@ -266,14 +406,23 @@ object GameEngine {
             }
             state.journal = addJournal(
                 state,
-                "$todayAdded pas Garmin — ${"%.0f".format(todayAdded / STEPS_PER_METER)} m",
+                "$accepted pas Garmin — ${"%.0f".format(accepted / STEPS_PER_METER)} m",
                 "good"
             )
+            if (ignored > 0) {
+                state.journal = addJournal(
+                    state,
+                    "$ignored pas ignorés (rythme supérieur à $MAX_STEPS_PER_MINUTE/min)",
+                    "bad"
+                )
+            }
         }
 
         val importedHistory = min(historyAdded, HISTORY_IMPORT_CAP)
         if (importedHistory > 0) {
             state.stepBank += importedHistory
+            state.totalSteps += importedHistory
+            state.weeklySteps += importedHistory
             state.rations = min(24, state.rations + min(12, importedHistory / 800))
             state.shards = min(12, state.shards + min(6, importedHistory / 2000))
             state.journal = addJournal(
@@ -304,9 +453,12 @@ object GameEngine {
         if (steps <= 0) return
         state.stepsToday += steps
         state.stepBank += steps
+        state.totalSteps += steps
+        state.weeklySteps += steps
         state.ferveur = min(100, state.ferveur + (steps + 49) / 50)
         state.lastStepAt = System.currentTimeMillis()
         state.ferveurDecayMs = 0.0
+        state.ferveurDecayAt = state.lastStepAt
         state.stepLedger = state.stepLedger + (todayString() to state.stepsToday)
         state.journal = addJournal(state, "Démo +$steps pas", "neutral")
     }
@@ -316,6 +468,7 @@ object GameEngine {
         if (!o.stepsClaimed && state.stepsToday >= o.stepsTarget) {
             o.stepsClaimed = true
             state.gold += 150
+            state.goldEarned += 150
             state.shards = min(12, state.shards + 1)
             gainXp(state, 80)
             state.journal = addJournal(state, "Serment de marche accompli · +150 or, +1 éclat", "good")
@@ -323,6 +476,7 @@ object GameEngine {
         if (!o.bossesClaimed && state.bossesToday >= o.bossesTarget) {
             o.bossesClaimed = true
             state.gold += 250
+            state.goldEarned += 250
             state.shards = min(12, state.shards + 2)
             gainXp(state, 120)
             state.journal = addJournal(state, "Serment de chasse accompli · +250 or, +2 éclats", "good")
@@ -330,6 +484,7 @@ object GameEngine {
         if (!o.chestsClaimed && state.chestsToday >= o.chestsTarget) {
             o.chestsClaimed = true
             state.gold += 100
+            state.goldEarned += 100
             addLoot(state, lootItem(state.floor, "uncommon"))
             gainXp(state, 60)
             state.journal = addJournal(state, "Serment de curiosité accompli · +100 or, objet inhabituel", "good")
@@ -354,6 +509,12 @@ object GameEngine {
         state.mode = "fight"
     }
 
+    private fun depthMultiplier(floor: Int, boss: Boolean = false): Double {
+        if (floor <= 10) return 1.0
+        val raw = (if (boss) 1.08 else 1.12).pow((floor - 10).toDouble())
+        return min(raw, 40.0)
+    }
+
     private fun makeMob(state: GameState): FightData {
         val pos = state.distance
         val pool = when {
@@ -370,17 +531,19 @@ object GameEngine {
         }
         if (elite) level += 2
         level = max(1, level)
-        val hp = (55 + 34 * (level - 1)) * if (elite) 2.2 else 1.0
-        val atk = (6 + 2.2 * (level - 1)) * if (elite) 1.3 else 1.0
-        val gold = ((6 + 3 * level) * if (elite) 1.6 else 1.0).roundToInt()
-        val xp = ((12 + 5 * level) * if (elite) 1.8 else 1.0).roundToInt()
+        val depth = depthMultiplier(state.floor)
+        val hp = (55 + 34 * (level - 1)) * (if (elite) 2.2 else 1.0)
+        val atk = (6 + 2.2 * (level - 1)) * (if (elite) 1.3 else 1.0)
+        val reward = min(6.0, sqrt(depth))
+        val gold = ((6 + 3 * level) * (if (elite) 1.6 else 1.0) * reward).roundToInt()
+        val xp = ((12 + 5 * level) * (if (elite) 1.8 else 1.0) * reward).roundToInt()
         return FightData(
             enemyName = t.name,
             enemyIcon = t.icon,
             enemyLevel = level,
-            enemyHp = hp,
-            enemyMaxHp = hp,
-            enemyAtk = atk,
+            enemyHp = hp * depth,
+            enemyMaxHp = hp * depth,
+            enemyAtk = atk * depth,
             enemyIntervalMs = if (elite) 1100 else 1250,
             gold = gold,
             xp = xp,
@@ -391,21 +554,27 @@ object GameEngine {
     private fun makeBoss(state: GameState): FightData {
         val t = bossFor(state.floor)
         val level = state.floor + 2
-        var hp = 6.0 * (55 + 34 * (level - 1))
-        var atk = 1.6 * (6 + 2.2 * (level - 1))
+        val depth = depthMultiplier(state.floor, boss = true)
+        var hp = 6.0 * (55 + 34 * (level - 1)) * depth
+        var atk = 1.6 * (6 + 2.2 * (level - 1)) * depth
         var interval = 1250L
-        val modifier = listOf("", "", "rapide", "blinde", "berserk").random(rnd)
+        val modifier = listOf("", "", "rapide", "blinde", "berserk", "regenerant", "voleur").random(rnd)
         when (modifier) {
             "rapide" -> interval = 900L
             "blinde" -> hp *= 1.30
             "berserk" -> atk *= 1.30
+            "regenerant" -> hp *= 1.15
+            "voleur" -> atk *= 1.10
         }
         val suffix = when (modifier) {
             "rapide" -> " · RAPIDE"
             "blinde" -> " · BLINDÉ"
             "berserk" -> " · BERSERK"
+            "regenerant" -> " · RÉGÉNÉRANT"
+            "voleur" -> " · VOLEUR"
             else -> ""
         }
+        val reward = min(10.0, sqrt(depth))
         return FightData(
             enemyName = t.name + suffix,
             enemyIcon = t.icon,
@@ -414,13 +583,15 @@ object GameEngine {
             enemyMaxHp = hp,
             enemyAtk = atk,
             enemyIntervalMs = interval,
-            gold = 12 * (6 + 3 * level),
-            xp = 10 * (12 + 5 * level),
+            gold = (12 * (6 + 3 * level) * reward).roundToInt(),
+            xp = (10 * (12 + 5 * level) * reward).roundToInt(),
             isBoss = true,
             modifier = when (modifier) {
                 "rapide" -> "RAPIDE"
                 "blinde" -> "BLINDÉ"
                 "berserk" -> "BERSERK"
+                "regenerant" -> "RÉGÉNÉRANT"
+                "voleur" -> "VOLEUR"
                 else -> ""
             }
         )
@@ -456,6 +627,9 @@ object GameEngine {
             f.enemyIntervalMs = 950
             state.journal = addJournal(state, "Le gardien s'embrase", "bad")
         }
+        if (f.isBoss && f.modifier == "RÉGÉNÉRANT" && f.enemyHp < f.enemyMaxHp) {
+            f.enemyHp = min(f.enemyMaxHp, f.enemyHp + f.enemyMaxHp * 0.008 * dtMs / 1000.0)
+        }
 
         if (f.heroTimerMs <= 0) {
             heroAttack(state, f)
@@ -480,7 +654,9 @@ object GameEngine {
         var dmg = atk * (0.9 + rnd.nextDouble() * 0.2)
         if (f.isBoss) dmg *= 1.0 + s.bossDamage
         val critChance = (s.crit + state.ferveur * 0.02) / 100.0
-        if (rnd.nextDouble() < critChance) dmg *= 1.6 + s.critDamage
+        val crit = rnd.nextDouble() < critChance
+        f.lastCrit = crit
+        if (crit) dmg *= 1.6 + s.critDamage
         f.enemyHp -= dmg
         if (s.lifesteal > 0.0) {
             state.hp = min(s.maxHp.toDouble(), state.hp + dmg * s.lifesteal)
@@ -497,6 +673,10 @@ object GameEngine {
         }
         dmg *= (1.0 - s.damageReduction)
         state.hp -= dmg
+        if (f.isBoss && f.modifier == "VOLEUR") {
+            val stolen = max(1, (dmg * 0.5).roundToInt())
+            state.gold = max(0, state.gold - stolen)
+        }
         if (state.hp <= 0) {
             if (f.farm) {
                 state.hp = 1.0
@@ -515,9 +695,12 @@ object GameEngine {
     }
 
     private fun victory(state: GameState, f: FightData) {
-        state.gold += f.gold
+        val earned = goldGain(state, f.gold)
+        state.gold += earned
+        state.goldEarned += earned
         gainXp(state, f.xp)
         state.fight = null
+        recordKill(state, f.enemyName)
 
         if (f.isBoss) {
             state.bosses++
@@ -532,9 +715,11 @@ object GameEngine {
             addLoot(state, lootItem(state.floor, "rare"))
             state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
             if (clearedFloor % 10 == 0) {
+                state.shards += 5
+                addLegend(state, "Jalon · palier $clearedFloor — ${titleFor(state.floor)}")
                 state.journal = addJournal(
                     state,
-                    "Jalon · palier $clearedFloor franchi — rang ${rankLabel(state.floor)}",
+                    "Jalon · palier $clearedFloor franchi — ${titleFor(state.floor)} · +5 éclats",
                     "good"
                 )
             }
@@ -555,7 +740,7 @@ object GameEngine {
         } else {
             state.mode = "walk"
             state.nextFight += 10
-            state.journal = addJournal(state, "${f.enemyName} vaincu · +${f.gold} or", "good")
+            state.journal = addJournal(state, "${f.enemyName} vaincu · +$earned or", "good")
             if (rnd.nextDouble() < 0.18) spawnChest(state)
         }
     }
@@ -606,11 +791,14 @@ object GameEngine {
     }
 
     private fun openChest(state: GameState, c: ChestData) {
-        val gold = if (c.goldMax > c.goldMin) rnd.nextInt(c.goldMin, c.goldMax + 1) else c.goldMin
+        val baseGold = if (c.goldMax > c.goldMin) rnd.nextInt(c.goldMin, c.goldMax + 1) else c.goldMin
+        val gold = goldGain(state, baseGold)
         state.gold += gold
+        state.goldEarned += gold
         state.rations = min(24, state.rations + 1)
         state.shards = min(12, state.shards + 1)
         state.chestsToday++
+        state.chestsOpened++
         addLoot(state, lootItem(state.floor, c.rarity))
         state.chest = state.chestQueue.firstOrNull()
         if (state.chestQueue.isNotEmpty()) state.chestQueue = state.chestQueue.drop(1)
@@ -683,6 +871,7 @@ object GameEngine {
 
     fun equipItem(state: GameState, itemId: String): Boolean {
         val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
+        if (!item.identified) return false
         val previous = state.equipment.firstOrNull { it.slot == item.slot }
         swapEquipment(state, item, previous)
         state.journal = addJournal(state, "${item.name} équipé", "good")
@@ -699,7 +888,7 @@ object GameEngine {
         listOf("weapon", "head", "body", "hands", "feet", "talisman").forEach { slot ->
             val current = state.equipment.firstOrNull { it.slot == slot }
             val best = state.inventory
-                .filter { it.slot == slot }
+                .filter { it.slot == slot && it.identified }
                 .maxByOrNull { itemScore(it) }
                 ?: return@forEach
             if (current == null || itemScore(best) > itemScore(current)) {
@@ -756,11 +945,88 @@ object GameEngine {
         return updated.locked
     }
 
+    fun withdrawStashItem(state: GameState, itemId: String): Boolean {
+        val item = state.stash.firstOrNull { it.id == itemId } ?: return false
+        if (state.inventory.size >= INVENTORY_CAP) return false
+        state.stash = state.stash.filter { it.id != itemId }
+        state.inventory = state.inventory + item
+        return true
+    }
+
+    fun identifyItem(state: GameState, itemId: String): Boolean {
+        val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
+        if (item.identified || state.shards < 1) return false
+        state.shards--
+        state.inventory = state.inventory.map {
+            if (it.id == itemId) it.copy(identified = true) else it
+        }
+        state.journal = addJournal(state, "Objet identifié · ${item.name}", "good")
+        return true
+    }
+
+    fun rerollEffect(state: GameState, itemId: String): Boolean {
+        val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
+        if (!item.identified || state.shards < 2) return false
+        state.shards -= 2
+        val effect = if (rnd.nextDouble() < 0.25) "" else ITEM_EFFECTS.random(rnd)
+        val baseName = item.name.substringBefore(" · ")
+        val updated = item.copy(
+            name = if (effect.isEmpty()) baseName else "$baseName · ${effectLabel(effect)}",
+            effect = effect
+        )
+        state.inventory = state.inventory.map { if (it.id == itemId) updated else it }
+        state.journal = addJournal(
+            state,
+            "Forge · ${item.name} → ${if (effect.isEmpty()) "aucun effet" else effectLabel(effect)}",
+            "good"
+        )
+        return true
+    }
+
+    fun upgradeCost(item: Item): Int = 30 * item.level + 20
+
+    fun upgradeItem(state: GameState, itemId: String): Boolean {
+        val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
+        if (!item.identified) return false
+        val cost = upgradeCost(item)
+        if (state.gold < cost || state.shards < 1) return false
+        state.gold -= cost
+        state.shards--
+        val updated = item.copy(
+            level = item.level + 1,
+            atk = (item.atk * 1.08).roundToInt(),
+            hp = (item.hp * 1.08).roundToInt(),
+            vitPct = (item.vitPct * 1.08).roundToInt(),
+            critPct = (item.critPct * 1.08).roundToInt(),
+            regen = ((item.regen + if (item.regen > 0) 0.1 else 0.0) * 10).roundToInt() / 10.0,
+            value = (item.value * 1.2).roundToInt()
+        )
+        state.inventory = state.inventory.map { if (it.id == itemId) updated else it }
+        state.journal = addJournal(state, "Forge · ${item.name} niveau ${updated.level}", "good")
+        return true
+    }
+
+    fun dismantleItem(state: GameState, itemId: String): Int {
+        val item = state.inventory.firstOrNull { it.id == itemId } ?: return 0
+        if (item.locked) return 0
+        val shards = when (item.rarity) {
+            "uncommon" -> 2
+            "rare" -> 3
+            "epic" -> 5
+            "legendary" -> 8
+            else -> 1
+        }
+        state.inventory = state.inventory.filter { it.id != itemId }
+        state.shards = min(12, state.shards + shards)
+        state.journal = addJournal(state, "${item.name} démonté · +$shards éclat(s)", "neutral")
+        return shards
+    }
+
     fun fuseItem(state: GameState, itemId: String): Item? {
         val item = state.inventory.firstOrNull { it.id == itemId } ?: return null
-        if (item.locked) return null
+        if (item.locked || !item.identified) return null
         val group = state.inventory
-            .filter { it.slot == item.slot && it.rarity == item.rarity && !it.locked }
+            .filter { it.slot == item.slot && it.rarity == item.rarity && !it.locked && it.identified }
             .sortedByDescending { itemScore(it) }
         if (group.size < 3) return null
         val chosen = group.take(3)
@@ -817,7 +1083,7 @@ object GameEngine {
         val s = statsOf(state)
         if (state.hp >= s.maxHp) return false
         state.freeRestDay = state.day
-        val heal = s.maxHp * 0.25
+        val heal = s.maxHp * 0.15
         state.hp = min(s.maxHp.toDouble(), state.hp + heal)
         state.journal = addJournal(state, "Veillée gratuite (+${heal.roundToInt()} PV)", "good")
         return true
@@ -874,6 +1140,12 @@ object GameEngine {
                 ITEM_EFFECTS.random(rnd)
             else -> ""
         }
+        val setName = when {
+            finalRarity in setOf("rare", "epic", "legendary") && rnd.nextDouble() < 0.30 ->
+                ITEM_SETS.random(rnd)
+            else -> ""
+        }
+        val identified = !(finalRarity in setOf("rare", "epic", "legendary") && rnd.nextDouble() < 0.10)
         fun scaled(v: Int): Int = max(1, (v * mult).roundToInt())
         return base.copy(
             id = "loot_${System.nanoTime()}",
@@ -886,7 +1158,9 @@ object GameEngine {
             critPct = scaled(base.critPct),
             regen = (base.regen * mult * 10).roundToInt() / 10.0,
             value = scaled(base.value),
-            effect = effect
+            effect = effect,
+            identified = identified,
+            setName = setName
         )
     }
 
@@ -906,4 +1180,5 @@ object GameEngine {
     fun isWalking(state: GameState): Boolean =
         state.mode == "walk" && state.stepBank > 0.0
 }
+
 

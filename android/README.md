@@ -1,31 +1,32 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.3.1** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.4.0** — APK sideloadé pour Pixel 7a (Android 14+).
 
 ## Ce qui est implémenté
 
 - Scène pixel art en **Jetpack Compose** : héros, monstres, élites, gardiens, coffre, porte runique, campement.
 - Boucle de jeu : **10 pas = 1 m**, rencontres tous les 10 m, gardien tous les 100 m, combat automatique, défaite + repli de 20 m + farm, ferveur, rations, éclats, coffres à quota.
-- Tableau de bord : **Stats**, **Inventaire** (comparaison/équipement/vente), **Améliorations** (coûts croissants), journal, prochain gardien.
+- Tableau de bord : **Stats**, **Inventaire** (comparaison/équipement/vente/tri/filtres), **Améliorations**, journal, prochain gardien.
 - **Compte Garmin** : clé personnelle, date d'expiration, test, synchronisation, révocation.
 - **Garmin Personal API uniquement** : aucun Health Connect, aucune autre source de pas.
 - **2FA Garmin dans le navigateur** (Custom Tab) : l'application ne voit jamais le mot de passe ni le code 2FA.
 - Clé et jeton **chiffrés dans Android Keystore** ; écran de clé protégé contre les captures (`FLAG_SECURE`).
 - Jeton OAuth2 Bearer **24 h**, sans refresh token : renouvellement automatique avec la clé.
 - Reset quotidien à **00:00 local**, aligné sur `calendarDate` Garmin.
-- **Historique Garmin 7 jours** : ledger par jour, rattrapage idempotent, plafond de 20 000 pas par synchronisation, récapitulatif hors ligne.
-- **Serments journaliers variables** : marche, gardiens et coffres ; récompenses en or, éclats et objet, renouvelés à 00:00.
-- **Combat animé** : dégâts/soins flottants, flash de coup, estafilade, bannière de niveau, aura de phase 2, bénédiction +25 % et modificateurs de gardien.
-- **Journal complet** : 80 événements, filtres favorables / alertes / neutres.
-- **Coffres** : expiration 24 h, 2 en attente maximum, compte à rebours et progression conservée.
-- **Réglages** : taille du texte, notifications on/off, animations réduites, vibrations, journal de synchronisation, export/import, effacement de la progression.
-- **Notifications** : clé Garmin 30/7/1 jour, gardien, niveau, serments et coffre qui expire.
-- **Ferveur** : décroissance après 2 h sans pas et aura dans la scène.
-- **Inventaire avancé** : « Équiper le meilleur », « Vendre les communs », verrouillage, fusion 3→1, effets légendaires (vampirisme, rempart, frénésie, chasse), coffre de camp.
-- **Campement** : veillée gratuite quotidienne, soins, coffre de camp.
-- **Contenu** : biomes colorés tous les 10 paliers, rencontres spéciales (autel, source, marchand, statue), jalons et rang.
-- **Sauvegarde locale** : export/import JSON, copie de secours automatique et workflow GitHub Actions (tests + APK debug).
-- WorkManager toutes les 30 minutes + synchro à l'ouverture + bouton manuel.
+- **Historique Garmin 7 jours** : ledger par jour, rattrapage idempotent, plafond de 20 000 pas par synchronisation, contrôle 250 pas/min, **simulation hors ligne** (combats, or, paliers, victimes).
+- **Serments journaliers variables**, série de jours, pas hebdomadaires, récompenses en or/éclats/objet.
+- **Combat animé** : dégâts/soins flottants, critiques distincts, flash, bannière de niveau, phase 2, bénédiction +25 %, modificateurs de gardien (rapide, blindé, berserk, régénérant, voleur).
+- **Journal complet** : 80 événements, filtres, **journal de légende** et **bestiaire**.
+- **Coffres** : expiration 24 h, 2 en attente, compte à rebours, alerte d'expiration, bouton HUD.
+- **Réglages** : taille du texte, notifications par catégorie, heures calmes, animations réduites, vibrations, journal de synchronisation, export/import avec aperçu, effacement.
+- **Onboarding** en quatre écrans, revoyable.
+- **Ferveur** : décroissance après 2 h, rattrapage hors ligne, aura.
+- **Inventaire avancé** : « Équiper le meilleur », tri/filtres, « Vendre les communs », verrouillage, fusion 3→1, objets non identifiés, ensembles 2/4/6, forge (reforge/amélioration/démontage), effets légendaires, coffre de camp détaillé.
+- **Campement** : combat réinitialisé, veillée gratuite +15 %, soins, coffre, journal et inventaire accessibles.
+- **Contenu** : biomes colorés avec météo, rencontres spéciales (autel, source, marchand, statue, pari), jalons complets, boss uniques 10/25/50/100, bestiaire.
+- **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil, mise à jour in-app.
+- **Qualité** : tests moteur, tests Garmin MockWebServer, tests UI Compose, lint, CI Android, workflow de release signée conditionnel.
+- WorkManager : synchro toutes les 30 minutes, maintenance coffres/clé toutes les 15 minutes.
 
 ## Prérequis de build
 
@@ -82,13 +83,15 @@ Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le tél
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.3.1
+## Limites de cette v0.4.0
 
 - L'historique Garmin est limité à 7 jours et à 20 000 pas de rattrapage par synchronisation.
-- La base reste un fichier JSON atomique (avec copie de secours), pas encore Room.
+- La base reste un fichier JSON versionné avec copie de secours, pas encore Room.
+- L'interface est en français uniquement.
+- Pas encore de sons intégrés : les alertes passent par les notifications et les vibrations.
+- La publication Play Store est préparée mais pas effectuée ; l'APK reste sideloadé.
 - L'équilibrage est celui de la démonstration et sera à affiner sur plusieurs semaines.
 - La synchronisation dépend de Garmin Connect : la montre doit avoir poussé ses pas.
-- Pas de sons pour l'instant ; les alertes passent par les notifications et les vibrations.
 
 ## Documents
 

@@ -8,6 +8,7 @@ import com.brunothesatellite.idlesteprpg.garmin.GarminClient
 import com.brunothesatellite.idlesteprpg.garmin.GarminRepository
 import com.brunothesatellite.idlesteprpg.garmin.SecretStore
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
+import com.brunothesatellite.idlesteprpg.sync.MaintenanceScheduler
 import com.brunothesatellite.idlesteprpg.sync.SyncScheduler
 
 class App : Application() {
@@ -19,6 +20,7 @@ class App : Application() {
         container = AppContainer(this)
         GameNotifications.ensureChannels(this)
         SyncScheduler.schedule(this)
+        MaintenanceScheduler.schedule(this)
     }
 }
 
