@@ -61,6 +61,48 @@ Les sprites de monstres, de héros, d'environnement et d'objets proviennent de l
 
 ---
 
+## Extension v0.7.0 - biomes, monstres et objets
+
+Les ressources ajoutées pour les biomes, les monstres et les objets viennent du **même export `releases/Nov-2015`** du dépôt <https://github.com/crawl/tiles>, sous **CC0 1.0**. Chaque nom a été vérifié contre `TILES_UNDER_UNKNOWN_LICENSE.md` : aucune tuile de licence incertaine n'a été utilisée.
+
+**Monstres (70)**
+
+- `mon/undead/` : `crawling_corpse`, `flying_skull`, `wight`, `bone_dragon`, `ancient_lich`, `revenant`, `drowned_soul`, `silent_spectre`, `vampire_knight`
+- `mon/animals/` : `jumping_spider`, `boulder_beetle`, `hell_hound`, `fire_bat`, `ice_beast`, `polar_bear`, `raiju`, `killer_bee`, `queen_bee`
+- `mon/` : `gnoll_sergeant`, `big_kobold`, `orc_knight`, `greater_naga`, `iron_troll`, `deep_dwarf`, `frost_giant`, `faun`, `harpy`, `satyr`, `dryad`
+- `mon/demons/` : `efreet`, `brimstone_fiend`, `hell_sentinel`, `ice_devil`, `blizzard_demon`, `executioner`, `reaper`, `soul_eater`, `shadow_imp`, `iron_imp`, `ufetubus`, `hellion`
+- `mon/nonliving/` : `iron_elemental`, `guardian_golem`, `crystal_guardian`, `ushabti`, `spellforged_servitor`
+- `mon/dragons/` : `wyvern`, `shadow_dragon`, `quicksilver_dragon`
+- `mon/fungi_plants/` : `treant`, `thorn_hunter`, `vine_stalker`, `wandering_mushroom`, `deathcap`
+- `mon/amorphous/` : `ooze`, `jelly`, `azure_jelly`, `death_ooze`
+- `mon/eyes/` : `giant_eyeball`, `eye_of_draining`, `great_orb_of_eyes`
+- `mon/abyss/` : `ancient_zyme`, `tentacled_starspawn`, `lurking_horror`, `starcursed_mass`
+- `mon/unique/` : `dispater`, `asmodeus`, `ereshkigal`, `gloorx_vloq`, `mnoleg`
+
+**Objets (34)**
+
+- `item/weapon/` : `short_sword1`, `falchion1`, `eveningstar1`, `rapier1`, `quarterstaff`, `bullwhip2`, `greatsword3`, `hand_axe1`
+- `item/armour/` : `animal_skin1`, `ring_mail1`, `ice_dragon_armour`, `shadow_dragon_scale_mail`, `gold_dragon_armour`, `glove2`, `glove3`, `boots1_brown`, `boots2_jackboots`, `boots3_stripe`
+- `item/armour/headgear/` : `helmet2`, `helmet4`, `helmet5`, `helmet_art2`
+- `item/ring/` : `i-protection`, `i-slaying`, `i-r-poison`, `i-r-cold`
+- `item/amulet/` : `i-warding`, `i-spirit`, `i-rage`
+- `item/misc/` : `misc_horn`, `misc_orb2`
+- `item/staff/` : `i-staff_earth`, `i-staff_cold`
+- `item/food/` : `beef_jerky`
+
+**Environnement**
+
+- `dngn/wall/` : `volcanic_wall0-3`, `lab-metal0-3`, `zot_blue0-3`, `lair0-3`, `slime3-7`, `hell01-06`, `crystal_wall_white`, `crystal_wall_lightblue`, `metal_wall`, `catacombs4-7`
+- `dngn/floor/` : `frozen0-5`, `ice0-3`, `grass0-2`, `grass/grass_flowers_blue1`, `grass/grass_flowers_red1`, `grass/grass_flowers_yellow1`, `acidic_floor0-3`, `bog_green0-3`, `black_cobalt01-04`, `demonic_red1-4`
+- `dngn/trees/` : `tree1_yellow`, `tree2_yellow`, `tree1_lightred`, `tree2_lightred`, `mangrove1`
+- `dngn/statues/` : `crumbled_column_2-4`, `statue_iron`, `statue_orb_guardian`, `statue_cerebov`, `statue_cat`, `statue_naga`, `statue_hydra`, `statue_demonic_bust`
+- `dngn/` : `blood_fountain`, `blue_fountain`, `dry_fountain`, `sparkling_fountain`
+- `dngn/doors/` : `gate_sealed_left/middle/right`, `runed_door`, `sealed_door`, `fleshy_orifice_closed`
+- `mon/fungi_plants/` : `plant_crypt`, `bush2`, `bush3`, `bush4`
+- `dngn/water/` : `liquefaction1`, `liquefaction2`, `ink_full`
+
+---
+
 ## Code et direction artistique
 
 Le code de la maquette, la mise en scène, l'interface et le coffre SVG sont produits pour ce prototype de game design. Les ressources visuelles restent sous leurs licences respectives (CC0 / OFL).

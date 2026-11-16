@@ -461,9 +461,11 @@
   </ul>
   <h3>Ensembles et forge</h3>
   <ul>
-    <li>Les ensembles <strong>Veilleur</strong>, <strong>Braise</strong> et <strong>Givre</strong> donnent des bonus à 2, 4 et 6 pièces.</li>
+    <li>Les ensembles <strong>Veilleur</strong>, <strong>Braise</strong>, <strong>Givre</strong>, <strong>Ossature</strong>, <strong>Toile</strong>, <strong>Cendre</strong>, <strong>Forge</strong>, <strong>Serment</strong>, <strong>Bois</strong>, <strong>Abîme</strong> et <strong>Trône</strong> donnent des bonus à 2, 4 et 6 pièces.</li>
+    <li>Chaque biome privilégie ses propres ensembles dans ses tables de butin.</li>
     <li>La forge se débloque après le premier gardien vaincu.</li>
-    <li>Les objets légendaires peuvent porter <strong>Vampirisme</strong>, <strong>Rempart</strong>, <strong>Frénésie</strong> ou <strong>Chasse</strong>.</li>
+    <li>Les objets peuvent porter <strong>Vampirisme</strong>, <strong>Rempart</strong>, <strong>Frénésie</strong>, <strong>Chasse</strong>, <strong>Vitalité</strong> ou <strong>Précision</strong>.</li>
+    <li>Le héros affiche un <strong>paper doll</strong> : casque, armure, bottes et arme changent selon l'équipement porté.</li>
   </ul>
   <h3>Coffre de camp</h3>
   <p>L'inventaire est limité à 24 objets. Quand il est plein, le jeu compare le nouvel objet au moins bon objet non verrouillé : le meilleur reste dans le sac et l'autre part au coffre. Les objets verrouillés ne sont jamais déplacés automatiquement. Les objets non identifiés utilisent un score provisoire basé sur la rareté et le niveau. Aucun objet n'est détruit : vous pouvez les récupérer un par un ou en bloc.</p>
@@ -489,6 +491,7 @@
     <tr><td>Champignon de braise</td><td>Inhabituel</td><td>Rend 20 ferveur.</td></tr>
     <tr><td>Élixir du veilleur</td><td>Rare</td><td>Restaure tous les PV.</td></tr>
     <tr><td>Pain de route</td><td>Commun</td><td>Rend 20 % des PV et 1 ration.</td></tr>
+    <tr><td>Viande séchée</td><td>Commun</td><td>Rend 25 % des PV et 1 ration.</td></tr>
   </table>
   <h3>Combat — pendant un combat uniquement</h3>
   <table>
@@ -500,6 +503,9 @@
     <tr><td>Élixir de vampire</td><td>Rare</td><td>20 % des dégâts rendus en PV pendant 30 s.</td></tr>
     <tr><td>Parchemin critique</td><td>Rare</td><td>Critique +50 % pendant 15 s.</td></tr>
     <tr><td>Champignon berserk</td><td>Rare</td><td>ATQ +80 %, mais dégâts subis +20 % pendant 15 s.</td></tr>
+    <tr><td>Potion de hâte</td><td>Rare</td><td>VIT +60 % pendant 20 s.</td></tr>
+    <tr><td>Potion de force</td><td>Inhabituel</td><td>ATQ +40 % pendant 20 s.</td></tr>
+    <tr><td>Potion de régénération</td><td>Rare</td><td>Régénération +2 PV/s pendant 30 s.</td></tr>
   </table>
   <h3>Où les trouver</h3>
   <ul>
@@ -548,9 +554,27 @@
     <li>Après le palier 10, un facteur de profondeur augmente les PV et l'ATQ ennemis.</li>
   </ul>
   <h3>Biomes</h3>
-  <p>Le décor, la lumière et les particules changent tous les 10 paliers : cryptes, catacombes, cavernes de cendre, forge noyée, cimes du serment.</p>
+  <p>Le donjon traverse <strong>8 biomes</strong>, chacun avec ses murs, sols, statues, props, portes et météo. Le changement se fait tous les 10 paliers.</p>
+  <table>
+    <tr><th>Paliers</th><th>Biome</th><th>Ambiance</th></tr>
+    <tr><td>1–10</td><td>Cryptes de Vael</td><td>Pierre violette, poussière, portes fermées.</td></tr>
+    <tr><td>11–20</td><td>Catacombes</td><td>Pierre verte, spores, portes runiques.</td></tr>
+    <tr><td>21–30</td><td>Cavernes de cendre</td><td>Roche volcanique, braises, fontaines de sang.</td></tr>
+    <tr><td>31–40</td><td>Forge noyée</td><td>Métal, étincelles, bassins bleus.</td></tr>
+    <tr><td>41–50</td><td>Cimes du Serment</td><td>Glace, neige, cristaux.</td></tr>
+    <tr><td>51–60</td><td>Bois des Âmes</td><td>Herbe, arbres d'or, feuilles.</td></tr>
+    <tr><td>61–70</td><td>Abîme organique</td><td>Slime, spores, acidité.</td></tr>
+    <tr><td>71+</td><td>Trône des Âmes</td><td>Enfer rouge, cendres, portes scellées.</td></tr>
+  </table>
+  <h3>Créatures et butin</h3>
+  <ul>
+    <li>Chaque biome a ses <strong>monstres faciles</strong> (0–49 m), <strong>intermédiaires</strong> (50–84 m), <strong>difficiles</strong> (85–99 m) et ses <strong>gardiens</strong>.</li>
+    <li>Les <strong>tables de butin</strong> sont propres au biome : armes, armures, casques, bottes, gantelets et talismans thématiques.</li>
+    <li>Les paliers 10, 25, 50 et 100 gardent des gardiens de jalon ; les autres paliers font tourner les boss du biome.</li>
+    <li>Les ensembles de biome sont favorisés dans leur région : Ossature et Toile aux catacombes, Cendre dans les cavernes, Forge dans la forge, Serment aux cimes, Bois dans la forêt, Abîme dans l'abîme et Trône au sommet.</li>
+  </ul>
   <h3>Rangs et titres</h3>
-  <p>Le rang progresse avec les paliers : Pèlerin, Veilleur des Cryptes, Pèlerin des Abysses, Marcheur de Cendre, Gardien de la Forge, Souverain des Cimes, Légende des Âmes.</p>
+  <p>Le rang progresse avec les paliers : Pèlerin, Veilleur des Cryptes, Pèlerin des Abysses, Marcheur de Cendre, Gardien de la Forge, Souverain des Cimes, Veilleur du Bois, Marcheur de l'Abîme, Légende des Âmes.</p>
 </section>
 
 <section id="journal">
@@ -694,7 +718,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.6.2 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.7.0 · <a href="#top">Retour au sommaire</a><br>
   Garmin Personal API uniquement · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

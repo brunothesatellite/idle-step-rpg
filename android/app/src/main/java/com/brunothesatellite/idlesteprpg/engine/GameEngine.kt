@@ -175,7 +175,8 @@ object GameEngine {
         state.hp = state.hp.coerceIn(0.0, s.maxHp.toDouble())
 
         val fighting = state.mode == "fight" || state.mode == "boss"
-        val regen = s.maxHp * 0.006 * (1.0 + 0.008 * state.ferveur) / 1000.0 *
+        val bonusRegen = (s.regen - 0.6).coerceAtLeast(0.0)
+        val regen = (s.maxHp * 0.006 * (1.0 + 0.008 * state.ferveur) + bonusRegen) / 1000.0 *
             (if (fighting) 1.0 / 3.0 else 1.0)
         state.hp = min(s.maxHp.toDouble(), state.hp + regen * dtMs)
 
@@ -454,6 +455,10 @@ object GameEngine {
                 addBuff(state, "lifesteal", template.magnitude, template.durationMs, "VAMP")
                 message = "Vol de vie +${(template.magnitude * 100).roundToInt()} % · ${template.durationMs / 1000} s"
             }
+            "buff_regen" -> {
+                addBuff(state, "regen", template.magnitude, template.durationMs, "RÉGÉN")
+                message = "Régénération +${"%.1f".format(template.magnitude)} PV/s · ${template.durationMs / 1000} s"
+            }
             "berserk" -> {
                 addBuff(state, "atk", template.magnitude, template.durationMs, "BERSERK")
                 addBuff(state, "vulnerable", template.secondary, template.durationMs, "FRAGILE")
@@ -690,10 +695,11 @@ object GameEngine {
 
     private fun makeMob(state: GameState): FightData {
         val pos = state.distance
+        val biomePool = mobPoolFor(state.floor)
         val pool = when {
-            pos >= 85 -> HARD_MOBS
-            pos >= 50 -> MID_MOBS
-            else -> EASY_MOBS
+            pos >= 85 -> biomePool.hard
+            pos >= 50 -> biomePool.mid
+            else -> biomePool.easy
         }
         val t = pool[rnd.nextInt(pool.size)]
         val elite = rnd.nextDouble() < 0.10
@@ -771,7 +777,8 @@ object GameEngine {
     }
 
     private fun makeFarm(state: GameState): FightData {
-        val t = EASY_MOBS[rnd.nextInt(EASY_MOBS.size)]
+        val easy = mobPoolFor(state.floor).easy
+        val t = easy[rnd.nextInt(easy.size)]
         val level = max(1, state.floor - 2)
         val hp = (55 + 34 * (level - 1)) * 0.65
         val atk = (6 + 2.2 * (level - 1)) * 0.6
@@ -1325,7 +1332,8 @@ object GameEngine {
         var finalRarity = rarity
         if (rarity == "epic" && rnd.nextDouble() < 0.12) finalRarity = "legendary"
         if (rarity == "rare" && rnd.nextDouble() < 0.03) finalRarity = "legendary"
-        val base = LOOT_TEMPLATES[rnd.nextInt(LOOT_TEMPLATES.size)]
+        val templates = lootTemplatesFor(floor)
+        val base = templates[rnd.nextInt(templates.size)]
         val mult = when (finalRarity) {
             "uncommon" -> 1.25
             "rare" -> 1.6
@@ -1339,9 +1347,10 @@ object GameEngine {
                 ITEM_EFFECTS.random(rnd)
             else -> ""
         }
+        val setPool = BIOME_SETS[biomeKeyFor(floor)] ?: ITEM_SETS
         val setName = when {
             finalRarity in setOf("rare", "epic", "legendary") && rnd.nextDouble() < 0.30 ->
-                ITEM_SETS.random(rnd)
+                setPool.random(rnd)
             else -> ""
         }
         val identified = !(finalRarity in setOf("rare", "epic", "legendary") && rnd.nextDouble() < 0.10)

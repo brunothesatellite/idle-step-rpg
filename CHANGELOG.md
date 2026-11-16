@@ -1,5 +1,17 @@
 # Journal des versions
 
+## v0.7.0
+- **8 biomes distincts** : Cryptes de Vael, Catacombes, Cavernes de cendre, Forge noyée, Cimes du Serment, Bois des Âmes, Abîme organique et Trône des Âmes.
+- **Décors dédiés** : murs, sols, statues, props, portes runiques/scellées et météo propres à chaque biome (neige, cendres, spores, feuilles, étincelles, poussière).
+- **Plus de 60 nouvelles créatures** réparties par biome et par distance dans le palier, avec des boss de biome et les gardiens de jalon.
+- **Tables de butin par biome** : armes, armures, casques, bottes, gantelets et talismans thématiques.
+- **8 nouveaux ensembles** : Ossature ancienne, Toile des catacombes, Cendre éternelle, Forge abyssale, Serment des cimes, Bois des âmes, Abîme organique et Trône des âmes.
+- **2 nouveaux effets d'objet** : Vitalité et Précision.
+- **4 nouveaux consommables** : Potion de hâte, Potion de force, Potion de régénération et Viande séchée.
+- **Héros en paper doll** : l'équipement visible change le casque, l'armure, les bottes et l'arme affichés.
+- **Assets CC0 DCSS** vérifiés contre la liste des licences incertaines ; crédits mis à jour.
+- 60 tests unitaires, dont les nouveaux tests de biomes, pools, butin, ensembles et présence des assets.
+
 ## v0.6.2
 - **Mises à jour depuis GitHub** : vérification automatique au lancement (une fois par 24 h, active par défaut) et vérification manuelle dans `Réglages → Mises à jour`.
 - **Installation in-app** : téléchargement de l'APK de la release, vérification **SHA-256** quand l'empreinte est publiée, puis installation confirmée via Android (FileProvider).

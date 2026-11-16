@@ -45,8 +45,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -67,8 +69,10 @@ import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.engine.FLOOR_METERS
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.biomeFor
+import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
 import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.formatRemaining
@@ -99,8 +103,18 @@ private data class BiomePalette(
     val ambientCount: Int
 )
 
-private fun biomePalette(floor: Int): BiomePalette = when {
-    floor <= 10 -> BiomePalette(
+internal data class BiomeVisuals(
+    val walls: List<String>,
+    val floors: List<String>,
+    val statues: List<String>,
+    val props: List<String>,
+    val weather: String,
+    val gate: String,
+    val fireClouds: Boolean = false
+)
+
+private fun biomePalette(key: String): BiomePalette = when (key) {
+    "crypts" -> BiomePalette(
         top = Color(0xFF07050C), mid = Color(0xFF151022), bottom = Color(0xFF09060F),
         wallTint = Color(0xFF3A2C4C),
         torch = Color(0xFFFF9448), torchLight = Color(0xFFFFD479), torchDeep = Color(0xFF8F2D19),
@@ -108,7 +122,7 @@ private fun biomePalette(floor: Int): BiomePalette = when {
         groundEdge = Color(0xFF4A3C56), groundEdgeDeep = Color(0xFF2A2035), groundLine = Color(0xFF6A5678),
         ambient = Color(0xFFB09AC8), ambientCount = 14
     )
-    floor <= 20 -> BiomePalette(
+    "catacombs" -> BiomePalette(
         top = Color(0xFF03090A), mid = Color(0xFF0B1A18), bottom = Color(0xFF050D0C),
         wallTint = Color(0xFF23524A),
         torch = Color(0xFF5FD8B0), torchLight = Color(0xFFB8F5D9), torchDeep = Color(0xFF1B6B52),
@@ -116,7 +130,7 @@ private fun biomePalette(floor: Int): BiomePalette = when {
         groundEdge = Color(0xFF2F5A50), groundEdgeDeep = Color(0xFF17332D), groundLine = Color(0xFF4E8A7A),
         ambient = Color(0xFF8EE8C6), ambientCount = 22
     )
-    floor <= 30 -> BiomePalette(
+    "ash" -> BiomePalette(
         top = Color(0xFF0C0705), mid = Color(0xFF221410), bottom = Color(0xFF0A0605),
         wallTint = Color(0xFF6B3A22),
         torch = Color(0xFFFF7A3D), torchLight = Color(0xFFFFC27A), torchDeep = Color(0xFF6B2410),
@@ -124,7 +138,7 @@ private fun biomePalette(floor: Int): BiomePalette = when {
         groundEdge = Color(0xFF6A3F2C), groundEdgeDeep = Color(0xFF3A2118), groundLine = Color(0xFF9A5B3C),
         ambient = Color(0xFFFFB07A), ambientCount = 34
     )
-    floor <= 40 -> BiomePalette(
+    "forge" -> BiomePalette(
         top = Color(0xFF05080F), mid = Color(0xFF111C2E), bottom = Color(0xFF04060A),
         wallTint = Color(0xFF2E4A6B),
         torch = Color(0xFF6FA8FF), torchLight = Color(0xFFB8D8FF), torchDeep = Color(0xFF25406B),
@@ -132,15 +146,110 @@ private fun biomePalette(floor: Int): BiomePalette = when {
         groundEdge = Color(0xFF3A5470), groundEdgeDeep = Color(0xFF1C2C40), groundLine = Color(0xFF5C82A8),
         ambient = Color(0xFF8FC4FF), ambientCount = 26
     )
-    else -> BiomePalette(
-        top = Color(0xFF0A0E16), mid = Color(0xFF1C2A3D), bottom = Color(0xFF070A10),
+    "peaks" -> BiomePalette(
+        top = Color(0xFF060B14), mid = Color(0xFF12253A), bottom = Color(0xFF050910),
         wallTint = Color(0xFF5C7A99),
-        torch = Color(0xFFB9D9FF), torchLight = Color(0xFFF0F8FF), torchDeep = Color(0xFF4A6B8A),
-        floorTop = Color(0xFF1E2A38), floorBottom = Color(0xFF080B11),
-        groundEdge = Color(0xFF6B8299), groundEdgeDeep = Color(0xFF354556), groundLine = Color(0xFF9AB4C8),
-        ambient = Color(0xFFE4F2FF), ambientCount = 60
+        torch = Color(0xFFB9E6FF), torchLight = Color(0xFFF0FBFF), torchDeep = Color(0xFF48708A),
+        floorTop = Color(0xFF162534), floorBottom = Color(0xFF060A10),
+        groundEdge = Color(0xFF6B8299), groundEdgeDeep = Color(0xFF354556), groundLine = Color(0xFFB9D9F0),
+        ambient = Color(0xFFE4F3FF), ambientCount = 60
+    )
+    "woods" -> BiomePalette(
+        top = Color(0xFF08100A), mid = Color(0xFF1A2A16), bottom = Color(0xFF070C06),
+        wallTint = Color(0xFF4A6B2E),
+        torch = Color(0xFFFFC65C), torchLight = Color(0xFFFFE6A0), torchDeep = Color(0xFF8A5A1A),
+        floorTop = Color(0xFF1B2712), floorBottom = Color(0xFF080D06),
+        groundEdge = Color(0xFF4E6A32), groundEdgeDeep = Color(0xFF283A18), groundLine = Color(0xFF8AA85A),
+        ambient = Color(0xFFC8E890), ambientCount = 34
+    )
+    "abyss" -> BiomePalette(
+        top = Color(0xFF060A08), mid = Color(0xFF142418), bottom = Color(0xFF050806),
+        wallTint = Color(0xFF3E6B4A),
+        torch = Color(0xFF8CFFB0), torchLight = Color(0xFFD8FFE0), torchDeep = Color(0xFF2A6B44),
+        floorTop = Color(0xFF122018), floorBottom = Color(0xFF050A07),
+        groundEdge = Color(0xFF3E6B4A), groundEdgeDeep = Color(0xFF1E3A28), groundLine = Color(0xFF7ABF8A),
+        ambient = Color(0xFF9CFFBE), ambientCount = 46
+    )
+    else -> BiomePalette(
+        top = Color(0xFF120408), mid = Color(0xFF2A0A12), bottom = Color(0xFF0A0205),
+        wallTint = Color(0xFF6B2230),
+        torch = Color(0xFFFF5C5C), torchLight = Color(0xFFFFC0B0), torchDeep = Color(0xFF8A1A22),
+        floorTop = Color(0xFF241016), floorBottom = Color(0xFF0A0306),
+        groundEdge = Color(0xFF6B2230), groundEdgeDeep = Color(0xFF3A121A), groundLine = Color(0xFFB05060),
+        ambient = Color(0xFFFF9C8A), ambientCount = 52
     )
 }
+
+internal fun biomeVisuals(key: String): BiomeVisuals = when (key) {
+    "crypts" -> BiomeVisuals(
+        walls = listOf("env/brick_gray1.png", "env/brick_gray0.png", "env/brick_gray2.png"),
+        floors = listOf("env/cobble_blood1.png", "env/cobble_blood2.png", "env/cobble_blood3.png"),
+        statues = listOf("env/statue_ancient_hero.png", "env/statue_angel.png", "env/statue_wraith.png"),
+        props = listOf("env/crumbled_column_1.png", "env/generic.png", "env/plant_crypt.png"),
+        weather = "dust",
+        gate = "closed"
+    )
+    "catacombs" -> BiomeVisuals(
+        walls = listOf("env/catacombs0.png", "env/catacombs3.png", "env/catacombs5.png"),
+        floors = listOf("env/crypt10.png", "env/crypt11.png", "env/cobble_blood2.png"),
+        statues = listOf("env/statue_cat.png", "env/statue_naga.png", "env/statue_hydra.png"),
+        props = listOf("env/crumbled_column_2.png", "env/crumbled_column_3.png", "env/plant_crypt.png"),
+        weather = "spores",
+        gate = "runed"
+    )
+    "ash" -> BiomeVisuals(
+        walls = listOf("env/volcanic_wall0.png", "env/volcanic_wall1.png", "env/volcanic_wall2.png"),
+        floors = listOf("env/dirt0.png", "env/dirt1.png", "env/demonic_red1.png"),
+        statues = listOf("env/statue_dragon.png", "env/statue_demonic_bust.png", "env/statue_iron.png"),
+        props = listOf("env/blood_fountain.png", "env/dry_fountain.png", "env/crumbled_column_4.png"),
+        weather = "embers",
+        gate = "closed",
+        fireClouds = true
+    )
+    "forge" -> BiomeVisuals(
+        walls = listOf("env/lab-metal0.png", "env/lab-metal1.png", "env/metal_wall.png"),
+        floors = listOf("env/black_cobalt01.png", "env/black_cobalt02.png", "env/black_cobalt03.png"),
+        statues = listOf("env/statue_iron.png", "env/statue_orb_guardian.png", "env/statue_sword.png"),
+        props = listOf("env/blue_fountain.png", "env/sparkling_fountain.png", "env/crumbled_column_3.png"),
+        weather = "sparks",
+        gate = "runed",
+        fireClouds = true
+    )
+    "peaks" -> BiomeVisuals(
+        walls = listOf("env/zot_blue0.png", "env/crystal_wall_white.png", "env/crystal_wall_lightblue.png"),
+        floors = listOf("env/ice0.png", "env/ice1.png", "env/ice2.png"),
+        statues = listOf("env/statue_angel.png", "env/statue_archer.png", "env/statue_dragon.png"),
+        props = listOf("env/tree1_lightred.png", "env/tree2_lightred.png", "env/sparkling_fountain.png"),
+        weather = "snow",
+        gate = "runed"
+    )
+    "woods" -> BiomeVisuals(
+        walls = listOf("env/lair0.png", "env/lair1.png", "env/lair2.png"),
+        floors = listOf("env/grass0.png", "env/grass1.png", "env/grass_flowers_blue1.png"),
+        statues = listOf("env/statue_cat.png", "env/statue_ancient_hero.png", "env/statue_archer.png"),
+        props = listOf("env/tree1_yellow.png", "env/tree2_yellow.png", "env/mangrove1.png"),
+        weather = "leaves",
+        gate = "runed"
+    )
+    "abyss" -> BiomeVisuals(
+        walls = listOf("env/slime3.png", "env/slime4.png", "env/slime5.png"),
+        floors = listOf("env/acidic_floor0.png", "env/acidic_floor1.png", "env/liquefaction1.png"),
+        statues = listOf("env/statue_hydra.png", "env/statue_naga.png", "env/statue_demonic_bust.png"),
+        props = listOf("env/plant_crypt.png", "env/bush2.png", "env/bush3.png"),
+        weather = "spores",
+        gate = "sealed"
+    )
+    else -> BiomeVisuals(
+        walls = listOf("env/hell01.png", "env/hell02.png", "env/hell03.png"),
+        floors = listOf("env/demonic_red2.png", "env/demonic_red3.png", "env/black_cobalt04.png"),
+        statues = listOf("env/statue_cerebov.png", "env/statue_demonic_bust.png", "env/statue_iron.png"),
+        props = listOf("env/blood_fountain.png", "env/crumbled_column_4.png", "env/dry_fountain.png"),
+        weather = "embers",
+        gate = "sealed",
+        fireClouds = true
+    )
+}
+
 
 @Composable
 fun Scene(
@@ -272,13 +381,93 @@ fun Scene(
 }
 
 @Composable
+private fun rememberAssets(paths: List<String>): List<ImageBitmap?> {
+    val result = ArrayList<ImageBitmap?>(paths.size)
+    for (path in paths) result.add(rememberAsset(path))
+    return result
+}
+
+private fun DrawScope.drawWeather(
+    palette: BiomePalette,
+    weather: String,
+    drift: Float,
+    floor: Int
+) {
+    val w = size.width
+    val h = size.height
+    val random = java.util.Random((floor / 10).toLong() + 41L)
+    val count = when (weather) {
+        "snow" -> 70
+        "sparks" -> 54
+        "embers" -> 46
+        "leaves" -> 38
+        "spores" -> 52
+        else -> palette.ambientCount
+    }
+    repeat(count) {
+        val seed = random.nextFloat()
+        val baseX = random.nextFloat() * w
+        val baseY = random.nextFloat() * h * 0.85f
+        val phase = (drift + seed) % 1f
+        var x = baseX
+        var y = baseY
+        var radius = 1.6.dp.toPx()
+        var color = palette.ambient
+        when (weather) {
+            "snow" -> {
+                y = (baseY + phase * h * 0.9f) % (h * 0.85f)
+                x = (baseX + phase * w * 0.03f) % w
+                radius = 2.2.dp.toPx()
+                color = Color.White
+            }
+            "embers" -> {
+                y = (baseY - phase * h * 0.65f + h) % h
+                x = (baseX + phase * w * 0.05f) % w
+                radius = 1.8.dp.toPx()
+                color = palette.torch
+            }
+            "sparks" -> {
+                y = (baseY - phase * h * 0.8f + h) % h
+                x = (baseX + phase * w * 0.02f) % w
+                radius = 1.4.dp.toPx()
+                color = palette.torchLight
+            }
+            "leaves" -> {
+                y = (baseY + phase * h * 0.65f) % (h * 0.85f)
+                x = (baseX + phase * w * 0.18f) % w
+                radius = 2.4.dp.toPx()
+                color = if (seed > 0.5f) palette.torch else palette.ambient
+            }
+            "spores" -> {
+                y = (baseY - phase * h * 0.25f + h) % h
+                x = (baseX + phase * w * 0.08f) % w
+                radius = 2.0.dp.toPx()
+                color = palette.ambient
+            }
+            else -> {
+                y = (baseY + phase * h * 0.25f) % (h * 0.85f)
+                x = (baseX + phase * w * 0.04f) % w
+                radius = if (seed > 0.5f) 1.dp.toPx() else 1.8.dp.toPx()
+            }
+        }
+        drawCircle(
+            color = color.copy(alpha = 0.20f + seed * 0.35f),
+            radius = radius,
+            center = Offset(x, y)
+        )
+    }
+}
+
+@Composable
 private fun SceneBackground(state: GameState, density: Float) {
-    val wall = rememberAsset("env/brick_gray1.png")
-    val cobble = rememberAsset("env/cobble_blood1.png")
-    val statueHero = rememberAsset("env/statue_ancient_hero.png")
-    val statueDragon = rememberAsset("env/statue_dragon.png")
-    val statueSword = rememberAsset("env/statue_sword.png")
-    val palette = biomePalette(state.floor)
+    val biomeKey = biomeKeyFor(state.floor)
+    val palette = biomePalette(biomeKey)
+    val visuals = biomeVisuals(biomeKey)
+    val walls = rememberAssets(visuals.walls)
+    val floors = rememberAssets(visuals.floors)
+    val statues = rememberAssets(visuals.statues)
+    val props = rememberAssets(visuals.props)
+    val fireCloud = rememberAsset("fx/cloud_fire0.png")
     val weather = rememberInfiniteTransition(label = "weather")
     val drift by weather.animateFloat(
         initialValue = 0f,
@@ -301,21 +490,28 @@ private fun SceneBackground(state: GameState, density: Float) {
             )
         )
 
-        if (wall != null) {
+        if (walls.isNotEmpty()) {
+            var row = 0
             var y = 0f
             while (y < groundTop) {
+                var col = 0
                 var x = 0f
                 while (x < w) {
-                    drawImage(
-                        image = wall,
-                        dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
-                        dstSize = IntSize(tile.roundToInt(), tile.roundToInt()),
-                        alpha = 0.22f,
-                        filterQuality = FilterQuality.None
-                    )
+                    val wall = walls[(row + col) % walls.size]
+                    if (wall != null) {
+                        drawImage(
+                            image = wall,
+                            dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
+                            dstSize = IntSize(tile.roundToInt(), tile.roundToInt()),
+                            alpha = 0.22f,
+                            filterQuality = FilterQuality.None
+                        )
+                    }
                     x += tile
+                    col++
                 }
                 y += tile
+                row++
             }
             drawRect(palette.wallTint.copy(alpha = 0.16f))
         }
@@ -351,11 +547,7 @@ private fun SceneBackground(state: GameState, density: Float) {
                 size = Size(w * 0.24f - 8.dp.toPx(), archHeight - 8.dp.toPx()),
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.12f, w * 0.12f)
             )
-            val statue = when (statueIndex) {
-                0 -> statueHero
-                1 -> statueDragon
-                else -> statueSword
-            }
+            val statue = if (statues.isNotEmpty()) statues[statueIndex % statues.size] else null
             if (statue != null) {
                 val ss = 58.dp.toPx()
                 drawImage(
@@ -367,6 +559,41 @@ private fun SceneBackground(state: GameState, density: Float) {
                 )
             }
             statueIndex++
+        }
+
+        if (props.isNotEmpty()) {
+            val positions = listOf(0.08f, 0.92f, 0.66f)
+            props.forEachIndexed { index, prop ->
+                if (prop != null && index < positions.size) {
+                    val ps = 52.dp.toPx()
+                    drawImage(
+                        image = prop,
+                        dstOffset = IntOffset(
+                            (w * positions[index] - ps / 2).roundToInt(),
+                            (groundTop - ps * 0.9f).roundToInt()
+                        ),
+                        dstSize = IntSize(ps.roundToInt(), ps.roundToInt()),
+                        alpha = 0.46f,
+                        filterQuality = FilterQuality.None
+                    )
+                }
+            }
+        }
+
+        if (visuals.fireClouds && fireCloud != null) {
+            listOf(0.24f, 0.76f).forEach { fraction ->
+                val cs = 56.dp.toPx()
+                drawImage(
+                    image = fireCloud,
+                    dstOffset = IntOffset(
+                        (w * fraction - cs / 2).roundToInt(),
+                        (groundTop - cs * 0.75f).roundToInt()
+                    ),
+                    dstSize = IntSize(cs.roundToInt(), cs.roundToInt()),
+                    alpha = 0.24f,
+                    filterQuality = FilterQuality.None
+                )
+            }
         }
 
         // bannières
@@ -425,22 +652,29 @@ private fun SceneBackground(state: GameState, density: Float) {
             topLeft = Offset(0f, groundTop),
             size = Size(w, h - groundTop)
         )
-        if (cobble != null) {
+        if (floors.isNotEmpty()) {
             val gt = 54.dp.toPx()
+            var row = 0
             var y = groundTop
             while (y < h) {
+                var col = 0
                 var x = 0f
                 while (x < w) {
-                    drawImage(
-                        image = cobble,
-                        dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
-                        dstSize = IntSize(gt.roundToInt(), gt.roundToInt()),
-                        alpha = 0.33f,
-                        filterQuality = FilterQuality.None
-                    )
+                    val floor = floors[(row + col) % floors.size]
+                    if (floor != null) {
+                        drawImage(
+                            image = floor,
+                            dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
+                            dstSize = IntSize(gt.roundToInt(), gt.roundToInt()),
+                            alpha = 0.33f,
+                            filterQuality = FilterQuality.None
+                        )
+                    }
                     x += gt
+                    col++
                 }
                 y += gt
+                row++
             }
         }
         drawRect(
@@ -455,21 +689,7 @@ private fun SceneBackground(state: GameState, density: Float) {
             strokeWidth = 1.dp.toPx()
         )
 
-        if (palette.ambientCount > 0) {
-            val random = java.util.Random((state.floor / 10).toLong() + 41L)
-            repeat(palette.ambientCount) {
-                val radius = if (random.nextBoolean()) 1.dp.toPx() else 1.8.dp.toPx()
-                val baseX = random.nextFloat() * w
-                val baseY = random.nextFloat() * h * 0.82f
-                val y = (baseY + drift * h * 0.25f) % (h * 0.82f)
-                val x = (baseX + drift * w * 0.04f) % w
-                drawCircle(
-                    color = palette.ambient.copy(alpha = 0.20f + random.nextFloat() * 0.25f),
-                    radius = radius,
-                    center = Offset(x, y)
-                )
-            }
-        }
+        drawWeather(palette, visuals.weather, drift, state.floor)
 
         // rochers de premier plan
         drawCircle(Color(0xFF0A0710), radius = 38.dp.toPx(), center = Offset(w * 0.04f, h + 8.dp.toPx()))
@@ -615,6 +835,34 @@ private fun UnitPlate(
     }
 }
 
+private fun heroBodyLayer(body: Item?): String? = when {
+    body == null -> null
+    body.rarity == "legendary" -> "hero/aragorn.png"
+    body.rarity == "epic" || body.rarity == "rare" -> "hero/bplate_metal1.png"
+    else -> "hero/coat_red.png"
+}
+
+private fun heroHeadLayer(head: Item?): String? = when {
+    head == null -> null
+    head.rarity == "legendary" -> "hero/horned.png"
+    head.rarity == "epic" || head.rarity == "rare" -> "hero/helm_plume.png"
+    else -> "hero/helm_green.png"
+}
+
+private fun heroBootsLayer(feet: Item?): String? = when {
+    feet == null -> null
+    feet.rarity == "epic" || feet.rarity == "rare" || feet.rarity == "legendary" ->
+        "hero/middle_green.png"
+    else -> "hero/middle_brown2.png"
+}
+
+private fun heroWeaponLayer(weapon: Item?): String? = when {
+    weapon == null -> null
+    weapon.rarity == "epic" || weapon.rarity == "rare" || weapon.rarity == "legendary" ->
+        "hero/long_sword_slant.png"
+    else -> "hero/broadsword.png"
+}
+
 @Composable
 private fun HeroUnit(
     state: GameState,
@@ -625,6 +873,12 @@ private fun HeroUnit(
     val stats = statsOf(state)
     val weapon = equipped(state, "weapon")
     val body = equipped(state, "body")
+    val head = equipped(state, "head")
+    val feet = equipped(state, "feet")
+    val bodyLayer = heroBodyLayer(body)
+    val headLayer = heroHeadLayer(head)
+    val bootsLayer = heroBootsLayer(feet)
+    val weaponLayer = heroWeaponLayer(weapon)
     val context = LocalContext.current
     val floats = remember { mutableStateListOf<FloatFx>() }
     var previousHp by remember { mutableStateOf(state.hp) }
@@ -682,48 +936,19 @@ private fun HeroUnit(
                     .clip(RoundedCornerShape(50))
                     .background(Color.Black.copy(alpha = 0.5f))
             )
-            AssetImage(
-                "hero/human.png",
+            Box(
                 Modifier
                     .size(96.dp)
                     .align(Alignment.BottomCenter)
                     .offset(y = if (walking && !reducedMotion) bob.dp else 0.dp)
-            )
-            AssetImage(
-                "hero/buckler_round.png",
-                Modifier
-                    .size(28.dp)
-                    .align(Alignment.BottomStart)
-                    .offset(x = 0.dp, y = (-22).dp)
-                    .graphicsLayer(rotationZ = -8f)
-            )
-            AssetImage(
-                "hero/broadsword.png",
-                Modifier
-                    .size(48.dp)
-                    .align(Alignment.BottomEnd)
-                    .offset(x = (-1).dp, y = (-21).dp)
-                    .graphicsLayer(rotationZ = 10f)
-            )
-            weapon?.let {
-                Box(
-                    Modifier
-                        .align(Alignment.BottomEnd)
-                        .offset(x = (-7).dp, y = (-58).dp)
-                        .size(7.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(rarityColor(it.rarity))
-                )
-            }
-            body?.let {
-                Box(
-                    Modifier
-                        .align(Alignment.BottomStart)
-                        .offset(x = 12.dp, y = (-34).dp)
-                        .size(6.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(rarityColor(it.rarity))
-                )
+            ) {
+                AssetImage("hero/human_m.png", Modifier.fillMaxSize())
+                bodyLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
+                AssetImage("hero/pants_brown.png", Modifier.fillMaxSize())
+                bootsLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
+                headLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
+                weaponLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
+                AssetImage("hero/buckler_round.png", Modifier.fillMaxSize())
             }
             floats.forEach { fx ->
                 key(fx.id) {
@@ -960,9 +1185,15 @@ private fun LevelUpBanner(level: Int, modifier: Modifier = Modifier) {
 @Composable
 private fun GateView(state: GameState, modifier: Modifier = Modifier) {
     val active = state.distance >= 90 || state.fight?.isBoss == true
-    val left = rememberAsset("env/gate_closed_left.png")
-    val middle = rememberAsset("env/gate_closed_middle.png")
-    val right = rememberAsset("env/gate_closed_right.png")
+    val gateStyle = biomeVisuals(biomeKeyFor(state.floor)).gate
+    val gatePrefix = when (gateStyle) {
+        "runed" -> "env/gate_runed"
+        "sealed" -> "env/gate_sealed"
+        else -> "env/gate_closed"
+    }
+    val left = rememberAsset("${gatePrefix}_left.png")
+    val middle = rememberAsset("${gatePrefix}_middle.png")
+    val right = rememberAsset("${gatePrefix}_right.png")
     Box(modifier, contentAlignment = Alignment.BottomCenter) {
         Canvas(Modifier.fillMaxSize()) {
             drawRoundRect(

@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.6.2** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.7.0** — APK sideloadé pour Pixel 7a (Android 14+).
 
 **Manuel complet :** [`../manuel/index.html`](../manuel/index.html) · accessible dans l'app via `Réglages → Aide → Ouvrir le manuel du jeu`.
 
@@ -24,11 +24,11 @@ Version Android native du prototype. **v0.6.2** — APK sideloadé pour Pixel 7a
 - **Onboarding** en quatre écrans, revoyable.
 - **Ferveur** : décroissance après 2 h, rattrapage hors ligne, aura.
 - **Inventaire avancé** : « Équiper le meilleur », tri/filtres, « Vendre les communs », verrouillage, fusion 3→1, objets non identifiés, ensembles 2/4/6, forge (reforge/amélioration/démontage), effets légendaires, coffre de camp détaillé. Sac plein : le meilleur objet reste dans le sac, le moins bon part au coffre.
-- **Consommables** : 12 objets de soin, ferveur, bombe et buffs temporaires, butin des monstres/coffres, sac en scène, au camp et en combat.
+- **Consommables** : 16 objets de soin, ferveur, bombes et buffs temporaires, butin des monstres/coffres, sac en scène, au camp et en combat.
 - **Ressources visibles** : rations, éclats, or et consommables dans une carte Stats dédiée.
 - **Sons 8 bits** : effets originaux CC0, volume réglable, désactivation et test dans les réglages.
 - **Campement** : combat réinitialisé, veillée gratuite +15 %, soins, coffre, journal et inventaire accessibles.
-- **Contenu** : biomes colorés avec météo, rencontres spéciales (autel, source, marchand, statue, pari), jalons complets, boss uniques 10/25/50/100, bestiaire.
+- **Contenu** : 8 biomes avec murs, sols, statues, props, météo et portes dédiés ; plus de 60 nouvelles créatures ; 32 nouveaux objets de butin ; 8 nouveaux ensembles ; 2 nouveaux effets ; paper doll du héros selon l'équipement ; rencontres spéciales, jalons complets, boss uniques 10/25/50/100, bestiaire.
 - **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil.
 - **Mises à jour GitHub** : vérification automatique quotidienne (désactivable) et manuelle, téléchargement de l'APK signé, vérification SHA-256, installation confirmée par l'utilisateur via FileProvider, puis proposition d'ouvrir la release pour lire les changements.
 - **Qualité** : tests moteur, tests Garmin MockWebServer, tests UI Compose, lint, CI Android, workflow de release signée conditionnel.
@@ -103,7 +103,7 @@ Play Protect peut avertir ou bloquer une application inconnue de Google lors de 
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.6.2
+## Limites de cette v0.7.0
 
 - L'historique Garmin est limité à 7 jours et à 100 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON versionné avec copie de secours, pas encore Room.

@@ -7,7 +7,7 @@
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.6.2 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.7.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -35,6 +35,23 @@
 - Les **coffres** restent 24 h, deux maximum en attente. Ils ne bloquent jamais la route.
 - Les **serments journaliers**, la **ferveur**, les **consommables**, la **forge**, les **ensembles** et les **rencontres spéciales** ajoutent de la profondeur.
 - Le **reset quotidien** se fait à **00:00 local**, en accord avec le `calendarDate` Garmin.
+
+### Biomes et contenu
+
+Le donjon traverse **8 biomes** de 10 paliers, chacun avec ses murs, sols, statues, props, portes et météo :
+
+| Paliers | Biome | Ambiance |
+|---|---|---|
+| 1–10 | Cryptes de Vael | pierre violette, poussière, portes fermées |
+| 11–20 | Catacombes | pierre verte, spores, portes runiques |
+| 21–30 | Cavernes de cendre | roche volcanique, braises, fontaines de sang |
+| 31–40 | Forge noyée | métal, étincelles, bassins bleus |
+| 41–50 | Cimes du Serment | glace, neige, cristaux |
+| 51–60 | Bois des Âmes | herbe, arbres d'or, feuilles |
+| 61–70 | Abîme organique | slime, spores, acidité |
+| 71+ | Trône des Âmes | enfer rouge, cendres, portes scellées |
+
+Chaque biome a ses **pools de monstres** (faciles, intermédiaires, difficiles), ses **boss**, ses **tables de butin** et ses **ensembles d'équipement**. Le héros affiche désormais un **paper doll** : casque, armure, bottes et arme changent avec l'équipement.
 
 ### Boucle quotidienne
 
@@ -70,7 +87,7 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.6.2.apk
+adb install -r La-Marche-des-Ames-v0.7.0.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.

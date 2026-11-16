@@ -285,15 +285,20 @@ Hypothèses : héros de niveau 4, équipement rare partiel, aucun coffre forcé.
 
 ### 7.7 Biomes et variété
 
-Le décor change tous les 10 paliers, avec des palettes et des pools de monstres propres :
+Le décor change tous les 10 paliers, avec des palettes, des textures, des props, une météo et des pools de monstres propres :
 
 | Paliers | Biome | Ambiance | Exemples de créatures |
 |---|---|---|---|
-| 1–10 | Cryptes de Vael | pierre froide, cierges, bannières | gobelins, goules, squelettes |
-| 11–20 | Catacombes | os, racines, humidité | gnolls, araignées, spectres |
-| 21–30 | Cavernes de cendre | lave, fumée, or rougi | orcs, élémentaires, ogres |
-| 31–40 | Forge noyée | métal, vapeur, éclairs | golems, diablotins, dragons |
-| 41+ | Cimes du Serment | neige, vent, ruines célestes | géants, wyvernes, gardiens uniques |
+| 1–10 | Cryptes de Vael | pierre froide, cierges, bannières | goules, squelettes, vampires |
+| 11–20 | Catacombes | os, racines, humidité | gnolls, araignées, ogres |
+| 21–30 | Cavernes de cendre | lave, fumée, or rougi | limiers infernaux, éfrits, balrugs |
+| 31–40 | Forge noyée | métal, vapeur, éclairs | élémentaires de fer, golems, cristaux |
+| 41–50 | Cimes du Serment | neige, glace, cristaux | bêtes de glace, wyvernes, géants de givre |
+| 51–60 | Bois des Âmes | herbe, arbres d'or, feuilles | faunes, dryades, tréants |
+| 61–70 | Abîme organique | slime, spores, acidité | vases, yeux, horreurs rampantes |
+| 71+ | Trône des Âmes | enfer rouge, cendres, portes scellées | bourreaux, faucheurs, seigneurs démoniaques |
+
+Chaque biome possède sa **table de butin** et favorise ses **ensembles** : Ossature et Toile aux catacombes, Cendre dans les cavernes, Forge dans la forge, Serment aux cimes, Bois dans la forêt, Abîme dans l'abîme et Trône au sommet.
 
 ---
 

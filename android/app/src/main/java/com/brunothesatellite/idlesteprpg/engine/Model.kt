@@ -159,6 +159,26 @@ val CONSUMABLES = listOf(
         "champignon_berserk", "Champignon berserk", "item/cons_mushroom_red.png", "rare",
         "ATQ +80 %, mais dégâts subis +20 % pendant 15 s.", "berserk", 0.80, 15_000,
         context = "combat", value = 100, secondary = 0.20
+    ),
+    ConsumableTemplate(
+        "potion_hate", "Potion de hâte", "item/i-haste.png", "rare",
+        "VIT +60 % pendant 20 s.", "buff_vit", 0.60, 20_000,
+        context = "combat", value = 75
+    ),
+    ConsumableTemplate(
+        "potion_force", "Potion de force", "item/i-might.png", "uncommon",
+        "ATQ +40 % pendant 20 s.", "buff_atk", 0.40, 20_000,
+        context = "combat", value = 65
+    ),
+    ConsumableTemplate(
+        "potion_regen", "Potion de régénération", "item/i-regeneration.png", "rare",
+        "Régénération +2 PV/s pendant 30 s.", "buff_regen", 2.0, 30_000,
+        context = "combat", value = 90
+    ),
+    ConsumableTemplate(
+        "viande_sechee", "Viande séchée", "item/beef_jerky.png", "common",
+        "Rend 25 % des PV et 1 ration.", "heal_ration", 0.25,
+        context = "both", value = 30, secondary = 1.0
     )
 )
 
@@ -306,58 +326,285 @@ data class MobTemplate(val name: String, val icon: String)
 
 data class BossTemplate(val name: String, val icon: String)
 
-val EASY_MOBS = listOf(
-    MobTemplate("Gobelin", "mon/goblin.png"),
-    MobTemplate("Kobold", "mon/kobold.png"),
-    MobTemplate("Chauve-souris", "mon/bat.png"),
-    MobTemplate("Loup noir", "mon/wolf.png"),
-    MobTemplate("Araignée", "mon/spider.png"),
-    MobTemplate("Goule", "mon/ghoul.png"),
-    MobTemplate("Scorpion", "mon/scorpion.png"),
-    MobTemplate("Cafard géant", "mon/giant_cockroach.png"),
-    MobTemplate("Grenouille géante", "mon/giant_frog.png"),
-    MobTemplate("Ver des tombes", "mon/worm.png")
+data class MobPool(
+    val easy: List<MobTemplate>,
+    val mid: List<MobTemplate>,
+    val hard: List<MobTemplate>,
+    val bosses: List<BossTemplate>
 )
 
-val MID_MOBS = listOf(
-    MobTemplate("Gnoll", "mon/gnoll.png"),
-    MobTemplate("Orc", "mon/orc.png"),
-    MobTemplate("Guerrier squelette", "mon/skeletal_warrior.png"),
-    MobTemplate("Hobgobelin", "mon/hobgoblin.png"),
-    MobTemplate("Naga", "mon/naga.png"),
-    MobTemplate("Diablotin", "mon/crimson_imp.png"),
-    MobTemplate("Manticore", "mon/manticore.png"),
-    MobTemplate("Élémentaire de feu", "mon/fire_elemental.png"),
-    MobTemplate("Démon solaire", "mon/sun_demon.png")
+data class BiomeDefinition(
+    val key: String,
+    val name: String,
+    val fromFloor: Int,
+    val title: String
 )
 
-val HARD_MOBS = listOf(
-    MobTemplate("Guerrier orc", "mon/orc_warrior.png"),
-    MobTemplate("Ogre", "mon/ogre.png"),
-    MobTemplate("Troll des abîmes", "mon/deep_troll.png"),
-    MobTemplate("Ours noir", "mon/black_bear.png"),
-    MobTemplate("Griffon", "mon/griffon.png"),
-    MobTemplate("Golem de fer", "mon/iron_golem.png"),
-    MobTemplate("Vampire", "mon/vampire.png"),
-    MobTemplate("Spectre", "mon/ghost.png"),
-    MobTemplate("Hydre mineure", "mon/hydra1.png"),
-    MobTemplate("Sigmund le reclus", "mon/sigmund.png")
+val BIOMES = listOf(
+    BiomeDefinition("crypts", "CRYPTES DE VAEL", 1, "Pèlerin des Cryptes"),
+    BiomeDefinition("catacombs", "CATACOMBES", 11, "Pèlerin des Abysses"),
+    BiomeDefinition("ash", "CAVERNES DE CENDRE", 21, "Marcheur de Cendre"),
+    BiomeDefinition("forge", "FORGE NOYÉE", 31, "Gardien de la Forge"),
+    BiomeDefinition("peaks", "CIMES DU SERMENT", 41, "Souverain des Cimes"),
+    BiomeDefinition("woods", "BOIS DES ÂMES", 51, "Veilleur du Bois"),
+    BiomeDefinition("abyss", "ABÎME ORGANIQUE", 61, "Marcheur de l'Abîme"),
+    BiomeDefinition("throne", "TRÔNE DES ÂMES", 71, "Légende des Âmes")
 )
 
-val BOSSES = listOf(
-    BossTemplate("Hydre de Lerne", "mon/lernaean_hydra01.png"),
-    BossTemplate("Dragon de givre", "mon/ice_dragon.png"),
-    BossTemplate("Géant de fer", "mon/iron_giant.png"),
-    BossTemplate("Jörmungandr", "mon/jormungandr.png"),
-    BossTemplate("Balrug", "mon/balrug.png"),
-    BossTemplate("Cerebov", "mon/cerebov.png"),
-    BossTemplate("Dragon d'orage", "mon/storm_dragon.png"),
-    BossTemplate("Liche ancienne", "mon/lich.png"),
-    BossTemplate("Sigmund, gardien fou", "mon/sigmund.png"),
-    BossTemplate("Démon solaire", "mon/sun_demon.png")
+fun biomeDefFor(floor: Int): BiomeDefinition =
+    BIOMES.last { floor >= it.fromFloor }
+
+fun biomeKeyFor(floor: Int): String = biomeDefFor(floor).key
+
+fun biomeFor(floor: Int): String = biomeDefFor(floor).name
+
+val CRYPT_POOL = MobPool(
+    easy = listOf(
+        MobTemplate("Chauve-souris", "mon/bat.png"),
+        MobTemplate("Goule", "mon/ghoul.png"),
+        MobTemplate("Cadavre rampant", "mon/crawling_corpse.png"),
+        MobTemplate("Crâne volant", "mon/flying_skull.png"),
+        MobTemplate("Ver des tombes", "mon/worm.png")
+    ),
+    mid = listOf(
+        MobTemplate("Guerrier squelette", "mon/skeletal_warrior.png"),
+        MobTemplate("Spectre", "mon/ghost.png"),
+        MobTemplate("Revenant", "mon/revenant.png"),
+        MobTemplate("Spectre silencieux", "mon/silent_spectre.png"),
+        MobTemplate("Wight", "mon/wight.png"),
+        MobTemplate("Âme noyée", "mon/drowned_soul.png")
+    ),
+    hard = listOf(
+        MobTemplate("Vampire", "mon/vampire.png"),
+        MobTemplate("Chevalier vampire", "mon/vampire_knight.png"),
+        MobTemplate("Sigmund le reclus", "mon/sigmund.png"),
+        MobTemplate("Dragon d'os", "mon/bone_dragon.png")
+    ),
+    bosses = listOf(
+        BossTemplate("Roi des Cryptes", "mon/lich.png"),
+        BossTemplate("Dragon d'os", "mon/bone_dragon.png"),
+        BossTemplate("Liche ancienne", "mon/ancient_lich.png"),
+        BossTemplate("Chevalier vampire", "mon/vampire_knight.png")
+    )
 )
 
-val LOOT_TEMPLATES = listOf(
+val CATACOMB_POOL = MobPool(
+    easy = listOf(
+        MobTemplate("Kobold", "mon/kobold.png"),
+        MobTemplate("Gobelin", "mon/goblin.png"),
+        MobTemplate("Araignée", "mon/spider.png"),
+        MobTemplate("Araignée sauteuse", "mon/jumping_spider.png"),
+        MobTemplate("Cafard géant", "mon/giant_cockroach.png"),
+        MobTemplate("Grenouille géante", "mon/giant_frog.png"),
+        MobTemplate("Chauve-souris", "mon/bat.png")
+    ),
+    mid = listOf(
+        MobTemplate("Gnoll", "mon/gnoll.png"),
+        MobTemplate("Sergent gnoll", "mon/gnoll_sergeant.png"),
+        MobTemplate("Hobgobelin", "mon/hobgoblin.png"),
+        MobTemplate("Orc", "mon/orc.png"),
+        MobTemplate("Naga", "mon/naga.png"),
+        MobTemplate("Coléoptère blindé", "mon/boulder_beetle.png")
+    ),
+    hard = listOf(
+        MobTemplate("Guerrier orc", "mon/orc_warrior.png"),
+        MobTemplate("Chevalier orc", "mon/orc_knight.png"),
+        MobTemplate("Grand kobold", "mon/big_kobold.png"),
+        MobTemplate("Ogre", "mon/ogre.png"),
+        MobTemplate("Troll des abîmes", "mon/deep_troll.png")
+    ),
+    bosses = listOf(
+        BossTemplate("Hydre de Lerne", "mon/lernaean_hydra01.png"),
+        BossTemplate("Grande naga", "mon/greater_naga.png"),
+        BossTemplate("Manticore", "mon/manticore.png"),
+        BossTemplate("Hydre mineure", "mon/hydra1.png")
+    )
+)
+
+val ASH_POOL = MobPool(
+    easy = listOf(
+        MobTemplate("Diablotin", "mon/crimson_imp.png"),
+        MobTemplate("Limier des enfers", "mon/hell_hound.png"),
+        MobTemplate("Chauve-souris de feu", "mon/fire_bat.png"),
+        MobTemplate("Scorpion", "mon/scorpion.png")
+    ),
+    mid = listOf(
+        MobTemplate("Élémentaire de feu", "mon/fire_elemental.png"),
+        MobTemplate("Éfrit", "mon/efreet.png"),
+        MobTemplate("Manticore", "mon/manticore.png"),
+        MobTemplate("Légionnaire infernal", "mon/hellion.png")
+    ),
+    hard = listOf(
+        MobTemplate("Balrug", "mon/balrug.png"),
+        MobTemplate("Démon solaire", "mon/sun_demon.png"),
+        MobTemplate("Flagellant de soufre", "mon/brimstone_fiend.png"),
+        MobTemplate("Sentinelle des enfers", "mon/hell_sentinel.png")
+    ),
+    bosses = listOf(
+        BossTemplate("Balrug", "mon/balrug.png"),
+        BossTemplate("Démon solaire", "mon/sun_demon.png"),
+        BossTemplate("Flagellant de soufre", "mon/brimstone_fiend.png"),
+        BossTemplate("Sentinelle des enfers", "mon/hell_sentinel.png")
+    )
+)
+
+val FORGE_POOL = MobPool(
+    easy = listOf(
+        MobTemplate("Élémentaire de fer", "mon/iron_elemental.png"),
+        MobTemplate("Oushabti", "mon/ushabti.png"),
+        MobTemplate("Nain des profondeurs", "mon/deep_dwarf.png"),
+        MobTemplate("Kobold", "mon/kobold.png")
+    ),
+    mid = listOf(
+        MobTemplate("Golem de fer", "mon/iron_golem.png"),
+        MobTemplate("Golem gardien", "mon/guardian_golem.png"),
+        MobTemplate("Troll des abîmes", "mon/deep_troll.png"),
+        MobTemplate("Troll de fer", "mon/iron_troll.png")
+    ),
+    hard = listOf(
+        MobTemplate("Gardien de cristal", "mon/crystal_guardian.png"),
+        MobTemplate("Serviteur runique", "mon/spellforged_servitor.png"),
+        MobTemplate("Troll de fer", "mon/iron_troll.png"),
+        MobTemplate("Golem de fer", "mon/iron_golem.png")
+    ),
+    bosses = listOf(
+        BossTemplate("Seigneur de la Forge", "mon/iron_giant.png"),
+        BossTemplate("Gardien de cristal", "mon/crystal_guardian.png"),
+        BossTemplate("Serviteur runique", "mon/spellforged_servitor.png"),
+        BossTemplate("Golem de fer", "mon/iron_golem.png")
+    )
+)
+
+val PEAK_POOL = MobPool(
+    easy = listOf(
+        MobTemplate("Loup noir", "mon/wolf.png"),
+        MobTemplate("Bête de glace", "mon/ice_beast.png"),
+        MobTemplate("Raiju", "mon/raiju.png"),
+        MobTemplate("Chauve-souris", "mon/bat.png")
+    ),
+    mid = listOf(
+        MobTemplate("Ours polaire", "mon/polar_bear.png"),
+        MobTemplate("Griffon", "mon/griffon.png"),
+        MobTemplate("Diable de glace", "mon/ice_devil.png"),
+        MobTemplate("Harpie", "mon/harpy.png"),
+        MobTemplate("Wyverne", "mon/wyvern.png")
+    ),
+    hard = listOf(
+        MobTemplate("Géant de givre", "mon/frost_giant.png"),
+        MobTemplate("Démon blizzard", "mon/blizzard_demon.png"),
+        MobTemplate("Dragon d'orage", "mon/storm_dragon.png"),
+        MobTemplate("Dragon d'ombre", "mon/shadow_dragon.png"),
+        MobTemplate("Dragon de vif-argent", "mon/quicksilver_dragon.png")
+    ),
+    bosses = listOf(
+        BossTemplate("Dragon de givre", "mon/ice_dragon.png"),
+        BossTemplate("Dragon d'orage", "mon/storm_dragon.png"),
+        BossTemplate("Géant de givre", "mon/frost_giant.png"),
+        BossTemplate("Dragon d'ombre", "mon/shadow_dragon.png")
+    )
+)
+
+val WOOD_POOL = MobPool(
+    easy = listOf(
+        MobTemplate("Faune", "mon/faun.png"),
+        MobTemplate("Abeille tueuse", "mon/killer_bee.png"),
+        MobTemplate("Grenouille géante", "mon/giant_frog.png"),
+        MobTemplate("Loup noir", "mon/wolf.png")
+    ),
+    mid = listOf(
+        MobTemplate("Dryade", "mon/dryad.png"),
+        MobTemplate("Harpie", "mon/harpy.png"),
+        MobTemplate("Satyre", "mon/satyr.png"),
+        MobTemplate("Reine des abeilles", "mon/queen_bee.png"),
+        MobTemplate("Rôdeur des lianes", "mon/vine_stalker.png"),
+        MobTemplate("Ours noir", "mon/black_bear.png")
+    ),
+    hard = listOf(
+        MobTemplate("Tréant", "mon/treant.png"),
+        MobTemplate("Chasseur d'épines", "mon/thorn_hunter.png"),
+        MobTemplate("Rôdeur des lianes", "mon/vine_stalker.png"),
+        MobTemplate("Griffon", "mon/griffon.png")
+    ),
+    bosses = listOf(
+        BossTemplate("Tréant", "mon/treant.png"),
+        BossTemplate("Dryade", "mon/dryad.png"),
+        BossTemplate("Chasseur d'épines", "mon/thorn_hunter.png"),
+        BossTemplate("Rôdeur des lianes", "mon/vine_stalker.png")
+    )
+)
+
+val ABYSS_POOL = MobPool(
+    easy = listOf(
+        MobTemplate("Vase", "mon/ooze.png"),
+        MobTemplate("Gelée", "mon/jelly.png"),
+        MobTemplate("Gelée d'azur", "mon/azure_jelly.png"),
+        MobTemplate("Œil géant", "mon/giant_eyeball.png"),
+        MobTemplate("Champignon errant", "mon/wandering_mushroom.png")
+    ),
+    mid = listOf(
+        MobTemplate("Vase mortelle", "mon/death_ooze.png"),
+        MobTemplate("Chapeau de mort", "mon/deathcap.png"),
+        MobTemplate("Œil drainant", "mon/eye_of_draining.png"),
+        MobTemplate("Rejeton étoilé", "mon/tentacled_starspawn.png")
+    ),
+    hard = listOf(
+        MobTemplate("Horreur rampante", "mon/lurking_horror.png"),
+        MobTemplate("Masse stellaire", "mon/starcursed_mass.png"),
+        MobTemplate("Grand orbe d'yeux", "mon/great_orb_of_eyes.png"),
+        MobTemplate("Zyme ancienne", "mon/ancient_zyme.png")
+    ),
+    bosses = listOf(
+        BossTemplate("Vase mortelle", "mon/death_ooze.png"),
+        BossTemplate("Zyme ancienne", "mon/ancient_zyme.png"),
+        BossTemplate("Grand orbe d'yeux", "mon/great_orb_of_eyes.png"),
+        BossTemplate("Horreur rampante", "mon/lurking_horror.png")
+    )
+)
+
+val THRONE_POOL = MobPool(
+    easy = listOf(
+        MobTemplate("Diablotin", "mon/crimson_imp.png"),
+        MobTemplate("Diablotin d'ombre", "mon/shadow_imp.png"),
+        MobTemplate("Diablotin de fer", "mon/iron_imp.png"),
+        MobTemplate("Ufetubus", "mon/ufetubus.png")
+    ),
+    mid = listOf(
+        MobTemplate("Légionnaire infernal", "mon/hellion.png"),
+        MobTemplate("Sentinelle des enfers", "mon/hell_sentinel.png"),
+        MobTemplate("Diable de glace", "mon/ice_devil.png"),
+        MobTemplate("Balrug", "mon/balrug.png")
+    ),
+    hard = listOf(
+        MobTemplate("Bourreau", "mon/executioner.png"),
+        MobTemplate("Faucheur", "mon/reaper.png"),
+        MobTemplate("Mangeur d'âmes", "mon/soul_eater.png"),
+        MobTemplate("Géant de fer", "mon/iron_giant.png")
+    ),
+    bosses = listOf(
+        BossTemplate("Dispater", "mon/dispater.png"),
+        BossTemplate("Asmodée", "mon/asmodeus.png"),
+        BossTemplate("Éreshkigal", "mon/ereshkigal.png"),
+        BossTemplate("Gloorx Vloq", "mon/gloorx_vloq.png"),
+        BossTemplate("Mnoleg", "mon/mnoleg.png"),
+        BossTemplate("L'Âme Première", "mon/cerebov.png")
+    )
+)
+
+val BIOME_POOLS = mapOf(
+    "crypts" to CRYPT_POOL,
+    "catacombs" to CATACOMB_POOL,
+    "ash" to ASH_POOL,
+    "forge" to FORGE_POOL,
+    "peaks" to PEAK_POOL,
+    "woods" to WOOD_POOL,
+    "abyss" to ABYSS_POOL,
+    "throne" to THRONE_POOL
+)
+
+fun mobPoolFor(floor: Int): MobPool =
+    BIOME_POOLS[biomeKeyFor(floor)] ?: CRYPT_POOL
+
+val GENERIC_LOOT = listOf(
     Item("loot_sword", "Lame runique", "weapon", "rare", "item/long_sword3.png", 1, atk = 12, value = 90),
     Item("loot_axe", "Hache de guerre", "weapon", "uncommon", "item/hand_axe2.png", 1, atk = 10, critPct = 2, value = 65),
     Item("loot_mace", "Masse d'armes", "weapon", "rare", "item/mace2.png", 1, atk = 9, critPct = 3, value = 75),
@@ -368,6 +615,89 @@ val LOOT_TEMPLATES = listOf(
     Item("loot_glove", "Gants de braise", "hands", "uncommon", "item/glove1.png", 1, atk = 6, value = 55),
     Item("loot_boots", "Bottes de mousse", "feet", "uncommon", "item/boots4_green.png", 1, vitPct = 5, value = 55),
     Item("loot_ring", "Anneau d'âme", "talisman", "epic", "item/ring-regen.png", 1, regen = 0.4, critPct = 2, value = 140)
+)
+
+val CRYPT_LOOT = listOf(
+    Item("crypt_blade", "Lame d'ossuaire", "weapon", "uncommon", "item/short_sword1.png", 1, atk = 11, critPct = 1, value = 58),
+    Item("crypt_shroud", "Suaire du veilleur", "body", "rare", "item/leather_armour1.png", 1, hp = 30, vitPct = 2, value = 72),
+    Item("crypt_helm", "Heaume des cryptes", "head", "rare", "item/helmet2.png", 1, hp = 20, critPct = 3, value = 76),
+    Item("crypt_ward", "Amulette de garde", "talisman", "epic", "item/i-warding.png", 1, hp = 26, regen = 0.3, value = 135)
+)
+
+val CATACOMB_LOOT = listOf(
+    Item("cat_axe", "Hache gnoll", "weapon", "uncommon", "item/hand_axe1.png", 1, atk = 10, critPct = 2, value = 62),
+    Item("cat_shell", "Carapace de coléoptère", "body", "rare", "item/animal_skin1.png", 1, hp = 38, vitPct = 2, value = 80),
+    Item("cat_boots", "Bottes de soie", "feet", "rare", "item/boots3_stripe.png", 1, vitPct = 7, value = 68),
+    Item("cat_mask", "Masque de gnoll", "head", "epic", "item/helmet4.png", 1, hp = 18, critPct = 5, value = 120)
+)
+
+val ASH_LOOT = listOf(
+    Item("ash_blade", "Lame de braise", "weapon", "rare", "item/falchion1.png", 1, atk = 14, critPct = 3, value = 92),
+    Item("ash_plate", "Plate de cendre", "body", "epic", "item/ring_mail1.png", 1, hp = 48, atk = 4, value = 140),
+    Item("ash_boots", "Bottes de limier", "feet", "rare", "item/boots2_jackboots.png", 1, vitPct = 6, hp = 8, value = 76),
+    Item("ash_ring", "Anneau de soufre", "talisman", "epic", "item/i-rage.png", 1, atk = 9, critPct = 3, value = 130)
+)
+
+val FORGE_LOOT = listOf(
+    Item("forge_hammer", "Marteau de forge", "weapon", "rare", "item/eveningstar1.png", 1, atk = 16, critPct = 2, value = 98),
+    Item("forge_plate", "Harnois de forge", "body", "epic", "item/ring_mail1.png", 1, hp = 55, vitPct = 1, value = 150),
+    Item("forge_gauntlets", "Gantelets de fer", "hands", "rare", "item/glove2.png", 1, atk = 8, hp = 10, value = 80),
+    Item("forge_ring", "Anneau de vif-argent", "talisman", "legendary", "item/i-protection.png", 1, hp = 30, regen = 0.4, value = 190)
+)
+
+val PEAK_LOOT = listOf(
+    Item("peak_blade", "Lame de givre", "weapon", "rare", "item/rapier1.png", 1, atk = 13, critPct = 4, value = 94),
+    Item("peak_mail", "Cotte de glace", "body", "epic", "item/ice_dragon_armour.png", 1, hp = 42, vitPct = 4, value = 145),
+    Item("peak_boots", "Bottes des cimes", "feet", "rare", "item/boots1_brown.png", 1, vitPct = 7, regen = 0.2, value = 78),
+    Item("peak_ring", "Anneau d'orage", "talisman", "legendary", "item/i-r-cold.png", 1, atk = 10, critPct = 4, value = 195)
+)
+
+val WOOD_LOOT = listOf(
+    Item("wood_staff", "Bâton de dryade", "weapon", "rare", "item/quarterstaff.png", 1, atk = 12, regen = 0.3, value = 90),
+    Item("wood_mail", "Armure d'écorce", "body", "rare", "item/animal_skin1.png", 1, hp = 36, vitPct = 3, value = 84),
+    Item("wood_boots", "Bottes de feuilles", "feet", "uncommon", "item/boots3_stripe.png", 1, vitPct = 6, value = 64),
+    Item("wood_horn", "Corne de satyre", "talisman", "epic", "item/misc_horn.png", 1, atk = 7, vitPct = 4, value = 125)
+)
+
+val ABYSS_LOOT = listOf(
+    Item("abyss_whip", "Fouet de tentacule", "weapon", "epic", "item/bullwhip2.png", 1, atk = 15, critPct = 3, value = 130),
+    Item("abyss_plate", "Carapace d'abîme", "body", "epic", "item/shadow_dragon_scale_mail.png", 1, hp = 44, atk = 5, value = 148),
+    Item("abyss_ring", "Anneau de mucilage", "talisman", "rare", "item/i-r-poison.png", 1, hp = 20, regen = 0.4, value = 96),
+    Item("abyss_orb", "Orbe du néant", "talisman", "legendary", "item/misc_orb2.png", 1, atk = 12, hp = 30, value = 200)
+)
+
+val THRONE_LOOT = listOf(
+    Item("throne_blade", "Lame du trône", "weapon", "legendary", "item/greatsword3.png", 1, atk = 20, critPct = 5, value = 220),
+    Item("throne_mail", "Harnois du trône", "body", "legendary", "item/gold_dragon_armour.png", 1, hp = 70, atk = 6, value = 230),
+    Item("throne_crown", "Couronne des âmes", "head", "legendary", "item/helmet_art2.png", 1, hp = 28, critPct = 6, value = 210),
+    Item("throne_ring", "Anneau des âmes", "talisman", "legendary", "item/i-slaying.png", 1, atk = 14, critPct = 5, value = 240)
+)
+
+val BIOME_LOOT = mapOf(
+    "crypts" to GENERIC_LOOT + CRYPT_LOOT,
+    "catacombs" to GENERIC_LOOT + CATACOMB_LOOT,
+    "ash" to GENERIC_LOOT + ASH_LOOT,
+    "forge" to GENERIC_LOOT + FORGE_LOOT,
+    "peaks" to GENERIC_LOOT + PEAK_LOOT,
+    "woods" to GENERIC_LOOT + WOOD_LOOT,
+    "abyss" to GENERIC_LOOT + ABYSS_LOOT,
+    "throne" to GENERIC_LOOT + THRONE_LOOT
+)
+
+val LOOT_TEMPLATES = BIOME_LOOT.values.flatten().distinctBy { it.id }
+
+fun lootTemplatesFor(floor: Int): List<Item> =
+    BIOME_LOOT[biomeKeyFor(floor)] ?: GENERIC_LOOT
+
+val BIOME_SETS = mapOf(
+    "crypts" to listOf("veilleur", "os"),
+    "catacombs" to listOf("os", "toile"),
+    "ash" to listOf("braise", "cendre"),
+    "forge" to listOf("forge"),
+    "peaks" to listOf("givre", "serment"),
+    "woods" to listOf("bois"),
+    "abyss" to listOf("abysse"),
+    "throne" to listOf("trone")
 )
 
 fun defaultEquipment(): List<Item> = listOf(
@@ -423,14 +753,25 @@ fun nextRarity(r: String): String = when (r) {
     else -> "legendary"
 }
 
-val ITEM_EFFECTS = listOf("vampirisme", "rempart", "frenesie", "chasse")
+val ITEM_EFFECTS = listOf("vampirisme", "rempart", "frenesie", "chasse", "vitalite", "precision")
 
-val ITEM_SETS = listOf("veilleur", "braise", "givre")
+val ITEM_SETS = listOf(
+    "veilleur", "braise", "givre", "os", "toile", "cendre",
+    "forge", "serment", "bois", "abysse", "trone"
+)
 
 fun setLabel(name: String): String = when (name) {
     "veilleur" -> "SERVICE DU VEILLEUR"
     "braise" -> "BRAISE ANCIENNE"
     "givre" -> "SERMENT DE GIVRE"
+    "os" -> "OSSATURE ANCIENNE"
+    "toile" -> "TOILE DES CATACOMBES"
+    "cendre" -> "CENDRE ÉTERNELLE"
+    "forge" -> "FORGE ABYSSALE"
+    "serment" -> "SERMENT DES CIMES"
+    "bois" -> "BOIS DES ÂMES"
+    "abysse" -> "ABÎME ORGANIQUE"
+    "trone" -> "TRÔNE DES ÂMES"
     else -> ""
 }
 
@@ -440,17 +781,28 @@ fun setBonusDescription(name: String, pieces: Int): String {
         "veilleur" -> if (pieces >= 6) "+30 ATQ, +90 PV" else if (pieces >= 4) "+20 ATQ, +60 PV" else "+10 ATQ, +30 PV"
         "braise" -> if (pieces >= 6) "+9 % crit., +15 % vol de vie" else if (pieces >= 4) "+6 % crit., +10 % vol de vie" else "+3 % crit., +5 % vol de vie"
         "givre" -> if (pieces >= 6) "+15 % VIT, +0,9 PV/s" else if (pieces >= 4) "+10 % VIT, +0,6 PV/s" else "+5 % VIT, +0,3 PV/s"
+        "os" -> if (pieces >= 6) "+18 ATQ, +75 PV" else if (pieces >= 4) "+12 ATQ, +50 PV" else "+6 ATQ, +25 PV"
+        "toile" -> if (pieces >= 6) "+9 % VIT, +6 % crit." else if (pieces >= 4) "+6 % VIT, +4 % crit." else "+3 % VIT, +2 % crit."
+        "cendre" -> if (pieces >= 6) "+24 ATQ, +6 % crit." else if (pieces >= 4) "+16 ATQ, +3 % crit." else "+8 ATQ"
+        "forge" -> if (pieces >= 6) "+105 PV, −6 % dégâts" else if (pieces >= 4) "+70 PV, −3 % dégâts" else "+35 PV"
+        "serment" -> if (pieces >= 6) "+21 ATQ, +16 % dégâts gardiens" else if (pieces >= 4) "+14 ATQ, +8 % dégâts gardiens" else "+7 ATQ"
+        "bois" -> if (pieces >= 6) "+12 % VIT, +1,2 PV/s" else if (pieces >= 4) "+8 % VIT, +0,7 PV/s" else "+4 % VIT"
+        "abysse" -> if (pieces >= 6) "+60 PV, +12 % vol de vie" else if (pieces >= 4) "+40 PV, +8 % vol de vie" else "+20 PV, +4 % vol de vie"
+        "trone" -> if (pieces >= 6) "+30 ATQ, +30 % dégâts critiques" else if (pieces >= 4) "+20 ATQ, +15 % dégâts critiques" else "+10 ATQ"
         else -> ""
     }
 }
 
 fun titleFor(floor: Int): String = when {
     floor >= 100 -> "Légende des Âmes"
-    floor >= 50 -> "Souverain des Cimes"
-    floor >= 40 -> "Gardien de la Forge"
-    floor >= 30 -> "Marcheur de Cendre"
-    floor >= 20 -> "Pèlerin des Abysses"
-    floor >= 10 -> "Veilleur des Cryptes"
+    floor >= 71 -> "Souverain du Trône"
+    floor >= 61 -> "Marcheur de l'Abîme"
+    floor >= 51 -> "Veilleur du Bois"
+    floor >= 41 -> "Souverain des Cimes"
+    floor >= 31 -> "Gardien de la Forge"
+    floor >= 21 -> "Marcheur de Cendre"
+    floor >= 11 -> "Pèlerin des Abysses"
+    floor >= 5 -> "Veilleur des Cryptes"
     else -> "Pèlerin"
 }
 
@@ -459,6 +811,8 @@ fun effectLabel(effect: String): String = when (effect) {
     "rempart" -> "REMPART"
     "frenesie" -> "FRÉNÉSIE"
     "chasse" -> "CHASSE"
+    "vitalite" -> "VITALITÉ"
+    "precision" -> "PRÉCISION"
     else -> ""
 }
 
@@ -467,6 +821,8 @@ fun effectDescription(effect: String): String = when (effect) {
     "rempart" -> "−10 % de dégâts subis"
     "frenesie" -> "+40 % de dégâts critiques"
     "chasse" -> "+25 % de dégâts contre les gardiens"
+    "vitalite" -> "+1,2 PV/s"
+    "precision" -> "+5 % critique"
     else -> ""
 }
 
@@ -476,6 +832,8 @@ fun itemScore(item: Item): Int {
         "rempart" -> 38
         "frenesie" -> 30
         "chasse" -> 26
+        "vitalite" -> 34
+        "precision" -> 30
         else -> 0
     }
     return (item.atk * 2 + item.hp * 0.25 + item.vitPct * 3 +
@@ -507,6 +865,8 @@ fun oathsFor(date: LocalDate): OathsState {
 }
 
 fun rankLabel(floor: Int): String = when {
+    floor >= 70 -> "VIII"
+    floor >= 60 -> "VII"
     floor >= 50 -> "VI"
     floor >= 40 -> "V"
     floor >= 30 -> "IV"
@@ -541,6 +901,8 @@ fun statsOf(state: GameState): Stats {
             "rempart" -> damageReduction += 0.10
             "frenesie" -> critDamage += 0.40
             "chasse" -> bossDamage += 0.25
+            "vitalite" -> regen += 1.2
+            "precision" -> crit += 5
         }
     }
     state.equipment
@@ -567,6 +929,38 @@ fun statsOf(state: GameState): Stats {
                     vit += 0.05 * tier
                     regen += 0.3 * tier
                 }
+                "os" -> {
+                    atk += 6 * tier
+                    maxHp += 25 * tier
+                }
+                "toile" -> {
+                    vit += 0.03 * tier
+                    crit += 2 * tier
+                }
+                "cendre" -> {
+                    atk += 8 * tier
+                    crit += 2 * tier
+                }
+                "forge" -> {
+                    maxHp += 35 * tier
+                    damageReduction += 0.03 * tier
+                }
+                "serment" -> {
+                    atk += 7 * tier
+                    bossDamage += 0.08 * tier
+                }
+                "bois" -> {
+                    vit += 0.04 * tier
+                    regen += 0.35 * tier
+                }
+                "abysse" -> {
+                    maxHp += 20 * tier
+                    lifesteal += 0.04 * tier
+                }
+                "trone" -> {
+                    atk += 10 * tier
+                    critDamage += 0.15 * tier
+                }
             }
         }
     val now = System.currentTimeMillis()
@@ -578,6 +972,7 @@ fun statsOf(state: GameState): Stats {
             "crit" -> crit += (buff.magnitude * 100).roundToInt()
             "def" -> damageReduction += buff.magnitude
             "lifesteal" -> lifesteal += buff.magnitude
+            "regen" -> regen += buff.magnitude
             "vulnerable" -> damageTaken += buff.magnitude
         }
     }
@@ -615,20 +1010,18 @@ fun tierIndex(ferveur: Int): Int = when {
     else -> 0
 }
 
-fun biomeFor(floor: Int): String = when {
-    floor <= 10 -> "CRYPTES DE VAEL"
-    floor <= 20 -> "CATACOMBES"
-    floor <= 30 -> "CAVERNES DE CENDRE"
-    floor <= 40 -> "FORGE NOYÉE"
-    else -> "CIMES DU SERMENT"
+fun biomeBossFor(floor: Int): BossTemplate {
+    val pool = mobPoolFor(floor)
+    val def = biomeDefFor(floor)
+    val index = ((floor - def.fromFloor) / 10).coerceAtLeast(0) % pool.bosses.size
+    return pool.bosses[index]
 }
 
 fun bossFor(floor: Int): BossTemplate = when {
     floor % 100 == 0 -> BossTemplate("L'Âme Première", "mon/cerebov.png")
-    floor % 50 == 0 -> BossTemplate("Seigneur de la Forge", "mon/iron_giant.png")
+    floor % 50 == 0 -> BossTemplate("Dragon de givre", "mon/ice_dragon.png")
     floor % 25 == 0 -> BossTemplate("Mère des Abysses", "mon/jormungandr.png")
-    floor % 10 == 0 -> BossTemplate("Roi des Cryptes", "mon/lich.png")
-    else -> BOSSES[((floor - 1) % BOSSES.size)]
+    else -> biomeBossFor(floor)
 }
 
 fun upgradeCost(key: String, currentLevel: Int): Int {
