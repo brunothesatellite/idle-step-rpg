@@ -77,14 +77,16 @@ fun Scene(
 
         SceneBackground(state, density.density)
 
-        GateView(
-            state,
-            Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 0.dp, bottom = 58.dp)
-                .width(166.dp)
-                .height(124.dp)
-        )
+        if (state.distance >= 85 || state.fight?.isBoss == true) {
+            GateView(
+                state,
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 0.dp, bottom = 58.dp)
+                    .width(166.dp)
+                    .height(124.dp)
+            )
+        }
 
         TopHud(state, onCamp, Modifier.align(Alignment.TopStart))
         ProgressHeader(state, Modifier.align(Alignment.TopStart).padding(top = 38.dp))
