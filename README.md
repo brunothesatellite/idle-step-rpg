@@ -110,11 +110,16 @@ L'architecture Android proposée (Kotlin/Compose, APK sideloadé, **Garmin Perso
 
 ## Version Android (APK)
 
-La version native **v0.1.4** est dans `android/` :
+La version native **v0.2.0** est dans `android/` :
 
 - **Kotlin + Jetpack Compose**, `minSdk 34` (Android 14+), package `com.brunothesatellite.idlesteprpg`.
 - **Texte agrandi (facteur 1,35)** et tableau de bord plus haut pour la lisibilité sur Pixel 7a.
 - **Icône adaptative ronde** plein cadre et **porte du gardien** affichée seulement dans les 15 derniers mètres (ou pendant le combat de gardien).
+- **Historique Garmin 7 jours** importé sans double comptage, avec **récapitulatif hors ligne** (jours, pas, mètres).
+- **Serments journaliers** : marche 3 000 pas, 1 gardien, 1 coffre, récompenses automatiques et renouvellement à 00:00.
+- **Retour de combat** : dégâts flottants, flash de coup, estafilade, bannière de niveau, phase 2 et bénédiction du gardien.
+- **Journal complet** défilant avec filtres (favorables, alertes, neutres).
+- **Coffres** conservés 24 h, 2 en attente maximum, compte à rebours et badge de file.
 - Scène pixel art, combats automatiques, gardiens, coffre, campement, inventaire, améliorations, journal.
 - **Garmin Personal API uniquement** : clé personnelle, échange contre un jeton OAuth2 de 24 h, aucun Health Connect.
 - **2FA Garmin dans le navigateur** : l'application ne voit jamais le mot de passe ni le code 2FA.

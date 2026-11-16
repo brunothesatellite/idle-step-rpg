@@ -24,8 +24,8 @@ android {
         applicationId = "com.brunothesatellite.idlesteprpg"
         minSdk = 34
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.1.4"
+        versionCode = 6
+        versionName = "0.2.0"
     }
 
     signingConfigs {
@@ -89,6 +89,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")
 }
+
 
 
 

@@ -64,6 +64,7 @@ fun Dashboard(
     onSync: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenCamp: () -> Unit,
+    onOpenJournal: () -> Unit,
     onBuyUpgrade: (String) -> Unit,
     onSelectItem: (Item) -> Unit,
     onSelectTab: (String) -> Unit,
@@ -96,7 +97,7 @@ fun Dashboard(
             when (tab) {
                 "inventory" -> InventoryTab(state, onSelectItem)
                 "upgrades" -> UpgradesTab(state, ui, onBuyUpgrade, onOpenSettings)
-                else -> StatsTab(state, ui, onOpenSettings, onSync)
+                else -> StatsTab(state, ui, onOpenSettings, onSync, onOpenJournal)
             }
         }
         SyncBar(state, ui, onSync, onOpenSettings)
@@ -220,7 +221,8 @@ private fun StatsTab(
     state: GameState,
     ui: UiState,
     onOpenSettings: () -> Unit,
-    onSync: () -> Unit
+    onSync: () -> Unit,
+    onOpenJournal: () -> Unit
 ) {
     val stats = statsOf(state)
     val power = powerOf(state)
@@ -264,7 +266,9 @@ private fun StatsTab(
     Spacer(Modifier.height(5.dp))
     FerveurCard(state)
     Spacer(Modifier.height(5.dp))
-    JournalCard(state)
+    OathsCard(state)
+    Spacer(Modifier.height(5.dp))
+    JournalCard(state, onOpenJournal)
     Spacer(Modifier.height(5.dp))
     GarminCard(ui, onOpenSettings, onSync)
 }
@@ -336,11 +340,96 @@ private fun BonusText(label: String, value: String) {
 }
 
 @Composable
-private fun JournalCard(state: GameState) {
+private fun OathsCard(state: GameState) {
+    val oaths = state.oaths
+    val done = listOf(oaths.stepsClaimed, oaths.bossesClaimed, oaths.chestsClaimed).count { it }
     PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            SectionLabel("Serments du jour")
+            Spacer(Modifier.weight(1f))
+            Text("$done / 3", fontFamily = Press, fontSize = 6.5.sp, color = if (done == 3) Green else Ember)
+        }
+        Spacer(Modifier.height(4.dp))
+        OathRow(
+            "Marche",
+            "${state.stepsToday.coerceAtMost(oaths.stepsTarget)} / ${oaths.stepsTarget} pas",
+            oaths.stepsClaimed,
+            "150 or · 1 éclat",
+            "item/boots4_green.png"
+        )
+        OathRow(
+            "Chasse",
+            "${state.bossesToday.coerceAtMost(oaths.bossesTarget)} / ${oaths.bossesTarget} gardien",
+            oaths.bossesClaimed,
+            "250 or · 2 éclats",
+            "item/long_sword3.png"
+        )
+        OathRow(
+            "Curiosité",
+            "${state.chestsToday.coerceAtMost(oaths.chestsTarget)} / ${oaths.chestsTarget} coffre",
+            oaths.chestsClaimed,
+            "100 or · objet",
+            "item/misc_crystal.png"
+        )
+    }
+}
+
+@Composable
+private fun OathRow(
+    title: String,
+    progress: String,
+    claimed: Boolean,
+    reward: String,
+    icon: String
+) {
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 2.5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier
+                .size(15.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(if (claimed) Green.copy(alpha = 0.18f) else Panel2)
+                .border(1.dp, if (claimed) Green.copy(alpha = 0.55f) else Line, RoundedCornerShape(3.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (claimed) {
+                Text("✓", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Green)
+            } else {
+                AssetIcon(icon, 10.dp)
+            }
+        }
+        Spacer(Modifier.width(5.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = if (claimed) Green else Parchment)
+            Text(progress, fontSize = 6.sp, color = Muted)
+        }
+        Text(
+            if (claimed) "ACCOMPLI" else reward,
+            fontSize = 5.5.sp,
+            color = if (claimed) Green else Muted2,
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
+private fun JournalCard(state: GameState, onOpen: () -> Unit) {
+    PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             SectionLabel("Journal")
-            Text("3 récents", fontSize = 6.sp, color = Muted2)
+            Spacer(Modifier.weight(1f))
+            Row(
+                Modifier
+                    .clip(RoundedCornerShape(3.dp))
+                    .clickable(onClick = onOpen)
+                    .padding(horizontal = 5.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Tout voir", fontSize = 6.sp, color = Gold)
+                Text(" ›", fontSize = 7.sp, color = Gold)
+            }
         }
         Spacer(Modifier.height(4.dp))
         state.journal.take(3).forEach { entry ->

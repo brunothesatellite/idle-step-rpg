@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg.garmin
 
 import android.content.Context
 import com.brunothesatellite.idlesteprpg.data.GameRepository
+import com.brunothesatellite.idlesteprpg.engine.HISTORY_DAYS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -85,27 +86,36 @@ class GarminRepository(
             }
 
             val today = LocalDate.now()
+            val start = today.minusDays((HISTORY_DAYS - 1).toLong())
             val accessToken = token ?: throw IllegalStateException("Jeton Garmin absent.")
             val days = try {
-                client.steps(accessToken, today, today)
+                client.steps(accessToken, start, today)
             } catch (e: GarminException) {
                 if (e.code == 401) {
                     val fresh = client.obtainToken(key)
                     secrets.saveToken(fresh.value, fresh.expiresAtEpochSeconds)
-                    client.steps(fresh.value, today, today)
+                    client.steps(fresh.value, start, today)
                 } else {
                     throw e
                 }
             }
 
-            val total = days.firstOrNull { it.date == today.toString() }?.steps ?: 0
-            game.ingestSteps(total, today)
-            val added = game.state.value.lastAdded
+            val ledger = days
+                .filter { it.date.isNotBlank() }
+                .associate { it.date to it.steps }
+            val report = game.ingestHistory(ledger, today)
+            val state = game.state.value
+            val total = ledger[today.toString()] ?: state.stepsToday
+            val added = state.lastAdded
             prefs.edit()
                 .putLong(KEY_LAST_SYNC, System.currentTimeMillis())
                 .putString(KEY_LAST_ERROR, "")
                 .apply()
-            SyncResult(true, "Garmin synchronisé", total = total, added = added)
+            val message = when {
+                report != null -> "Rattrapage Garmin · ${report.days} jour(s), ${report.steps} pas"
+                else -> "Garmin synchronisé"
+            }
+            SyncResult(true, message, total = total, added = added)
         } catch (e: GarminException) {
             prefs.edit().putString(KEY_LAST_ERROR, e.message).apply()
             SyncResult(false, e.message, needsKey = e.code == 401)

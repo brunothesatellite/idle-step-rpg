@@ -26,7 +26,9 @@ import com.brunothesatellite.idlesteprpg.ui.Dashboard
 import com.brunothesatellite.idlesteprpg.ui.GarminScreen
 import com.brunothesatellite.idlesteprpg.ui.Ink
 import com.brunothesatellite.idlesteprpg.ui.ItemDialog
+import com.brunothesatellite.idlesteprpg.ui.JournalOverlay
 import com.brunothesatellite.idlesteprpg.ui.MarcheTheme
+import com.brunothesatellite.idlesteprpg.ui.OfflineOverlay
 import com.brunothesatellite.idlesteprpg.ui.Scene
 
 class MainActivity : ComponentActivity() {
@@ -71,10 +73,15 @@ private fun GameRoot(vm: GameViewModel) {
         }
     }
 
-    BackHandler(enabled = ui.campOpen || ui.settingsOpen || ui.selectedItem != null || ui.chestOpen) {
+    BackHandler(
+        enabled = ui.campOpen || ui.settingsOpen || ui.selectedItem != null ||
+            ui.chestOpen || ui.journalOpen || state.offlineReport != null
+    ) {
         when {
+            state.offlineReport != null -> vm.dismissOfflineReport()
             ui.selectedItem != null -> vm.dismissItem()
             ui.chestOpen -> vm.closeChest()
+            ui.journalOpen -> vm.closeJournal()
             ui.campOpen -> vm.closeCamp()
             ui.settingsOpen -> vm.closeSettings()
         }
@@ -99,6 +106,7 @@ private fun GameRoot(vm: GameViewModel) {
                 onSync = { vm.syncNow() },
                 onOpenSettings = vm::openSettings,
                 onOpenCamp = vm::openCamp,
+                onOpenJournal = vm::openJournal,
                 onBuyUpgrade = vm::buyUpgrade,
                 onSelectItem = vm::selectItem,
                 onSelectTab = {},
@@ -134,6 +142,12 @@ private fun GameRoot(vm: GameViewModel) {
                 onEquip = { vm.equip(item) },
                 onSell = { vm.sell(item) }
             )
+        }
+        if (ui.journalOpen) {
+            JournalOverlay(journal = state.journal, onClose = vm::closeJournal)
+        }
+        state.offlineReport?.let { report ->
+            OfflineOverlay(report = report, onDismiss = vm::dismissOfflineReport)
         }
     }
 }

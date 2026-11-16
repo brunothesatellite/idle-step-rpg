@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg.data
 import android.content.Context
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.OfflineReport
 import com.brunothesatellite.idlesteprpg.engine.deepCopy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,6 +70,17 @@ class GameRepository(private val context: Context) {
             _state.value = s
             saveLocked(s)
         }
+    }
+
+    suspend fun ingestHistory(days: Map<String, Int>, today: LocalDate): OfflineReport? {
+        var report: OfflineReport? = null
+        mutex.withLock {
+            val s = _state.value.deepCopy()
+            report = GameEngine.ingestHistory(s, days, today)
+            _state.value = s
+            saveLocked(s)
+        }
+        return report
     }
 
     suspend fun debugAddSteps(steps: Int) {

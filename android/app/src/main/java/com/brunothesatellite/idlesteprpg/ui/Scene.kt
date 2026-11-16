@@ -1,5 +1,7 @@
 package com.brunothesatellite.idlesteprpg.ui
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -26,7 +28,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +55,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -55,9 +65,14 @@ import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.biomeFor
+import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
+import com.brunothesatellite.idlesteprpg.engine.formatRemaining
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.tierIndex
 import com.brunothesatellite.idlesteprpg.engine.tierName
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
@@ -70,6 +85,18 @@ fun Scene(
 ) {
     val walking = GameEngine.isWalking(state)
     val density = LocalDensity.current
+    var previousLevel by remember { mutableStateOf(state.level) }
+    var levelBanner by remember { mutableStateOf(0) }
+
+    LaunchedEffect(state.level) {
+        val previous = previousLevel
+        previousLevel = state.level
+        if (state.level > previous) {
+            levelBanner = state.level
+            delay(2200)
+            levelBanner = 0
+        }
+    }
 
     BoxWithConstraints(modifier.fillMaxSize().background(Ink)) {
         val sceneWidth = maxWidth
@@ -94,7 +121,12 @@ fun Scene(
         HeroUnit(state, walking, Modifier.align(Alignment.BottomStart).padding(start = 18.dp, bottom = 58.dp))
 
         state.fight?.let { fight ->
-            EnemyUnit(state, fight, Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 58.dp))
+            key(fight.enemyName, fight.enemyLevel, fight.isBoss, fight.farm) {
+                EnemyUnit(
+                    fight,
+                    Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 58.dp)
+                )
+            }
         }
 
         if (state.chest != null && state.mode != "fight" && state.mode != "boss") {
@@ -103,12 +135,33 @@ fun Scene(
 
         if (state.fight?.isBoss == true) {
             BossBanner(state)
+            val fight = state.fight
+            if (fight != null && fight.enemyHp < fight.enemyMaxHp * 0.5) {
+                SceneTag(
+                    "PHASE 2 · EMBRASÉ",
+                    Ember,
+                    Modifier.align(Alignment.TopCenter).padding(top = 104.dp)
+                )
+            }
+            if (state.bossBlessing > 0) {
+                SceneTag(
+                    "BÉNÉDICTION +25 %",
+                    Green,
+                    Modifier.align(Alignment.TopCenter).padding(top = 128.dp)
+                )
+            }
         }
         if (state.mode == "farmWait" || state.fight?.farm == true) {
             SceneTag("ZONE DE REPLI · FARM", Blood, Modifier.align(Alignment.TopCenter).padding(top = 58.dp))
         }
         if (state.mode == "chest") {
             SceneTag("FORÇAGE DU COFFRE", Gold, Modifier.align(Alignment.TopCenter).padding(top = 58.dp))
+        }
+        if (levelBanner > 0) {
+            LevelUpBanner(
+                level = levelBanner,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 152.dp)
+            )
         }
 
         BottomHud(state, Modifier.align(Alignment.BottomCenter))
@@ -433,6 +486,30 @@ private fun UnitPlate(
 @Composable
 private fun HeroUnit(state: GameState, walking: Boolean, modifier: Modifier = Modifier) {
     val stats = statsOf(state)
+    val floats = remember { mutableStateListOf<FloatFx>() }
+    var previousHp by remember { mutableStateOf(state.hp) }
+    var nextId by remember { mutableLongStateOf(0L) }
+
+    LaunchedEffect(state.hp) {
+        val diff = state.hp - previousHp
+        previousHp = state.hp
+        if (diff < -3.0) {
+            floats += FloatFx(
+                id = nextId++,
+                text = "-${(-diff).roundToInt()}",
+                color = Color(0xFFFFB0A6),
+                drift = ((nextId % 5) - 2) * 6f
+            )
+        } else if (diff > 3.0) {
+            floats += FloatFx(
+                id = nextId++,
+                text = "+${diff.roundToInt()}",
+                color = Green,
+                drift = ((nextId % 5) - 2) * 6f
+            )
+        }
+    }
+
     val transition = rememberInfiniteTransition(label = "hero")
     val bob by transition.animateFloat(
         initialValue = 0f,
@@ -478,18 +555,54 @@ private fun HeroUnit(state: GameState, walking: Boolean, modifier: Modifier = Mo
                     .offset(x = (-1).dp, y = (-21).dp)
                     .graphicsLayer(rotationZ = 10f)
             )
+            floats.forEach { fx ->
+                key(fx.id) {
+                    Box(Modifier.align(Alignment.TopCenter)) {
+                        FloatingNumber(fx) { floats.remove(fx) }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
 private fun EnemyUnit(
-    state: GameState,
     fight: com.brunothesatellite.idlesteprpg.engine.FightData,
     modifier: Modifier = Modifier
 ) {
     val height = if (fight.isBoss) 148.dp else 108.dp
     val plateWidth = if (fight.isBoss) 154 else 126
+    val spriteSize = if (fight.isBoss) 136.dp else 102.dp
+    val floats = remember { mutableStateListOf<FloatFx>() }
+    val flash = remember { Animatable(0f) }
+    val slash = remember { Animatable(0f) }
+    var previousHp by remember { mutableStateOf(fight.enemyHp) }
+    var nextId by remember { mutableLongStateOf(0L) }
+
+    LaunchedEffect(fight.enemyHp) {
+        val damage = previousHp - fight.enemyHp
+        previousHp = fight.enemyHp
+        if (damage > 0.5) {
+            floats += FloatFx(
+                id = nextId++,
+                text = "-${damage.roundToInt()}",
+                color = Color(0xFFFFC6B8),
+                drift = ((nextId % 5) - 2) * 7f
+            )
+            coroutineScope {
+                launch {
+                    flash.snapTo(0.55f)
+                    flash.animateTo(0f, tween(220))
+                }
+                launch {
+                    slash.snapTo(0f)
+                    slash.animateTo(1f, tween(260, easing = LinearEasing))
+                }
+            }
+        }
+    }
+
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         UnitPlate(
             fight.enemyName,
@@ -500,7 +613,13 @@ private fun EnemyUnit(
             width = plateWidth
         )
         Spacer(Modifier.height(4.dp))
-        Box(Modifier.height(height).width(if (fight.isBoss) 140.dp else 112.dp), contentAlignment = Alignment.BottomCenter) {
+        Box(
+            Modifier.height(height).width(if (fight.isBoss) 140.dp else 112.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            if (fight.isBoss && fight.enemyHp < fight.enemyMaxHp * 0.5) {
+                BossAura(Modifier.size(spriteSize).align(Alignment.BottomCenter))
+            }
             Box(
                 Modifier
                     .align(Alignment.BottomCenter)
@@ -509,7 +628,42 @@ private fun EnemyUnit(
                     .clip(RoundedCornerShape(50))
                     .background(Color.Black.copy(alpha = 0.5f))
             )
-            AssetImage(fight.enemyIcon, Modifier.size(if (fight.isBoss) 136.dp else 102.dp))
+            AssetImage(fight.enemyIcon, Modifier.size(spriteSize))
+            Box(
+                Modifier
+                    .size(spriteSize)
+                    .align(Alignment.BottomCenter)
+                    .alpha(flash.value)
+                    .background(Color(0xFFFFF1D0), RoundedCornerShape(8.dp))
+            )
+            Canvas(Modifier.size(spriteSize).align(Alignment.BottomCenter)) {
+                val p = slash.value
+                if (p > 0f && p < 1f) {
+                    val startX = size.width * 0.12f
+                    val startY = size.height * 0.12f
+                    val endX = size.width * 0.88f
+                    val endY = size.height * 0.88f
+                    drawLine(
+                        color = Color.White.copy(alpha = (1f - p) * 0.9f),
+                        start = Offset(startX, startY),
+                        end = Offset(startX + (endX - startX) * p, startY + (endY - startY) * p),
+                        strokeWidth = 4.dp.toPx()
+                    )
+                    drawLine(
+                        color = GoldLight.copy(alpha = (1f - p) * 0.5f),
+                        start = Offset(startX, startY),
+                        end = Offset(startX + (endX - startX) * p, startY + (endY - startY) * p),
+                        strokeWidth = 1.5.dp.toPx()
+                    )
+                }
+            }
+            floats.forEach { fx ->
+                key(fx.id) {
+                    Box(Modifier.align(Alignment.TopCenter)) {
+                        FloatingNumber(fx) { floats.remove(fx) }
+                    }
+                }
+            }
             if (fight.elite) {
                 Box(
                     Modifier
@@ -522,6 +676,73 @@ private fun EnemyUnit(
                     Text("ÉLITE", fontFamily = Press, fontSize = 4.5.sp, color = GoldLight)
                 }
             }
+        }
+    }
+}
+
+private data class FloatFx(
+    val id: Long,
+    val text: String,
+    val color: Color,
+    val drift: Float
+)
+
+@Composable
+private fun FloatingNumber(fx: FloatFx, onDone: () -> Unit) {
+    val anim = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        anim.animateTo(1f, tween(820, easing = LinearEasing))
+        onDone()
+    }
+    Text(
+        fx.text,
+        modifier = Modifier
+            .offset(x = fx.drift.dp, y = (-8f - 34f * anim.value).dp)
+            .alpha((1f - anim.value * 0.85f).coerceIn(0f, 1f)),
+        fontFamily = Press,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        color = fx.color
+    )
+}
+
+@Composable
+private fun BossAura(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "bossAura")
+    val pulse by transition.animateFloat(
+        initialValue = 0.45f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(720), RepeatMode.Reverse),
+        label = "pulse"
+    )
+    Canvas(modifier) {
+        val center = Offset(size.width / 2f, size.height / 2f)
+        val radius = size.minDimension * 0.62f
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(Color(0xAAFF6B3A).copy(alpha = 0.5f * pulse), Color(0x33FF9448), Color.Transparent),
+                center = center,
+                radius = radius
+            ),
+            radius = radius,
+            center = center
+        )
+    }
+}
+
+@Composable
+private fun LevelUpBanner(level: Int, modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .clip(RoundedCornerShape(5.dp))
+            .background(Brush.horizontalGradient(listOf(GoldLight, Gold, Color(0xFFC8954A))))
+            .border(1.dp, GoldLight, RoundedCornerShape(5.dp))
+            .padding(horizontal = 18.dp, vertical = 7.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("NIVEAU $level", fontFamily = Press, fontSize = 11.sp, color = Ink)
+            Text("Kaelen se renforce", fontSize = 6.sp, color = Ink.copy(alpha = 0.7f))
         }
     }
 }
@@ -610,6 +831,22 @@ private fun ChestButton(state: GameState, onChest: () -> Unit, modifier: Modifie
                 drawRect(Color(0xFFE8C27A), Offset(w * 0.44f, h * 0.57f), Size(w * 0.12f, h * 0.10f))
                 drawRect(Color(0xFF2A1A0E), Offset(w * 0.48f, h * 0.60f), Size(w * 0.04f, h * 0.07f))
             }
+            if (state.chestQueue.isNotEmpty()) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Gold)
+                        .padding(horizontal = 3.dp, vertical = 1.dp)
+                ) {
+                    Text(
+                        "×${1 + state.chestQueue.size}",
+                        fontFamily = Press,
+                        fontSize = 5.sp,
+                        color = Ink
+                    )
+                }
+            }
         }
         if (chest.progress > 0) {
             MiniBar(
@@ -619,6 +856,12 @@ private fun ChestButton(state: GameState, onChest: () -> Unit, modifier: Modifie
                 height = 3.dp
             )
         }
+        Spacer(Modifier.height(2.dp))
+        Text(
+            formatRemaining(chestRemainingMs(chest)),
+            fontSize = 5.sp,
+            color = Ember
+        )
     }
 }
 

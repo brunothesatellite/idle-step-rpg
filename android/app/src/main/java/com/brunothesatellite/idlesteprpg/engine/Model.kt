@@ -11,6 +11,11 @@ const val STEPS_PER_METER = 10.0
 const val FLOOR_METERS = 100
 const val ENCOUNTER_METERS = 10
 const val DAY_RESET_HOUR = 0
+const val MAX_STEPS_PER_DAY = 60_000
+const val HISTORY_DAYS = 7
+const val HISTORY_IMPORT_CAP = 20_000
+const val CHEST_LIFETIME_MS = 24L * 60L * 60L * 1000L
+const val MAX_PENDING_CHESTS = 2
 
 @Serializable
 data class Upgrades(
@@ -64,13 +69,32 @@ data class FightData(
 )
 
 @Serializable
+data class OathsState(
+    var stepsClaimed: Boolean = false,
+    var bossesClaimed: Boolean = false,
+    var chestsClaimed: Boolean = false,
+    var stepsTarget: Int = 3000,
+    var bossesTarget: Int = 1,
+    var chestsTarget: Int = 1
+)
+
+@Serializable
+data class OfflineReport(
+    val days: Int,
+    val steps: Int,
+    val distanceMeters: Int,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Serializable
 data class ChestData(
     var type: String,
     var quota: Int,
     var progress: Double = 0.0,
     var goldMin: Int,
     var goldMax: Int,
-    var rarity: String = "uncommon"
+    var rarity: String = "uncommon",
+    var expiresAt: Long = 0L
 )
 
 @Serializable
@@ -107,7 +131,13 @@ data class GameState(
     var lastSync: Long = 0L,
     var lastAdded: Int = 0,
     var lastError: String = "",
-    var lastSyncSource: String = ""
+    var lastSyncSource: String = "",
+    var stepLedger: Map<String, Int> = emptyMap(),
+    var offlineReport: OfflineReport? = null,
+    var bossesToday: Int = 0,
+    var chestsToday: Int = 0,
+    var oaths: OathsState = OathsState(),
+    var chestQueue: List<ChestData> = emptyList()
 )
 
 data class Stats(
@@ -330,11 +360,27 @@ fun currentStepDelta(state: GameState, total: Int): Int = max(0, total - state.p
 
 fun clampFerveur(steps: Int): Int = min(100, steps / 50)
 
+fun chestRemainingMs(chest: ChestData, now: Long = System.currentTimeMillis()): Long =
+    if (chest.expiresAt <= 0L) Long.MAX_VALUE else (chest.expiresAt - now).coerceAtLeast(0L)
+
+fun formatRemaining(ms: Long): String {
+    if (ms == Long.MAX_VALUE) return "—"
+    if (ms <= 0L) return "expiré"
+    val totalMinutes = ms / 60_000L
+    val hours = totalMinutes / 60L
+    val minutes = totalMinutes % 60L
+    return if (hours > 0) "${hours} h ${minutes.toString().padStart(2, '0')}" else "${minutes} min"
+}
+
 fun GameState.deepCopy(): GameState = copy(
     upgrades = upgrades.copy(),
     equipment = equipment.toList(),
     inventory = inventory.toList(),
     journal = journal.toList(),
     fight = fight?.copy(),
-    chest = chest?.copy()
+    chest = chest?.copy(),
+    oaths = oaths.copy(),
+    stepLedger = stepLedger.toMap(),
+    offlineReport = offlineReport?.copy(),
+    chestQueue = chestQueue.map { it.copy() }
 )

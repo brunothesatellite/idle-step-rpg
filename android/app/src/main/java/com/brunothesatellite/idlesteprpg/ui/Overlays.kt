@@ -66,6 +66,10 @@ import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
+import com.brunothesatellite.idlesteprpg.engine.JournalEntry
+import com.brunothesatellite.idlesteprpg.engine.OfflineReport
+import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
+import com.brunothesatellite.idlesteprpg.engine.formatRemaining
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.powerOf
 import com.brunothesatellite.idlesteprpg.engine.rarityLabel
@@ -230,6 +234,17 @@ fun ChestDialog(
                         fontSize = 6.sp,
                         color = Muted
                     )
+                }
+                val remaining = chestRemainingMs(chest)
+                Row(Modifier.fillMaxWidth().padding(top = 3.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        "Expire dans ${formatRemaining(remaining)}",
+                        fontSize = 6.5.sp,
+                        color = if (remaining < 60 * 60 * 1000L) Blood else Ember
+                    )
+                    if (state.chestQueue.isNotEmpty()) {
+                        Text("+${state.chestQueue.size} coffre en attente", fontSize = 6.5.sp, color = Gold)
+                    }
                 }
                 Spacer(Modifier.height(9.dp))
                 if (forcing) {
@@ -713,6 +728,188 @@ private fun GarminInfoRow(label: String, value: String, valueColor: Color = Parc
     ) {
         Text(label, fontSize = 7.sp, color = Muted)
         Text(value, fontSize = 7.sp, color = valueColor)
+    }
+}
+
+@Composable
+fun JournalOverlay(journal: List<JournalEntry>, onClose: () -> Unit) {
+    var filter by remember { mutableStateOf("all") }
+    val filtered = when (filter) {
+        "good" -> journal.filter { it.type == "good" }
+        "bad" -> journal.filter { it.type == "bad" }
+        "neutral" -> journal.filter { it.type == "neutral" }
+        else -> journal
+    }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(Color(0xFF0B0810), Color(0xFF171121), Color(0xFF0B0810))))
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .clickable { }
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("JOURNAL DE LA MARCHE", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                    Text("${journal.size} événements conservés", fontSize = 7.sp, color = Muted)
+                }
+                Text(
+                    "×",
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Panel2)
+                        .border(1.dp, Line2, RoundedCornerShape(4.dp))
+                        .clickable(onClick = onClose)
+                        .padding(top = 3.dp),
+                    textAlign = TextAlign.Center,
+                    fontSize = 18.sp,
+                    color = Muted
+                )
+            }
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 14.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                listOf(
+                    "all" to "Tous",
+                    "good" to "Favorables",
+                    "bad" to "Alertes",
+                    "neutral" to "Neutres"
+                ).forEach { (key, label) ->
+                    val active = filter == key
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(if (active) Gold.copy(alpha = 0.16f) else Panel)
+                            .border(1.dp, if (active) Gold.copy(alpha = 0.6f) else Line, RoundedCornerShape(4.dp))
+                            .clickable { filter = key }
+                            .padding(vertical = 5.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(label, fontSize = 6.5.sp, color = if (active) GoldLight else Muted, maxLines = 1)
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            DividerLine()
+            Column(
+                Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                if (filtered.isEmpty()) {
+                    Text(
+                        "Aucun événement dans ce filtre.",
+                        modifier = Modifier.fillMaxWidth().padding(top = 30.dp),
+                        textAlign = TextAlign.Center,
+                        fontSize = 8.sp,
+                        color = Muted2
+                    )
+                }
+                filtered.forEach { entry ->
+                    JournalRow(entry)
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun JournalRow(entry: JournalEntry) {
+    val color = when (entry.type) {
+        "good" -> Green
+        "bad" -> Blood
+        else -> Gold
+    }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(Modifier.padding(top = 4.dp).size(5.dp).background(color))
+        Spacer(Modifier.width(7.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                entry.text,
+                fontSize = 8.sp,
+                color = Parchment.copy(alpha = 0.9f),
+                lineHeight = 11.sp
+            )
+            Text(
+                when (entry.type) {
+                    "good" -> "FAVORABLE"
+                    "bad" -> "ALERTE"
+                    else -> "NOTE"
+                },
+                fontSize = 5.5.sp,
+                color = color.copy(alpha = 0.8f),
+                letterSpacing = 0.5.sp
+            )
+        }
+        Spacer(Modifier.width(6.dp))
+        Text(entry.time, fontSize = 6.5.sp, color = Muted2)
+    }
+    DividerLine()
+}
+
+@Composable
+fun OfflineOverlay(report: OfflineReport, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Brush.verticalGradient(listOf(Color(0xFF241930), Color(0xFF130E1C))))
+                    .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
+                    .padding(18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("LE SENTIER A CONTINUÉ", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                Text("Récapitulatif hors ligne", fontSize = 7.5.sp, color = Muted)
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    RecapTile(report.days.toString(), "JOURS", Modifier.weight(1f))
+                    RecapTile(formatInt(report.steps), "PAS", Modifier.weight(1f))
+                    RecapTile(formatInt(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
+                }
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Vos pas Garmin des derniers jours ont été récupérés et ajoutés à la marche, " +
+                        "sans double comptage. Plafond de rattrapage : 20 000 pas par synchronisation.",
+                    fontSize = 7.sp,
+                    color = Muted,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 10.sp
+                )
+                Spacer(Modifier.height(14.dp))
+                GoldButton("REPRENDRE LA MARCHE", onClick = onDismiss)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecapTile(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier
+            .clip(RoundedCornerShape(5.dp))
+            .background(Panel)
+            .border(1.dp, Line, RoundedCornerShape(5.dp))
+            .padding(vertical = 7.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(value, fontFamily = Press, fontSize = 8.sp, color = GoldLight, maxLines = 1)
+        Text(label, fontSize = 5.5.sp, letterSpacing = 0.7.sp, color = Muted)
     }
 }
 

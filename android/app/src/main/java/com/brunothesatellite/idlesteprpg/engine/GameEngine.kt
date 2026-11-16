@@ -13,6 +13,7 @@ object GameEngine {
 
     fun ensureDay(state: GameState, date: LocalDate = LocalDate.now()) {
         val d = date.toString()
+        migrateChests(state)
         if (state.day.isEmpty()) {
             state.day = d
             state.hp = statsOf(state).maxHp.toDouble()
@@ -26,12 +27,36 @@ object GameEngine {
             state.genRations = 0
             state.genShards = 0
             state.lastAdded = 0
-            state.journal = addJournal(state, "Nouveau jour — 00:00", "neutral")
+            state.bossesToday = 0
+            state.chestsToday = 0
+            state.oaths = OathsState()
+            pruneLedger(state, date)
+            state.journal = addJournal(state, "Nouveau jour — 00:00 · serments renouvelés", "neutral")
+        }
+    }
+
+    private fun pruneLedger(state: GameState, date: LocalDate) {
+        val cutoff = date.minusDays(35).toString()
+        if (state.stepLedger.keys.any { it < cutoff }) {
+            state.stepLedger = state.stepLedger.filterKeys { it >= cutoff }
+        }
+    }
+
+    private fun migrateChests(state: GameState) {
+        val now = System.currentTimeMillis()
+        state.chest = state.chest?.let {
+            if (it.expiresAt <= 0L) it.copy(expiresAt = now + CHEST_LIFETIME_MS) else it
+        }
+        if (state.chestQueue.any { it.expiresAt <= 0L }) {
+            state.chestQueue = state.chestQueue.map {
+                if (it.expiresAt <= 0L) it.copy(expiresAt = now + CHEST_LIFETIME_MS) else it
+            }
         }
     }
 
     fun tick(state: GameState, dtMs: Double) {
         ensureDay(state)
+        expireChests(state)
         val s = statsOf(state)
         state.hp = state.hp.coerceIn(0.0, s.maxHp.toDouble())
 
@@ -67,31 +92,92 @@ object GameEngine {
     }
 
     fun ingestSteps(state: GameState, totalSteps: Int, date: LocalDate = LocalDate.now()) {
-        ensureDay(state, date)
-        val total = max(0, totalSteps)
-        val delta = max(0, total - state.processedSteps)
-        state.processedSteps = max(state.processedSteps, total)
-        state.stepsToday = total
-        state.ferveur = clampFerveur(total)
-        state.stepBank += delta
-        state.lastAdded = delta
+        ingestHistory(state, mapOf(date.toString() to max(0, totalSteps)), date)
+    }
+
+    /**
+     * Imports a Garmin day ledger. Each calendar day is only ever counted once,
+     * so syncing repeatedly (or importing the same 7 days again) is idempotent.
+     */
+    fun ingestHistory(
+        state: GameState,
+        days: Map<String, Int>,
+        today: LocalDate = LocalDate.now()
+    ): OfflineReport? {
+        ensureDay(state, today)
+        val todayKey = today.toString()
+        var todayAdded = 0
+        var todayTotal = state.stepsToday
+        var historyAdded = 0
+        var recoveredDays = 0
+
+        days.toSortedMap().forEach { (key, raw) ->
+            val parsed = runCatching { LocalDate.parse(key) }.getOrNull() ?: return@forEach
+            if (parsed.isAfter(today)) return@forEach
+            val steps = raw.coerceIn(0, MAX_STEPS_PER_DAY)
+            val ledger = state.stepLedger[key] ?: 0
+            val baseline = if (key == todayKey) max(ledger, state.processedSteps) else ledger
+            if (steps <= baseline) return@forEach
+            val delta = steps - baseline
+            state.stepLedger = state.stepLedger + (key to steps)
+            if (key == todayKey) {
+                todayAdded += delta
+                todayTotal = steps
+            } else {
+                historyAdded += delta
+                recoveredDays++
+            }
+        }
+
+        if (todayAdded > 0) {
+            state.stepsToday = todayTotal
+            state.processedSteps = max(state.processedSteps, todayTotal)
+            state.ferveur = clampFerveur(todayTotal)
+            state.stepBank += todayAdded
+            val nr = min(24, todayTotal / 200)
+            val ns = min(12, todayTotal / 500)
+            if (nr > state.genRations) {
+                state.rations = min(24, state.rations + (nr - state.genRations))
+                state.genRations = nr
+            }
+            if (ns > state.genShards) {
+                state.shards = min(12, state.shards + (ns - state.genShards))
+                state.genShards = ns
+            }
+            state.journal = addJournal(
+                state,
+                "$todayAdded pas Garmin — ${"%.0f".format(todayAdded / STEPS_PER_METER)} m",
+                "good"
+            )
+        }
+
+        val importedHistory = min(historyAdded, HISTORY_IMPORT_CAP)
+        if (importedHistory > 0) {
+            state.stepBank += importedHistory
+            state.rations = min(24, state.rations + min(12, importedHistory / 800))
+            state.shards = min(12, state.shards + min(6, importedHistory / 2000))
+            state.journal = addJournal(
+                state,
+                "Rattrapage Garmin · $recoveredDays jour(s) · $importedHistory pas",
+                "good"
+            )
+        }
+
+        state.lastAdded = todayAdded + importedHistory
         state.lastSync = System.currentTimeMillis()
         state.lastSyncSource = "Garmin"
+        checkOaths(state)
 
-        val nr = min(24, total / 200)
-        val ns = min(12, total / 500)
-        if (nr > state.genRations) {
-            state.rations = min(24, state.rations + (nr - state.genRations))
-            state.genRations = nr
+        val report = if (recoveredDays > 0) {
+            OfflineReport(
+                days = recoveredDays,
+                steps = importedHistory,
+                distanceMeters = (importedHistory / STEPS_PER_METER).toInt()
+            ).also { state.offlineReport = it }
+        } else {
+            null
         }
-        if (ns > state.genShards) {
-            state.shards = min(12, state.shards + (ns - state.genShards))
-            state.genShards = ns
-        }
-
-        if (delta > 0) {
-            state.journal = addJournal(state, "$delta pas Garmin — ${"%.0f".format(delta / STEPS_PER_METER)} m", "good")
-        }
+        return report
     }
 
     fun debugAddSteps(state: GameState, steps: Int) {
@@ -99,7 +185,33 @@ object GameEngine {
         state.stepsToday += steps
         state.stepBank += steps
         state.ferveur = clampFerveur(state.stepsToday)
+        state.stepLedger = state.stepLedger + (todayString() to state.stepsToday)
         state.journal = addJournal(state, "Démo +$steps pas", "neutral")
+    }
+
+    fun checkOaths(state: GameState) {
+        val o = state.oaths
+        if (!o.stepsClaimed && state.stepsToday >= o.stepsTarget) {
+            o.stepsClaimed = true
+            state.gold += 150
+            state.shards = min(12, state.shards + 1)
+            gainXp(state, 80)
+            state.journal = addJournal(state, "Serment de marche accompli · +150 or, +1 éclat", "good")
+        }
+        if (!o.bossesClaimed && state.bossesToday >= o.bossesTarget) {
+            o.bossesClaimed = true
+            state.gold += 250
+            state.shards = min(12, state.shards + 2)
+            gainXp(state, 120)
+            state.journal = addJournal(state, "Serment de chasse accompli · +250 or, +2 éclats", "good")
+        }
+        if (!o.chestsClaimed && state.chestsToday >= o.chestsTarget) {
+            o.chestsClaimed = true
+            state.gold += 100
+            state.inventory = state.inventory + lootItem(state.floor, "uncommon")
+            gainXp(state, 60)
+            state.journal = addJournal(state, "Serment de curiosité accompli · +100 or, objet inhabituel", "good")
+        }
     }
 
     fun startFight(state: GameState, farm: Boolean = false) {
@@ -263,15 +375,16 @@ object GameEngine {
 
         if (f.isBoss) {
             state.bosses++
+            state.bossesToday++
             state.shards += 2
             state.rations += 1
             state.bossBlessing = 0.0
             state.floor++
             state.distance = 0.0
             state.nextFight = 10
-            state.chest = null
             state.inventory = state.inventory + lootItem(state.floor, "rare")
             state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
+            checkOaths(state)
         } else if (f.farm) {
             state.farmKills++
             val s = statsOf(state)
@@ -289,7 +402,7 @@ object GameEngine {
             state.mode = "walk"
             state.nextFight += 10
             state.journal = addJournal(state, "${f.enemyName} vaincu · +${f.gold} or", "good")
-            if (state.chest == null && rnd.nextDouble() < 0.18) spawnChest(state)
+            if (rnd.nextDouble() < 0.18) spawnChest(state)
         }
     }
 
@@ -343,24 +456,56 @@ object GameEngine {
         state.gold += gold
         state.rations = min(24, state.rations + 1)
         state.shards = min(12, state.shards + 1)
+        state.chestsToday++
         state.inventory = state.inventory + lootItem(state.floor, c.rarity)
-        state.chest = null
+        state.chest = state.chestQueue.firstOrNull()
+        if (state.chestQueue.isNotEmpty()) state.chestQueue = state.chestQueue.drop(1)
         state.mode = "walk"
         state.journal = addJournal(state, "Coffre forcé · +$gold or", "good")
+        checkOaths(state)
     }
 
-    fun spawnChest(state: GameState) {
-        if (state.chest != null) return
+    fun spawnChest(state: GameState): Boolean {
+        val pending = (if (state.chest != null) 1 else 0) + state.chestQueue.size
+        if (pending >= MAX_PENDING_CHESTS) return false
         val r = rnd.nextDouble()
         val type = when {
             r < 0.60 -> "bois"
             r < 0.90 -> "fer"
             else -> "runique"
         }
-        state.chest = when (type) {
-            "bois" -> ChestData("bois", 150, goldMin = 40, goldMax = 80, rarity = "uncommon")
-            "fer" -> ChestData("fer", 400, goldMin = 130, goldMax = 220, rarity = "rare")
-            else -> ChestData("runique", 900, goldMin = 380, goldMax = 550, rarity = "epic")
+        val expires = System.currentTimeMillis() + CHEST_LIFETIME_MS
+        val chest = when (type) {
+            "bois" -> ChestData("bois", 150, goldMin = 40, goldMax = 80, rarity = "uncommon", expiresAt = expires)
+            "fer" -> ChestData("fer", 400, goldMin = 130, goldMax = 220, rarity = "rare", expiresAt = expires)
+            else -> ChestData("runique", 900, goldMin = 380, goldMax = 550, rarity = "epic", expiresAt = expires)
+        }
+        if (state.chest == null) {
+            state.chest = chest
+        } else {
+            state.chestQueue = state.chestQueue + chest
+        }
+        return true
+    }
+
+    fun expireChests(state: GameState, now: Long = System.currentTimeMillis()) {
+        val current = state.chest
+        if (current != null && current.expiresAt in 1..now) {
+            state.chest = null
+            state.journal = addJournal(state, "${chestTypeLabel(current.type)} disparu après 24 h", "bad")
+            if (state.mode == "chest") state.mode = "walk"
+        }
+        if (state.chestQueue.any { it.expiresAt in 1..now }) {
+            val expired = state.chestQueue.filter { it.expiresAt in 1..now }
+            expired.forEach {
+                state.journal = addJournal(state, "${chestTypeLabel(it.type)} disparu après 24 h", "bad")
+            }
+            state.chestQueue = state.chestQueue.filter { it.expiresAt !in 1..now }
+        }
+        if (state.chest == null && state.chestQueue.isNotEmpty()) {
+            state.chest = state.chestQueue.first()
+            state.chestQueue = state.chestQueue.drop(1)
+            if (state.mode == "chest") state.mode = "walk"
         }
     }
 
@@ -444,7 +589,7 @@ object GameEngine {
 
     fun addJournal(state: GameState, text: String, type: String = "neutral"): List<JournalEntry> {
         val entry = JournalEntry(text, nowTime(), type)
-        return (listOf(entry) + state.journal).take(10)
+        return (listOf(entry) + state.journal).take(80)
     }
 
     fun nextBoss(state: GameState): BossTemplate = bossFor(state.floor)

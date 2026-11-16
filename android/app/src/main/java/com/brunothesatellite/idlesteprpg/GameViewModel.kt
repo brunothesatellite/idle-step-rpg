@@ -22,6 +22,7 @@ import java.time.LocalDate
 data class UiState(
     val campOpen: Boolean = false,
     val settingsOpen: Boolean = false,
+    val journalOpen: Boolean = false,
     val selectedItem: Item? = null,
     val chestOpen: Boolean = false,
     val syncing: Boolean = false,
@@ -147,6 +148,14 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun closeCamp() { _ui.update { it.copy(campOpen = false) } }
     fun openSettings() { _ui.update { it.copy(settingsOpen = true) } }
     fun closeSettings() { _ui.update { it.copy(settingsOpen = false) } }
+    fun openJournal() { _ui.update { it.copy(journalOpen = true) } }
+    fun closeJournal() { _ui.update { it.copy(journalOpen = false) } }
+
+    fun dismissOfflineReport() {
+        viewModelScope.launch {
+            container.gameRepository.mutate { it.offlineReport = null }
+        }
+    }
 
     fun selectItem(item: Item) { _ui.update { it.copy(selectedItem = item) } }
     fun dismissItem() { _ui.update { it.copy(selectedItem = null) } }
