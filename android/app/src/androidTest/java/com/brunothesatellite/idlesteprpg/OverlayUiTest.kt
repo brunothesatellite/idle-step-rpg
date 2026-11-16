@@ -7,10 +7,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
+import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.ui.ChestDialog
 import com.brunothesatellite.idlesteprpg.ui.ItemDialog
 import com.brunothesatellite.idlesteprpg.ui.MarcheTheme
 import com.brunothesatellite.idlesteprpg.ui.OnboardingOverlay
+import com.brunothesatellite.idlesteprpg.ui.SpecialResultDialog
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,5 +91,20 @@ class OverlayUiTest {
         rule.onNodeWithText("SUIVANT").performClick()
         rule.onNodeWithText("GARMIN PERSONAL API").assertExists()
         rule.onNodeWithText("PASSER").performClick()
+    }
+
+    @Test
+    fun gambleResultIsVisible() {
+        rule.setContent {
+            MarcheTheme {
+                SpecialResultDialog(
+                    outcome = SpecialOutcome("Pari perdu · −100 or", false),
+                    onDismiss = {}
+                )
+            }
+        }
+        rule.onNodeWithText("RÉSULTAT").assertExists()
+        rule.onNodeWithText("Pari perdu · −100 or").assertExists()
+        rule.onNodeWithText("CONTINUER").assertExists()
     }
 }

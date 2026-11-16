@@ -1,5 +1,10 @@
 # Journal des versions
 
+## v0.4.2
+- Fenêtre **RÉSULTAT** après chaque rencontre spéciale : pari gagné/perdu, achat, offrande, soin.
+- Plus de toasts empilés : un seul toast à la fois, remplacé par le suivant.
+- Achat d'améliorations sans toast répétitif : la carte et l'or se mettent à jour directement.
+
 ## v0.4.0 — à venir
 
 ### Robustesse

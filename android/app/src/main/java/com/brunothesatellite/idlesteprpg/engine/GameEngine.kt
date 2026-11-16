@@ -17,6 +17,11 @@ data class OfflineSim(
     val kills: Int
 )
 
+data class SpecialOutcome(
+    val text: String,
+    val good: Boolean
+)
+
 object GameEngine {
 
     private val rnd = Random.Default
@@ -286,59 +291,71 @@ object GameEngine {
         return true
     }
 
-    fun resolveSpecial(state: GameState, accept: Boolean) {
-        val special = state.special ?: return
-        var done = false
-        var customMessage: String? = null
+    fun resolveSpecial(state: GameState, accept: Boolean): SpecialOutcome {
+        val special = state.special ?: return SpecialOutcome("Aucune rencontre.", false)
+        var outcome: SpecialOutcome? = null
         if (accept) {
             when (special.type) {
-                "autel" -> if (state.shards >= special.shardCost) {
+                "autel" -> outcome = if (state.shards >= special.shardCost) {
                     state.shards -= special.shardCost
                     gainXp(state, 180)
-                    done = true
+                    SpecialOutcome("Offrande acceptée · +180 XP", true)
+                } else {
+                    SpecialOutcome("2 éclats requis.", false)
                 }
-                "source" -> if (state.rations >= special.rationCost) {
+                "source" -> outcome = if (state.rations >= special.rationCost) {
                     state.rations -= special.rationCost
                     state.hp = statsOf(state).maxHp.toDouble()
-                    done = true
+                    SpecialOutcome("PV entièrement restaurés.", true)
+                } else {
+                    SpecialOutcome("1 ration requise.", false)
                 }
-                "marchand" -> if (special.offer != null && state.gold >= special.goldCost) {
-                    state.gold -= special.goldCost
-                    addLoot(state, special.offer)
-                    done = true
+                "marchand" -> {
+                    val offer = special.offer
+                    outcome = if (offer != null && state.gold >= special.goldCost) {
+                        state.gold -= special.goldCost
+                        addLoot(state, offer)
+                        SpecialOutcome("${offer.name} acheté.", true)
+                    } else {
+                        SpecialOutcome("Or insuffisant.", false)
+                    }
                 }
-                "statue" -> if (state.gold >= special.goldCost) {
+                "statue" -> outcome = if (state.gold >= special.goldCost) {
                     state.gold -= special.goldCost
                     state.ferveur = min(100, state.ferveur + 15)
                     state.lastStepAt = System.currentTimeMillis()
                     state.shards = min(12, state.shards + 1)
-                    done = true
+                    SpecialOutcome("Ferveur +15 · +1 éclat.", true)
+                } else {
+                    SpecialOutcome("100 or requis.", false)
                 }
-                "risque" -> if (state.gold >= special.goldCost) {
+                "risque" -> outcome = if (state.gold >= special.goldCost) {
                     state.gold -= special.goldCost
                     if (rnd.nextDouble() < 0.45) {
                         state.gold += 300
                         state.goldEarned += 200
-                        done = true
-                        customMessage = "Pari gagné · +300 or"
+                        SpecialOutcome("Pari gagné · +300 or", true)
                     } else {
-                        customMessage = "Pari perdu · −100 or"
+                        SpecialOutcome("Pari perdu · −100 or", false)
                     }
+                } else {
+                    SpecialOutcome("100 or requis.", false)
                 }
             }
         }
+        val finalOutcome = outcome ?: SpecialOutcome(
+            "${special.title} · passé sans s'arrêter",
+            false
+        )
         state.journal = addJournal(
             state,
-            customMessage ?: when {
-                done -> "${special.title} · ${special.rewardText}"
-                accept -> "${special.title} · ressource insuffisante"
-                else -> "${special.title} · passé sans s'arrêter"
-            },
-            if (done) "good" else "neutral"
+            finalOutcome.text,
+            if (finalOutcome.good) "good" else "neutral"
         )
         state.special = null
         state.mode = "walk"
         state.nextFight += 10
+        return finalOutcome
     }
 
     fun ingestSteps(state: GameState, totalSteps: Int, date: LocalDate = LocalDate.now()) {

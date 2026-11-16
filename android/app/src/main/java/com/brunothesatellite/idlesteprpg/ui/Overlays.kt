@@ -70,6 +70,7 @@ import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.JournalEntry
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
+import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
 import com.brunothesatellite.idlesteprpg.engine.effectDescription
 import com.brunothesatellite.idlesteprpg.engine.effectLabel
@@ -1335,6 +1336,40 @@ private fun SpecialCost(label: String, affordable: Boolean) {
             .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
         Text(label, fontSize = 6.5.sp, color = if (affordable) Gold else Blood)
+    }
+}
+
+@Composable
+fun SpecialResultDialog(outcome: SpecialOutcome, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.fillMaxWidth().padding(26.dp), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Brush.verticalGradient(listOf(Color(0xFF251A31), Color(0xFF130E1C))))
+                    .border(
+                        1.dp,
+                        if (outcome.good) Green.copy(alpha = 0.7f) else Blood.copy(alpha = 0.7f),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("RÉSULTAT", fontFamily = Press, fontSize = 10.sp, color = GoldLight)
+                Spacer(Modifier.height(9.dp))
+                Text(
+                    outcome.text,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (outcome.good) Green else Blood,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 15.sp
+                )
+                Spacer(Modifier.height(14.dp))
+                OverlayAction("CONTINUER", Modifier.fillMaxWidth(), onDismiss, primary = true)
+            }
+        }
     }
 }
 

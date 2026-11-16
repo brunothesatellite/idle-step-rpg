@@ -51,6 +51,7 @@ import com.brunothesatellite.idlesteprpg.ui.OnboardingOverlay
 import com.brunothesatellite.idlesteprpg.ui.Scene
 import com.brunothesatellite.idlesteprpg.ui.SettingsOverlay
 import com.brunothesatellite.idlesteprpg.ui.SpecialDialog
+import com.brunothesatellite.idlesteprpg.ui.SpecialResultDialog
 
 class MainActivity : ComponentActivity() {
 
@@ -108,8 +109,14 @@ private fun GameRoot(vm: GameViewModel) {
     }
 
     LaunchedEffect(Unit) {
+        var toast: android.widget.Toast? = null
         vm.toasts.collect { message ->
-            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+            toast?.cancel()
+            toast = android.widget.Toast.makeText(
+                context,
+                message,
+                android.widget.Toast.LENGTH_SHORT
+            ).also { it.show() }
         }
     }
 
@@ -117,11 +124,12 @@ private fun GameRoot(vm: GameViewModel) {
         enabled = ui.campOpen || ui.settingsOpen || ui.prefsOpen ||
             ui.selectedItem != null || ui.chestOpen || ui.journalOpen ||
             state.offlineReport?.acknowledgedAt == 0L || state.special != null ||
-            ui.pendingImport != null || !ui.onboardingDone
+            ui.pendingImport != null || !ui.onboardingDone || ui.specialOutcome != null
     ) {
         when {
             !ui.onboardingDone -> vm.completeOnboarding()
             ui.pendingImport != null -> vm.cancelImport()
+            ui.specialOutcome != null -> vm.dismissSpecialOutcome()
             state.special != null -> vm.resolveSpecial(false)
             state.offlineReport?.acknowledgedAt == 0L -> vm.dismissOfflineReport()
             ui.selectedItem != null -> vm.dismissItem()
@@ -277,6 +285,12 @@ private fun GameRoot(vm: GameViewModel) {
                     state = state,
                     onAccept = { vm.resolveSpecial(true) },
                     onDecline = { vm.resolveSpecial(false) }
+                )
+            }
+            ui.specialOutcome?.let { outcome ->
+                SpecialResultDialog(
+                    outcome = outcome,
+                    onDismiss = vm::dismissSpecialOutcome
                 )
             }
             state.offlineReport?.takeIf { it.acknowledgedAt == 0L }?.let { report ->

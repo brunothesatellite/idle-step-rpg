@@ -110,7 +110,7 @@ L'architecture Android proposée (Kotlin/Compose, APK sideloadé, **Garmin Perso
 
 ## Version Android (APK)
 
-La version native **v0.4.0** est dans `android/` :
+La version native **v0.4.2** est dans `android/` :
 
 - **Kotlin + Jetpack Compose**, `minSdk 34` (Android 14+), package `com.brunothesatellite.idlesteprpg`.
 - **Texte ajustable** (Normal / Grand / Très grand), Grand par défaut, mise en page **paysage et tablette**.

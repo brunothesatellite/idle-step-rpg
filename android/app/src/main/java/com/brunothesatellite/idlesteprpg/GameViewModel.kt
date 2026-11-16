@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.brunothesatellite.idlesteprpg.data.SaveSummary
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.Item
+import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.engine.Upgrades
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +58,8 @@ data class UiState(
     val pendingImport: SaveSummary? = null,
     val dayBanner: String? = null,
     val updateTag: String? = null,
-    val updateUrl: String? = null
+    val updateUrl: String? = null,
+    val specialOutcome: SpecialOutcome? = null
 )
 
 class GameViewModel(private val container: AppContainer) : ViewModel() {
@@ -542,8 +544,14 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun resolveSpecial(accept: Boolean) {
         viewModelScope.launch {
-            container.gameRepository.mutate { GameEngine.resolveSpecial(it, accept) }
+            var outcome: SpecialOutcome? = null
+            container.gameRepository.mutate { outcome = GameEngine.resolveSpecial(it, accept) }
+            _ui.update { it.copy(specialOutcome = outcome) }
         }
+    }
+
+    fun dismissSpecialOutcome() {
+        _ui.update { it.copy(specialOutcome = null) }
     }
 
     fun selectItem(item: Item) { _ui.update { it.copy(selectedItem = item) } }
@@ -557,9 +565,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun buyUpgrade(key: String) {
         viewModelScope.launch {
-            var ok = false
-            container.gameRepository.mutate { ok = GameEngine.buyUpgrade(it, key) }
-            _toasts.tryEmit(if (ok) "Amélioration achetée." else "Or insuffisant.")
+            container.gameRepository.mutate { GameEngine.buyUpgrade(it, key) }
         }
     }
 

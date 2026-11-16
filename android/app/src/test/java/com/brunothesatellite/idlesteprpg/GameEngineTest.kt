@@ -262,11 +262,31 @@ class GameEngineTest {
             goldCost = 100,
             rewardText = "+15 ferveur"
         )
-        GameEngine.resolveSpecial(state, true)
+        val outcome = GameEngine.resolveSpecial(state, true)
+        assertTrue(outcome.good)
         assertEquals(100, state.gold)
         assertEquals(15, state.ferveur)
         assertNull(state.special)
         assertEquals("walk", state.mode)
+    }
+
+    @Test
+    fun gambleAnnouncesItsResult() {
+        val state = GameState()
+        state.gold = 200
+        state.mode = "special"
+        state.special = SpecialData(
+            type = "risque",
+            title = "COFFRE SCELLÉ",
+            text = "Test",
+            acceptLabel = "PARIER",
+            goldCost = 100,
+            rewardText = "300 or ou rien"
+        )
+        val outcome = GameEngine.resolveSpecial(state, true)
+        assertTrue(outcome.text.startsWith("Pari"))
+        assertTrue(outcome.text == "Pari gagné · +300 or" || outcome.text == "Pari perdu · −100 or")
+        assertNull(state.special)
     }
 
     @Test
