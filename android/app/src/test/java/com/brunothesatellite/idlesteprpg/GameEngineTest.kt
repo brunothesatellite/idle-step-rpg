@@ -93,12 +93,26 @@ class GameEngineTest {
         }
         val report = GameEngine.ingestHistory(state, days, today)
         assertNotNull(report)
-        assertEquals(20_000, report!!.steps)
-        assertEquals(20_000.0, state.stepBank, 0.001)
+        assertEquals(100_000, report!!.steps)
+        assertEquals(100_000.0, state.stepBank, 0.001)
 
         val again = GameEngine.ingestHistory(state, days, today)
         assertNull(again)
-        assertEquals(20_000.0, state.stepBank, 0.001)
+        assertEquals(100_000.0, state.stepBank, 0.001)
+    }
+
+    @Test
+    fun marathonDayIsImportedWithoutTruncation() {
+        val state = GameState()
+        val today = LocalDate.of(2026, 11, 16)
+        val report = GameEngine.ingestHistory(
+            state,
+            mapOf("2026-11-15" to 45_000),
+            today
+        )
+        assertNotNull(report)
+        assertEquals(45_000, report!!.steps)
+        assertEquals(45_000.0, state.stepBank, 0.001)
     }
 
     @Test
@@ -439,5 +453,57 @@ class GameEngineTest {
         state.consumables = emptyMap()
         GameEngine.dropConsumables(state, "chest", forcedCount = 3)
         assertEquals(3, state.consumables.values.sum())
+    }
+
+    @Test
+    fun fullInventoryKeepsTheBetterLoot() {
+        val state = GameState()
+        state.inventory = (1..24).map {
+            Item("weak_$it", "Vieux bidon $it", "weapon", "common", "item/spear2.png", 1, atk = 1, value = 1)
+        }
+        val strong = Item(
+            "strong", "Lame de test", "weapon", "rare", "item/long_sword3.png", 5,
+            atk = 80, value = 120
+        )
+        GameEngine.addLoot(state, strong)
+        assertEquals(24, state.inventory.size)
+        assertTrue(state.inventory.any { it.id == "strong" })
+        assertEquals(1, state.stash.size)
+    }
+
+    @Test
+    fun fullInventorySendsTheWorseLootToStash() {
+        val state = GameState()
+        state.inventory = (1..24).map {
+            Item("strong_$it", "Bonne lame $it", "weapon", "rare", "item/long_sword3.png", 5, atk = 80, value = 100)
+        }
+        val weak = Item(
+            "weak", "Vieux bidon", "weapon", "common", "item/spear2.png", 1,
+            atk = 1, value = 2
+        )
+        GameEngine.addLoot(state, weak)
+        assertEquals(24, state.inventory.size)
+        assertEquals(1, state.stash.size)
+        assertEquals("weak", state.stash.first().id)
+    }
+
+    @Test
+    fun lockedItemsAreNeverDisplaced() {
+        val state = GameState()
+        state.inventory = (1..24).map {
+            Item(
+                "locked_$it", "Objet verrouillé $it", "weapon", "common", "item/spear2.png", 1,
+                atk = 1, value = 1, locked = true
+            )
+        }
+        val strong = Item(
+            "strong", "Lame de test", "weapon", "rare", "item/long_sword3.png", 5,
+            atk = 80, value = 120
+        )
+        GameEngine.addLoot(state, strong)
+        assertEquals(24, state.inventory.size)
+        assertEquals(1, state.stash.size)
+        assertEquals("strong", state.stash.first().id)
+        assertTrue(state.inventory.all { it.locked })
     }
 }

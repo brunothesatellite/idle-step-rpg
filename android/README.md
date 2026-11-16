@@ -1,6 +1,8 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.6.0** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.6.1** — APK sideloadé pour Pixel 7a (Android 14+).
+
+**Manuel complet :** [`../manuel/index.html`](../manuel/index.html) · accessible dans l'app via `Réglages → Aide → Ouvrir le manuel du jeu`.
 
 ## Ce qui est implémenté
 
@@ -13,7 +15,7 @@ Version Android native du prototype. **v0.6.0** — APK sideloadé pour Pixel 7a
 - Clé et jeton **chiffrés dans Android Keystore** ; écran de clé protégé contre les captures (`FLAG_SECURE`).
 - Jeton OAuth2 Bearer **24 h**, sans refresh token : renouvellement automatique avec la clé.
 - Reset quotidien à **00:00 local**, aligné sur `calendarDate` Garmin.
-- **Historique Garmin 7 jours** : ledger par jour, rattrapage idempotent, plafond de 20 000 pas par synchronisation, contrôle 250 pas/min, **simulation hors ligne** (combats, or, paliers, victimes).
+- **Historique Garmin 7 jours** : ledger par jour, rattrapage idempotent, plafond de 100 000 pas par synchronisation, contrôle 250 pas/min, **simulation hors ligne** (combats, or, paliers, victimes).
 - **Serments journaliers variables**, série de jours, pas hebdomadaires, récompenses en or/éclats/objet.
 - **Combat animé** : dégâts/soins flottants, critiques distincts, flash, bannière de niveau, phase 2, bénédiction +25 %, modificateurs de gardien (rapide, blindé, berserk, régénérant, voleur).
 - **Journal complet** : 80 événements, filtres, **journal de légende** et **bestiaire**.
@@ -21,7 +23,7 @@ Version Android native du prototype. **v0.6.0** — APK sideloadé pour Pixel 7a
 - **Réglages** : taille du texte, notifications par catégorie, heures calmes, animations réduites, vibrations, journal de synchronisation, export/import avec aperçu, effacement.
 - **Onboarding** en quatre écrans, revoyable.
 - **Ferveur** : décroissance après 2 h, rattrapage hors ligne, aura.
-- **Inventaire avancé** : « Équiper le meilleur », tri/filtres, « Vendre les communs », verrouillage, fusion 3→1, objets non identifiés, ensembles 2/4/6, forge (reforge/amélioration/démontage), effets légendaires, coffre de camp détaillé.
+- **Inventaire avancé** : « Équiper le meilleur », tri/filtres, « Vendre les communs », verrouillage, fusion 3→1, objets non identifiés, ensembles 2/4/6, forge (reforge/amélioration/démontage), effets légendaires, coffre de camp détaillé. Sac plein : le meilleur objet reste dans le sac, le moins bon part au coffre.
 - **Consommables** : 12 objets de soin, ferveur, bombe et buffs temporaires, butin des monstres/coffres, sac en scène, au camp et en combat.
 - **Ressources visibles** : rations, éclats, or et consommables dans une carte Stats dédiée.
 - **Sons 8 bits** : effets originaux CC0, volume réglable, désactivation et test dans les réglages.
@@ -86,9 +88,9 @@ Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le tél
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.6.0
+## Limites de cette v0.6.1
 
-- L'historique Garmin est limité à 7 jours et à 20 000 pas de rattrapage par synchronisation.
+- L'historique Garmin est limité à 7 jours et à 100 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON versionné avec copie de secours, pas encore Room.
 - L'interface est en français uniquement.
 - Pas encore de sons intégrés : les alertes passent par les notifications et les vibrations.
@@ -101,4 +103,5 @@ Ou télécharger l'APK depuis les **GitHub Releases** et l'installer sur le tél
 - Spécifications : [docs/specifications-fonctionnelles.md](../docs/specifications-fonctionnelles.md)
 - Architecture et Garmin : [docs/architecture-android-garmin.md](../docs/architecture-android-garmin.md)
 - Licences : [LICENSES.md](../LICENSES.md)
+
 

@@ -1240,9 +1240,27 @@ object GameEngine {
     fun addLoot(state: GameState, item: Item) {
         if (state.inventory.size < INVENTORY_CAP) {
             state.inventory = state.inventory + item
+            return
+        }
+        val newScore = comparisonScore(item)
+        val worst = state.inventory
+            .filter { !it.locked }
+            .minByOrNull { comparisonScore(it) }
+        if (worst != null && newScore > comparisonScore(worst)) {
+            state.inventory = state.inventory.filter { it.id != worst.id } + item
+            state.stash = state.stash + worst
+            state.journal = addJournal(
+                state,
+                "Inventaire plein · ${itemDisplayName(worst)} au coffre, ${itemDisplayName(item)} conservé",
+                "neutral"
+            )
         } else {
             state.stash = state.stash + item
-            state.journal = addJournal(state, "Inventaire plein · ${item.name} au coffre de camp", "neutral")
+            state.journal = addJournal(
+                state,
+                "Inventaire plein · ${itemDisplayName(item)} au coffre",
+                "neutral"
+            )
         }
     }
 

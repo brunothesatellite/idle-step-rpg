@@ -200,7 +200,7 @@ Marcher
 - À la synchronisation, les pas sont appliqués à la **réserve de marche**, puis consommés par l'avancée.
 - Si le héros est immobilisé (combat, coffre en cours de forçage, campement), la réserve **attend** et s'applique dès la reprise.
 - La réserve n'est jamais perdue. Elle peut être consultée à tout moment (« pas en attente »).
-- **Plafond par synchronisation : 20 000 pas.** Au-delà, l'excédent est ignoré et un message pédagogique explique la limite.
+- **Plafond par synchronisation : 100 000 pas.** Au-delà, l'excédent est ignoré et un message pédagogique explique la limite. Ce plafond couvre un marathon (environ 45 000 pas) et plusieurs jours de rattrapage.
 - **Plafond journalier : 60 000 pas.** Au-delà, les pas restent dans le compteur de santé du téléphone mais ne nourrissent plus le jeu.
 
 ### 6.4 Simulation d'une journée
@@ -960,7 +960,7 @@ De haut en bas :
 | **Changement de fuseau** | La journée suit l'heure locale. Aucun pas n'est compté deux fois. |
 | **Changement d'appareil** | Les pas déjà synchronisés ne sont pas rejoués. La progression (or, stuff, paliers) est conservée. |
 | **Fermeture pendant un combat** | Au retour, le héros reprend à la dernière halte avec 50 % de PV. Le combat est abandonné sans perte. |
-| **Fermeture prolongée** | Les pas disponibles sont récupérés à la réouverture. La simulation hors ligne est résumée en une ligne (pas, combats, or, paliers). Plafond : 20 000 pas par synchronisation. |
+| **Fermeture prolongée** | Les pas disponibles sont récupérés à la réouverture. La simulation hors ligne est résumée en une ligne (pas, combats, or, paliers). Plafond : 100 000 pas par synchronisation (marathon/ultra couverts). |
 | **Pas suspects** | Les pas au-delà de 250/min en moyenne ou 60 000/jour ne sont pas comptés. Aucun bannissement, aucune perte. |
 | **Coffre non ouvert** | Conservé 24 h. Passé ce délai, il disparaît et le journal l'indique. |
 | **Coffre forcé au changement de jour** | La progression de la serrure est conservée 24 h. |

@@ -255,6 +255,20 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
+                SectionLabel("Aide")
+                Spacer(Modifier.height(5.dp))
+                OverlayAction(
+                    "OUVRIR LE MANUEL DU JEU",
+                    Modifier.fillMaxWidth(),
+                    onClick = {
+                        context.startActivity(
+                            Intent(context, com.brunothesatellite.idlesteprpg.ManualActivity::class.java)
+                        )
+                    }
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            PixelCard(Modifier.fillMaxWidth()) {
                 SectionLabel("Inventaire")
                 Spacer(Modifier.height(5.dp))
                 ToggleRow(

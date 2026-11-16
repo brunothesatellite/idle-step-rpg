@@ -13,7 +13,7 @@ const val ENCOUNTER_METERS = 10
 const val DAY_RESET_HOUR = 0
 const val MAX_STEPS_PER_DAY = 60_000
 const val HISTORY_DAYS = 7
-const val HISTORY_IMPORT_CAP = 20_000
+const val HISTORY_IMPORT_CAP = 100_000
 const val CHEST_LIFETIME_MS = 24L * 60L * 60L * 1000L
 const val CHEST_WARNING_MS = 60L * 60L * 1000L
 const val MAX_PENDING_CHESTS = 2
@@ -481,6 +481,20 @@ fun itemScore(item: Item): Int {
     return (item.atk * 2 + item.hp * 0.25 + item.vitPct * 3 +
         item.critPct * 4 + item.regen * 20 + effectBonus).roundToInt()
 }
+
+fun rarityRank(rarity: String): Int = when (rarity) {
+    "legendary" -> 5
+    "epic" -> 4
+    "rare" -> 3
+    "uncommon" -> 2
+    else -> 1
+}
+
+fun comparisonScore(item: Item): Int =
+    if (item.identified) itemScore(item) else rarityRank(item.rarity) * 20 + item.level * 2
+
+fun itemDisplayName(item: Item): String =
+    if (item.identified) item.name else "Objet mystérieux"
 
 fun oathsFor(date: LocalDate): OathsState {
     val seed = date.dayOfYear

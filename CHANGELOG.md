@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.6.1
+- **Manuel utilisateur complet** en HTML (`manuel/index.html`) et intégré à l'application via `Réglages → Aide`.
+- 11 captures d'écran et explication de toutes les mécaniques.
+- **Plafond de rattrapage Garmin porté à 100 000 pas** par synchronisation (marathon/ultra couverts).
+- **Inventaire plein** : le meilleur objet reste dans le sac, le moins bon part au coffre ; objets verrouillés protégés.
+- Correction des notes de release GitHub (blocs de code mal échappés).
+
 ## v0.6.0
 - **Sons 8 bits intégrés** : combat, critique, dégâts, niveau, gardien, coffre, consommable, victoire, défaite, forge.
 - Sons originaux générés pour le projet, licence **CC0**.

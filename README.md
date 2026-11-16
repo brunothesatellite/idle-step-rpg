@@ -1,202 +1,325 @@
 # La Marche des Âmes
 
-**Maquette interactive d'un idle step RPG fantasy en pixel art.**
-Les pas réels du joueur font avancer un pèlerin dans un donjon infini. Le héros marche seul, combat seul, tombe parfois — et se relève toujours vingt mètres plus tôt, là où le farm est plus doux.
+**RPG de marche Android en pixel art.** Vos pas Garmin deviennent la distance parcourue par un pèlerin dans un donjon infini. Le héros marche, combat, ouvre des coffres et affronte les gardiens automatiquement ; vous intervenez sur l’équipement, le camp, les consommables et les choix.
 
-> **Prototype de démonstration.** Aucune donnée de marche réelle n'est lue : la maquette simule le compteur de pas pour rendre la boucle jouable immédiatement.
+- **Garmin Personal API uniquement** — aucun Health Connect.
+- **2FA Garmin dans le navigateur** — l’application ne voit jamais le mot de passe ni le code.
+- **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
+- **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Voir la maquette en ligne :** [brunothesatellite.github.io/idle-step-rpg](https://brunothesatellite.github.io/idle-step-rpg/)
+**Version :** 0.6.1 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
-**Dépôt :** [github.com/brunothesatellite/idle-step-rpg](https://github.com/brunothesatellite/idle-step-rpg)  
-**Licence :** [MIT](LICENSE)
-
----
-
-## Lancer la maquette
-
-1. Ouvrir `index.html` dans un navigateur récent (Chrome, Edge, Firefox).
-2. C'est tout. Aucun serveur, aucune installation, aucune dépendance externe : les sprites et les polices sont locaux.
-
-La maquette est optimisée pour un écran mobile portrait **390 × 844**. Sur ordinateur, elle s'affiche dans un cadre de téléphone avec une présentation à gauche. En dessous de 960 px de large, la présentation disparaît et l'écran devient plein cadre.
+[APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
+[Manuel HTML](manuel/index.html) ·
+[Manuel en ligne](https://brunothesatellite.github.io/idle-step-rpg/manuel/) ·
+[Démonstration web](https://brunothesatellite.github.io/idle-step-rpg/)
 
 ---
 
-## Ce que la maquette démontre
+## Aperçu
 
-### La scène (haut)
-
-- Donjon en pixel art avec parallaxe, arches, statues, torches, bannières, chaînes, brume et braises.
-- Héros animé (marche, frappe, aura de ferveur, épée et bouclier).
-- Monstres variés (gobelins, kobolds, gnolls, orcs, squelettes, nagas, manticores, goules, élémentaires…), dont des **élites**.
-- Rencontre automatique tous les **10 m**, gardien tous les **100 m**.
-- Barre de palier avec tête de gardien, nom du biome, or, jauge de ferveur et compteur de pas.
-- Porte runique, présage de gardien, bannières de combat, nombre de dégâts, butin flottant, écran de repli.
-
-### La boucle de pas
-
-- **10 pas = 1 mètre** ; **1 000 pas = 1 palier**.
-- Le bouton **Synchroniser les pas** ajoute les pas en attente, remplit la ferveur et convertit les seuils en rations et éclats d'âme.
-- Les pas alimentent aussi la **réserve de marche** : les mètres sont consommés progressivement, combat après combat.
-- Une simulation de marche lente entretient la scène entre deux synchronisations.
-
-### Les combats et la défaite
-
-- Combats entièrement automatiques : cadence, critiques, régénération, ration d'urgence à 25 % des PV, phase 2 du gardien.
-- En cas de défaite, le héros recule de **20 m**, revient à 60 % de ses PV et entre en **farm de halte** (ennemis affaiblis, butin réduit, soin à chaque kill).
-- Le farm se déclenche réellement dans la maquette si le héros tombe. Il est aussi accessible par un raccourci de revue (`#farm`).
-
-### Le campement
-
-- Accessible à tout moment depuis le bouton flamme de la scène.
-- L'expédition est mise en pause, les pas réels continuent de s'accumuler et sont appliqués à la reprise.
-- Soin par ration (+40 % PV) ou par éclat d'âme (PV complets).
-- Journal des dernières braises, bilan de la veillée, conseil du feu.
-- Gestion de l'équipement accessible depuis le camp.
-
-### Le tableau de bord (bas)
-
-- **Stats** : puissance, ATQ, PV, VIT, ferveur détaillée, serments du jour, journal.
-- **Inventaire** : 6 emplacements équipés, butin, comparaison avant équipement, vente d'objet et vente en masse des communs.
-- **Améliorations** : trois pistes (Lame affûtée, Souffle ancien, Pas vifs), coûts croissants, or, aperçu du prochain gardien.
-- **Bouton de synchronisation** pleine largeur, avec pas en attente et dernière synchro.
+<div>
+  <img src="manuel/images/home.jpg" alt="Écran principal de La Marche des Âmes" width="250">
+  <img src="manuel/images/inventory_gear.jpg" alt="Inventaire et équipement" width="250">
+  <img src="manuel/images/camp.jpg" alt="Campement" width="250">
+</div>
 
 ---
 
-## Interactions à essayer
+## Le jeu en bref
 
-| Action | Résultat |
-|---|---|
-| **Synchroniser les pas** | Ajoute ~1 240 pas, remplit la ferveur, peut générer rations/éclats et déclencher les combats. |
-| Attendre quelques secondes | Le héros atteint 70 m et déclenche un combat automatique. |
-| **Coffre doré** sur le sol | Ouvre la fiche de serrure ; « Consacrer mes pas » lance le forçage et fige la marche. |
-| **Onglet Inventaire** | Toucher « Épée ancienne » ouvre la comparaison ; « Équiper » change les statistiques et l'arme du héros. |
-| **Onglet Améliorations** | Acheter une amélioration dépense l'or, augmente la statistique et le coût suivant. |
-| **Bouton feu de camp** | Ouvre le camp, met le jeu en pause, permet de se soigner ou de gérer l'équipement. |
-| **Gérer l'équipement** (camp) | Ferme le camp et bascule sur l'inventaire. |
-| **Vendre les communs** | Vend tous les objets communs du butin. |
-| Attendre le gardien | À 100 m, le gardien scelle le palier ; le vaincre ouvre le palier suivant. |
-| **Échap** | Ferme le camp ou la fiche ouverte. |
+- **10 pas = 1 mètre**, **100 m = un palier**. Un gardien attend à 100 m.
+- Le héros consomme automatiquement la réserve de pas : marche, rencontres tous les 10 m, combats, coffres, gardiens.
+- Les combats sont automatiques : ATQ, PV, VIT, critique, régénération, ferveur, équipement, buffs.
+- Le **camp** met la marche en pause, réinitialise un combat, soigne, donne accès au journal, à l’inventaire et aux potions.
+- Les **coffres** restent 24 h, deux maximum en attente. Ils ne bloquent jamais la route.
+- Les **serments journaliers**, la **ferveur**, les **consommables**, la **forge**, les **ensembles** et les **rencontres spéciales** ajoutent de la profondeur.
+- Le **reset quotidien** se fait à **00:00 local**, en accord avec le `calendarDate` Garmin.
 
-### Raccourcis de revue
+### Boucle quotidienne
 
-Pour montrer un état précis sans attendre, ouvrir l'URL avec un fragment :
-
-- `index.html#camp` — campement ouvert
-- `index.html#inventory` — onglet Inventaire
-- `index.html#upgrades` — onglet Améliorations
-- `index.html#chest` — fiche du coffre de démonstration
-- `index.html#sheet` — fiche de l'Épée ancienne
-- `index.html#fight` — combat immédiat à 70 m
-- `index.html#boss` — gardien du palier à 100 m
-- `index.html#farm` — zone de repli et farm de halte
+1. Vous marchez avec votre montre Garmin.
+2. Garmin Connect reçoit les pas, puis l’application synchronise via la Personal API.
+3. L’application importe les **7 derniers jours** (plafond **100 000 pas** par synchronisation, un marathon fait environ 45 000 pas).
+4. Les pas alimentent la réserve de marche et la ferveur.
+5. Le héros avance, combat, ramasse, et vous gérez le camp et l’équipement.
 
 ---
 
-## Ce qui est simulé volontairement
+## Manuel utilisateur
 
-Cette maquette est une **tranche verticale de présentation**, pas un build de production :
+Le manuel complet contient les mécaniques, les tableaux, les écrans et la FAQ.
 
-- les pas sont simulés (pas de capteur réel) ;
-- les combats sont raccourcis pour être observables en quelques secondes ;
-- le farm de halte dure trois ennemis au lieu de vingt minutes ;
-- pas encore de sauvegarde, de reset quotidien à 00:00 ni de récupération hors ligne détaillée ;
-- l'équilibrage est celui de la démonstration, pas la courbe finale.
+- **Dans l’application** : `Réglages → Aide → Ouvrir le manuel du jeu`.
+- **HTML dans le dépôt** : [`manuel/index.html`](manuel/index.html)
+- **En ligne** : <https://brunothesatellite.github.io/idle-step-rpg/manuel/>
+- **Captures** : [`manuel/images/`](manuel/images/)
 
-Les règles complètes, les formules, les tableaux d'équilibrage, les cas limites, l'accessibilité et les critères d'acceptation sont dans **[docs/specifications-fonctionnelles.md](docs/specifications-fonctionnelles.md)**.
-
-L'architecture Android proposée (Kotlin/Compose, APK sideloadé, **Garmin Personal API uniquement**, 2FA, jeton OAuth, clé et date d'expiration, WorkManager, sans Health Connect) est détaillée dans **[docs/architecture-android-garmin.md](docs/architecture-android-garmin.md)**.
+Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouvre hors ligne dans une activité WebView native.
 
 ---
 
-## Version Android (APK)
+## Installation Android
 
-La version native **v0.6.0** est dans `android/` :
+### Depuis GitHub Releases
 
-- **Kotlin + Jetpack Compose**, `minSdk 34` (Android 14+), package `com.brunothesatellite.idlesteprpg`.
-- **Texte ajustable** (Normal / Grand / Très grand), Grand par défaut, mise en page **paysage et tablette**.
-- **Icône adaptative ronde**, **porte du gardien** hors combat et **coffre dans le bandeau HUD**.
-- **Historique Garmin 7 jours** importé sans double comptage, **simulation hors ligne** (combats, or, paliers) et récapitulatif.
-- **Serments journaliers variables**, série de jours, pas hebdomadaires, récompenses automatiques.
-- **Combat animé** : dégâts/soins flottants, critiques distincts, bannière de niveau, phase 2, bénédiction et modificateurs de gardien.
-- **Journal complet** avec filtres, **journal de légende** et **bestiaire**.
-- **Coffres** conservés 24 h, 2 en attente, compte à rebours et alerte d'expiration.
-- **Réglages** : taille du texte, notifications par catégorie, heures calmes, animations, vibrations, journal de sync, export/import avec aperçu, effacement.
-- **Onboarding** en quatre écrans, revoyable depuis les réglages.
-- **Ferveur** qui décroît après 2 h et se rattrape hors ligne, avec aura.
-- **Inventaire avancé** : équiper le meilleur, tri/filtres, vendre les communs, verrouiller, fusionner, objets non identifiés, ensembles, forge, effets légendaires et coffre de camp.
-- **Consommables** : 12 objets de soin, ferveur, bombe et buffs temporaires, butin des monstres/coffres, sac accessible en scène, au camp et en combat.
-- **Ressources visibles** : rations, éclats, or et consommables dans une carte dédiée.
-- **Sons 8 bits** : effets originaux sous licence CC0, volume réglable et désactivation dans les réglages.
-- **Contenu** : biomes colorés avec météo, rencontres spéciales (autel, source, marchand, statue, pari), jalons complets, boss uniques 10/25/50/100.
-- **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil, mise à jour in-app.
-- **Qualité** : tests moteur, tests Garmin MockWebServer, tests UI Compose, lint et CI Android.
-- Scène pixel art, combats automatiques, gardiens, coffre, campement, inventaire, améliorations, journal.
-- **Garmin Personal API uniquement** : clé personnelle, échange contre un jeton OAuth2 de 24 h, aucun Health Connect.
-- **2FA Garmin dans le navigateur** : l'application ne voit jamais le mot de passe ni le code 2FA.
-- Écran de compte Garmin : clé masquée, date d'expiration modifiable, test/synchronisation, révocation, jeton et dernière sync.
-- Reset quotidien à **00:00 local**, aligné sur Garmin.
-- Clé et jeton chiffrés dans **Android Keystore** ; écran de clé protégé contre les captures.
-- Synchronisation à l'ouverture, bouton manuel et **WorkManager** toutes les 30 minutes.
+1. Téléchargez le dernier APK : [releases/latest](https://github.com/brunothesatellite/idle-step-rpg/releases/latest).
+2. Sur le téléphone, autorisez l’installation d’applications inconnues pour le navigateur ou le gestionnaire de fichiers.
+3. Ouvrez l’APK et installez-le.
 
-**Installer la dernière version :** [GitHub Releases](https://github.com/brunothesatellite/idle-step-rpg/releases/latest)
+### Avec ADB
 
 ```bash
-adb install -r app-release.apk
+adb install -r La-Marche-des-Ames-v0.6.1.apk
 ```
 
-Ou télécharger l'APK sur le téléphone et autoriser « Installer des applis inconnues ». Le build de release est signé ; le keystore et ses mots de passe ne sont **pas** dans le dépôt.
+Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.
 
-**Première ouverture :** aller dans **Compte Garmin** (bouton G ou « Connecter Garmin »), ouvrir Garmin Connect, se connecter avec la 2FA, créer une clé Personal API, la coller dans l'application, puis renseigner sa date d'expiration. Garmin n'expose pas cette date via l'API : c'est l'utilisateur qui la saisit, pour les rappels.
+---
 
-**Build local :**
+## Connecter Garmin (clé Personal API)
+
+1. Ouvrez l’application → **Compte Garmin** (bouton `G` ou « Connecter Garmin »).
+2. Appuyez sur **Ouvrir Garmin Connect**. La connexion et la **2FA** se font dans le navigateur.
+3. Dans Garmin Connect, créez une **Personal API Key** et copiez-la.
+4. Revenez dans l’application, collez la clé.
+5. Renseignez la **date d’expiration** : Garmin ne l’expose pas via l’API, c’est vous qui la saisissez pour les rappels.
+6. Appuyez sur **Tester et enregistrer**, puis **Synchroniser**.
+
+La clé est échangée contre un **jeton OAuth2 de 24 h**. Il n’y a pas de refresh token : l’application redemande un jeton avec la clé. Clé et jeton sont chiffrés dans **Android Keystore**.
+
+### En cas de problème
+
+| Code | Signification | Action |
+|---|---|---|
+| 401 | Clé invalide, expirée ou révoquée | Créer une nouvelle clé et la coller. |
+| 403 | Accès refusé | Vérifier la clé Garmin. |
+| 429 | Trop de requêtes | Attendre le délai indiqué. |
+| 5xx | Garmin indisponible | Réessayer plus tard. |
+
+Si Garmin renvoie toujours le même total, la montre n’a pas encore poussé ses pas. Ouvrez Garmin Connect, laissez la montre synchroniser, puis resynchronisez.
+
+> **Sécurité :** ne committez jamais une clé Garmin. Si elle a été exposée, révoquez-la dans Garmin Connect et créez-en une nouvelle.
+
+---
+
+## Compiler
+
+### Prérequis
+
+- **JDK 21** (Temurin recommandé).
+- **Android SDK 35** et build-tools 35.0.0.
+- Le wrapper Gradle est fourni (`gradlew`, `gradlew.bat`).
+
+### Debug
 
 ```bash
 cd android
-# JDK 21 et Android SDK 35 sont nécessaires
+./gradlew :app:assembleDebug
+```
+
+Le build debug utilise le package `com.brunothesatellite.idlesteprpg.debug` et peut cohabiter avec la version release.
+
+### Release signé
+
+Le build release lit `../.keystore/keystore.properties` (local, ignoré par Git) :
+
+```properties
+storeFile=idle-step-rpg-release.jks
+storePassword=...
+keyAlias=idle-step-rpg
+keyPassword=...
+```
+
+Puis :
+
+```bash
+cd android
 ./gradlew :app:assembleRelease
 ```
 
-Le build de release lit `../.keystore/keystore.properties` (fichier local ignoré par Git). Sans ce fichier, seul le build debug peut être généré.
+APK : `android/app/build/outputs/apk/release/app-release.apk`  
+AAB : `android/app/build/outputs/bundle/release/app-release.aab`
 
-> **Sécurité** : ne jamais committer une clé Garmin. Si une clé a été exposée, la révoquer sur Garmin Connect et en créer une nouvelle.
+Sans keystore, seul le build debug est possible. Le keystore et les mots de passe ne sont **jamais** dans le dépôt.
+
+### Tests et lint
+
+```bash
+# Tests moteur
+./gradlew :app:testDebugUnitTest
+
+# Tests UI Compose (sur appareil/émulateur, package .debug)
+./gradlew :app:connectedDebugAndroidTest
+
+# Android lint
+./gradlew :app:lintDebug
+```
+
+La CI GitHub exécute les tests, le lint et l’APK debug. Un workflow de release signée existe et s’active si les secrets de signature sont configurés.
 
 ---
 
-## Arborescence
+## Architecture
+
+```
+Garmin Personal API
+        │ HTTPS
+        ▼
+GarminClient ──► GarminRepository ──► GameRepository
+  (token, 429)     (7 jours, ledger)      │
+                                          ▼
+                                    GameEngine
+                              (simulation, combats, loot)
+                                          │ StateFlow<GameState>
+                                          ▼
+                                   GameViewModel
+                                          │
+                                          ▼
+                            Jetpack Compose / MainActivity
+```
+
+En parallèle :
+
+```
+WorkManager ──► GarminSyncWorker (30 min)
+            └► MaintenanceWorker (15 min : coffres, clé)
+```
+
+### Stack
+
+- **Kotlin**, **Jetpack Compose**, Material 3.
+- `minSdk 34`, `targetSdk 35`, un seul module `:app`.
+- **OkHttp** pour Garmin.
+- **kotlinx.serialization** pour la sauvegarde JSON.
+- **WorkManager** pour la synchronisation et la maintenance.
+- **Android Keystore** pour la clé et le jeton.
+- **SoundPool** pour les sons 8 bits.
+- **WebView native** pour le manuel hors ligne.
+
+### Paquets principaux
+
+| Chemin | Rôle |
+|---|---|
+| `App.kt` / `AppContainer` | Initialisation, dépendances, notifications, sons, WorkManager. |
+| `GameViewModel.kt` | État UI, tick 100 ms, synchronisation, réglages, overlays. |
+| `MainActivity.kt` | Composition racine, navigation entre scène et tableau de bord. |
+| `ManualActivity.kt` | Manuel HTML hors ligne. |
+| `engine/Model.kt` | État sérialisable, objets, consommables, buffs, ensembles, stats. |
+| `engine/GameEngine.kt` | Pas, combat, coffres, camp, forge, rencontres, simulation hors ligne. |
+| `data/GameRepository.kt` | Persistance JSON, copie de secours, import/export, tick, mutations. |
+| `data/SettingsStore.kt` | Préférences locales (texte, notifications, sons, etc.). |
+| `garmin/GarminClient.kt` | Endpoints Garmin Personal API, jeton, pas, erreurs 401/429. |
+| `garmin/GarminRepository.kt` | Synchronisation 7 jours, ledger, expiration de clé, journal de sync. |
+| `garmin/SecretStore.kt` | Chiffrement Keystore. |
+| `notify/GameNotifications.kt` | Canaux, catégories, heures calmes, deep links. |
+| `sync/` | Workers WorkManager. |
+| `widget/` | Widget d’écran d’accueil. |
+| `ui/` | Compose : scène, dashboard, overlays, réglages, onboarding, manuel. |
+| `assets/` | Sprites, sons, manuel et images. |
+
+### Données et persistance
+
+La sauvegarde est un fichier **JSON versionné** (`SAVE_VERSION = 2`) :
+
+- `game_state.json` : état du jeu.
+- `game_state.bak.json` : copie de secours (rotation).
+- écriture atomique via un fichier temporaire ;
+- validation à l’import ;
+- export/import avec aperçu ;
+- **aucune clé Garmin dans la sauvegarde**.
+
+Les évolutions de schéma utilisent des valeurs par défaut et `GameEngine.migrate()`. Une migration Room est dans le backlog, pas dans cette version.
+
+### Garmin
+
+- `POST /personalapitoken-service/personal-api/personal-api-key/token` avec `Authorization: ApiKey <clé>`.
+- `GET /usersummary-service/stats/steps/daily/{start}/{end}` avec `Authorization: Bearer <jeton>`.
+- Jeton JWT, expiration lue dans le payload, 24 h.
+- 7 jours d’historique, ledger par jour idempotent.
+- Plafond **100 000 pas** par synchronisation, **60 000 pas/jour**, contrôle **250 pas/min**.
+- Retry sur 401 (nouveau jeton) et backoff sur 429 (`Retry-After`).
+
+### Tests
+
+- Tests moteur : import multi-jours, plafonds, serments, reset, coffres, ferveur, forge, consommables, sets, camp, simulation, inventaire plein, marathon.
+- Tests Garmin : MockWebServer (401, 429, 204, JSON invalide, parsing du jeton).
+- Tests UI Compose : coffre, objet non identifié, onboarding, résultat de pari, consommables.
+
+---
+
+## Structure du dépôt
 
 ```
 idle-step-rpg/
-├── index.html                     # la maquette
-├── styles.css                     # direction artistique, scène, tableau de bord
-├── game.js                        # simulation, combats, camp, inventaire
-├── LICENSE                        # MIT
-├── LICENSES.md                    # récapitulatif des licences
+├── android/                 # application Android (Kotlin/Compose)
+│   ├── app/src/main/
+│   │   ├── java/...         # code
+│   │   ├── assets/          # sprites, sons, manuel
+│   │   └── res/             # thème, icône, widget
+│   ├── app/src/test/        # tests unitaires
+│   └── app/src/androidTest/ # tests UI
+├── manuel/                  # manuel HTML et captures
+│   ├── index.html
+│   └── images/
 ├── docs/
 │   ├── specifications-fonctionnelles.md
-│   └── architecture-android-garmin.md
-├── assets/
-│   ├── hero/                      # héros et pièces d'équipement visuel
-│   ├── mon/                       # monstres et gardiens
-│   ├── env/                       # murs, sols, statues, portes, arbres
-│   ├── item/                      # armes, armures, consommables, or
-│   ├── fx/                        # cœurs, flammes
-│   ├── fonts/                     # Pixelify Sans, Press Start 2P
-│   └── CREDITS.md                 # licences et sources
-└── README.md
+│   ├── architecture-android-garmin.md
+│   ├── consommables.md
+│   ├── privacy.md
+│   ├── play-store.md
+│   └── reste-a-faire.md
+├── assets/                  # assets de la démo web et du jeu
+├── index.html               # démo web
+├── styles.css
+├── game.js
+├── LICENSES.md
+└── .github/workflows/       # CI Android
 ```
 
 ---
 
-## Credits & licences
+## Confidentialité
 
-- **Pixel art** : [Dungeon Crawl Stone Soup — tiles](https://github.com/crawl/tiles), export `releases/Nov-2015`, publié sous **CC0 1.0**. Voir `assets/CREDITS.md` et le README du dépôt source pour les tuiles exclues de la réutilisation.
-- **Polices** : **Pixelify Sans** et **Press Start 2P**, Google Fonts, **SIL Open Font License 1.1**. Textes complets dans `assets/fonts/licenses/`.
-- **Code, textes et direction artistique originale** : © 2026 brunothesatellite, sous **licence MIT**. Voir `LICENSE`.
-- **Aucune ressource propriétaire** n'est utilisée.
-
-Le récapitulatif complet des licences est dans **[LICENSES.md](LICENSES.md)**.
+- Aucun compte propriétaire, aucun backend, aucune publicité, aucun traceur.
+- La clé Garmin et le jeton sont chiffrés localement.
+- Aucun Health Connect.
+- Les pas sont lus uniquement via la Garmin Personal API.
+- La politique complète est dans [`docs/privacy.md`](docs/privacy.md).
 
 ---
 
-*La Marche des Âmes — maquette de game design, 2026.*
+## Démonstration web
 
+La maquette d’origine reste disponible :
+
+- [`index.html`](index.html) — démonstration jouable ;
+- [`styles.css`](styles.css) ;
+- [`game.js`](game.js) ;
+- en ligne : <https://brunothesatellite.github.io/idle-step-rpg/>.
+
+Elle simule les pas (aucune montre réelle) et sert de référence de game design. Les spécifications complètes sont dans [`docs/specifications-fonctionnelles.md`](docs/specifications-fonctionnelles.md).
+
+---
+
+## Limites et backlog
+
+- Interface en **français** uniquement.
+- **Migration Room** non faite : sauvegarde JSON versionnée avec copie de secours.
+- **Publication Play Store** non prévue ; distribution APK/GitHub.
+- Équilibrage long terme, farm automatique à 0 pas et réduction automatique des animations sur batterie faible : backlog.
+- L’historique Garmin est limité à 7 jours et à 100 000 pas par synchronisation.
+- La synchronisation dépend de Garmin Connect : la montre doit avoir poussé ses pas.
+
+Voir [`docs/reste-a-faire.md`](docs/reste-a-faire.md).
+
+---
+
+## Licences et crédits
+
+- **Code, textes et direction artistique originale** : MIT — © 2026 brunothesatellite.
+- **Pixel art** : Dungeon Crawl Stone Soup contributors, CC0 1.0.
+- **Sons 8 bits** : générés pour ce projet, CC0 1.0 (`assets/audio/LICENSE.txt`).
+- **Polices** : Pixelify Sans et Press Start 2P, SIL Open Font License 1.1.
+
+Détails : [`LICENSES.md`](LICENSES.md), [`assets/CREDITS.md`](assets/CREDITS.md).

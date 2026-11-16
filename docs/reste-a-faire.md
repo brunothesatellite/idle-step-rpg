@@ -68,7 +68,7 @@ sont ajoutés à la réserve, puis les combats se déroulent en direct.
 
 À faire :
 
-- simuler en accéléré les pas récupérés (plafond 20 000) ;
+- simuler en accéléré les pas récupérés (plafond 100 000) ;
 - produire un bilan : pas, combats, or, paliers gravis, gardiens, butin ;
 - afficher ce bilan dans l’overlay hors ligne ;
 - conserver un mode « différé » si la simulation est trop longue.
