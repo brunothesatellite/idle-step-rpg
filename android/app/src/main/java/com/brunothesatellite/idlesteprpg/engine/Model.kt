@@ -77,7 +77,11 @@ data class FightData(
     var specialMs: Double = 8000.0,
     var usedRation: Boolean = false,
     var modifier: String = "",
-    var lastCrit: Boolean = false
+    var lastCrit: Boolean = false,
+    var ability: String = "",
+    var abilityLabel: String = "",
+    var abilityFlashMs: Double = 0.0,
+    var shieldMs: Double = 0.0
 )
 
 @Serializable
@@ -357,6 +361,91 @@ fun biomeDefFor(floor: Int): BiomeDefinition =
 fun biomeKeyFor(floor: Int): String = biomeDefFor(floor).key
 
 fun biomeFor(floor: Int): String = biomeDefFor(floor).name
+
+data class BiomeRule(
+    val id: String,
+    val label: String,
+    val description: String,
+    val atkPct: Double = 0.0,
+    val hpPct: Double = 0.0,
+    val vitPct: Double = 0.0,
+    val crit: Int = 0,
+    val regen: Double = 0.0,
+    val damageReduction: Double = 0.0,
+    val bossDamage: Double = 0.0,
+    val enemyHpMult: Double = 1.0,
+    val enemyAtkMult: Double = 1.0,
+    val enemyIntervalMult: Double = 1.0
+)
+
+fun biomeRuleFor(floor: Int): BiomeRule = when (biomeKeyFor(floor)) {
+    "crypts" -> BiomeRule(
+        "crypts", "Veillée des cryptes", "+3 % critique · ennemis fragilisés",
+        crit = 3, enemyHpMult = 0.95
+    )
+    "catacombs" -> BiomeRule(
+        "catacombs", "Passages étroits", "+6 % VIT · ennemis plus lents",
+        vitPct = 0.06, enemyIntervalMult = 1.05
+    )
+    "ash" -> BiomeRule(
+        "ash", "Air empoisonné", "+10 % ATQ · régénération réduite · ennemis agressifs",
+        atkPct = 0.10, regen = -0.15, enemyAtkMult = 1.10, enemyHpMult = 0.95
+    )
+    "forge" -> BiomeRule(
+        "forge", "Peaux de fer", "−6 % dégâts subis · ennemis plus résistants",
+        damageReduction = 0.06, enemyHpMult = 1.10, enemyAtkMult = 0.95
+    )
+    "peaks" -> BiomeRule(
+        "peaks", "Vent glacial", "+8 % VIT · −5 % PV max · ennemis rapides",
+        vitPct = 0.08, hpPct = -0.05, enemyIntervalMult = 0.90
+    )
+    "woods" -> BiomeRule(
+        "woods", "Sève ancienne", "+0,5 PV/s · ennemis coriaces",
+        regen = 0.5, enemyHpMult = 0.95, enemyAtkMult = 1.05
+    )
+    "abyss" -> BiomeRule(
+        "abyss", "Acidité", "+12 % ATQ · −5 % PV max · ennemis fragiles mais violents",
+        atkPct = 0.12, hpPct = -0.05, enemyHpMult = 0.90, enemyAtkMult = 1.10
+    )
+    else -> BiomeRule(
+        "throne", "Pression des âmes", "+12 % dégâts gardiens · −8 % PV max · ennemis renforcés",
+        hpPct = -0.08, bossDamage = 0.12, enemyHpMult = 1.10, enemyAtkMult = 1.10
+    )
+}
+
+data class BossAbility(val id: String, val label: String)
+
+fun bossAbilityFor(name: String, floor: Int): BossAbility {
+    val n = name.lowercase()
+    return when {
+        n.contains("liche") || n.contains("roi des cryptes") ->
+            BossAbility("drain", "DRAIN D'ÂME")
+        n.contains("hydre") -> BossAbility("regen", "RÉGÉNÉRATION")
+        n.contains("tréant") || n.contains("dryade") || n.contains("chasseur d'épines") ||
+            n.contains("rôdeur des lianes") -> BossAbility("roots", "RACINES")
+        n.contains("vase") || n.contains("zyme") || n.contains("horreur") ||
+            n.contains("orbe d'yeux") -> BossAbility("acid", "ACIDE")
+        n.contains("dragon") || n.contains("wyverne") -> BossAbility("breath", "SOUFFLE")
+        n.contains("forge") || n.contains("géant de fer") || n.contains("gardien de cristal") ||
+            n.contains("serviteur runique") || n.contains("golem") -> BossAbility("shield", "BLINDAGE")
+        n.contains("asmodee") || n.contains("asmode") || n.contains("dispater") ||
+            n.contains("éreshkigal") || n.contains("gloorx") || n.contains("mnoleg") ||
+            n.contains("âme première") || n.contains("mère des abysses") ->
+            BossAbility("pressure", "PRESSION")
+        n.contains("balrug") || n.contains("démon solaire") || n.contains("flagellant") ||
+            n.contains("sentinelle") || n.contains("bourreau") || n.contains("faucheur") ||
+            n.contains("mangeur") -> BossAbility("slam", "FRAPPE LOURDE")
+        else -> when (biomeKeyFor(floor)) {
+            "crypts" -> BossAbility("drain", "DRAIN D'ÂME")
+            "catacombs", "woods" -> BossAbility("roots", "RACINES")
+            "ash" -> BossAbility("slam", "FRAPPE LOURDE")
+            "forge" -> BossAbility("shield", "BLINDAGE")
+            "peaks" -> BossAbility("breath", "SOUFFLE")
+            "abyss" -> BossAbility("acid", "ACIDE")
+            else -> BossAbility("pressure", "PRESSION")
+        }
+    }
+}
 
 val CRYPT_POOL = MobPool(
     easy = listOf(
@@ -980,6 +1069,14 @@ fun statsOf(state: GameState): Stats {
             "vulnerable" -> damageTaken += buff.magnitude
         }
     }
+    val rule = biomeRuleFor(state.floor)
+    atk = (atk * (1.0 + rule.atkPct)).roundToInt()
+    maxHp = (maxHp * (1.0 + rule.hpPct)).roundToInt()
+    vit *= 1.0 + rule.vitPct
+    crit += rule.crit
+    regen += rule.regen
+    damageReduction += rule.damageReduction
+    bossDamage += rule.bossDamage
     return Stats(
         atk = atk,
         maxHp = maxHp,

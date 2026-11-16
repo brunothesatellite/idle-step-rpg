@@ -43,6 +43,9 @@ import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.bossFor
+import com.brunothesatellite.idlesteprpg.engine.bossAbilityFor
+import com.brunothesatellite.idlesteprpg.engine.biomeFor
+import com.brunothesatellite.idlesteprpg.engine.biomeRuleFor
 import com.brunothesatellite.idlesteprpg.engine.CONSUMABLES
 import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
 import com.brunothesatellite.idlesteprpg.engine.equipped
@@ -50,6 +53,7 @@ import com.brunothesatellite.idlesteprpg.engine.itemScore
 import com.brunothesatellite.idlesteprpg.engine.powerOf
 import com.brunothesatellite.idlesteprpg.engine.rarityLabel
 import com.brunothesatellite.idlesteprpg.engine.rankLabel
+import com.brunothesatellite.idlesteprpg.engine.setLabel
 import com.brunothesatellite.idlesteprpg.engine.slotLabel
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.tierName
@@ -117,7 +121,7 @@ fun Dashboard(
                 else -> StatsTab(state, ui, onOpenSettings, onSync, onOpenJournal)
             }
         }
-        SyncBar(state, ui, onSync, onOpenSettings)
+        SyncBar(state, ui, onSync, onOpenSettings, compact = activeTab != "stats")
     }
 }
 
@@ -300,6 +304,8 @@ private fun StatsTab(
     Spacer(Modifier.height(5.dp))
     ResourcesCard(state)
     Spacer(Modifier.height(5.dp))
+    BiomeCard(state)
+    Spacer(Modifier.height(5.dp))
     FerveurCard(state)
     Spacer(Modifier.height(5.dp))
     OathsCard(state)
@@ -326,6 +332,31 @@ private fun StatTile(icon: String, label: String, value: String, modifier: Modif
         Column {
             Text(label, fontSize = 5.5.sp, letterSpacing = 0.7.sp, color = Muted)
             Text(value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Parchment, maxLines = 1)
+        }
+    }
+}
+
+@Composable
+private fun BiomeCard(state: GameState) {
+    val rule = biomeRuleFor(state.floor)
+    PixelCard(
+        Modifier.fillMaxWidth(),
+        borderColor = Green.copy(alpha = 0.28f),
+        background = Panel2
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                SectionLabel("BIOME · ${biomeFor(state.floor)}")
+                Text(rule.label, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Green)
+                Text(rule.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
+            }
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "PALIER\n${state.floor.toString().padStart(2, '0')}",
+                fontSize = 6.sp,
+                color = Muted2,
+                textAlign = TextAlign.End
+            )
         }
     }
 }
@@ -731,6 +762,7 @@ private fun InventoryTab(
                         if (item != null) rarityColor(item.rarity).copy(alpha = 0.65f) else Line,
                         RoundedCornerShape(4.dp)
                     )
+                    .clickable(enabled = item != null) { item?.let(onSelectItem) }
                     .semantics {
                         contentDescription = "${slotLabel(slot)} : ${item?.name ?: "vide"}"
                     }
@@ -872,6 +904,7 @@ private fun InventoryTab(
         fontSize = 6.sp,
         color = Muted2
     )
+    Spacer(Modifier.height(8.dp))
 }
 
 private fun rarityRank(rarity: String): Int = when (rarity) {
@@ -1038,12 +1071,14 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
             when {
                 item.locked -> "VERROU"
                 !item.identified -> "NON IDENTIFIÉ"
+                item.setName.isNotBlank() -> "${rarityLabel(item.rarity)} · ${setLabel(item.setName).split(" ").first()}"
                 else -> rarityLabel(item.rarity)
             },
             fontSize = 4.5.sp,
             color = when {
                 item.locked -> Ember
                 !item.identified -> Ember
+                item.setName.isNotBlank() -> Gold
                 else -> rarityColor(item.rarity)
             },
             maxLines = 1
@@ -1085,6 +1120,12 @@ private fun UpgradesTab(
                 Text("PROCHAIN GARDIEN", fontSize = 5.sp, letterSpacing = 0.8.sp, color = Blood)
                 Text(boss.name, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = GoldLight)
                 Text("Palier ${state.floor.toString().padStart(2, '0')} · Niv. ${state.floor + 2}", fontSize = 6.sp, color = Muted)
+                Text(
+                    "CAPACITÉ · ${bossAbilityFor(boss.name, state.floor).label}",
+                    fontSize = 5.5.sp,
+                    color = Ember,
+                    maxLines = 1
+                )
             }
             Text("6× PV\nPHASE 2", fontSize = 5.5.sp, color = Ember, textAlign = TextAlign.End)
         }
@@ -1149,15 +1190,45 @@ private fun SyncBar(
     state: GameState,
     ui: UiState,
     onSync: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    compact: Boolean = false
 ) {
     Column(
         Modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(listOf(Color(0xFF100B19), Color(0xFF0C0813))))
             .border(1.dp, Gold.copy(alpha = 0.10f), RoundedCornerShape(0.dp))
-            .padding(horizontal = 12.dp, vertical = 7.dp)
+            .padding(horizontal = 12.dp, vertical = if (compact) 5.dp else 7.dp)
     ) {
+        if (compact) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        "Dernière sync · ${formatTime(ui.lastSync)}",
+                        fontSize = 6.sp,
+                        color = Muted2
+                    )
+                    Text(
+                        if (ui.lastAdded > 0) {
+                            "+${formatInt(ui.lastAdded)} pas"
+                        } else {
+                            "${formatInt(state.stepsToday)} pas aujourd'hui"
+                        },
+                        fontSize = 6.sp,
+                        color = if (ui.lastAdded > 0) Gold else Muted2
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                SmallAction(
+                    if (!ui.connected) "CONNECTER" else if (ui.syncing) "SYNC…" else "SYNC",
+                    Modifier.width(88.dp),
+                    onClick = if (ui.connected) onSync else onOpenSettings,
+                    primary = ui.connected,
+                    enabled = !ui.syncing
+                )
+            }
+            return@Column
+        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
                 "Dernière sync · ${formatTime(ui.lastSync)}",

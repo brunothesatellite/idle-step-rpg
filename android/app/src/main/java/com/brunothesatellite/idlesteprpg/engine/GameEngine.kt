@@ -7,6 +7,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -703,6 +704,7 @@ object GameEngine {
         }
         val t = pool[rnd.nextInt(pool.size)]
         val elite = rnd.nextDouble() < 0.10
+        val rule = biomeRuleFor(state.floor)
         var level = state.floor + when {
             pos < 30 -> -1
             pos < 70 -> 0
@@ -720,10 +722,10 @@ object GameEngine {
             enemyName = t.name,
             enemyIcon = t.icon,
             enemyLevel = level,
-            enemyHp = hp * depth,
-            enemyMaxHp = hp * depth,
-            enemyAtk = atk * depth,
-            enemyIntervalMs = if (elite) 1100 else 1250,
+            enemyHp = hp * depth * rule.enemyHpMult,
+            enemyMaxHp = hp * depth * rule.enemyHpMult,
+            enemyAtk = atk * depth * rule.enemyAtkMult,
+            enemyIntervalMs = ((if (elite) 1100 else 1250) * rule.enemyIntervalMult).roundToLong(),
             gold = gold,
             xp = xp,
             elite = elite
@@ -732,6 +734,8 @@ object GameEngine {
 
     private fun makeBoss(state: GameState): FightData {
         val t = bossFor(state.floor)
+        val ability = bossAbilityFor(t.name, state.floor)
+        val rule = biomeRuleFor(state.floor)
         val level = state.floor + 2
         val depth = depthMultiplier(state.floor, boss = true)
         var hp = 6.0 * (55 + 34 * (level - 1)) * depth
@@ -758,13 +762,16 @@ object GameEngine {
             enemyName = t.name + suffix,
             enemyIcon = t.icon,
             enemyLevel = level,
-            enemyHp = hp,
-            enemyMaxHp = hp,
-            enemyAtk = atk,
-            enemyIntervalMs = interval,
+            enemyHp = hp * rule.enemyHpMult,
+            enemyMaxHp = hp * rule.enemyHpMult,
+            enemyAtk = atk * rule.enemyAtkMult,
+            enemyIntervalMs = (interval * rule.enemyIntervalMult).roundToLong(),
             gold = (12 * (6 + 3 * level) * reward).roundToInt(),
             xp = (10 * (12 + 5 * level) * reward).roundToInt(),
             isBoss = true,
+            ability = ability.id,
+            abilityLabel = ability.label,
+            specialMs = 6500.0,
             modifier = when (modifier) {
                 "rapide" -> "RAPIDE"
                 "blinde" -> "BLINDÉ"
@@ -779,9 +786,10 @@ object GameEngine {
     private fun makeFarm(state: GameState): FightData {
         val easy = mobPoolFor(state.floor).easy
         val t = easy[rnd.nextInt(easy.size)]
+        val rule = biomeRuleFor(state.floor)
         val level = max(1, state.floor - 2)
-        val hp = (55 + 34 * (level - 1)) * 0.65
-        val atk = (6 + 2.2 * (level - 1)) * 0.6
+        val hp = (55 + 34 * (level - 1)) * 0.65 * rule.enemyHpMult
+        val atk = (6 + 2.2 * (level - 1)) * 0.6 * rule.enemyAtkMult
         return FightData(
             enemyName = t.name,
             enemyIcon = t.icon,
@@ -789,7 +797,7 @@ object GameEngine {
             enemyHp = hp,
             enemyMaxHp = hp,
             enemyAtk = atk,
-            enemyIntervalMs = 1250,
+            enemyIntervalMs = (1250 * rule.enemyIntervalMult).roundToLong(),
             gold = ((6 + 3 * level) * 0.5).roundToInt(),
             xp = ((12 + 5 * level) * 0.5).roundToInt(),
             farm = true
@@ -802,6 +810,8 @@ object GameEngine {
         f.enemyTimerMs -= dtMs
         f.elapsedMs += dtMs
         f.specialMs -= dtMs
+        f.abilityFlashMs = (f.abilityFlashMs - dtMs).coerceAtLeast(0.0)
+        f.shieldMs = (f.shieldMs - dtMs).coerceAtLeast(0.0)
 
         if (f.isBoss && f.enemyHp < f.enemyMaxHp * 0.5 && f.enemyIntervalMs > 1000) {
             f.enemyIntervalMs = 950
@@ -809,6 +819,11 @@ object GameEngine {
         }
         if (f.isBoss && f.modifier == "RÉGÉNÉRANT" && f.enemyHp < f.enemyMaxHp) {
             f.enemyHp = min(f.enemyMaxHp, f.enemyHp + f.enemyMaxHp * 0.008 * dtMs / 1000.0)
+        }
+        if (f.isBoss && f.specialMs <= 0.0) {
+            triggerBossAbility(state, f)
+            if (state.fight == null) return
+            f.specialMs = 7000.0
         }
 
         if (f.heroTimerMs <= 0) {
@@ -821,6 +836,45 @@ object GameEngine {
             if (state.fight == null) return
             f.enemyTimerMs = f.enemyIntervalMs.toDouble()
         }
+    }
+
+    private fun triggerBossAbility(state: GameState, f: FightData) {
+        val s = statsOf(state)
+        fun damage(multiplier: Double): Double {
+            val raw = f.enemyAtk * multiplier * (0.9 + rnd.nextDouble() * 0.1)
+            val dmg = raw * (1.0 - s.damageReduction) * (1.0 + s.damageTaken)
+            state.hp -= dmg
+            return dmg
+        }
+        when (f.ability) {
+            "slam" -> damage(2.4)
+            "drain" -> {
+                val dmg = damage(1.5)
+                f.enemyHp = min(f.enemyMaxHp, f.enemyHp + dmg * 0.8)
+            }
+            "regen" -> f.enemyHp = min(f.enemyMaxHp, f.enemyHp + f.enemyMaxHp * 0.07)
+            "shield" -> f.shieldMs = 4500.0
+            "breath" -> {
+                damage(2.0)
+                addBuff(state, "vulnerable", 0.15, 6_000, "GIVRE")
+            }
+            "roots" -> {
+                damage(1.2)
+                addBuff(state, "vit", -0.25, 5_000, "RACINES")
+            }
+            "acid" -> {
+                damage(1.4)
+                addBuff(state, "vulnerable", 0.15, 6_000, "ACIDE")
+            }
+            "pressure" -> {
+                damage(1.8)
+                state.ferveur = max(0, state.ferveur - 10)
+            }
+            else -> damage(1.8)
+        }
+        f.abilityFlashMs = 1_400.0
+        state.journal = addJournal(state, "${f.enemyName} · ${f.abilityLabel}", "alert")
+        if (state.hp <= 0) defeat(state, f)
     }
 
     private fun heroInterval(state: GameState): Double {
@@ -837,6 +891,7 @@ object GameEngine {
         val crit = rnd.nextDouble() < critChance
         f.lastCrit = crit
         if (crit) dmg *= 1.6 + s.critDamage
+        if (f.shieldMs > 0.0) dmg *= 0.35
         f.enemyHp -= dmg
         if (s.lifesteal > 0.0) {
             state.hp = min(s.maxHp.toDouble(), state.hp + dmg * s.lifesteal)
@@ -847,10 +902,6 @@ object GameEngine {
     private fun enemyAttack(state: GameState, f: FightData) {
         val s = statsOf(state)
         var dmg = f.enemyAtk * (0.9 + rnd.nextDouble() * 0.1)
-        if (f.isBoss && f.specialMs <= 0) {
-            dmg *= 1.8
-            f.specialMs = 8000.0
-        }
         dmg *= (1.0 - s.damageReduction) * (1.0 + s.damageTaken)
         state.hp -= dmg
         if (f.isBoss && f.modifier == "VOLEUR") {

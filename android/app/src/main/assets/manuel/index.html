@@ -195,7 +195,7 @@
 <header class="hero">
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas Garmin deviennent votre progression.</p>
-  <span class="badge">Version 0.7.0 · Android 14+ · Garmin Personal API uniquement</span>
+  <span class="badge">Version 0.8.0 · Android 14+ · Garmin Personal API uniquement</span>
 </header>
 
 <nav class="toc">
@@ -333,6 +333,22 @@
     <li><strong>Bénédiction +25 %</strong> après une défaite contre un gardien : aide à la tentative suivante.</li>
     <li>Modificateurs possibles : <strong>Rapide</strong>, <strong>Blindé</strong>, <strong>Berserk</strong>, <strong>Régénérant</strong>, <strong>Voleur</strong>.</li>
   </ul>
+  <h3>Capacités de gardien</h3>
+  <figure class="shot">
+    <img src="images/combat_boss.jpg" alt="Combat contre l'Hydre de Lerne avec la capacité Régénération affichée">
+    <figcaption>La capacité du gardien est affichée sous son nom, puis un bandeau rouge apparaît quand elle se déclenche.</figcaption>
+  </figure>
+  <table>
+    <tr><th>Capacité</th><th>Gardiens</th><th>Effet</th></tr>
+    <tr><td>Drain d'âme</td><td>Liche, Roi des Cryptes</td><td>Draine les PV du héros et soigne le gardien.</td></tr>
+    <tr><td>Régénération</td><td>Hydre</td><td>Rend environ 7 % des PV max du gardien.</td></tr>
+    <tr><td>Frappe lourde</td><td>Balrug, démons, bourreaux</td><td>Attaque très puissante.</td></tr>
+    <tr><td>Blindage</td><td>Golems, gardiens de la Forge</td><td>Réduit fortement les dégâts subis pendant 4,5 s.</td></tr>
+    <tr><td>Souffle</td><td>Dragons</td><td>Gros dégâts et vulnérabilité temporaire.</td></tr>
+    <tr><td>Racines</td><td>Tréant, dryades</td><td>Ralentit la VIT du héros.</td></tr>
+    <tr><td>Acide</td><td>Vases, zymes, horreurs</td><td>Dégâts et vulnérabilité temporaire.</td></tr>
+    <tr><td>Pression</td><td>Seigneurs du Trône</td><td>Dégâts et baisse de ferveur.</td></tr>
+  </table>
   <h3>Défaite et repli</h3>
   <ul>
     <li>Le héros recule de <strong>20 m</strong> et reprend à 60 % de PV.</li>
@@ -465,7 +481,9 @@
     <li>Chaque biome privilégie ses propres ensembles dans ses tables de butin.</li>
     <li>La forge se débloque après le premier gardien vaincu.</li>
     <li>Les objets peuvent porter <strong>Vampirisme</strong>, <strong>Rempart</strong>, <strong>Frénésie</strong>, <strong>Chasse</strong>, <strong>Vitalité</strong> ou <strong>Précision</strong>.</li>
-    <li>Le héros affiche un <strong>paper doll</strong> : casque, armure, bottes et arme changent selon l'équipement porté.</li>
+    <li>Le héros affiche un <strong>paper doll</strong> : casque, armure, jambes, bottes et arme changent selon l'équipement porté.</li>
+    <li>L'apparence suit la <strong>famille d'objet</strong> : épée, hache, masse, bâton, dague, lance ou fouet ; cuir, maille, plate ou robe ; capuche, heaume ou couronne ; bottes de cuir ou de métal. La rareté départage les objets sans famille.</li>
+    <li><strong>Touchez un emplacement équipé</strong> pour ouvrir sa fiche, comparer et voir ses statistiques. Les mains et le talisman ne changent pas le sprite.</li>
   </ul>
   <h3>Coffre de camp</h3>
   <p>L'inventaire est limité à 24 objets. Quand il est plein, le jeu compare le nouvel objet au moins bon objet non verrouillé : le meilleur reste dans le sac et l'autre part au coffre. Les objets verrouillés ne sont jamais déplacés automatiquement. Les objets non identifiés utilisent un score provisoire basé sur la rareté et le niveau. Aucun objet n'est détruit : vous pouvez les récupérer un par un ou en bloc.</p>
@@ -565,6 +583,19 @@
     <tr><td>51–60</td><td>Bois des Âmes</td><td>Herbe, arbres d'or, feuilles.</td></tr>
     <tr><td>61–70</td><td>Abîme organique</td><td>Slime, spores, acidité.</td></tr>
     <tr><td>71+</td><td>Trône des Âmes</td><td>Enfer rouge, cendres, portes scellées.</td></tr>
+  </table>
+  <h3>Règles de biome</h3>
+  <p>Chaque biome applique un modificateur au héros et aux ennemis. La carte <strong>BIOME</strong> de l'onglet Stats affiche la règle active.</p>
+  <table>
+    <tr><th>Biome</th><th>Règle</th><th>Effet</th></tr>
+    <tr><td>Cryptes</td><td>Veillée des cryptes</td><td>+3 % critique · ennemis fragilisés.</td></tr>
+    <tr><td>Catacombes</td><td>Passages étroits</td><td>+6 % VIT · ennemis plus lents.</td></tr>
+    <tr><td>Cendre</td><td>Air empoisonné</td><td>+10 % ATQ · régénération réduite · ennemis agressifs.</td></tr>
+    <tr><td>Forge</td><td>Peaux de fer</td><td>−6 % dégâts subis · ennemis plus résistants.</td></tr>
+    <tr><td>Cimes</td><td>Vent glacial</td><td>+8 % VIT · −5 % PV max · ennemis rapides.</td></tr>
+    <tr><td>Bois</td><td>Sève ancienne</td><td>+0,5 PV/s · ennemis coriaces.</td></tr>
+    <tr><td>Abîme</td><td>Acidité</td><td>+12 % ATQ · −5 % PV max · ennemis fragiles mais violents.</td></tr>
+    <tr><td>Trône</td><td>Pression des âmes</td><td>+12 % dégâts gardiens · −8 % PV max · ennemis renforcés.</td></tr>
   </table>
   <h3>Galerie des biomes</h3>
   <p>Chaque biome possède son décor, sa météo et ses créatures. Le paper doll du héros reflète l'équipement porté.</p>
@@ -754,7 +785,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.7.0 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.8.0 · <a href="#top">Retour au sommaire</a><br>
   Garmin Personal API uniquement · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

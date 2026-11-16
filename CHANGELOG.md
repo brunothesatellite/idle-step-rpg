@@ -1,5 +1,13 @@
 # Journal des versions
 
+## v0.8.0
+- **Inventaire lisible** : barre de synchronisation compacte sur les onglets Inventaire/Améliorations, emplacements équipés cliquables et libellé d'ensemble sur les cartes de butin.
+- **Paper doll fidèle** : l'apparence suit désormais la famille d'objet (épée, hache, masse, bâton, dague, lance, fouet ; cuir, maille, plate, robe ; capuche, heaume, couronne ; bottes de cuir ou de métal).
+- **Règles de biome** : 8 modificateurs actifs pour le héros et les ennemis, affichés dans une carte BIOME de l'onglet Stats.
+- **Gardiens mémorables** : capacités propres (drain, régénération, frappe lourde, blindage, souffle, racines, acide, pression) avec libellé sous la barre de vie et bandeau d'activation.
+- **Manuel** : nouvelles captures du paper doll, de l'inventaire et d'un combat de gardien ; tableaux des règles de biome et des capacités.
+- 63 tests unitaires, dont les règles de biome, les capacités de boss et les nouveaux assets.
+
 ## v0.7.0
 - **8 biomes distincts** : Cryptes de Vael, Catacombes, Cavernes de cendre, Forge noyée, Cimes du Serment, Bois des Âmes, Abîme organique et Trône des Âmes.
 - **Décors dédiés** : murs, sols, statues, props, portes runiques/scellées et météo propres à chaque biome (neige, cendres, spores, feuilles, étincelles, poussière).

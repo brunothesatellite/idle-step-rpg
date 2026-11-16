@@ -123,6 +123,64 @@ class ModelTest {
     }
 
     @Test
+    fun everyBiomeHasARule() {
+        listOf(1, 11, 21, 31, 41, 51, 61, 71).forEach { floor ->
+            val rule = com.brunothesatellite.idlesteprpg.engine.biomeRuleFor(floor)
+            assertTrue("floor $floor label", rule.label.isNotBlank())
+            assertTrue("floor $floor description", rule.description.isNotBlank())
+            assertTrue("floor $floor hp", rule.enemyHpMult > 0.0)
+            assertTrue("floor $floor atk", rule.enemyAtkMult > 0.0)
+            assertTrue("floor $floor interval", rule.enemyIntervalMult > 0.0)
+        }
+    }
+
+    @Test
+    fun biomeRulesModifyHeroStats() {
+        val forge = statsOf(GameState().apply { floor = 40 })
+        val peaks = statsOf(GameState().apply { floor = 41 })
+        val crypts = statsOf(GameState().apply { floor = 1 })
+        val abyss = statsOf(GameState().apply { floor = 61 })
+        assertTrue("peaks max hp", peaks.maxHp < forge.maxHp)
+        assertTrue("abyss attack", abyss.atk > crypts.atk)
+    }
+
+    @Test
+    fun bossesHaveDistinctAbilities() {
+        assertEquals(
+            "drain",
+            com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Roi des Cryptes", 10).id
+        )
+        assertEquals(
+            "regen",
+            com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Hydre de Lerne", 20).id
+        )
+        assertEquals(
+            "slam",
+            com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Balrug", 30).id
+        )
+        assertEquals(
+            "shield",
+            com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Seigneur de la Forge", 40).id
+        )
+        assertEquals(
+            "breath",
+            com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Dragon de givre", 50).id
+        )
+        assertEquals(
+            "roots",
+            com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Tréant", 60).id
+        )
+        assertEquals(
+            "acid",
+            com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Vase mortelle", 70).id
+        )
+        assertEquals(
+            "pressure",
+            com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Asmodée", 80).id
+        )
+    }
+
+    @Test
     fun everyGameplayAssetExists() {
         val root = sequenceOf(File("src/main/assets"), File("app/src/main/assets"))
             .firstOrNull { it.isDirectory }
@@ -141,7 +199,16 @@ class ModelTest {
             "hero/coat_red.png", "hero/bplate_metal1.png", "hero/aragorn.png",
             "hero/helm_green.png", "hero/helm_plume.png", "hero/horned.png",
             "hero/middle_brown2.png", "hero/middle_green.png",
-            "hero/broadsword.png", "hero/long_sword_slant.png"
+            "hero/broadsword.png", "hero/long_sword_slant.png",
+            "hero/weapon_axe.png", "hero/weapon_mace.png", "hero/weapon_staff.png",
+            "hero/weapon_dagger.png", "hero/weapon_spear.png", "hero/weapon_whip.png",
+            "hero/weapon_greatsword.png",
+            "hero/body_leather.png", "hero/body_mail.png", "hero/body_plate.png",
+            "hero/body_coat.png", "hero/body_robe.png",
+            "hero/body_mesh_black.png", "hero/body_metal_blue.png",
+            "hero/head_hood.png", "hero/head_helm.png", "hero/head_crown.png",
+            "hero/legs_plate.png", "hero/legs_cloth.png",
+            "hero/boots_metal.png", "hero/boots_leather.png"
         )
         listOf("crypts", "catacombs", "ash", "forge", "peaks", "woods", "abyss", "throne")
             .forEach { key ->

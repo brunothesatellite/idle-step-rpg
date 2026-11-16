@@ -803,7 +803,8 @@ private fun UnitPlate(
     hp: Double,
     maxHp: Int,
     enemy: Boolean = false,
-    width: Int = 124
+    width: Int = 124,
+    subtitle: String? = null
 ) {
     Column(
         Modifier
@@ -827,6 +828,16 @@ private fun UnitPlate(
             Spacer(Modifier.width(3.dp))
             Text("NIV.${level.toString().padStart(2, '0')}", fontSize = 5.5.sp, color = Muted)
         }
+        if (subtitle != null) {
+            Text(
+                subtitle,
+                fontSize = 5.2.sp,
+                color = if (enemy) Gold else Muted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(Modifier.height(1.dp))
+        }
         Spacer(Modifier.height(2.dp))
         MiniBar(
             fraction = (hp / maxHp.toDouble()).toFloat(),
@@ -836,32 +847,106 @@ private fun UnitPlate(
     }
 }
 
-private fun heroBodyLayer(body: Item?): String? = when {
-    body == null -> null
-    body.rarity == "legendary" -> "hero/aragorn.png"
-    body.rarity == "epic" || body.rarity == "rare" -> "hero/bplate_metal1.png"
-    else -> "hero/coat_red.png"
+private fun heroBodyLayer(body: Item?): String? {
+    if (body == null) return null
+    val name = body.name.lowercase()
+    val icon = body.icon.lowercase()
+    return when {
+        name.contains("robe") || name.contains("suaire") || icon.contains("robe") ->
+            "hero/body_robe.png"
+        icon.contains("ice_dragon") -> "hero/body_metal_blue.png"
+        icon.contains("shadow_dragon") -> "hero/body_mesh_black.png"
+        icon.contains("gold_dragon") || icon.contains("scale_mail") || icon.contains("ring_mail") ->
+            "hero/body_plate.png"
+        name.contains("cuir") || name.contains("peau") || name.contains("écorce") ||
+            name.contains("mousse") || name.contains("feuille") ||
+            icon.contains("leather") || icon.contains("animal_skin") ->
+            "hero/body_leather.png"
+        name.contains("maille") || name.contains("cotte") ->
+            "hero/body_mail.png"
+        name.contains("plate") || name.contains("harnois") || name.contains("carapace") ||
+            icon.contains("plate") ->
+            "hero/body_plate.png"
+        name.contains("tunique") || name.contains("manteau") || name.contains("veste") ||
+            icon.contains("coat") ->
+            "hero/body_coat.png"
+        body.rarity == "legendary" -> "hero/aragorn.png"
+        else -> "hero/coat_red.png"
+    }
 }
 
-private fun heroHeadLayer(head: Item?): String? = when {
-    head == null -> null
-    head.rarity == "legendary" -> "hero/horned.png"
-    head.rarity == "epic" || head.rarity == "rare" -> "hero/helm_plume.png"
-    else -> "hero/helm_green.png"
+private fun heroHeadLayer(head: Item?): String? {
+    if (head == null) return null
+    val name = head.name.lowercase()
+    val icon = head.icon.lowercase()
+    val high = head.rarity == "rare" || head.rarity == "epic" || head.rarity == "legendary"
+    return when {
+        name.contains("capuche") || name.contains("masque") || icon.contains("hood") ->
+            "hero/head_hood.png"
+        name.contains("couronne") || icon.contains("crown") -> "hero/head_crown.png"
+        name.contains("plume") -> "hero/helm_plume.png"
+        name.contains("heaume") || name.contains("casque") ||
+            icon.contains("helmet") || icon.contains("helm") ->
+            if (high) "hero/head_helm.png" else "hero/helm_green.png"
+        head.rarity == "legendary" -> "hero/horned.png"
+        high -> "hero/helm_plume.png"
+        else -> "hero/helm_green.png"
+    }
 }
 
-private fun heroBootsLayer(feet: Item?): String? = when {
-    feet == null -> null
-    feet.rarity == "epic" || feet.rarity == "rare" || feet.rarity == "legendary" ->
-        "hero/middle_green.png"
-    else -> "hero/middle_brown2.png"
+private fun heroBootsLayer(feet: Item?): String? {
+    if (feet == null) return null
+    val name = feet.name.lowercase()
+    val icon = feet.icon.lowercase()
+    return when {
+        name.contains("mousse") -> "hero/middle_green.png"
+        name.contains("métal") || name.contains("fer") || name.contains("acier") ||
+            icon.contains("metal") -> "hero/boots_metal.png"
+        name.contains("cuir") || name.contains("feuille") ||
+            icon.contains("leather") -> "hero/boots_leather.png"
+        feet.rarity == "epic" || feet.rarity == "rare" || feet.rarity == "legendary" ->
+            "hero/middle_green.png"
+        else -> "hero/middle_brown2.png"
+    }
 }
 
-private fun heroWeaponLayer(weapon: Item?): String? = when {
-    weapon == null -> null
-    weapon.rarity == "epic" || weapon.rarity == "rare" || weapon.rarity == "legendary" ->
-        "hero/long_sword_slant.png"
-    else -> "hero/broadsword.png"
+private fun heroLegsLayer(body: Item?): String? {
+    if (body == null) return "hero/pants_brown.png"
+    val name = body.name.lowercase()
+    val icon = body.icon.lowercase()
+    return when {
+        name.contains("plate") || name.contains("harnois") || name.contains("maille") ||
+            name.contains("cotte") || icon.contains("plate") || icon.contains("mail") ||
+            icon.contains("scale_mail") || icon.contains("ring_mail") ->
+            "hero/legs_plate.png"
+        name.contains("robe") || name.contains("suaire") || name.contains("tunique") ||
+            name.contains("manteau") || icon.contains("robe") || icon.contains("coat") ->
+            "hero/legs_cloth.png"
+        else -> "hero/pants_brown.png"
+    }
+}
+
+private fun heroWeaponLayer(weapon: Item?): String? {
+    if (weapon == null) return null
+    val name = weapon.name.lowercase()
+    val icon = weapon.icon.lowercase()
+    val high = weapon.rarity == "rare" || weapon.rarity == "epic" || weapon.rarity == "legendary"
+    return when {
+        icon.contains("staff") || name.contains("bâton") || name.contains("sceptre") ->
+            "hero/weapon_staff.png"
+        icon.contains("dagger") || name.contains("dague") -> "hero/weapon_dagger.png"
+        icon.contains("axe") || name.contains("hache") -> "hero/weapon_axe.png"
+        icon.contains("mace") || icon.contains("eveningstar") || icon.contains("flail") ||
+            name.contains("masse") || name.contains("marteau") || name.contains("fléau") ->
+            "hero/weapon_mace.png"
+        icon.contains("spear") || icon.contains("lance") || icon.contains("halberd") ||
+            name.contains("lance") || name.contains("hallebarde") -> "hero/weapon_spear.png"
+        icon.contains("whip") || name.contains("fouet") -> "hero/weapon_whip.png"
+        icon.contains("greatsword") || (high && (name.contains("épée") || name.contains("lame"))) ->
+            "hero/weapon_greatsword.png"
+        high -> "hero/long_sword_slant.png"
+        else -> "hero/broadsword.png"
+    }
 }
 
 @Composable
@@ -879,6 +964,7 @@ private fun HeroUnit(
     val bodyLayer = heroBodyLayer(body)
     val headLayer = heroHeadLayer(head)
     val bootsLayer = heroBootsLayer(feet)
+    val legsLayer = heroLegsLayer(body)
     val weaponLayer = heroWeaponLayer(weapon)
     val context = LocalContext.current
     val floats = remember { mutableStateListOf<FloatFx>() }
@@ -945,7 +1031,7 @@ private fun HeroUnit(
             ) {
                 AssetImage("hero/human_m.png", Modifier.fillMaxSize())
                 bodyLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
-                AssetImage("hero/pants_brown.png", Modifier.fillMaxSize())
+                legsLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
                 bootsLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
                 headLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
                 weaponLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
@@ -1017,7 +1103,10 @@ private fun EnemyUnit(
             fight.enemyHp,
             fight.enemyMaxHp.roundToInt(),
             enemy = true,
-            width = plateWidth
+            width = plateWidth,
+            subtitle = if (fight.isBoss && fight.abilityLabel.isNotBlank()) {
+                "CAPACITÉ · ${fight.abilityLabel}"
+            } else null
         )
         Spacer(Modifier.height(4.dp))
         Box(
@@ -1026,6 +1115,24 @@ private fun EnemyUnit(
         ) {
             if (fight.isBoss && fight.enemyHp < fight.enemyMaxHp * 0.5 && !reducedMotion) {
                 BossAura(Modifier.size(spriteSize).align(Alignment.BottomCenter))
+            }
+            if (fight.abilityFlashMs > 0.0 && fight.abilityLabel.isNotBlank()) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 2.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(Blood.copy(alpha = 0.88f))
+                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        fight.abilityLabel,
+                        fontFamily = Press,
+                        fontSize = 5.5.sp,
+                        color = GoldLight,
+                        maxLines = 1
+                    )
+                }
             }
             Box(
                 Modifier
