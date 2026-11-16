@@ -8,6 +8,8 @@ import com.brunothesatellite.idlesteprpg.engine.LOOT_TEMPLATES
 import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
 import com.brunothesatellite.idlesteprpg.engine.lootTemplatesFor
 import com.brunothesatellite.idlesteprpg.engine.bossFor
+import com.brunothesatellite.idlesteprpg.engine.allBossTemplates
+import com.brunothesatellite.idlesteprpg.engine.allMobTemplates
 import com.brunothesatellite.idlesteprpg.engine.mobPoolFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import org.junit.Assert.assertEquals
@@ -178,6 +180,37 @@ class ModelTest {
             "pressure",
             com.brunothesatellite.idlesteprpg.engine.bossAbilityFor("Asmodée", 80).id
         )
+    }
+
+    @Test
+    fun codexHelpersListUniqueContent() {
+        val mobs = allMobTemplates()
+        val bosses = allBossTemplates()
+        assertTrue(mobs.size >= 60)
+        assertTrue(bosses.size >= 10)
+        assertEquals(mobs.size, mobs.distinctBy { it.name }.size)
+        assertEquals(bosses.size, bosses.distinctBy { it.name }.size)
+        assertTrue(bosses.any { it.name == "Mère des Abysses" })
+        assertTrue(bosses.any { it.name == "L'Âme Première" })
+    }
+
+    @Test
+    fun setCollectionUsesEquipmentInventoryAndStash() {
+        val state = GameState().apply {
+            equipment = equipment + Item(
+                "set_weapon", "Lame d'os", "weapon", "rare", "item/short_sword1.png", 1,
+                setName = "os"
+            )
+            inventory = inventory + Item(
+                "set_head", "Heaume d'os", "head", "rare", "item/helmet2.png", 1,
+                setName = "os"
+            )
+            stash = listOf(
+                Item("set_body", "Plate d'os", "body", "rare", "item/plate1.png", 1, setName = "os")
+            )
+        }
+        val slots = com.brunothesatellite.idlesteprpg.engine.ownedSetSlots(state, "os")
+        assertEquals(setOf("weapon", "head", "body"), slots)
     }
 
     @Test

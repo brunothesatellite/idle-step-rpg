@@ -1,5 +1,13 @@
 # Journal des versions
 
+## v0.9.0
+- **Codex** : nouvel écran de collection avec trois onglets — **Bestiaire** (créatures et gardiens découverts, silhouettes inconnues), **Ensembles** (pièces possédées par emplacement, bonus 2/4/6, prochain palier) et **Biomes** (règle, créatures, gardiens et objets découverts).
+- **Suivi des collections** : les gardiens vaincus et les objets ramassés sont enregistrés. Les sauvegardes existantes récupèrent leurs gardiens depuis le bestiaire.
+- **Mode Farm** : bouton `ACTIVER` / `DÉSACTIVER` dans la carte BIOME. Inactif par défaut. Le palier est verrouillé, le gardien revient, les jalons sont désactivés. Badge **FARM** dans le HUD.
+- **Bouton de synchronisation compact** : petit carré en haut à gauche de la scène, aligné avec le SAC, avec icône ↻ et point d'état. La grosse barre du bas est supprimée.
+- **Manuel** : captures du Codex, du mode farm et du nouveau bouton de synchro.
+- 70 tests unitaires, dont le mode farm, la migration des gardiens et les helpers du Codex.
+
 ## v0.8.1
 - **Correction du paper doll** : les heaumes rares/épiques utilisent désormais un vrai casque au lieu d'une couche de cheveux rouges. Les heaumes communs/inhabituels gardent le casque vert, les légendaires le heaume à cornes.
 - **Couches d'armure distinctes** : cotte de mailles en acier, plate sombre, cuir, robe, carapace et armure de glace ont maintenant des sprites différents.

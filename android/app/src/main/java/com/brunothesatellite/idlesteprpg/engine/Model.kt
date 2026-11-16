@@ -21,7 +21,7 @@ const val INVENTORY_CAP = 24
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250
-const val SAVE_VERSION = 2
+const val SAVE_VERSION = 3
 
 @Serializable
 data class Upgrades(
@@ -301,6 +301,9 @@ data class GameState(
     var goldEarned: Int = 0,
     var legend: List<JournalEntry> = emptyList(),
     var bestiary: Map<String, Int> = emptyMap(),
+    var bossKills: Map<String, Int> = emptyMap(),
+    var discoveredItems: List<String> = emptyList(),
+    var holdFloor: Boolean = false,
     var weeklySteps: Int = 0,
     var weekKey: String = "",
     var streak: Int = 0,
@@ -689,6 +692,31 @@ val BIOME_POOLS = mapOf(
     "abyss" to ABYSS_POOL,
     "throne" to THRONE_POOL
 )
+
+val SPECIAL_BOSSES = listOf(
+    BossTemplate("Mère des Abysses", "mon/jormungandr.png"),
+    BossTemplate("L'Âme Première", "mon/cerebov.png")
+)
+
+fun allMobTemplates(): List<MobTemplate> =
+    BIOME_POOLS.values.flatMap { it.easy + it.mid + it.hard }.distinctBy { it.name }
+
+fun allBossTemplates(): List<BossTemplate> =
+    (BIOME_POOLS.values.flatMap { it.bosses } + SPECIAL_BOSSES).distinctBy { it.name }
+
+fun ownedItemNames(state: GameState): Set<String> =
+    (state.equipment + state.inventory + state.stash)
+        .map { it.name.substringBefore(" · ") }
+        .toSet()
+
+fun discoveredItemNames(state: GameState): Set<String> =
+    state.discoveredItems.toSet() + ownedItemNames(state)
+
+fun ownedSetSlots(state: GameState, setName: String): Set<String> =
+    (state.equipment + state.inventory + state.stash)
+        .filter { it.setName == setName }
+        .map { it.slot }
+        .toSet()
 
 fun mobPoolFor(floor: Int): MobPool =
     BIOME_POOLS[biomeKeyFor(floor)] ?: CRYPT_POOL

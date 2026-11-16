@@ -32,6 +32,16 @@ object GameEngine {
             state.totalSteps = state.stepLedger.values.sum()
         }
         if (state.lastActiveDay.isBlank()) state.lastActiveDay = state.day
+        if (state.bossKills.isEmpty() && state.bestiary.isNotEmpty()) {
+            val kills = mutableMapOf<String, Int>()
+            allBossTemplates().forEach { boss ->
+                val count = state.bestiary.entries
+                    .filter { it.key == boss.name || it.key.startsWith("${boss.name} ·") }
+                    .sumOf { it.value }
+                if (count > 0) kills[boss.name] = count
+            }
+            if (kills.isNotEmpty()) state.bossKills = kills
+        }
         if (state.version < SAVE_VERSION) state.version = SAVE_VERSION
         return state
     }
@@ -925,7 +935,7 @@ object GameEngine {
         }
     }
 
-    private fun victory(state: GameState, f: FightData) {
+    internal fun victory(state: GameState, f: FightData) {
         val earned = goldGain(state, f.gold)
         state.gold += earned
         state.goldEarned += earned
@@ -937,23 +947,38 @@ object GameEngine {
             state.bosses++
             state.bossesToday++
             val clearedFloor = state.floor
-            state.shards += 2
-            state.rations += 1
+            val baseBoss = bossFor(clearedFloor).name
+            state.bossKills = state.bossKills + (
+                baseBoss to ((state.bossKills[baseBoss] ?: 0) + 1)
+                )
             state.bossBlessing = 0.0
-            state.floor++
+            state.mode = "walk"
             state.distance = 0.0
             state.nextFight = 10
-            addLoot(state, lootItem(state.floor, "rare"))
-            dropConsumables(state, "boss")
-            state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
-            if (clearedFloor % 10 == 0) {
-                state.shards += 5
-                addLegend(state, "Jalon · palier $clearedFloor — ${titleFor(state.floor)}")
+            if (state.holdFloor) {
+                addLoot(state, lootItem(clearedFloor, "rare"))
+                dropConsumables(state, "boss")
                 state.journal = addJournal(
                     state,
-                    "Jalon · palier $clearedFloor franchi — ${titleFor(state.floor)} · +5 éclats",
+                    "${f.enemyName} vaincu — palier $clearedFloor conservé (farm)",
                     "good"
                 )
+            } else {
+                state.shards += 2
+                state.rations += 1
+                state.floor++
+                addLoot(state, lootItem(state.floor, "rare"))
+                dropConsumables(state, "boss")
+                state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
+                if (clearedFloor % 10 == 0) {
+                    state.shards += 5
+                    addLegend(state, "Jalon · palier $clearedFloor — ${titleFor(state.floor)}")
+                    state.journal = addJournal(
+                        state,
+                        "Jalon · palier $clearedFloor franchi — ${titleFor(state.floor)} · +5 éclats",
+                        "good"
+                    )
+                }
             }
             checkOaths(state)
         } else if (f.farm) {
@@ -1296,6 +1321,10 @@ object GameEngine {
     }
 
     fun addLoot(state: GameState, item: Item) {
+        val baseName = item.name.substringBefore(" · ")
+        if (baseName.isNotBlank() && baseName !in state.discoveredItems) {
+            state.discoveredItems = state.discoveredItems + baseName
+        }
         if (state.inventory.size < INVENTORY_CAP) {
             state.inventory = state.inventory + item
             return

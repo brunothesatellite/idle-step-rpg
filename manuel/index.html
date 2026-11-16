@@ -195,7 +195,7 @@
 <header class="hero">
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas Garmin deviennent votre progression.</p>
-  <span class="badge">Version 0.8.1 · Android 14+ · Garmin Personal API uniquement</span>
+  <span class="badge">Version 0.9.0 · Android 14+ · Garmin Personal API uniquement</span>
 </header>
 
 <nav class="toc">
@@ -289,8 +289,8 @@
 <section id="interface">
   <h2>4. Interface et HUD</h2>
   <figure class="shot">
-    <img src="images/home.jpg" alt="Écran principal avec la scène, le héros, la ferveur, les pas et le tableau de bord Stats">
-    <figcaption>Écran principal : scène en haut, tableau de bord en bas. Le SAC et le COFFRE sont dans le bandeau de droite.</figcaption>
+    <img src="images/home.jpg" alt="Écran principal avec la scène, le héros, le bouton de synchronisation, la ferveur, les pas et le tableau de bord Stats">
+    <figcaption>Écran principal : scène en haut, bouton de synchronisation en haut à gauche, tableau de bord en bas.</figcaption>
   </figure>
   <h3>Bandeau supérieur</h3>
   <ul>
@@ -299,6 +299,7 @@
     <li><strong>Jauge de palier</strong> : 0 à 100 m, avec la porte du gardien dans les 15 derniers mètres.</li>
     <li><strong>SAC</strong> : consommables, soins et buffs.</li>
     <li><strong>COFFRE</strong> : nombre de coffres en attente et temps restant. Un coffre ne bloque jamais la marche.</li>
+    <li><strong>Bouton de synchronisation</strong> : petit carré en haut à gauche, aligné avec le SAC. Icône ↻ et point d'état (vert = récent, ambre = ancien, rouge = erreur). Appuyez pour synchroniser ; si Garmin n'est pas connecté, il ouvre Compte Garmin.</li>
   </ul>
   <h3>Scène</h3>
   <ul>
@@ -311,7 +312,7 @@
     <li><strong>Stats</strong> : puissance, ATQ, PV, VIT, ressources, ferveur, serments, exploits, journal, compte Garmin.</li>
     <li><strong>Inventaire</strong> : équipement, butin, consommables, coffre de camp.</li>
     <li><strong>Améliorations</strong> : trois améliorations permanentes et prochain gardien.</li>
-    <li><strong>Barre de synchronisation</strong> : toujours accessible en bas.</li>
+    <li><strong>Barre de synchronisation</strong> : remplacée par le bouton carré en haut à gauche de la scène. Les détails restent dans la carte Garmin de l'onglet Stats.</li>
   </ul>
 </section>
 
@@ -597,6 +598,19 @@
     <tr><td>Abîme</td><td>Acidité</td><td>+12 % ATQ · −5 % PV max · ennemis fragiles mais violents.</td></tr>
     <tr><td>Trône</td><td>Pression des âmes</td><td>+12 % dégâts gardiens · −8 % PV max · ennemis renforcés.</td></tr>
   </table>
+  <h3>Mode farm</h3>
+  <figure class="shot">
+    <img src="images/farm_mode.jpg" alt="Carte Biome avec le mode farm actif et le badge FARM dans le HUD">
+    <figcaption>Mode farm actif : le palier est verrouillé, le badge FARM apparaît et le bouton permet de désactiver.</figcaption>
+  </figure>
+  <p>Le mode farm se trouve dans la <strong>carte BIOME</strong> de l'onglet Stats. Il est <strong>inactif par défaut</strong>.</p>
+  <ul>
+    <li><strong>ACTIVER :</strong> verrouille le palier actuel. Le gardien vaincu ne fait plus passer au palier suivant et revient à 100 m.</li>
+    <li><strong>DÉSACTIVER :</strong> le prochain gardien vaincu fait avancer normalement.</li>
+    <li>Un badge <strong>FARM</strong> s'affiche dans le HUD tant que le mode est actif.</li>
+    <li>Pendant le farm, les <strong>jalons sont désactivés</strong> : pas de +5 éclats ni d'entrée de légende répétée. Le butin, l'or et l'XP du gardien restent.</li>
+    <li>Le réglage est conservé dans la sauvegarde et survit au redémarrage.</li>
+  </ul>
   <h3>Galerie des biomes</h3>
   <p>Chaque biome possède son décor, sa météo et ses créatures. Le paper doll du héros reflète l'équipement porté.</p>
   <div class="grid">
@@ -655,6 +669,28 @@
     <li><strong>Légende :</strong> jalons et hauts faits persistants.</li>
     <li><strong>Bestiaire :</strong> nombre de victimes par créature.</li>
     <li>Les événements sont aussi résumés dans l'onglet Stats.</li>
+  </ul>
+  <h3>Codex</h3>
+  <p>Le Codex se trouve dans <code>Stats → carte CODEX → OUVRIR LE CODEX</code>. Il suit la collection sur trois onglets.</p>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/codex_bestiary.jpg" alt="Codex Bestiaire avec créatures connues, silhouettes inconnues et gardiens par biome">
+      <figcaption>Bestiaire : créatures et gardiens découverts, silhouettes encore inconnues.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_sets.jpg" alt="Codex Ensembles avec progression 2/4/6 pièces et slots possédés">
+      <figcaption>Ensembles : pièces possédées par emplacement, bonus actif et prochain palier.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_biomes.jpg" alt="Codex Biomes avec progression des créatures, gardiens et objets par biome">
+      <figcaption>Biomes : règle active, créatures, gardiens et objets découverts.</figcaption>
+    </figure>
+  </div>
+  <ul>
+    <li><strong>Bestiaire :</strong> une créature est révélée au premier combat ou à la première victime. Les gardiens sont suivis séparément.</li>
+    <li><strong>Ensembles :</strong> les pièces du sac, de l'équipement et du coffre comptent. Le bonus 2/4/6 et le prochain palier sont affichés.</li>
+    <li><strong>Biomes :</strong> un biome est découvert dès que vous atteignez son premier palier. Le Codex affiche sa règle, ses créatures, ses gardiens et ses objets.</li>
+    <li>Les objets déjà possédés sont reconnus immédiatement ; les objets ramassés ensuite sont ajoutés à la collection.</li>
   </ul>
 </section>
 
@@ -785,7 +821,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.8.1 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.9.0 · <a href="#top">Retour au sommaire</a><br>
   Garmin Personal API uniquement · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

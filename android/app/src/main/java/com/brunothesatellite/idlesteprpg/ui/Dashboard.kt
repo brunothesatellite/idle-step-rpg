@@ -42,6 +42,10 @@ import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
+import com.brunothesatellite.idlesteprpg.engine.ITEM_SETS
+import com.brunothesatellite.idlesteprpg.engine.BIOMES
+import com.brunothesatellite.idlesteprpg.engine.allBossTemplates
+import com.brunothesatellite.idlesteprpg.engine.allMobTemplates
 import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.bossAbilityFor
 import com.brunothesatellite.idlesteprpg.engine.biomeFor
@@ -51,6 +55,7 @@ import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.itemScore
 import com.brunothesatellite.idlesteprpg.engine.powerOf
+import com.brunothesatellite.idlesteprpg.engine.ownedSetSlots
 import com.brunothesatellite.idlesteprpg.engine.rarityLabel
 import com.brunothesatellite.idlesteprpg.engine.rankLabel
 import com.brunothesatellite.idlesteprpg.engine.setLabel
@@ -85,6 +90,8 @@ fun Dashboard(
     onWithdrawStash: () -> Unit,
     onWithdrawStashItem: (Item) -> Unit,
     onUseConsumable: (String) -> Unit,
+    onToggleFarm: (Boolean) -> Unit,
+    onOpenCodex: () -> Unit,
     onSelectTab: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -118,10 +125,9 @@ fun Dashboard(
                     onUseConsumable
                 )
                 "upgrades" -> UpgradesTab(state, ui, onBuyUpgrade, onOpenSettings)
-                else -> StatsTab(state, ui, onOpenSettings, onSync, onOpenJournal)
+                else -> StatsTab(state, ui, onOpenSettings, onSync, onOpenJournal, onToggleFarm, onOpenCodex)
             }
         }
-        SyncBar(state, ui, onSync, onOpenSettings, compact = activeTab != "stats")
     }
 }
 
@@ -260,7 +266,9 @@ private fun StatsTab(
     ui: UiState,
     onOpenSettings: () -> Unit,
     onSync: () -> Unit,
-    onOpenJournal: () -> Unit
+    onOpenJournal: () -> Unit,
+    onToggleFarm: (Boolean) -> Unit,
+    onOpenCodex: () -> Unit
 ) {
     val stats = statsOf(state)
     val power = powerOf(state)
@@ -304,7 +312,9 @@ private fun StatsTab(
     Spacer(Modifier.height(5.dp))
     ResourcesCard(state)
     Spacer(Modifier.height(5.dp))
-    BiomeCard(state)
+    BiomeCard(state, onToggleFarm)
+    Spacer(Modifier.height(5.dp))
+    CodexCard(state, onOpenCodex)
     Spacer(Modifier.height(5.dp))
     FerveurCard(state)
     Spacer(Modifier.height(5.dp))
@@ -337,11 +347,11 @@ private fun StatTile(icon: String, label: String, value: String, modifier: Modif
 }
 
 @Composable
-private fun BiomeCard(state: GameState) {
+private fun BiomeCard(state: GameState, onToggleFarm: (Boolean) -> Unit) {
     val rule = biomeRuleFor(state.floor)
     PixelCard(
         Modifier.fillMaxWidth(),
-        borderColor = Green.copy(alpha = 0.28f),
+        borderColor = if (state.holdFloor) Ember.copy(alpha = 0.5f) else Green.copy(alpha = 0.28f),
         background = Panel2
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -358,6 +368,68 @@ private fun BiomeCard(state: GameState) {
                 textAlign = TextAlign.End
             )
         }
+        Spacer(Modifier.height(5.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    if (state.holdFloor) "FARM ACTIF · PALIER VERROUILLÉ" else "FARM INACTIF",
+                    fontSize = 6.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (state.holdFloor) Ember else Muted
+                )
+                Text(
+                    if (state.holdFloor) {
+                        "Le gardien revient sans faire avancer le palier. Les jalons sont désactivés."
+                    } else {
+                        "Verrouille ce palier pour farmer sans passer au biome suivant."
+                    },
+                    fontSize = 5.9.sp,
+                    color = Muted,
+                    lineHeight = 8.sp
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            SmallAction(
+                if (state.holdFloor) "DÉSACTIVER" else "ACTIVER",
+                Modifier.width(104.dp),
+                onClick = { onToggleFarm(!state.holdFloor) },
+                primary = !state.holdFloor
+            )
+        }
+    }
+}
+
+@Composable
+private fun CodexCard(state: GameState, onOpen: () -> Unit) {
+    val mobs = allMobTemplates()
+    val bosses = allBossTemplates()
+    val discoveredMobs = mobs.count { (state.bestiary[it.name] ?: 0) > 0 }
+    val discoveredBosses = bosses.count { (state.bossKills[it.name] ?: 0) > 0 }
+    val sets = ITEM_SETS.count { ownedSetSlots(state, it).isNotEmpty() }
+    val biomes = BIOMES.count { state.floor >= it.fromFloor }
+    PixelCard(
+        Modifier.fillMaxWidth(),
+        borderColor = Gold.copy(alpha = 0.32f),
+        background = Panel2
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                SectionLabel("CODEX")
+                Text(
+                    "Bestiaire $discoveredMobs / ${mobs.size} · Gardiens $discoveredBosses / ${bosses.size}",
+                    fontSize = 6.8.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = GoldLight
+                )
+                Text(
+                    "Ensembles $sets / ${ITEM_SETS.size} · Biomes $biomes / ${BIOMES.size}",
+                    fontSize = 6.2.sp,
+                    color = Muted
+                )
+            }
+        }
+        Spacer(Modifier.height(5.dp))
+        OverlayAction("OUVRIR LE CODEX", Modifier.fillMaxWidth(), onOpen, primary = true)
     }
 }
 

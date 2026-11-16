@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.8.1** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.9.0** — APK sideloadé pour Pixel 7a (Android 14+).
 
 **Manuel complet :** [`../manuel/index.html`](../manuel/index.html) · accessible dans l'app via `Réglages → Aide → Ouvrir le manuel du jeu`.
 
@@ -28,7 +28,7 @@ Version Android native du prototype. **v0.8.1** — APK sideloadé pour Pixel 7a
 - **Ressources visibles** : rations, éclats, or et consommables dans une carte Stats dédiée.
 - **Sons 8 bits** : effets originaux CC0, volume réglable, désactivation et test dans les réglages.
 - **Campement** : combat réinitialisé, veillée gratuite +15 %, soins, coffre, journal et inventaire accessibles.
-- **Contenu** : 8 biomes avec murs, sols, statues, props, météo et portes dédiés ; plus de 60 nouvelles créatures ; 36 nouveaux objets de butin ; 8 nouveaux ensembles ; 2 nouveaux effets ; paper doll fidèle aux familles d'objets ; règles de biome ; capacités de gardien ; rencontres spéciales, jalons complets, boss uniques 10/25/50/100, bestiaire.
+- **Contenu** : 8 biomes avec murs, sols, statues, props, météo et portes dédiés ; plus de 60 nouvelles créatures ; 36 nouveaux objets de butin ; 8 nouveaux ensembles ; 2 nouveaux effets ; paper doll fidèle aux familles d'objets ; règles de biome ; capacités de gardien ; Codex de collection ; mode Farm par palier ; rencontres spéciales, jalons complets, boss uniques 10/25/50/100, bestiaire.
 - **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil.
 - **Mises à jour GitHub** : vérification automatique quotidienne (désactivable) et manuelle, téléchargement de l'APK signé, vérification SHA-256, installation confirmée par l'utilisateur via FileProvider, puis proposition d'ouvrir la release pour lire les changements.
 - **Qualité** : tests moteur, tests Garmin MockWebServer, tests UI Compose, lint, CI Android, workflow de release signée conditionnel.
@@ -103,7 +103,7 @@ Play Protect peut avertir ou bloquer une application inconnue de Google lors de 
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.8.1
+## Limites de cette v0.9.0
 
 - L'historique Garmin est limité à 7 jours et à 100 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON versionné avec copie de secours, pas encore Room.
@@ -118,6 +118,7 @@ Play Protect peut avertir ou bloquer une application inconnue de Google lors de 
 - Spécifications : [docs/specifications-fonctionnelles.md](../docs/specifications-fonctionnelles.md)
 - Architecture et Garmin : [docs/architecture-android-garmin.md](../docs/architecture-android-garmin.md)
 - Licences : [LICENSES.md](../LICENSES.md)
+
 
 
 

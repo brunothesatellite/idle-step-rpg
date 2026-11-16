@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg
 
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.FightData
 import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_STEPS_PER_DAY
@@ -16,6 +17,88 @@ import org.junit.Test
 import java.time.LocalDate
 
 class GameEngineTest {
+
+    @Test
+    fun farmModeIsOffByDefault() {
+        assertEquals(false, GameState().holdFloor)
+    }
+
+    @Test
+    fun holdFloorKeepsFloorAfterBoss() {
+        val state = GameState().apply {
+            floor = 10
+            holdFloor = true
+            shards = 0
+            oaths.bossesClaimed = true
+        }
+        val fight = FightData(
+            enemyName = "Roi des Cryptes",
+            enemyIcon = "mon/lich.png",
+            enemyLevel = 12,
+            enemyHp = 1.0,
+            enemyMaxHp = 100.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 1250,
+            gold = 100,
+            xp = 100,
+            isBoss = true
+        )
+        GameEngine.victory(state, fight)
+        assertEquals(10, state.floor)
+        assertEquals(0, state.shards)
+        assertEquals(0.0, state.distance, 0.001)
+        assertEquals(10, state.nextFight)
+        assertEquals(1, state.bossKills["Roi des Cryptes"])
+        assertEquals("walk", state.mode)
+    }
+
+    @Test
+    fun normalBossVictoryAdvancesFloor() {
+        val state = GameState().apply {
+            floor = 10
+            holdFloor = false
+            shards = 0
+            oaths.bossesClaimed = true
+        }
+        val fight = FightData(
+            enemyName = "Roi des Cryptes",
+            enemyIcon = "mon/lich.png",
+            enemyLevel = 12,
+            enemyHp = 1.0,
+            enemyMaxHp = 100.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 1250,
+            gold = 100,
+            xp = 100,
+            isBoss = true
+        )
+        GameEngine.victory(state, fight)
+        assertEquals(11, state.floor)
+        assertEquals(7, state.shards)
+        assertEquals(1, state.bossKills["Roi des Cryptes"])
+    }
+
+    @Test
+    fun discoveredItemsAreTracked() {
+        val state = GameState()
+        GameEngine.addLoot(
+            state,
+            Item("codex_test", "Relique de test · VAMPIRISME", "talisman", "rare", "item/misc_box.png", 1)
+        )
+        assertEquals(true, "Relique de test" in state.discoveredItems)
+    }
+
+    @Test
+    fun bossKillsAreMigratedFromBestiary() {
+        val state = GameState().apply {
+            version = 2
+            bestiary = mapOf("Roi des Cryptes · RAPIDE" to 2, "Hydre de Lerne" to 1)
+        }
+        GameEngine.migrate(state)
+        assertEquals(2, state.bossKills["Roi des Cryptes"])
+        assertEquals(1, state.bossKills["Hydre de Lerne"])
+        assertEquals(3, state.version)
+    }
 
     @Test
     fun ingestStepsIsIdempotent() {

@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
@@ -84,8 +86,10 @@ import com.brunothesatellite.idlesteprpg.engine.tierName
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 private data class BiomePalette(
     val top: Color,
@@ -258,6 +262,11 @@ fun Scene(
     onCamp: () -> Unit,
     onChest: () -> Unit,
     onConsumables: () -> Unit,
+    onSync: () -> Unit = {},
+    connected: Boolean = false,
+    syncing: Boolean = false,
+    lastSync: Long = 0L,
+    lastError: String = "",
     reducedMotion: Boolean = false,
     vibrations: Boolean = true,
     modifier: Modifier = Modifier
@@ -305,6 +314,16 @@ fun Scene(
 
         TopHud(state, onCamp, Modifier.align(Alignment.TopStart))
         ProgressHeader(state, Modifier.align(Alignment.TopStart).padding(top = 38.dp))
+        SyncButton(
+            connected = connected,
+            syncing = syncing,
+            lastSync = lastSync,
+            lastError = lastError,
+            onClick = onSync,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 10.dp, top = 58.dp)
+        )
 
         HeroUnit(
             state,
@@ -708,6 +727,92 @@ private fun SceneBackground(state: GameState, density: Float) {
 }
 
 @Composable
+private fun SyncButton(
+    connected: Boolean,
+    syncing: Boolean,
+    lastSync: Long,
+    lastError: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val dotColor = when {
+        !connected -> Muted2
+        lastError.isNotBlank() -> Blood
+        lastSync == 0L -> Ember
+        System.currentTimeMillis() - lastSync < 30L * 60L * 1000L -> Green
+        else -> Ember
+    }
+    val label = when {
+        syncing -> "Synchronisation Garmin en cours"
+        connected -> "Synchroniser Garmin"
+        else -> "Connecter Garmin"
+    }
+    Box(
+        modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(5.dp))
+            .background(Ink.copy(alpha = 0.88f))
+            .border(
+                1.dp,
+                if (connected) Gold.copy(alpha = 0.55f) else Line2,
+                RoundedCornerShape(5.dp)
+            )
+            .clickable(enabled = !syncing, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center
+    ) {
+        if (syncing) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                color = GoldLight,
+                strokeWidth = 2.dp
+            )
+        } else {
+            SyncGlyph(
+                color = if (connected) GoldLight else Muted,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Box(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .padding(4.dp)
+                .size(6.dp)
+                .clip(CircleShape)
+                .background(dotColor)
+        )
+    }
+}
+
+@Composable
+private fun SyncGlyph(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val stroke = 2.dp.toPx()
+        val radius = size.minDimension * 0.34f
+        val center = Offset(size.width / 2f, size.height / 2f)
+        drawArc(
+            color = color,
+            startAngle = -55f,
+            sweepAngle = 275f,
+            useCenter = false,
+            topLeft = Offset(center.x - radius, center.y - radius),
+            size = Size(radius * 2f, radius * 2f),
+            style = Stroke(width = stroke, cap = StrokeCap.Round)
+        )
+        val angle = Math.toRadians(-55.0)
+        val ax = center.x + radius * cos(angle).toFloat()
+        val ay = center.y + radius * sin(angle).toFloat()
+        val arrow = Path().apply {
+            moveTo(ax, ay)
+            lineTo(ax + 5.dp.toPx(), ay - 1.5.dp.toPx())
+            lineTo(ax + 1.5.dp.toPx(), ay + 5.dp.toPx())
+            close()
+        }
+        drawPath(arrow, color)
+    }
+}
+
+@Composable
 private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 7.dp),
@@ -742,6 +847,18 @@ private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Mo
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
+        if (state.holdFloor) {
+            Spacer(Modifier.width(4.dp))
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(Ember.copy(alpha = 0.20f))
+                    .border(1.dp, Ember.copy(alpha = 0.60f), RoundedCornerShape(3.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp)
+            ) {
+                Text("FARM", fontFamily = Press, fontSize = 5.sp, color = Ember)
+            }
+        }
         Spacer(Modifier.width(6.dp))
         CurrencyChip("item/01.png", formatInt(state.gold))
         Spacer(Modifier.width(5.dp))

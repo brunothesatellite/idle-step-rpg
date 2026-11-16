@@ -37,6 +37,7 @@ data class UiState(
     val settingsOpen: Boolean = false,
     val prefsOpen: Boolean = false,
     val journalOpen: Boolean = false,
+    val codexOpen: Boolean = false,
     val selectedItem: Item? = null,
     val chestOpen: Boolean = false,
     val syncing: Boolean = false,
@@ -299,6 +300,20 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun closePreferences() { _ui.update { it.copy(prefsOpen = false) } }
+
+    fun openCodex() { _ui.update { it.copy(codexOpen = true) } }
+
+    fun closeCodex() { _ui.update { it.copy(codexOpen = false) } }
+
+    fun setHoldFloor(value: Boolean) {
+        viewModelScope.launch {
+            container.gameRepository.mutate { it.holdFloor = value }
+            _toasts.emit(
+                if (value) "Farm activé : le palier est verrouillé."
+                else "Farm désactivé : le prochain gardien fera avancer."
+            )
+        }
+    }
 
     fun setTextScale(value: Float) {
         container.settings.textScale = value

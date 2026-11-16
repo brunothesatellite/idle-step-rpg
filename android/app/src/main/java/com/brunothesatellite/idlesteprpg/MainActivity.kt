@@ -41,6 +41,7 @@ import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.ui.CampOverlay
 import com.brunothesatellite.idlesteprpg.ui.ChestDialog
 import com.brunothesatellite.idlesteprpg.ui.ConsumablesOverlay
+import com.brunothesatellite.idlesteprpg.ui.CodexOverlay
 import com.brunothesatellite.idlesteprpg.ui.Dashboard
 import com.brunothesatellite.idlesteprpg.ui.DayBanner
 import com.brunothesatellite.idlesteprpg.ui.GarminScreen
@@ -154,12 +155,14 @@ private fun GameRoot(vm: GameViewModel) {
             ui.selectedItem != null || ui.chestOpen || ui.journalOpen ||
             state.offlineReport?.acknowledgedAt == 0L || state.special != null ||
             ui.pendingImport != null || !ui.onboardingDone || ui.specialOutcome != null ||
-            ui.consumablesOpen || ui.availableUpdate != null || ui.postUpdateTag != null
+            ui.consumablesOpen || ui.availableUpdate != null || ui.postUpdateTag != null ||
+            ui.codexOpen
     ) {
         when {
             !ui.onboardingDone -> vm.completeOnboarding()
             ui.availableUpdate != null -> vm.dismissUpdate()
             ui.postUpdateTag != null -> vm.dismissPostUpdate()
+            ui.codexOpen -> vm.closeCodex()
             ui.pendingImport != null -> vm.cancelImport()
             ui.specialOutcome != null -> vm.dismissSpecialOutcome()
             ui.consumablesOpen -> vm.closeConsumables()
@@ -190,6 +193,11 @@ private fun GameRoot(vm: GameViewModel) {
                             onCamp = vm::openCamp,
                             onChest = vm::openChest,
                             onConsumables = vm::openConsumables,
+                            onSync = vm::syncNow,
+                            connected = ui.connected,
+                            syncing = ui.syncing,
+                            lastSync = ui.lastSync,
+                            lastError = ui.lastError,
                             reducedMotion = ui.reducedMotion,
                             vibrations = ui.vibrations,
                             modifier = Modifier.weight(0.58f).fillMaxHeight()
@@ -210,6 +218,8 @@ private fun GameRoot(vm: GameViewModel) {
                             onWithdrawStash = vm::withdrawStash,
                             onWithdrawStashItem = vm::withdrawStashItem,
                             onUseConsumable = vm::useConsumable,
+                            onToggleFarm = vm::setHoldFloor,
+                            onOpenCodex = vm::openCodex,
                             onSelectTab = { activeTab = it },
                             modifier = Modifier.weight(0.42f).fillMaxHeight()
                         )
@@ -226,6 +236,11 @@ private fun GameRoot(vm: GameViewModel) {
                             onCamp = vm::openCamp,
                             onChest = vm::openChest,
                             onConsumables = vm::openConsumables,
+                            onSync = vm::syncNow,
+                            connected = ui.connected,
+                            syncing = ui.syncing,
+                            lastSync = ui.lastSync,
+                            lastError = ui.lastError,
                             reducedMotion = ui.reducedMotion,
                             vibrations = ui.vibrations,
                             modifier = Modifier.weight(0.46f)
@@ -246,6 +261,8 @@ private fun GameRoot(vm: GameViewModel) {
                             onWithdrawStash = vm::withdrawStash,
                             onWithdrawStashItem = vm::withdrawStashItem,
                             onUseConsumable = vm::useConsumable,
+                            onToggleFarm = vm::setHoldFloor,
+                            onOpenCodex = vm::openCodex,
                             onSelectTab = { activeTab = it },
                             modifier = Modifier.weight(0.54f)
                         )
@@ -268,6 +285,9 @@ private fun GameRoot(vm: GameViewModel) {
             }
             if (ui.prefsOpen) {
                 SettingsOverlay(vm = vm, ui = ui, onClose = vm::closePreferences)
+            }
+            if (ui.codexOpen) {
+                CodexOverlay(state = state, onClose = vm::closeCodex)
             }
             if (ui.campOpen) {
                 CampOverlay(

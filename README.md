@@ -7,7 +7,7 @@
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.8.1 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.9.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -51,7 +51,9 @@ Le donjon traverse **8 biomes** de 10 paliers, chacun avec ses murs, sols, statu
 | 61–70 | Abîme organique | slime, spores, acidité |
 | 71+ | Trône des Âmes | enfer rouge, cendres, portes scellées |
 
-Chaque biome a ses **pools de monstres** (faciles, intermédiaires, difficiles), ses **boss**, ses **tables de butin**, ses **ensembles** et sa **règle active** (critique, VIT, régénération, défense, etc.). Les gardiens possèdent une **capacité propre** (drain, régénération, frappe lourde, blindage, souffle, racines, acide, pression) affichée pendant le combat. Le héros affiche désormais un **paper doll par famille d'équipement** : casque, armure, jambes, bottes et arme changent selon l'objet équipé.
+Chaque biome a ses **pools de monstres** (faciles, intermédiaires, difficiles), ses **boss**, ses **tables de butin**, ses **ensembles** et sa **règle active** (critique, VIT, régénération, défense, etc.). Les gardiens possèdent une **capacité propre** (drain, régénération, frappe lourde, blindage, souffle, racines, acide, pression) affichée pendant le combat. Le héros affiche désormais un **paper doll par famille d’équipement** : casque, armure, jambes, bottes et arme changent selon l’objet équipé.
+
+Le **Codex** (`Stats → Codex`) suit le bestiaire, les ensembles et les biomes. Le **mode Farm** se trouve dans la carte BIOME : **inactif par défaut**, il verrouille le palier actuel et affiche un badge FARM ; les jalons sont désactivés pendant le farm. La synchronisation Garmin utilise un **petit bouton carré en haut à gauche de la scène**, aligné avec le SAC.
 
 ### Boucle quotidienne
 
@@ -87,7 +89,7 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.8.1.apk
+adb install -r La-Marche-des-Ames-v0.9.0.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.
@@ -358,6 +360,7 @@ Voir [`docs/reste-a-faire.md`](docs/reste-a-faire.md).
 - **Polices** : Pixelify Sans et Press Start 2P, SIL Open Font License 1.1.
 
 Détails : [`LICENSES.md`](LICENSES.md), [`assets/CREDITS.md`](assets/CREDITS.md).
+
 
 
 
