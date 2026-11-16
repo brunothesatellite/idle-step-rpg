@@ -116,6 +116,17 @@ Pièces de héros supplémentaires, même export `releases/Nov-2015`, **CC0 1.0*
 
 ---
 
+## Musiques d'ambiance (16 pistes, CC0 1.0)
+
+Les pistes de `assets/music/` et `android/app/src/main/assets/music/` sont **générées pour ce projet** par `tools/generate_music.py` :
+
+- 8 biomes × 2 variantes = 16 pistes ;
+- 3 minutes par piste, OGG Vorbis mono 22 050 Hz ;
+- boucle sans couture, démarrage à une position aléatoire ;
+- aucun sample externe, licence **CC0 1.0**.
+
+---
+
 ## Code et direction artistique
 
 Le code de la maquette, la mise en scène, l'interface et le coffre SVG sont produits pour ce prototype de game design. Les ressources visuelles restent sous leurs licences respectives (CC0 / OFL).

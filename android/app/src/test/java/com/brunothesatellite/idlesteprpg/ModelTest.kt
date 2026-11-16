@@ -260,6 +260,11 @@ class ModelTest {
             )
         }
         paths += listOf("fx/cloud_fire0.png")
+        listOf("crypts", "catacombs", "ash", "forge", "peaks", "woods", "abyss", "throne")
+            .forEach { biome ->
+                paths += "music/${biome}_1.ogg"
+                paths += "music/${biome}_2.ogg"
+            }
         val missing = paths.filter { !File(root, it).isFile }
         assertTrue("missing assets: $missing", missing.isEmpty())
     }

@@ -252,6 +252,45 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                         onClick = { vm.previewSound() }
                     )
                 }
+                Spacer(Modifier.height(9.dp))
+                DividerLine()
+                Spacer(Modifier.height(7.dp))
+                ToggleRow(
+                    "Musique d'ambiance",
+                    "Deux pistes par biome, reprise à une position aléatoire.",
+                    ui.musicEnabled
+                ) { vm.setMusicEnabled(it) }
+                if (ui.musicEnabled) {
+                    Spacer(Modifier.height(6.dp))
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Volume musique", fontSize = 8.sp, color = Parchment)
+                        Text(
+                            "${(ui.musicVolume * 100).roundToInt()} %",
+                            fontFamily = Press,
+                            fontSize = 7.sp,
+                            color = Gold
+                        )
+                    }
+                    Slider(
+                        value = ui.musicVolume,
+                        onValueChange = { vm.setMusicVolume(it) },
+                        valueRange = 0f..1f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = GoldLight,
+                            activeTrackColor = Gold,
+                            inactiveTrackColor = Line2
+                        )
+                    )
+                    Text(
+                        "Volume indépendant des effets sonores. La musique se met en pause quand l'application passe en arrière-plan.",
+                        fontSize = 6.2.sp,
+                        color = Muted2,
+                        lineHeight = 9.sp
+                    )
+                }
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {

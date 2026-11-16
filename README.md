@@ -7,7 +7,7 @@
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.9.1 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.10.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -89,7 +89,7 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.9.1.apk
+adb install -r La-Marche-des-Ames-v0.10.0.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.
@@ -230,6 +230,7 @@ WorkManager ──► GarminSyncWorker (30 min)
 - **WorkManager** pour la synchronisation et la maintenance.
 - **Android Keystore** pour la clé et le jeton.
 - **SoundPool** pour les sons 8 bits.
+- **Media3 ExoPlayer** pour les musiques d'ambiance en boucle.
 - **WebView native** pour le manuel hors ligne.
 - **FileProvider** pour installer les APK téléchargés depuis GitHub Releases.
 
@@ -357,9 +358,11 @@ Voir [`docs/reste-a-faire.md`](docs/reste-a-faire.md).
 - **Code, textes et direction artistique originale** : MIT — © 2026 brunothesatellite.
 - **Pixel art** : Dungeon Crawl Stone Soup contributors, CC0 1.0.
 - **Sons 8 bits** : générés pour ce projet, CC0 1.0 (`assets/audio/LICENSE.txt`).
+- **Musiques d'ambiance** : 16 pistes originales CC0 (`assets/music/`), deux variantes de 3 minutes par biome, boucle et démarrage aléatoire.
 - **Polices** : Pixelify Sans et Press Start 2P, SIL Open Font License 1.1.
 
 Détails : [`LICENSES.md`](LICENSES.md), [`assets/CREDITS.md`](assets/CREDITS.md).
+
 
 
 

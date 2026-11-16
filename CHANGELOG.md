@@ -1,5 +1,15 @@
 # Journal des versions
 
+## v0.10.0
+- **16 musiques d'ambiance 8 bits** : deux variantes de 3 minutes pour chacun des 8 biomes, générées pour le projet et publiées en **CC0**.
+- **Lecture en boucle** avec démarrage à une position aléatoire à chaque ouverture, pour éviter la redondance.
+- **Fondu court** au changement de biome.
+- **Réglages musique** : toggle `Musique d'ambiance` et volume indépendant des effets sonores, **activée à 30 % par défaut**.
+- **Cycle de vie** : pause automatique quand l'application passe en arrière-plan, reprise au retour.
+- **Technique** : Media3 ExoPlayer, pistes OGG Vorbis mono 22 050 Hz, ~16 Mo ajoutés.
+- **Générateur** : `tools/generate_music.py` permet de régénérer les 16 pistes.
+- 70 tests unitaires et lint Android OK.
+
 ## v0.9.1
 - **Icône de synchronisation Garmin redessinée** : deux flèches circulaires équilibrées au lieu du glyphe simple, plus lisible dans le petit bouton carré.
 

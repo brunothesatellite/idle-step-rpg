@@ -1,6 +1,6 @@
 # La Marche des Âmes — Android
 
-Version Android native du prototype. **v0.9.1** — APK sideloadé pour Pixel 7a (Android 14+).
+Version Android native du prototype. **v0.10.0** — APK sideloadé pour Pixel 7a (Android 14+).
 
 **Manuel complet :** [`../manuel/index.html`](../manuel/index.html) · accessible dans l'app via `Réglages → Aide → Ouvrir le manuel du jeu`.
 
@@ -27,6 +27,7 @@ Version Android native du prototype. **v0.9.1** — APK sideloadé pour Pixel 7a
 - **Consommables** : 16 objets de soin, ferveur, bombes et buffs temporaires, butin des monstres/coffres, sac en scène, au camp et en combat.
 - **Ressources visibles** : rations, éclats, or et consommables dans une carte Stats dédiée.
 - **Sons 8 bits** : effets originaux CC0, volume réglable, désactivation et test dans les réglages.
+- **Musiques d'ambiance** : 16 pistes originales CC0, deux variantes de 3 minutes par biome, démarrage aléatoire, boucle, fondu au changement de biome, volume indépendant.
 - **Campement** : combat réinitialisé, veillée gratuite +15 %, soins, coffre, journal et inventaire accessibles.
 - **Contenu** : 8 biomes avec murs, sols, statues, props, météo et portes dédiés ; plus de 60 nouvelles créatures ; 36 nouveaux objets de butin ; 8 nouveaux ensembles ; 2 nouveaux effets ; paper doll fidèle aux familles d'objets ; règles de biome ; capacités de gardien ; Codex de collection ; mode Farm par palier ; rencontres spéciales, jalons complets, boss uniques 10/25/50/100, bestiaire.
 - **Sauvegarde** : JSON versionné, copie de secours, export/import contrôlé, widget d'écran d'accueil.
@@ -103,7 +104,7 @@ Play Protect peut avertir ou bloquer une application inconnue de Google lors de 
 - **Release** : bouton de connexion Garmin uniquement, pas d'outil de test.
 - **Debug** : un bouton « Ajouter 500 pas (démo) » est présent dans l'écran Garmin pour tester le moteur sans clé. Il est exclu du release (`BuildConfig.DEBUG`).
 
-## Limites de cette v0.9.1
+## Limites de cette v0.10.0
 
 - L'historique Garmin est limité à 7 jours et à 100 000 pas de rattrapage par synchronisation.
 - La base reste un fichier JSON versionné avec copie de secours, pas encore Room.
@@ -118,6 +119,7 @@ Play Protect peut avertir ou bloquer une application inconnue de Google lors de 
 - Spécifications : [docs/specifications-fonctionnelles.md](../docs/specifications-fonctionnelles.md)
 - Architecture et Garmin : [docs/architecture-android-garmin.md](../docs/architecture-android-garmin.md)
 - Licences : [LICENSES.md](../LICENSES.md)
+
 
 
 

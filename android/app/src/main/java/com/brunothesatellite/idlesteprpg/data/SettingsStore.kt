@@ -62,6 +62,14 @@ class SettingsStore(context: Context) {
         get() = prefs.getFloat("sound_volume", 0.6f).coerceIn(0f, 1f)
         set(value) = prefs.edit().putFloat("sound_volume", value.coerceIn(0f, 1f)).apply()
 
+    var musicEnabled: Boolean
+        get() = prefs.getBoolean("music_enabled", true)
+        set(value) = prefs.edit().putBoolean("music_enabled", value).apply()
+
+    var musicVolume: Float
+        get() = prefs.getFloat("music_volume", 0.30f).coerceIn(0f, 1f)
+        set(value) = prefs.edit().putFloat("music_volume", value.coerceIn(0f, 1f)).apply()
+
     var autoUpdateCheck: Boolean
         get() = prefs.getBoolean("auto_update_check", true)
         set(value) = prefs.edit().putBoolean("auto_update_check", value).apply()

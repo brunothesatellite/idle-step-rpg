@@ -39,6 +39,10 @@ Les deux polices sont distribuées sous **SIL Open Font License 1.1**. Les texte
 L'icône de synchronisation `android/app/src/main/res/drawable/ic_sync.xml` est dérivée de **Material Icons** (Google), publiée sous **Apache License 2.0** :
 <https://github.com/google/material-design-icons>. Elle est utilisée uniquement comme indicateur de synchronisation dans l'interface.
 
+## Musiques d'ambiance - CC0 1.0
+
+Les **16 pistes d'ambiance** de `assets/music/` et `android/app/src/main/assets/music/` sont **générées pour ce projet** par `tools/generate_music.py` (deux variantes de 3 minutes pour chacun des 8 biomes). Aucun sample externe n'est utilisé. Elles sont publiées sous **CC0 1.0 Universal** et peuvent être réutilisées librement.
+
 ## Récapitulatif
 
 | Élément | Titulaire / source | Licence | Usage dans le dépôt |
@@ -47,6 +51,7 @@ L'icône de synchronisation `android/app/src/main/res/drawable/ic_sync.xml` est 
 | Spécifications et textes | brunothesatellite | MIT | `docs/`, `README.md` |
 | Tuiles pixel art | Dungeon Crawl Stone Soup contributors | CC0 1.0 | `assets/` |
 | Sons 8 bits | brunothesatellite (générés) | CC0 1.0 | `assets/audio/` |
+| Musiques d'ambiance | brunothesatellite (générées) | CC0 1.0 | `assets/music/` |
 | Pixelify Sans | The Pixelify Sans Project Authors | OFL 1.1 | `assets/fonts/` |
 | Press Start 2P | The Press Start 2P Project Authors | OFL 1.1 | `assets/fonts/` |
 | Icône sync | Google Material Icons | Apache 2.0 | `android/app/src/main/res/drawable/ic_sync.xml` |

@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg
 
 import android.app.Application
 import android.content.Context
+import com.brunothesatellite.idlesteprpg.audio.AmbientMusic
 import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.data.GameRepository
 import com.brunothesatellite.idlesteprpg.data.SettingsStore
@@ -32,4 +33,5 @@ class AppContainer(val context: Context) {
     val secretStore = SecretStore(context)
     val garminClient = GarminClient()
     val garminRepository = GarminRepository(context, secretStore, garminClient, gameRepository)
+    val ambientMusic = AmbientMusic(context, settings)
 }

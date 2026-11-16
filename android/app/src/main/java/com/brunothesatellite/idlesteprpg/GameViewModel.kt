@@ -13,6 +13,7 @@ import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.engine.Upgrades
+import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.update.UpdateChecker
 import com.brunothesatellite.idlesteprpg.update.UpdateInfo
@@ -61,6 +62,8 @@ data class UiState(
     val onboardingDone: Boolean = true,
     val soundsEnabled: Boolean = true,
     val soundVolume: Float = 0.6f,
+    val musicEnabled: Boolean = true,
+    val musicVolume: Float = 0.30f,
     val syncLog: List<String> = emptyList(),
     val pendingImport: SaveSummary? = null,
     val dayBanner: String? = null,
@@ -91,6 +94,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     private var initialized = false
     private var pendingImportText: String? = null
     private var lastKnownDay: String = ""
+    private var lastBiomeKey: String = ""
 
     init {
         _ui.update {
@@ -109,11 +113,15 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 onboardingDone = container.settings.onboardingDone,
                 soundsEnabled = container.settings.soundsEnabled,
                 soundVolume = container.settings.soundVolume,
+                musicEnabled = container.settings.musicEnabled,
+                musicVolume = container.settings.musicVolume,
                 autoUpdateCheck = container.settings.autoUpdateCheck,
                 lastUpdateCheckAt = container.settings.lastUpdateCheckAt
             )
         }
         lastKnownDay = game.value.day
+        lastBiomeKey = biomeKeyFor(game.value.floor)
+        container.ambientMusic.setBiome(lastBiomeKey)
         refreshGarmin()
         viewModelScope.launch {
             while (isActive) {
@@ -133,6 +141,11 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                     }
                 }
                 lastKnownDay = today
+                val currentBiome = biomeKeyFor(game.value.floor)
+                if (currentBiome != lastBiomeKey) {
+                    lastBiomeKey = currentBiome
+                    container.ambientMusic.setBiome(currentBiome)
+                }
                 delay(100)
             }
         }
@@ -159,6 +172,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         refreshGarmin()
         checkPendingRelease()
         maybeCheckForUpdates()
+        container.ambientMusic.onResume()
         if (!initialized) {
             initialized = true
             return
@@ -173,6 +187,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun onAppPause() {
         visible = false
+        container.ambientMusic.onPause()
         viewModelScope.launch {
             container.gameRepository.mutate { s ->
                 val report = s.offlineReport
@@ -385,6 +400,19 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         SoundFx.configure(container.context)
     }
 
+    fun setMusicEnabled(value: Boolean) {
+        container.settings.musicEnabled = value
+        _ui.update { it.copy(musicEnabled = value) }
+        container.ambientMusic.refreshSettings()
+    }
+
+    fun setMusicVolume(value: Float) {
+        val volume = value.coerceIn(0f, 1f)
+        container.settings.musicVolume = volume
+        _ui.update { it.copy(musicVolume = volume) }
+        container.ambientMusic.applyVolume()
+    }
+
     fun previewSound() {
         SoundFx.preview(container.context)
     }
@@ -392,10 +420,12 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun completeOnboarding() {
         container.settings.onboardingDone = true
         _ui.update { it.copy(onboardingDone = true) }
+        container.ambientMusic.onResume()
     }
 
     fun restartOnboarding() {
         container.settings.onboardingDone = false
+        container.ambientMusic.onPause()
         _ui.update { it.copy(onboardingDone = false, prefsOpen = false) }
     }
 
