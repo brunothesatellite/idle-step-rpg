@@ -1,5 +1,13 @@
 # Journal des versions
 
+## v0.13.0
+- **Consommation** : le décor animé se fige après 10 s sans pas (météo, aura de ferveur, balancements) et la simulation passe de 10 Hz à 2 Hz au repos. Mesuré sur appareil : **~60 fps → 2 fps**, CPU à l'écran **~60-70 % → ~30 %**, arrière-plan inchangé à 0 %.
+- **Boucles supprimées** : l'horodatage d'activité n'écrit plus la sauvegarde toutes les 5 s (mémoire seule, toutes les 30 s) ; maintenance toutes les **2 h** (au lieu de 15 min), synchro de fond toutes les **60 min** avec backoff, widget toutes les 15 min.
+- **Codex** : bandeau de couloir sous chaque biome découvert, dessiné par la **même fonction** que la scène (arches, torches, statues, props, sol).
+- **Interface** : bouton « G » supprimé ; carte « Compte Garmin » déplacée des Stats vers les **réglages** ; devises réorganisées (or seul en haut, rations/éclats/réglages en bas) ; alerte « ! » affichée uniquement si Garmin n'est pas configuré ou si la clé approche de l'expiration.
+- **Onboarding** : la page Garmin propose « CONNECTER GARMIN » et précise que sans clé la marche ne peut pas démarrer.
+- **Manuel** : captures refaites (accueil, réglages, camp, objet, inventaire, codex) et nouvelle **légende numérotée** de l'écran principal.
+
 ## v0.12.1
 - **Résumé d'absence rétabli** : la synchronisation Garmin est désormais effectuée **avant** la simulation d'absence. La réserve étant presque toujours vide à la fermeture (la marche l'a consommée), la simulation ne se déclenchait jamais et l'écran « Bon retour » n'apparaissait plus.
 - La synchro de reprise est **silencieuse et attendue** : pas de toast avant le résumé, indicateur de synchronisation et `lastAdded` mis à jour, simulation lancée sur une réserve fraîche.

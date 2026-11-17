@@ -1,6 +1,7 @@
 package com.brunothesatellite.idlesteprpg.sync
 
 import android.content.Context
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -32,16 +33,17 @@ object SyncScheduler {
     private const val WORK_NAME = "garmin-periodic-sync"
 
     fun schedule(context: Context) {
-        val request = PeriodicWorkRequestBuilder<GarminSyncWorker>(30, TimeUnit.MINUTES)
+        val request = PeriodicWorkRequestBuilder<GarminSyncWorker>(60, TimeUnit.MINUTES)
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
             )
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.MINUTES)
             .build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             request
         )
     }

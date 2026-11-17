@@ -7,7 +7,7 @@
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.12.1 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.13.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -91,7 +91,7 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.12.1.apk
+adb install -r La-Marche-des-Ames-v0.13.0.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.

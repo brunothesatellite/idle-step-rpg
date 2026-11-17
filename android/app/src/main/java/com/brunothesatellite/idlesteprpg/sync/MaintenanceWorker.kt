@@ -28,11 +28,13 @@ object MaintenanceScheduler {
     private const val WORK_NAME = "maintenance-coffres-cle"
 
     fun schedule(context: Context) {
-        val request = PeriodicWorkRequestBuilder<MaintenanceWorker>(15, TimeUnit.MINUTES)
+        // Les coffres vivent 24 h : une passe toutes les 2 h suffit largement et
+        // évite de réveiller le processus 96 fois par jour.
+        val request = PeriodicWorkRequestBuilder<MaintenanceWorker>(120, TimeUnit.MINUTES)
             .build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             request
         )
     }

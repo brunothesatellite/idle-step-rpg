@@ -51,7 +51,7 @@ private val PAGES = listOf(
         title = "GARMIN PERSONAL API",
         text = "La connexion se fait avec une clé personnelle Garmin et un jeton de 24 h. " +
             "Le mot de passe et le 2FA restent dans le navigateur : l'application ne les voit jamais.",
-        note = "Clé personnelle, 2FA chez Garmin, aucun Health Connect.",
+        note = "Sans clé, la marche ne peut pas démarrer : aucune source de pas.",
         icon = "item/misc_crystal.png"
     ),
     OnboardingPage(
@@ -71,7 +71,7 @@ private val PAGES = listOf(
 )
 
 @Composable
-fun OnboardingOverlay(onFinish: () -> Unit) {
+fun OnboardingOverlay(onFinish: () -> Unit, onConnect: () -> Unit) {
     var page by remember { mutableIntStateOf(0) }
     val current = PAGES[page]
     Box(
@@ -139,10 +139,14 @@ fun OnboardingOverlay(onFinish: () -> Unit) {
                 }
             }
             Spacer(Modifier.height(16.dp))
+            if (page == 1) {
+                OverlayAction("CONNECTER GARMIN", Modifier.fillMaxWidth(), onConnect, primary = true)
+                Spacer(Modifier.height(5.dp))
+            }
             if (page < PAGES.lastIndex) {
                 OverlayAction("SUIVANT", Modifier.fillMaxWidth(), {
                     page++
-                }, primary = true)
+                }, primary = page != 1)
                 Spacer(Modifier.height(5.dp))
                 OverlayAction("PASSER", Modifier.fillMaxWidth(), onFinish)
             } else {

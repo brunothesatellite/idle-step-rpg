@@ -52,6 +52,8 @@ import kotlin.math.roundToInt
 import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 @Composable
 fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
@@ -415,6 +417,64 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     { confirmClear = true },
                     danger = true
                 )
+            }
+            Spacer(Modifier.height(10.dp))
+            PixelCard(
+                Modifier.fillMaxWidth(),
+                borderColor = if (ui.connected) Green.copy(alpha = 0.3f) else Ember.copy(alpha = 0.35f)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        SectionLabel("Compte Garmin")
+                        Text(
+                            if (ui.connected) "Connecté · Personal API" else "Non connecté",
+                            fontSize = 7.5.sp,
+                            color = if (ui.connected) Green else Ember
+                        )
+                    }
+                    Box(
+                        Modifier
+                            .size(8.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(if (ui.connected) Green else Ember)
+                    )
+                }
+                val keyDays = ui.keyExpiry?.let { ChronoUnit.DAYS.between(LocalDate.now(), it) }
+                if (keyDays != null && keyDays < 30) {
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        if (keyDays < 0) "Clé Garmin expirée — remplacez-la."
+                        else "Clé Garmin expire dans $keyDays jour(s).",
+                        fontSize = 6.8.sp,
+                        color = Blood
+                    )
+                }
+                Spacer(Modifier.height(6.dp))
+                if (ui.connected) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        OverlayAction(
+                            "SYNCHRONISER",
+                            Modifier.weight(1f),
+                            { vm.syncNow() },
+                            enabled = !ui.syncing
+                        )
+                        OverlayAction("GÉRER LA CLÉ", Modifier.weight(1f), { vm.openSettings() })
+                    }
+                } else {
+                    Text(
+                        "Sans clé Garmin, la marche ne peut pas démarrer : aucune source de pas.",
+                        fontSize = 7.sp,
+                        color = Muted,
+                        lineHeight = 10.sp
+                    )
+                    Spacer(Modifier.height(5.dp))
+                    OverlayAction(
+                        "CONNECTER GARMIN",
+                        Modifier.fillMaxWidth(),
+                        { vm.openSettings() },
+                        primary = true
+                    )
+                }
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {

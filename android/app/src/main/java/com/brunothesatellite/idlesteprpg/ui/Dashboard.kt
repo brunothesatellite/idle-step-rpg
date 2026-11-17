@@ -130,7 +130,7 @@ fun Dashboard(
                     onUseConsumable
                 )
                 "upgrades" -> UpgradesTab(state, ui, onBuyUpgrade, onOpenSettings)
-                else -> StatsTab(state, ui, onOpenSettings, onSync, onOpenJournal, onToggleFarm, onOpenCodex)
+                else -> StatsTab(state, ui, onOpenJournal, onToggleFarm, onOpenCodex)
             }
         }
     }
@@ -196,21 +196,26 @@ private fun DashboardHeader(
         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 CurrencyChip("item/01.png", formatInt(state.gold))
-                CurrencyChip("item/meat_ration.png", state.rations.toString())
             }
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                CurrencyChip("item/meat_ration.png", state.rations.toString())
                 CurrencyChip("item/misc_crystal.png", state.shards.toString())
-                Box(
-                    Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Panel2)
-                        .border(1.dp, if (ui.connected) Green.copy(alpha = 0.5f) else Line2, RoundedCornerShape(4.dp))
-                        .clickable(onClick = onOpenSettings)
-                        .semantics { contentDescription = "Compte Garmin" },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("G", fontFamily = Press, fontSize = 8.sp, color = if (ui.connected) Green else Gold)
+                val keyDays = ui.keyExpiry?.let { ChronoUnit.DAYS.between(LocalDate.now(), it) }
+                val needsGarmin = !ui.connected || (keyDays != null && keyDays < 7)
+                // Alerte Garmin : n'apparaît que sans clé ou quand elle approche de l'expiration.
+                if (needsGarmin) {
+                    Box(
+                        Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Panel2)
+                            .border(1.dp, Ember.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                            .clickable(onClick = onOpenSettings)
+                            .semantics { contentDescription = "Configurer Garmin" },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("!", fontFamily = Press, fontSize = 8.sp, color = Ember)
+                    }
                 }
                 Box(
                     Modifier
@@ -281,8 +286,6 @@ private fun Tabs(active: String, onTab: (String) -> Unit) {
 private fun StatsTab(
     state: GameState,
     ui: UiState,
-    onOpenSettings: () -> Unit,
-    onSync: () -> Unit,
     onOpenJournal: () -> Unit,
     onToggleFarm: (Boolean) -> Unit,
     onOpenCodex: () -> Unit
@@ -340,8 +343,6 @@ private fun StatsTab(
     AchievementsCard(state)
     Spacer(Modifier.height(5.dp))
     JournalCard(state, onOpenJournal)
-    Spacer(Modifier.height(5.dp))
-    GarminCard(ui, onOpenSettings, onSync)
 }
 
 @Composable
@@ -685,66 +686,6 @@ private fun JournalCard(state: GameState, onOpen: () -> Unit) {
                 Text(entry.text, fontSize = 7.5.sp, color = Parchment.copy(alpha = 0.78f), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(entry.time, fontSize = 5.8.sp, color = Muted2)
             }
-        }
-    }
-}
-
-@Composable
-private fun GarminCard(ui: UiState, onOpenSettings: () -> Unit, onSync: () -> Unit) {
-    PixelCard(
-        Modifier.fillMaxWidth(),
-        borderColor = if (ui.connected) Green.copy(alpha = 0.25f) else Line,
-        background = Panel.copy(alpha = 0.78f)
-    ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel("Compte Garmin")
-            Spacer(Modifier.weight(1f))
-            Box(
-                Modifier
-                    .size(6.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(if (ui.connected) Green else Blood)
-            )
-            Spacer(Modifier.width(4.dp))
-            Text(
-                if (ui.connected) "Connecté" else "Non connecté",
-                fontSize = 6.5.sp,
-                color = if (ui.connected) Green else Blood
-            )
-        }
-        Spacer(Modifier.height(4.dp))
-        if (ui.connected) {
-            Text(
-                "Dernière sync · ${formatTime(ui.lastSync)}" +
-                    (ui.keyExpiry?.let { " · clé ${formatDate(it)}" } ?: ""),
-                fontSize = 7.sp,
-                color = Muted
-            )
-            val days = ui.keyExpiry?.let { ChronoUnit.DAYS.between(LocalDate.now(), it) }
-            if (days != null && days <= 30) {
-                Text(
-                    if (days < 0) "Clé Garmin expirée — remplacez-la." else "Clé Garmin expire dans $days jour(s).",
-                    fontSize = 6.5.sp,
-                    color = Blood
-                )
-            }
-            if (ui.lastError.isNotBlank()) {
-                Text(ui.lastError, fontSize = 6.5.sp, color = Blood, maxLines = 2)
-            }
-            Spacer(Modifier.height(5.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                SmallAction("Synchroniser", Modifier.weight(1f), onSync)
-                SmallAction("Gérer la clé", Modifier.weight(1f), onOpenSettings)
-            }
-        } else {
-            Text(
-                "Connectez votre compte Garmin avec une clé Personal API. La 2FA reste chez Garmin.",
-                fontSize = 7.sp,
-                color = Muted,
-                lineHeight = 10.sp
-            )
-            Spacer(Modifier.height(5.dp))
-            SmallAction("Connecter Garmin", Modifier.fillMaxWidth(), onOpenSettings, primary = true)
         }
     }
 }

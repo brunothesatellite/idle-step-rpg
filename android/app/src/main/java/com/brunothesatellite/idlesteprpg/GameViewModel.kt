@@ -132,12 +132,20 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             while (isActive) {
                 val reportOpen = game.value.offlineReport?.let { it.acknowledgedAt == 0L } == true
+                var stepMs = 500L
                 if (visible && !resuming && !_ui.value.campOpen && !_ui.value.settingsOpen &&
                     !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen &&
                     !_ui.value.consumablesOpen
                 ) {
-                    val chestsBefore = game.value.chestsOpened
-                    container.gameRepository.tick(100.0)
+                    val snapshot = game.value
+                    // Cadence adaptative : 10 Hz quand quelque chose peut bouger,
+                    // 2 Hz au repos (réserve vide, pas de combat ni de rencontre).
+                    val busy = snapshot.stepBank > 0.0 ||
+                        snapshot.fight != null ||
+                        snapshot.special != null
+                    stepMs = if (busy) 100L else 500L
+                    val chestsBefore = snapshot.chestsOpened
+                    container.gameRepository.tick(stepMs.toDouble())
                     if (game.value.chestsOpened > chestsBefore) {
                         _toasts.tryEmit(
                             "Coffre ouvert · +${formatInt(game.value.chestFlashGold)} or"
@@ -158,13 +166,14 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                     lastBiomeKey = currentBiome
                     container.ambientMusic.setBiome(currentBiome)
                 }
-                delay(100)
+                delay(stepMs)
             }
         }
         viewModelScope.launch {
+            // Horodatage d'activité : en mémoire seulement, sans sauvegarde JSON.
             while (isActive) {
-                delay(5000)
-                container.gameRepository.markActive()
+                delay(30_000)
+                if (visible) container.gameRepository.touchActive()
             }
         }
         viewModelScope.launch {

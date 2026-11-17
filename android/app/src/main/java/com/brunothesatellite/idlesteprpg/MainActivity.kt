@@ -174,9 +174,9 @@ private fun GameRoot(vm: GameViewModel) {
             ui.selectedItem != null -> vm.dismissItem()
             ui.chestOpen -> vm.closeChest()
             ui.journalOpen -> vm.closeJournal()
+            ui.settingsOpen -> vm.closeSettings()
             ui.prefsOpen -> vm.closePreferences()
             ui.campOpen -> vm.closeCamp()
-            ui.settingsOpen -> vm.closeSettings()
         }
     }
 
@@ -283,11 +283,13 @@ private fun GameRoot(vm: GameViewModel) {
                 )
             }
 
-            if (ui.settingsOpen) {
-                GarminScreen(vm = vm, ui = ui, onClose = vm::closeSettings)
-            }
             if (ui.prefsOpen) {
                 SettingsOverlay(vm = vm, ui = ui, onClose = vm::closePreferences)
+            }
+            // GarminScreen est dessiné après les réglages pour s'empiler par-dessus
+            // (on y accède depuis la section « Compte Garmin »).
+            if (ui.settingsOpen) {
+                GarminScreen(vm = vm, ui = ui, onClose = vm::closeSettings)
             }
             if (ui.codexOpen) {
                 CodexOverlay(state = state, onClose = vm::closeCodex)
@@ -398,7 +400,13 @@ private fun GameRoot(vm: GameViewModel) {
                 )
             }
             if (!ui.onboardingDone) {
-                OnboardingOverlay(onFinish = vm::completeOnboarding)
+                OnboardingOverlay(
+                    onFinish = vm::completeOnboarding,
+                    onConnect = {
+                        vm.completeOnboarding()
+                        vm.openSettings()
+                    }
+                )
             }
         }
     }

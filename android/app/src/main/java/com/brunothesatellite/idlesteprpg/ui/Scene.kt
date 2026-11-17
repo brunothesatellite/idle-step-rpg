@@ -94,7 +94,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
-private data class BiomePalette(
+internal data class BiomePalette(
     val top: Color,
     val mid: Color,
     val bottom: Color,
@@ -121,7 +121,7 @@ internal data class BiomeVisuals(
     val fireClouds: Boolean = false
 )
 
-private fun biomePalette(key: String): BiomePalette = when (key) {
+internal fun biomePalette(key: String): BiomePalette = when (key) {
     "crypts" -> BiomePalette(
         top = Color(0xFF07050C), mid = Color(0xFF151022), bottom = Color(0xFF09060F),
         wallTint = Color(0xFF3A2C4C),
@@ -298,16 +298,31 @@ fun Scene(
         if (bossName != null) SoundFx.play(context, "boss", 0.9f)
     }
 
+    // Rien ne peut bouger (réserve vide, pas de combat) : au bout de 10 s on gèle
+    // le décor animé pour ne plus redessiner 60 fois par seconde.
+    val sceneIdle = !walking && state.fight == null && state.special == null &&
+        state.stepBank <= 0.0
+    var decorationsFrozen by remember { mutableStateOf(false) }
+    LaunchedEffect(sceneIdle) {
+        if (!sceneIdle) {
+            decorationsFrozen = false
+        } else {
+            delay(10_000)
+            decorationsFrozen = true
+        }
+    }
+    val animateDecor = !reducedMotion && !decorationsFrozen
+
     BoxWithConstraints(modifier.fillMaxSize().background(Ink)) {
         val sceneWidth = maxWidth
         val sceneHeight = maxHeight
 
-        SceneBackground(state, density.density)
+        SceneBackground(state, density.density, animateDecor)
 
         if (state.fight == null && state.distance >= 85) {
             GateView(
                 state,
-                reducedMotion,
+                animateDecor,
                 Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 0.dp, bottom = 58.dp)
@@ -333,6 +348,7 @@ fun Scene(
             state,
             walking,
             reducedMotion,
+            animateDecor,
             Modifier.align(Alignment.BottomStart).padding(start = 18.dp, bottom = 58.dp)
         )
 
@@ -350,7 +366,7 @@ fun Scene(
         if (waitingForSteps && state.distance < 85) {
             WaitingMob(
                 state,
-                reducedMotion,
+                animateDecor,
                 Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 58.dp)
             )
         }
@@ -414,7 +430,7 @@ fun Scene(
 }
 
 @Composable
-private fun rememberAssets(paths: List<String>): List<ImageBitmap?> {
+internal fun rememberAssets(paths: List<String>): List<ImageBitmap?> {
     val result = ArrayList<ImageBitmap?>(paths.size)
     for (path in paths) result.add(rememberAsset(path))
     return result
@@ -491,8 +507,256 @@ private fun DrawScope.drawWeather(
     }
 }
 
+/**
+ * Dessine le couloir d'un biome : fond, mur estompé, arches (les « fenêtres »),
+ * statues, props au sol, bannières, torches, sol et ligne d'arête.
+ *
+ * Partagé par la scène et par le bandeau du Codex, pour qu'ils montrent
+ * exactement la même chose. Toutes les tailles sont proportionnelles au canevas
+ * (fractions calibrées sur le rendu de la scène, ~327 dp de haut).
+ */
+internal fun DrawScope.drawCorridor(
+    palette: BiomePalette,
+    walls: List<ImageBitmap?>,
+    floors: List<ImageBitmap?>,
+    statues: List<ImageBitmap?>,
+    props: List<ImageBitmap?>,
+    fireCloud: ImageBitmap?,
+    withFireClouds: Boolean
+) {
+    val w = size.width
+    val h = size.height
+    val tile = h * 0.208f
+    val groundTop = h * 0.80f
+    val archTop = h * 0.30f
+    val archHeight = h * 0.46f
+    val archWidth = w * 0.24f
+    // Le rayon suit la hauteur de l'arche (et non la largeur seule), sinon la
+    // forme devient une pilule quand le canevas est très aplati (bandeau).
+    val archRadiusValue = minOf(w * 0.12f, archHeight * 0.29f)
+    val archRadius = androidx.compose.ui.geometry.CornerRadius(archRadiusValue, archRadiusValue)
+    val archInset = h * 0.012f
+    val archStroke = (h * 0.009f).coerceAtLeast(1f)
+
+    // Fond atmosphérique
+    drawRect(
+        Brush.verticalGradient(
+            listOf(palette.top, palette.mid, palette.bottom)
+        )
+    )
+
+    // Mur : simple toile de fond très estompée
+    if (walls.isNotEmpty()) {
+        var row = 0
+        var y = 0f
+        while (y < groundTop) {
+            var col = 0
+            var x = 0f
+            while (x < w) {
+                val wall = walls[(row + col) % walls.size]
+                if (wall != null) {
+                    drawImage(
+                        image = wall,
+                        dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
+                        dstSize = IntSize(tile.roundToInt(), tile.roundToInt()),
+                        alpha = 0.22f,
+                        filterQuality = FilterQuality.None
+                    )
+                }
+                x += tile
+                col++
+            }
+            y += tile
+            row++
+        }
+        drawRect(palette.wallTint.copy(alpha = 0.16f))
+    }
+
+    drawRect(
+        Brush.verticalGradient(
+            listOf(Color(0xE607050C), Color(0x33150F22), Color(0xCC09060F)),
+            startY = 0f,
+            endY = h
+        )
+    )
+
+    // Arches et statues
+    val archXs = listOf(w * 0.20f, w * 0.50f, w * 0.80f)
+    val statueSize = h * 0.177f
+    var statueIndex = 0
+    archXs.forEach { cx ->
+        val left = cx - archWidth / 2f
+        drawRoundRect(
+            color = Color(0xFF0D0917),
+            topLeft = Offset(left, archTop),
+            size = Size(archWidth, archHeight),
+            cornerRadius = archRadius
+        )
+        drawRoundRect(
+            color = Color(0xFF2D223B),
+            topLeft = Offset(left, archTop),
+            size = Size(archWidth, archHeight),
+            cornerRadius = archRadius,
+            style = Stroke(width = archStroke)
+        )
+        drawRoundRect(
+            color = Color(0x332D223B),
+            topLeft = Offset(left + archInset, archTop + archInset),
+            size = Size(archWidth - archInset * 2f, archHeight - archInset * 2f),
+            cornerRadius = archRadius
+        )
+        val statue = if (statues.isNotEmpty()) statues[statueIndex % statues.size] else null
+        if (statue != null) {
+            drawImage(
+                image = statue,
+                dstOffset = IntOffset(
+                    (cx - statueSize / 2f).roundToInt(),
+                    (groundTop - statueSize / 2f).roundToInt()
+                ),
+                dstSize = IntSize(statueSize.roundToInt(), statueSize.roundToInt()),
+                alpha = 0.55f,
+                filterQuality = FilterQuality.None
+            )
+        }
+        statueIndex++
+    }
+
+    // Props posés sur la ligne de sol
+    if (props.isNotEmpty()) {
+        val positions = listOf(0.08f, 0.92f, 0.66f)
+        val propSize = h * 0.159f
+        props.forEachIndexed { index, prop ->
+            if (prop != null && index < positions.size) {
+                drawImage(
+                    image = prop,
+                    dstOffset = IntOffset(
+                        (w * positions[index] - propSize / 2f).roundToInt(),
+                        (groundTop - propSize * 0.9f).roundToInt()
+                    ),
+                    dstSize = IntSize(propSize.roundToInt(), propSize.roundToInt()),
+                    alpha = 0.46f,
+                    filterQuality = FilterQuality.None
+                )
+            }
+        }
+    }
+
+    // Nuages de feu (cavernes de cendre)
+    if (withFireClouds && fireCloud != null) {
+        val cloudSize = h * 0.171f
+        listOf(0.24f, 0.76f).forEach { fraction ->
+            drawImage(
+                image = fireCloud,
+                dstOffset = IntOffset(
+                    (w * fraction - cloudSize / 2f).roundToInt(),
+                    (groundTop - cloudSize * 0.75f).roundToInt()
+                ),
+                dstSize = IntSize(cloudSize.roundToInt(), cloudSize.roundToInt()),
+                alpha = 0.24f,
+                filterQuality = FilterQuality.None
+            )
+        }
+    }
+
+    // Bannières suspendues
+    val bannerWidth = w * 0.067f
+    val bannerHeight = h * 0.25f
+    listOf(0.31f, 0.62f).forEach { fraction ->
+        drawRoundRect(
+            color = Color(0xFF4A1D26),
+            topLeft = Offset(w * fraction - bannerWidth / 2f, 0f),
+            size = Size(bannerWidth, bannerHeight),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx(), 2.dp.toPx())
+        )
+        drawRect(
+            color = Color(0x88C4984E),
+            topLeft = Offset(w * fraction - bannerWidth / 2f, bannerHeight * 0.38f),
+            size = Size(bannerWidth, (h * 0.0046f).coerceAtLeast(1f))
+        )
+    }
+
+    // Torches
+    val glow = h * 0.220f
+    val flame = h * 0.030f
+    listOf(0.20f, 0.50f, 0.80f).forEach { fraction ->
+        val cx = w * fraction
+        val cy = h * 0.32f
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(
+                    palette.torch.copy(alpha = 0.33f),
+                    palette.torch.copy(alpha = 0.07f),
+                    Color.Transparent
+                ),
+                center = Offset(cx, cy),
+                radius = glow
+            ),
+            radius = glow,
+            center = Offset(cx, cy)
+        )
+        val flamePath = Path().apply {
+            moveTo(cx, cy - flame)
+            quadraticBezierTo(cx + flame * 0.78f, cy - flame * 0.11f, cx + flame * 0.22f, cy + flame * 0.89f)
+            quadraticBezierTo(cx, cy + flame * 1.11f, cx - flame * 0.44f, cy + flame * 0.67f)
+            quadraticBezierTo(cx - flame * 0.78f, cy - flame * 0.11f, cx, cy - flame)
+            close()
+        }
+        drawPath(flamePath, Brush.verticalGradient(listOf(palette.torchLight, palette.torch, palette.torchDeep)))
+        drawRoundRect(
+            color = Color(0xFF3A2414),
+            topLeft = Offset(cx - w * 0.008f, cy + flame),
+            size = Size(w * 0.017f, h * 0.049f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.dp.toPx())
+        )
+    }
+
+    // Sol
+    drawRect(
+        Brush.verticalGradient(listOf(palette.floorTop, palette.floorBottom)),
+        topLeft = Offset(0f, groundTop),
+        size = Size(w, h - groundTop)
+    )
+    if (floors.isNotEmpty()) {
+        val floorTile = h * 0.165f
+        var row = 0
+        var y = groundTop
+        while (y < h) {
+            var col = 0
+            var x = 0f
+            while (x < w) {
+                val floor = floors[(row + col) % floors.size]
+                if (floor != null) {
+                    drawImage(
+                        image = floor,
+                        dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
+                        dstSize = IntSize(floorTile.roundToInt(), floorTile.roundToInt()),
+                        alpha = 0.33f,
+                        filterQuality = FilterQuality.None
+                    )
+                }
+                x += floorTile
+                col++
+            }
+            y += floorTile
+            row++
+        }
+    }
+    val edgeHeight = h * 0.012f
+    drawRect(
+        Brush.verticalGradient(listOf(palette.groundEdge, palette.groundEdgeDeep)),
+        topLeft = Offset(0f, groundTop - edgeHeight / 2f),
+        size = Size(w, edgeHeight)
+    )
+    drawLine(
+        color = palette.groundLine,
+        start = Offset(0f, groundTop - edgeHeight / 2f),
+        end = Offset(w, groundTop - edgeHeight / 2f),
+        strokeWidth = (h * 0.003f).coerceAtLeast(1f)
+    )
+}
+
 @Composable
-private fun SceneBackground(state: GameState, density: Float) {
+private fun SceneBackground(state: GameState, density: Float, animate: Boolean) {
     val biomeKey = biomeKeyFor(state.floor)
     val palette = biomePalette(biomeKey)
     val visuals = biomeVisuals(biomeKey)
@@ -508,221 +772,20 @@ private fun SceneBackground(state: GameState, density: Float) {
         animationSpec = infiniteRepeatable(tween(9000, easing = LinearEasing), RepeatMode.Restart),
         label = "drift"
     )
+    // Valeur figée quand le décor est gelé : plus aucune lecture de l'animation
+    // dans le dessin, donc plus aucune invalidation par frame.
+    var frozenDrift by remember { mutableStateOf(0f) }
+    LaunchedEffect(animate) {
+        if (!animate) frozenDrift = drift
+    }
 
     Canvas(Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
-        val tile = 68.dp.toPx()
-        val groundTop = h * 0.80f
-        val archTop = h * 0.30f
-        val archHeight = h * 0.46f
 
-        drawRect(
-            Brush.verticalGradient(
-                listOf(palette.top, palette.mid, palette.bottom)
-            )
-        )
+        drawCorridor(palette, walls, floors, statues, props, fireCloud, visuals.fireClouds)
 
-        if (walls.isNotEmpty()) {
-            var row = 0
-            var y = 0f
-            while (y < groundTop) {
-                var col = 0
-                var x = 0f
-                while (x < w) {
-                    val wall = walls[(row + col) % walls.size]
-                    if (wall != null) {
-                        drawImage(
-                            image = wall,
-                            dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
-                            dstSize = IntSize(tile.roundToInt(), tile.roundToInt()),
-                            alpha = 0.22f,
-                            filterQuality = FilterQuality.None
-                        )
-                    }
-                    x += tile
-                    col++
-                }
-                y += tile
-                row++
-            }
-            drawRect(palette.wallTint.copy(alpha = 0.16f))
-        }
-
-        drawRect(
-            Brush.verticalGradient(
-                listOf(Color(0xE607050C), Color(0x33150F22), Color(0xCC09060F)),
-                startY = 0f,
-                endY = h
-            )
-        )
-
-        val archXs = listOf(w * 0.20f, w * 0.50f, w * 0.80f)
-        var statueIndex = 0
-        archXs.forEach { cx ->
-            val left = cx - w * 0.12f
-            drawRoundRect(
-                color = Color(0xFF0D0917),
-                topLeft = Offset(left, archTop),
-                size = Size(w * 0.24f, archHeight),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.12f, w * 0.12f)
-            )
-            drawRoundRect(
-                color = Color(0xFF2D223B),
-                topLeft = Offset(left, archTop),
-                size = Size(w * 0.24f, archHeight),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.12f, w * 0.12f),
-                style = Stroke(width = 3.dp.toPx())
-            )
-            drawRoundRect(
-                color = Color(0x332D223B),
-                topLeft = Offset(left + 4.dp.toPx(), archTop + 4.dp.toPx()),
-                size = Size(w * 0.24f - 8.dp.toPx(), archHeight - 8.dp.toPx()),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.12f, w * 0.12f)
-            )
-            val statue = if (statues.isNotEmpty()) statues[statueIndex % statues.size] else null
-            if (statue != null) {
-                val ss = 58.dp.toPx()
-                drawImage(
-                    image = statue,
-                    dstOffset = IntOffset((cx - ss / 2).roundToInt(), (groundTop - ss / 2).roundToInt()),
-                    dstSize = IntSize(ss.roundToInt(), ss.roundToInt()),
-                    alpha = 0.55f,
-                    filterQuality = FilterQuality.None
-                )
-            }
-            statueIndex++
-        }
-
-        if (props.isNotEmpty()) {
-            val positions = listOf(0.08f, 0.92f, 0.66f)
-            props.forEachIndexed { index, prop ->
-                if (prop != null && index < positions.size) {
-                    val ps = 52.dp.toPx()
-                    drawImage(
-                        image = prop,
-                        dstOffset = IntOffset(
-                            (w * positions[index] - ps / 2).roundToInt(),
-                            (groundTop - ps * 0.9f).roundToInt()
-                        ),
-                        dstSize = IntSize(ps.roundToInt(), ps.roundToInt()),
-                        alpha = 0.46f,
-                        filterQuality = FilterQuality.None
-                    )
-                }
-            }
-        }
-
-        if (visuals.fireClouds && fireCloud != null) {
-            listOf(0.24f, 0.76f).forEach { fraction ->
-                val cs = 56.dp.toPx()
-                drawImage(
-                    image = fireCloud,
-                    dstOffset = IntOffset(
-                        (w * fraction - cs / 2).roundToInt(),
-                        (groundTop - cs * 0.75f).roundToInt()
-                    ),
-                    dstSize = IntSize(cs.roundToInt(), cs.roundToInt()),
-                    alpha = 0.24f,
-                    filterQuality = FilterQuality.None
-                )
-            }
-        }
-
-        // bannières
-        listOf(0.31f, 0.62f).forEach { fraction ->
-            val bw = 24.dp.toPx()
-            val bh = h * 0.25f
-            drawRoundRect(
-                color = Color(0xFF4A1D26),
-                topLeft = Offset(w * fraction - bw / 2, 0f),
-                size = Size(bw, bh),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx(), 2.dp.toPx())
-            )
-            drawRect(
-                color = Color(0x88C4984E),
-                topLeft = Offset(w * fraction - bw / 2, bh * 0.38f),
-                size = Size(bw, 1.5.dp.toPx())
-            )
-        }
-
-        // torches
-        listOf(0.20f, 0.50f, 0.80f).forEach { fraction ->
-            val cx = w * fraction
-            val cy = h * 0.32f
-            drawCircle(
-                brush = Brush.radialGradient(
-                    listOf(
-                        palette.torch.copy(alpha = 0.33f),
-                        palette.torch.copy(alpha = 0.07f),
-                        Color.Transparent
-                    ),
-                    center = Offset(cx, cy),
-                    radius = 72.dp.toPx()
-                ),
-                radius = 72.dp.toPx(),
-                center = Offset(cx, cy)
-            )
-            val flame = Path().apply {
-                moveTo(cx, cy - 9.dp.toPx())
-                quadraticBezierTo(cx + 7.dp.toPx(), cy - 1.dp.toPx(), cx + 2.dp.toPx(), cy + 8.dp.toPx())
-                quadraticBezierTo(cx, cy + 10.dp.toPx(), cx - 4.dp.toPx(), cy + 6.dp.toPx())
-                quadraticBezierTo(cx - 7.dp.toPx(), cy - 1.dp.toPx(), cx, cy - 9.dp.toPx())
-                close()
-            }
-            drawPath(flame, Brush.verticalGradient(listOf(palette.torchLight, palette.torch, palette.torchDeep)))
-            drawRoundRect(
-                color = Color(0xFF3A2414),
-                topLeft = Offset(cx - 3.dp.toPx(), cy + 9.dp.toPx()),
-                size = Size(6.dp.toPx(), 16.dp.toPx()),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.dp.toPx())
-            )
-        }
-
-        // sol
-        drawRect(
-            Brush.verticalGradient(listOf(palette.floorTop, palette.floorBottom)),
-            topLeft = Offset(0f, groundTop),
-            size = Size(w, h - groundTop)
-        )
-        if (floors.isNotEmpty()) {
-            val gt = 54.dp.toPx()
-            var row = 0
-            var y = groundTop
-            while (y < h) {
-                var col = 0
-                var x = 0f
-                while (x < w) {
-                    val floor = floors[(row + col) % floors.size]
-                    if (floor != null) {
-                        drawImage(
-                            image = floor,
-                            dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
-                            dstSize = IntSize(gt.roundToInt(), gt.roundToInt()),
-                            alpha = 0.33f,
-                            filterQuality = FilterQuality.None
-                        )
-                    }
-                    x += gt
-                    col++
-                }
-                y += gt
-                row++
-            }
-        }
-        drawRect(
-            Brush.verticalGradient(listOf(palette.groundEdge, palette.groundEdgeDeep)),
-            topLeft = Offset(0f, groundTop - 2.dp.toPx()),
-            size = Size(w, 4.dp.toPx())
-        )
-        drawLine(
-            color = palette.groundLine,
-            start = Offset(0f, groundTop - 2.dp.toPx()),
-            end = Offset(w, groundTop - 2.dp.toPx()),
-            strokeWidth = 1.dp.toPx()
-        )
-
-        drawWeather(palette, visuals.weather, drift, state.floor)
+        drawWeather(palette, visuals.weather, if (animate) drift else frozenDrift, state.floor)
 
         // rochers de premier plan
         drawCircle(Color(0xFF0A0710), radius = 38.dp.toPx(), center = Offset(w * 0.04f, h + 8.dp.toPx()))
@@ -1075,6 +1138,7 @@ private fun HeroUnit(
     state: GameState,
     walking: Boolean,
     reducedMotion: Boolean,
+    animateDecor: Boolean,
     modifier: Modifier = Modifier
 ) {
     val stats = statsOf(state)
@@ -1117,7 +1181,7 @@ private fun HeroUnit(
     val transition = rememberInfiniteTransition(label = "hero")
     val bob by transition.animateFloat(
         initialValue = 0f,
-        targetValue = -3f,
+        targetValue = if (animateDecor) -3f else 0f,
         animationSpec = infiniteRepeatable(tween(420), RepeatMode.Reverse),
         label = "bob"
     )
@@ -1131,6 +1195,7 @@ private fun HeroUnit(
             if (!reducedMotion && state.ferveur > 0) {
                 FerveurAura(
                     ferveur = state.ferveur,
+                    animate = animateDecor,
                     modifier = Modifier
                         .size(104.dp)
                         .align(Alignment.BottomCenter)
@@ -1148,7 +1213,7 @@ private fun HeroUnit(
                 Modifier
                     .size(96.dp)
                     .align(Alignment.BottomCenter)
-                    .offset(y = if (walking && !reducedMotion) bob.dp else 0.dp)
+                    .offset(y = if (walking && animateDecor) bob.dp else 0.dp)
             ) {
                 AssetImage("hero/human_m.png", Modifier.fillMaxSize())
                 bodyLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
@@ -1371,7 +1436,7 @@ private fun BossAura(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun FerveurAura(ferveur: Int, modifier: Modifier = Modifier) {
+private fun FerveurAura(ferveur: Int, animate: Boolean, modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "ferveur")
     val pulse by transition.animateFloat(
         initialValue = 0.55f,
@@ -1381,12 +1446,15 @@ private fun FerveurAura(ferveur: Int, modifier: Modifier = Modifier) {
     )
     val strength = (ferveur / 100f).coerceIn(0.15f, 1f)
     Canvas(modifier) {
+        // Sans animation, la lueur reste fixe : aucune lecture de `pulse` dans le
+        // dessin, donc plus d'invalidation par frame.
+        val pulseValue = if (animate) pulse else 0.78f
         val center = Offset(size.width / 2f, size.height * 0.62f)
         val radius = size.minDimension * 0.55f
         drawCircle(
             brush = Brush.radialGradient(
                 listOf(
-                    Ember.copy(alpha = 0.34f * strength * pulse),
+                    Ember.copy(alpha = 0.34f * strength * pulseValue),
                     Color(0x22FF6B3A),
                     Color.Transparent
                 ),
@@ -1420,11 +1488,11 @@ private fun LevelUpBanner(level: Int, modifier: Modifier = Modifier) {
 private val Silhouette = Color(0xFF4A3A63)
 
 @Composable
-private fun rememberIdleBob(reducedMotion: Boolean, label: String): Float {
+private fun rememberIdleBob(animate: Boolean, label: String): Float {
     val transition = rememberInfiniteTransition(label = label)
     val bob by transition.animateFloat(
         initialValue = 0f,
-        targetValue = if (reducedMotion) 0f else 1f,
+        targetValue = if (animate) 1f else 0f,
         animationSpec = infiniteRepeatable(tween(420), RepeatMode.Reverse),
         label = "${label}Bob"
     )
@@ -1437,7 +1505,7 @@ private fun rememberIdleBob(reducedMotion: Boolean, label: String): Float {
  * avec la distance restante avant la rencontre, plutôt qu'un couloir vide.
  */
 @Composable
-private fun WaitingMob(state: GameState, reducedMotion: Boolean, modifier: Modifier = Modifier) {
+private fun WaitingMob(state: GameState, animateDecor: Boolean, modifier: Modifier = Modifier) {
     val pool = remember(state.floor) {
         val biomePool = mobPoolFor(state.floor)
         (biomePool.mid + biomePool.hard + biomePool.easy).ifEmpty { biomePool.easy }
@@ -1450,11 +1518,13 @@ private fun WaitingMob(state: GameState, reducedMotion: Boolean, modifier: Modif
         }
     }
     val art = template?.let { rememberAsset(it.icon) }
-    val bob = rememberIdleBob(reducedMotion, "waitingMob")
+    val bob = rememberIdleBob(animateDecor, "waitingMob")
     val remaining = (state.nextFight - state.distance).roundToInt().coerceAtLeast(1)
 
     Column(
-        modifier = modifier.graphicsLayer { translationY = -bob * 3.dp.toPx() },
+        modifier = modifier.graphicsLayer {
+            translationY = if (animateDecor) -bob * 3.dp.toPx() else 0f
+        },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (art != null) {
@@ -1474,7 +1544,7 @@ private fun WaitingMob(state: GameState, reducedMotion: Boolean, modifier: Modif
 }
 
 @Composable
-private fun GateView(state: GameState, reducedMotion: Boolean = false, modifier: Modifier = Modifier) {
+private fun GateView(state: GameState, animateDecor: Boolean = false, modifier: Modifier = Modifier) {
     val active = state.distance >= 90 || state.fight?.isBoss == true
     val gateStyle = biomeVisuals(biomeKeyFor(state.floor)).gate
     val gatePrefix = when (gateStyle) {
@@ -1487,7 +1557,7 @@ private fun GateView(state: GameState, reducedMotion: Boolean = false, modifier:
     val right = rememberAsset("${gatePrefix}_right.png")
     val guardian = remember(state.floor) { bossFor(state.floor) }
     val guardianArt = rememberAsset(guardian.icon)
-    val guardianBob = rememberIdleBob(reducedMotion, "guardian")
+    val guardianBob = rememberIdleBob(animateDecor, "guardian")
     Box(modifier, contentAlignment = Alignment.BottomCenter) {
         Canvas(Modifier.fillMaxSize()) {
             if (active) {
@@ -1540,7 +1610,9 @@ private fun GateView(state: GameState, reducedMotion: Boolean = false, modifier:
                         modifier = Modifier
                             .padding(bottom = 2.dp)
                             .size(96.dp)
-                            .graphicsLayer { translationY = -guardianBob * 2.dp.toPx() },
+                            .graphicsLayer {
+                                translationY = if (animateDecor) -guardianBob * 2.dp.toPx() else 0f
+                            },
                         filterQuality = FilterQuality.None
                     )
                 }

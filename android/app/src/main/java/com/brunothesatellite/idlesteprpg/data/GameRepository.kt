@@ -103,6 +103,16 @@ class GameRepository(private val context: Context) {
         save()
     }
 
+    /**
+     * Met à jour l'horodatage d'activité sans publier d'état ni écrire sur disque :
+     * appelé périodiquement tant que l'application est à l'écran.
+     */
+    suspend fun touchActive() {
+        mutex.withLock {
+            _state.value.lastActiveAt = System.currentTimeMillis()
+        }
+    }
+
     suspend fun simulateAbsence(elapsedMs: Long): OfflineReport? {
         val before = _state.value
         var report: OfflineReport? = null
@@ -316,7 +326,8 @@ class GameRepository(private val context: Context) {
                 .putInt("floor", snapshot.floor)
                 .putInt("gold", snapshot.gold)
                 .apply()
-            if (now - lastWidgetAt > 60_000L) {
+            // Le widget n'a pas besoin d'une fraîcheur à la minute.
+            if (now - lastWidgetAt > 15 * 60_000L) {
                 lastWidgetAt = now
                 MarcheWidgetProvider.updateAll(context)
             }

@@ -1,5 +1,7 @@
 package com.brunothesatellite.idlesteprpg.ui
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -28,9 +31,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -374,6 +380,28 @@ private fun SetsCodex(state: GameState) {
 }
 
 @Composable
+private fun BiomeBanner(key: String, modifier: Modifier = Modifier) {
+    val visuals = biomeVisuals(key)
+    val palette = biomePalette(key)
+    val walls = rememberAssets(visuals.walls)
+    val floors = rememberAssets(visuals.floors)
+    val statues = rememberAssets(visuals.statues)
+    val props = rememberAssets(visuals.props)
+    val fireCloud = rememberAsset("fx/cloud_fire0.png")
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(74.dp)
+            .clip(RoundedCornerShape(5.dp))
+    ) {
+        // MÃªme dessin que la scÃ¨ne : le bandeau est une miniature du couloir.
+        drawCorridor(palette, walls, floors, statues, props, fireCloud, visuals.fireClouds)
+    }
+}
+
+
+@Composable
 private fun BiomesCodex(state: GameState) {
     val visited = BIOMES.count { state.floor >= it.fromFloor }
     PixelCard(Modifier.fillMaxWidth(), borderColor = Green.copy(alpha = 0.3f)) {
@@ -421,6 +449,9 @@ private fun BiomesCodex(state: GameState) {
                 }
             }
             if (known) {
+                Spacer(Modifier.height(5.dp))
+                BiomeBanner(biome.key)
+                Spacer(Modifier.height(5.dp))
                 Text(rule.description, fontSize = 6.2.sp, color = Muted, lineHeight = 9.sp)
                 Spacer(Modifier.height(4.dp))
                 Text(
