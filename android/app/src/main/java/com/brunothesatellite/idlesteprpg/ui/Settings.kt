@@ -83,19 +83,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 Text("RÉGLAGES", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
                 Text("Confort, données et compte", fontSize = 7.sp, color = Muted)
             }
-            Text(
-                "×",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Panel2)
-                    .border(1.dp, Line2, RoundedCornerShape(4.dp))
-                    .clickable(onClick = onClose)
-                    .padding(top = 3.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                color = Muted
-            )
+            CloseButton(onClose)
         }
         DividerLine()
         Column(
@@ -109,33 +97,52 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 Spacer(Modifier.height(6.dp))
                 Text("Taille du texte", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
                 Spacer(Modifier.height(5.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                    listOf("Normal" to 1.0f, "Grand" to 1.35f, "Très grand" to 1.6f).forEach { (label, value) ->
-                        val active = kotlin.math.abs(ui.textScale - value) < 0.01f
-                        Box(
-                            Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(if (active) Gold.copy(alpha = 0.18f) else Panel2)
-                                .border(1.dp, if (active) Gold.copy(alpha = 0.7f) else Line, RoundedCornerShape(4.dp))
-                                .clickable { vm.setTextScale(value) }
-                                .padding(vertical = 7.dp),
-                            contentAlignment = Alignment.Center
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    listOf(
+                        "Normal" to 1.0f,
+                        "Grand" to 1.35f,
+                        "Très grand" to 1.6f,
+                        "Maximal" to 2.0f
+                    ).chunked(2).forEach { half ->
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
                         ) {
-                            Text(
-                                label,
-                                fontSize = 7.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (active) GoldLight else Muted,
-                                maxLines = 1
-                            )
+                            half.forEach { (label, value) ->
+                                val active = kotlin.math.abs(ui.textScale - value) < 0.01f
+                                Box(
+                                    Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(if (active) Gold.copy(alpha = 0.18f) else Panel2)
+                                        .border(
+                                            1.dp,
+                                            if (active) Gold.copy(alpha = 0.7f) else Line,
+                                            RoundedCornerShape(4.dp)
+                                        )
+                                        .clickable { vm.setTextScale(value) }
+                                        .padding(vertical = 7.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        label,
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (active) GoldLight else Muted,
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+                            if (half.size == 1) {
+                                Box(Modifier.weight(1f))
+                            }
                         }
                     }
                 }
                 Spacer(Modifier.height(9.dp))
                 ToggleRow(
                     "Notifications",
-                    "Gardien, niveau, serments, coffre et clé Garmin.",
+                    "Rencontre, gardien, niveau, serments, coffre et clé Garmin.",
                     ui.notificationsEnabled
                 ) { enabled ->
                     vm.setNotificationsEnabled(enabled)
@@ -152,6 +159,16 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     ToggleRow("Gardien", "Quand un gardien de palier apparaît.", ui.notifyBoss) {
                         vm.setNotifyBoss(it)
                     }
+                    ToggleRow(
+                        "Rencontre en attente",
+                        "Une rencontre spéciale attend votre retour après une absence.",
+                        ui.notifySpecial
+                    ) { vm.setNotifySpecial(it) }
+                    ToggleRow(
+                        "Gardien en attente",
+                        "Le portail est atteint mais il ne reste plus de pas.",
+                        ui.notifyBossWaiting
+                    ) { vm.setNotifyBossWaiting(it) }
                     ToggleRow("Niveau", "Chaque montée de niveau.", ui.notifyLevel) {
                         vm.setNotifyLevel(it)
                     }
@@ -474,22 +491,28 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
     if (confirmClear) {
         AlertDialog(
             onDismissRequest = { confirmClear = false },
-            title = { Text("Effacer la progression ?", fontSize = 15.sp) },
+            title = { WithAppFontScale { Text("Effacer la progression ?", fontSize = 15.sp) } },
             text = {
-                Text(
-                    "Or, objets, paliers, serments et journal seront remis à zéro. " +
-                        "La clé Garmin et tes préférences seront conservées.",
-                    fontSize = 9.sp
-                )
+                WithAppFontScale {
+                    Text(
+                        "Or, objets, paliers, serments et journal seront remis à zéro. " +
+                            "La clé Garmin et tes préférences seront conservées.",
+                        fontSize = 9.sp
+                    )
+                }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    confirmClear = false
-                    vm.clearProgress()
-                }) { Text("EFFACER", color = Blood) }
+                WithAppFontScale {
+                    TextButton(onClick = {
+                        confirmClear = false
+                        vm.clearProgress()
+                    }) { Text("EFFACER", color = Blood) }
+                }
             },
             dismissButton = {
-                TextButton(onClick = { confirmClear = false }) { Text("ANNULER", color = Muted) }
+                WithAppFontScale {
+                    TextButton(onClick = { confirmClear = false }) { Text("ANNULER", color = Muted) }
+                }
             },
             containerColor = Panel2
         )

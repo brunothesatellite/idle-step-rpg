@@ -7,6 +7,10 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -33,10 +37,25 @@ val Muted = Color(0xFF9587A8)
 val Muted2 = Color(0xFF6E617F)
 val Ember = Color(0xFFFF9448)
 val Blood = Color(0xFFD15458)
+val Bad = Color(0xFFFF8A80)
 val Green = Color(0xFF8ED39B)
 val Blue = Color(0xFF6FA8FF)
 val Epic = Color(0xFFB57BFF)
 val Legendary = Color(0xFFFFC857)
+
+/** Plafond de cumul entre le réglage Android et le réglage interne de l'app. */
+const val MAX_FONT_SCALE = 2.2f
+
+/**
+ * Facteur de texte choisi dans les réglages. Les fenêtres de dialogue sont
+ * composées dans une fenêtre Android séparée et ne reçoivent pas le
+ * CompositionLocal de densité de l'activité : ce miroir leur permet de
+ * réappliquer le réglage.
+ */
+object AppTypography {
+    var fontScale by mutableStateOf(1.35f)
+        internal set
+}
 
 val Pixel = FontFamily(Font(R.font.pixelify_sans))
 val Press = FontFamily(Font(R.font.press_start_2p))
@@ -71,10 +90,14 @@ private val typography = Typography(
 @Composable
 fun MarcheTheme(fontScale: Float = 1.35f, content: @Composable () -> Unit) {
     val density = LocalDensity.current
+    SideEffect { AppTypography.fontScale = fontScale }
+    // Le facteur Android de l'utilisateur se cumule au nôtre : on plafonne pour
+    // éviter qu'un « Grand » système + « Maximal » déforme toute l'interface.
+    val effectiveScale = (density.fontScale * fontScale).coerceAtMost(MAX_FONT_SCALE)
     CompositionLocalProvider(
         LocalDensity provides Density(
             density = density.density,
-            fontScale = density.fontScale * fontScale
+            fontScale = effectiveScale
         )
     ) {
         MaterialTheme(

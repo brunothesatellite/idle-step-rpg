@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -75,19 +76,7 @@ fun CodexOverlay(state: GameState, onClose: () -> Unit) {
                 Text("CODEX", fontFamily = Press, fontSize = 10.sp, color = GoldLight)
                 Text("Bestiaire, ensembles et biomes", fontSize = 7.sp, color = Muted)
             }
-            Text(
-                "×",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Panel2)
-                    .border(1.dp, Line2, RoundedCornerShape(4.dp))
-                    .clickable(onClick = onClose)
-                    .padding(top = 3.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                color = Muted
-            )
+            CloseButton(onClose)
         }
         DividerLine()
         Row(
@@ -352,7 +341,7 @@ private fun SetsCodex(state: GameState) {
                     Box(
                         Modifier
                             .weight(1f)
-                            .height(26.dp)
+                            .heightIn(min = 26.dp)
                             .clip(RoundedCornerShape(3.dp))
                             .background(if (has) Gold.copy(alpha = 0.18f) else Panel3)
                             .border(1.dp, if (has) Gold.copy(alpha = 0.55f) else Line, RoundedCornerShape(3.dp)),

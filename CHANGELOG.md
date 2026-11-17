@@ -1,5 +1,20 @@
 # Journal des versions
 
+## v0.12.0
+- **Progression hors ligne repensée** : la simulation ne consomme plus que **30 % des pas du jour** (et **4 minutes de jeu** au maximum), au lieu de 100 % du rythme jusqu'à 15 minutes. La réserve restante vous attend à l'ouverture.
+- **Budget partagé** : la synchro de fond de 30 minutes puise dans le même quota ; une synchronisation manuelle ne simule plus rien, les pas importés restent à vivre à l'écran.
+- **Arrêt sur événement** : la simulation s'interrompt sur une rencontre spéciale, devant le portail du gardien (s'il reste moins d'un palier de budget), sur un coffre ou une défaite, et laisse le reliquat.
+- **Marche ralentie** : 140 → **60 pas/s** (30 sous 600 pas), pour que la consommation des pas soit visible.
+- **Deux nouvelles notifications** : « Rencontre en attente » et « Gardien en attente », avec leurs cases dans les réglages ; elles ne se déclenchent que si l'application n'est pas à l'écran et respectent les heures calmes.
+- **Forge corrigée** : améliorer, reforger, verrouiller et démonter fonctionnent désormais sur un **objet équipé** (le moteur ne cherchait que dans l'inventaire). Les messages disent ce qui manque (« Il manque 120 or et 1 éclat ») au lieu du générique « or ou éclat insuffisant ».
+- **Aperçu d'amélioration** : le bandeau compare `ACTUEL → APRÈS +1 NIV.` avec des deltas colorés (vert/rouge) et chiffrés ; le bouton affiche le coût complet et se désactive quand il n'est pas payable.
+- **Progression des objets** : chaque statistique non nulle gagne au moins +1 par niveau (8 % de 2 PV ou de 6 % crit. ne s'arrondissent plus à zéro).
+- **Taille de texte « Maximal »** (2,0×), cumul system+app plafonné à 2,2×, et les fenêtres de dialogue suivent enfin le réglage. Croix de fermeture recentrée dans toutes les fenêtres, débordements corrigés en grand texte.
+- **Campement** : titre « CAMPEMENT » (le feu veille en sous-titre), pastilles rations et éclats, et tente, feu et héros restent visibles au-dessus du panneau à toutes les tailles.
+- **Portail du gardien** : porte plus haute que le gardien (132 × 116 dp), gardien à 96 dp, ovale décoratif supprimé au profit d'un halo.
+- **Coffre** : croix et bouton « Masquer · le forçage continue », progression de la serrure sur la pastille du HUD, toast à l'ouverture.
+- **Manuel et spécifications** mis à jour (règles d'absence, forçage de coffre).
+
 ## v0.11.0
 - **Résumé d'absence** : à la réouverture, la réserve de pas s'écoule pendant la fermeture de l'application et un écran **« Bon retour »** récapitule l'absence.
 - **Consommation** : 100 % du rythme actif, plafonnée à **60 000 pas** ou **15 minutes simulées**, au premier des deux atteint. La réserve restante est conservée.

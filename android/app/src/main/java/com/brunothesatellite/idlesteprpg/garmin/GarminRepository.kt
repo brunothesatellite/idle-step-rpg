@@ -114,7 +114,7 @@ class GarminRepository(
         }
     }
 
-    suspend fun sync(): SyncResult = withContext(Dispatchers.IO) {
+    suspend fun sync(simulateAbsence: Boolean = true): SyncResult = withContext(Dispatchers.IO) {
         val key = secrets.key()
         if (key == null) {
             return@withContext SyncResult(false, "Aucune clé Garmin enregistrée.", needsKey = true)
@@ -157,7 +157,7 @@ class GarminRepository(
             val ledger = days
                 .filter { it.date.isNotBlank() }
                 .associate { it.date to it.steps }
-            val report = game.ingestHistory(ledger, today)
+            val report = game.ingestHistory(ledger, today, simulate = simulateAbsence)
             val state = game.state.value
             val total = ledger[today.toString()] ?: state.stepsToday
             val added = state.lastAdded
@@ -168,7 +168,8 @@ class GarminRepository(
                 .apply()
             val message = when {
                 report != null -> "Rattrapage Garmin · ${report.days} jour(s), ${report.steps} pas"
-                else -> "Garmin synchronisé"
+                added > 0 -> "Garmin synchronisé · +$added pas"
+                else -> "Garmin synchronisé · aucun nouveau pas"
             }
             logSync("OK · +$added pas · total $total")
             SyncResult(true, message, total = total, added = added)

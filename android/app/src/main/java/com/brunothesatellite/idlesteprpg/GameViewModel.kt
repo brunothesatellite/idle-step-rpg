@@ -9,12 +9,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.data.SaveSummary
+import com.brunothesatellite.idlesteprpg.engine.ForgeOutcome
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.engine.Upgrades
 import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
+import com.brunothesatellite.idlesteprpg.ui.formatInt
 import com.brunothesatellite.idlesteprpg.update.UpdateChecker
 import com.brunothesatellite.idlesteprpg.update.UpdateInfo
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +59,8 @@ data class UiState(
     val notifyOaths: Boolean = true,
     val notifyChest: Boolean = true,
     val notifyKey: Boolean = true,
+    val notifySpecial: Boolean = true,
+    val notifyBossWaiting: Boolean = true,
     val quietHours: Boolean = false,
     val autoSellCommons: Boolean = false,
     val onboardingDone: Boolean = true,
@@ -108,6 +112,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 notifyOaths = container.settings.notifyOaths,
                 notifyChest = container.settings.notifyChest,
                 notifyKey = container.settings.notifyKey,
+                notifySpecial = container.settings.notifySpecial,
+                notifyBossWaiting = container.settings.notifyBossWaiting,
                 quietHours = container.settings.quietHours,
                 autoSellCommons = container.settings.autoSellCommons,
                 onboardingDone = container.settings.onboardingDone,
@@ -130,7 +136,13 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                     !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen &&
                     !_ui.value.consumablesOpen
                 ) {
+                    val chestsBefore = game.value.chestsOpened
                     container.gameRepository.tick(100.0)
+                    if (game.value.chestsOpened > chestsBefore) {
+                        _toasts.tryEmit(
+                            "Coffre ouvert · +${formatInt(game.value.chestFlashGold)} or"
+                        )
+                    }
                 }
                 val today = game.value.day
                 if (lastKnownDay.isNotBlank() && today.isNotBlank() && today != lastKnownDay) {
@@ -241,7 +253,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         }
         _ui.update { it.copy(syncing = true) }
         viewModelScope.launch {
-            val result = container.garminRepository.sync()
+            val result = container.garminRepository.sync(simulateAbsence = false)
             refreshGarmin()
             _ui.update { it.copy(syncing = false, lastAdded = result.added) }
             if (!silent) _toasts.emit(result.message)
@@ -394,6 +406,16 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun setNotifyKey(value: Boolean) {
         container.settings.notifyKey = value
         _ui.update { it.copy(notifyKey = value) }
+    }
+
+    fun setNotifySpecial(value: Boolean) {
+        container.settings.notifySpecial = value
+        _ui.update { it.copy(notifySpecial = value) }
+    }
+
+    fun setNotifyBossWaiting(value: Boolean) {
+        container.settings.notifyBossWaiting = value
+        _ui.update { it.copy(notifyBossWaiting = value) }
     }
 
     fun setQuietHours(value: Boolean) {
@@ -706,7 +728,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun toggleLock(item: Item) {
         viewModelScope.launch {
             container.gameRepository.mutate { GameEngine.toggleLock(it, item.id) }
-            val updated = container.gameRepository.state.value.inventory.firstOrNull { it.id == item.id }
+            val updated = GameEngine.findItem(container.gameRepository.state.value, item.id)
             _ui.update { it.copy(selectedItem = updated) }
         }
     }
@@ -742,8 +764,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     private fun refreshSelected(itemId: String) {
-        val updated = container.gameRepository.state.value.inventory.firstOrNull { it.id == itemId }
-        _ui.update { it.copy(selectedItem = updated) }
+        val state = container.gameRepository.state.value
+        _ui.update { it.copy(selectedItem = GameEngine.findItem(state, itemId)) }
     }
 
     fun identifyItem(item: Item) {
@@ -757,19 +779,36 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun rerollEffect(item: Item) {
         viewModelScope.launch {
-            var ok = false
-            container.gameRepository.mutate { ok = GameEngine.rerollEffect(it, item.id) }
+            var outcome: ForgeOutcome = ForgeOutcome.NotFound
+            container.gameRepository.mutate { outcome = GameEngine.rerollEffectDetailed(it, item.id) }
             refreshSelected(item.id)
-            _toasts.emit(if (ok) "Affixe reforgé." else "2 éclats requis.")
+            _toasts.emit(forgeMessage(outcome, "Affixe reforgé."))
         }
     }
 
     fun upgradeItem(item: Item) {
         viewModelScope.launch {
-            var ok = false
-            container.gameRepository.mutate { ok = GameEngine.upgradeItem(it, item.id) }
+            var outcome: ForgeOutcome = ForgeOutcome.NotFound
+            container.gameRepository.mutate { outcome = GameEngine.upgradeItemDetailed(it, item.id) }
             refreshSelected(item.id)
-            _toasts.emit(if (ok) "Objet amélioré." else "Or ou éclat insuffisant.")
+            _toasts.emit(forgeMessage(outcome, "Objet amélioré."))
+        }
+    }
+
+    /** Message de forge : n'annonce que ce qui manque vraiment. */
+    private fun forgeMessage(outcome: ForgeOutcome, success: String): String = when (outcome) {
+        ForgeOutcome.Success -> success
+        ForgeOutcome.NotFound -> "Objet introuvable."
+        ForgeOutcome.NotIdentified -> "Objet non identifié."
+        ForgeOutcome.Locked -> "Objet verrouillé."
+        is ForgeOutcome.Missing -> {
+            val missing = buildList {
+                if (outcome.gold > 0) add("${formatInt(outcome.gold)} or")
+                if (outcome.shards > 0) {
+                    add(if (outcome.shards > 1) "${outcome.shards} éclats" else "1 éclat")
+                }
+            }
+            "Il manque ${missing.joinToString(" et ")}."
         }
     }
 

@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.FightData
+import com.brunothesatellite.idlesteprpg.engine.ForgeOutcome
 import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_STEPS_PER_DAY
@@ -90,11 +91,12 @@ class GameEngineTest {
     }
 
     @Test
-    fun absenceSimulationConsumesTheReserve() {
+    fun absenceSimulationConsumesPartOfTheReserve() {
         val state = GameState().apply {
             floor = 1
             level = 50
             hp = 20_000.0
+            stepsToday = 20_000
             stepBank = 20_000.0
             mode = "walk"
             oaths.bossesClaimed = true
@@ -106,26 +108,43 @@ class GameEngineTest {
         assertTrue(sim.stepsConsumed > 0)
         assertTrue(sim.remainingBank < 20_000)
         assertTrue(sim.simulatedMs > 0L)
+        // Jamais plus de 30 % des pas du jour.
+        assertTrue(sim.stepsConsumed <= 6_100)
+        assertEquals(sim.stepsConsumed, state.offlineStepsToday)
     }
 
     @Test
-    fun absenceSimulationRespectsTheStepCap() {
+    fun absenceSimulationRespectsTheDailyBudget() {
+        // 30 % des pas du jour, indépendamment du stock disponible.
+        val reference = GameState().apply { stepsToday = 10_000 }
+        assertEquals(3_000, GameEngine.offlineBudget(reference))
+
         val state = GameState().apply {
             floor = 1
             level = 50
             hp = 20_000.0
+            stepsToday = 10_000
             stepBank = 20_000.0
             mode = "walk"
             oaths.bossesClaimed = true
         }
-        val sim = GameEngine.simulateAbsence(state, 60L * 60L * 1000L, capSteps = 1_000)
-        assertTrue(sim.stepsConsumed <= 1_100)
-        assertTrue(sim.remainingBank >= 18_900)
+        var total = 0
+        repeat(20) {
+            total += GameEngine.simulateAbsence(state, 60L * 60L * 1000L).stepsConsumed
+        }
+        // Plusieurs reprises dans la même journée ne peuvent pas dépasser le quota.
+        assertTrue("total consommé: $total", total <= 3_100)
+        assertEquals(total, state.offlineStepsToday)
+        assertTrue(
+            "budget restant: ${GameEngine.offlineBudget(state)}",
+            GameEngine.offlineBudget(state) < 3_100
+        )
     }
 
     @Test
     fun absenceSimulationSkipsCamp() {
         val state = GameState().apply {
+            stepsToday = 20_000
             stepBank = 20_000.0
             mode = "camp"
         }
@@ -476,6 +495,7 @@ class GameEngineTest {
     @Test
     fun offlineSimulationConsumesTheBank() {
         val state = GameState()
+        state.stepsToday = 5_000
         state.stepBank = 5_000.0
         state.distance = 0.0
         state.nextFight = 10
@@ -538,6 +558,56 @@ class GameEngineTest {
         assertTrue(state.shards > 0)
         assertTrue(GameEngine.identifyItem(state, "mystery"))
         assertTrue(state.inventory.first { it.id == "mystery" }.identified)
+    }
+
+    @Test
+    fun equippedItemCanBeUpgraded() {
+        val state = GameState()
+        state.gold = 10_000
+        state.shards = 5
+        val weapon = Item(
+            "worn_mace", "Hache de guerre", "weapon", "rare", "item/mace2.png", 17,
+            atk = 40, hp = 24, value = 300
+        )
+        state.equipment = state.equipment.filter { it.slot != "weapon" } + weapon
+        val price = GameEngine.upgradeCost(weapon)
+
+        assertEquals(ForgeOutcome.Success, GameEngine.upgradeItemDetailed(state, "worn_mace"))
+        assertEquals(18, state.equipment.first { it.id == "worn_mace" }.level)
+        assertEquals(10_000 - price, state.gold)
+        assertEquals(4, state.shards)
+        assertTrue(GameEngine.findItem(state, "worn_mace") != null)
+    }
+
+    @Test
+    fun upgradeGrowsEveryStatByAtLeastOne() {
+        val axe = Item(
+            "worn_mace", "Hache de guerre", "weapon", "epic", "item/hand_axe2.png", 17,
+            atk = 36, hp = 2, vitPct = 2, critPct = 6, value = 432
+        )
+        val next = GameEngine.upgradedItem(axe)
+        assertEquals(18, next.level)
+        assertEquals(39, next.atk)
+        assertEquals(3, next.hp)
+        assertEquals(3, next.vitPct)
+        assertEquals(7, next.critPct)
+        assertEquals(518, next.value)
+    }
+
+    @Test
+    fun upgradeReportsWhatIsActuallyMissing() {
+        val state = GameState()
+        state.gold = 0
+        state.shards = 0
+        state.inventory = listOf(
+            Item("poor", "Lame", "weapon", "rare", "item/long_sword3.png", 5, atk = 10, value = 50)
+        )
+
+        assertEquals(ForgeOutcome.Missing(170, 1), GameEngine.upgradeItemDetailed(state, "poor"))
+        assertEquals(0, state.gold)
+        assertEquals(0, state.shards)
+        assertEquals(5, state.inventory.first().level)
+        assertEquals(ForgeOutcome.NotFound, GameEngine.upgradeItemDetailed(state, "absent"))
     }
 
     @Test

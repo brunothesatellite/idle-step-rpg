@@ -13,14 +13,17 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +39,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.brunothesatellite.idlesteprpg.GameViewModel
@@ -226,34 +231,46 @@ private fun DashboardHeader(
 
 @Composable
 private fun Tabs(active: String, onTab: (String) -> Unit) {
+    // Libellés de navigation : largeur fixe (1/3 d'écran). On plafonne leur
+    // facteur de texte, sinon « Améliorations » déborde en taille Maximal.
+    val density = LocalDensity.current
     Row(
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .border(0.dp, Color.Transparent)
     ) {
-        listOf("stats" to "Stats", "inventory" to "Inventaire", "upgrades" to "Améliorations").forEach { (key, label) ->
-            Column(
-                Modifier
-                    .weight(1f)
-                    .clickable { onTab(key) }
-                    .padding(vertical = 5.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    label,
-                    fontSize = 10.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (active == key) Parchment else Muted,
-                    maxLines = 1
-                )
-                Spacer(Modifier.height(4.dp))
-                Box(
+        CompositionLocalProvider(
+            LocalDensity provides Density(
+                density = density.density,
+                fontScale = minOf(density.fontScale, 1.35f)
+            )
+        ) {
+            listOf("stats" to "Stats", "inventory" to "Inventaire", "upgrades" to "Améliorations").forEach { (key, label) ->
+                Column(
                     Modifier
-                        .width(if (active == key) 42.dp else 0.dp)
-                        .height(2.dp)
-                        .background(if (active == key) Gold else Color.Transparent)
-                )
+                        .weight(1f)
+                        .clickable { onTab(key) }
+                        .padding(vertical = 5.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        label,
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (active == key) Parchment else Muted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Box(
+                        Modifier
+                            .width(if (active == key) 42.dp else 0.dp)
+                            .height(2.dp)
+                            .background(if (active == key) Gold else Color.Transparent)
+                    )
+                }
             }
         }
     }
@@ -742,7 +759,7 @@ private fun SmallAction(
 ) {
     Box(
         modifier
-            .height(30.dp)
+            .heightIn(min = 30.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(
                 when {
@@ -760,13 +777,15 @@ private fun SmallAction(
                 },
                 RoundedCornerShape(4.dp)
             )
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 3.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text,
             fontSize = 7.sp,
             fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
             color = when {
                 !enabled -> Muted2
                 primary -> Ink
@@ -826,7 +845,7 @@ private fun InventoryTab(
             Column(
                 Modifier
                     .weight(1f)
-                    .height(64.dp)
+                    .heightIn(min = 64.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(Panel)
                     .border(
@@ -1111,7 +1130,7 @@ private fun MiniChip(label: String, active: Boolean, onClick: () -> Unit) {
 private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Column(
         modifier
-            .height(62.dp)
+            .heightIn(min = 62.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(Panel)
             .border(
@@ -1136,8 +1155,10 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
             if (item.identified) item.name else "Objet mystérieux",
             fontSize = 6.sp,
             color = Parchment.copy(alpha = 0.85f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            lineHeight = 8.sp
         )
         Text(
             when {
@@ -1238,12 +1259,13 @@ private fun UpgradeCard(state: GameState, key: String, onBuy: (String) -> Unit) 
             Spacer(Modifier.width(5.dp))
             Box(
                 Modifier
-                    .width(62.dp)
-                    .height(34.dp)
+                    .widthIn(min = 62.dp)
+                    .heightIn(min = 34.dp)
                     .clip(RoundedCornerShape(3.dp))
                     .background(if (afford) Gold else Panel3)
                     .border(1.dp, if (afford) GoldLight else Line2, RoundedCornerShape(3.dp))
-                    .clickable(enabled = afford) { onBuy(key) },
+                    .clickable(enabled = afford) { onBuy(key) }
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

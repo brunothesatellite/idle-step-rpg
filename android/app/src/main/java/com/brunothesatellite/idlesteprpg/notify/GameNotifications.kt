@@ -13,10 +13,15 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.brunothesatellite.idlesteprpg.MainActivity
 import com.brunothesatellite.idlesteprpg.R
+import com.brunothesatellite.idlesteprpg.engine.GATE_METERS
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import java.time.LocalTime
 
 object GameNotifications {
+
+    /** Vrai quand l'application est à l'écran : inutile de notifier ce qu'il voit. */
+    @Volatile
+    var appVisible: Boolean = false
 
     private const val CHANNEL_ALERTS = "alertes_marche"
     private const val CHANNEL_ALERTS_SILENT = "alertes_marche_silencieux"
@@ -29,6 +34,8 @@ object GameNotifications {
     private const val ID_OATH_CHEST = 14
     private const val ID_CHEST = 15
     private const val ID_KEY = 16
+    private const val ID_SPECIAL = 17
+    private const val ID_BOSS_WAIT = 18
 
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -76,6 +83,26 @@ object GameNotifications {
                 context, ID_BOSS, "Gardien du palier",
                 "${boss?.enemyName ?: "Un gardien"} vous attend au palier ${after.floor}.",
                 category = "boss",
+                vibration = vibrationsEnabled(context)
+            )
+        }
+        // Une rencontre spéciale est apparue (souvent en fin de simulation hors ligne).
+        if (!appVisible && before.special == null && after.special != null) {
+            val special = after.special
+            post(
+                context, ID_SPECIAL, special?.title ?: "Rencontre",
+                "Une rencontre vous attend au palier ${after.floor}. Rouvrez la marche pour la résoudre.",
+                category = "special",
+                vibration = vibrationsEnabled(context)
+            )
+        }
+        // Le portail du gardien est atteint mais il n'y a plus de pas : la marche
+        // est en pause devant la porte, le joueur peut revenir.
+        if (!appVisible && !bossWaiting(before) && bossWaiting(after)) {
+            post(
+                context, ID_BOSS_WAIT, "Gardien en attente",
+                "Le gardien du palier ${after.floor} attend vos pas. Rouvrez la marche pour l'affronter.",
+                category = "boss_waiting",
                 vibration = vibrationsEnabled(context)
             )
         }
@@ -193,9 +220,15 @@ object GameNotifications {
             "oaths" -> prefs.getBoolean("notify_oaths", true)
             "chest" -> prefs.getBoolean("notify_chest", true)
             "key" -> prefs.getBoolean("notify_key", true)
+            "special" -> prefs.getBoolean("notify_special", true)
+            "boss_waiting" -> prefs.getBoolean("notify_boss_waiting", true)
             else -> true
         }
     }
+
+    /** Le portail du gardien est atteint et plus aucun pas n'est disponible. */
+    private fun bossWaiting(state: GameState): Boolean =
+        state.fight == null && state.distance >= GATE_METERS && state.stepBank < 1.0
 
     private fun inQuietHours(): Boolean {
         val hour = LocalTime.now().hour

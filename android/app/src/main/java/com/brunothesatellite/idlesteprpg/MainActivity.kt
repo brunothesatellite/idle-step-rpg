@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.brunothesatellite.idlesteprpg.audio.SoundFx
+import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.ui.CampOverlay
 import com.brunothesatellite.idlesteprpg.ui.ChestDialog
 import com.brunothesatellite.idlesteprpg.ui.ConsumablesOverlay
@@ -85,10 +86,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        GameNotifications.appVisible = true
         vm.onAppResume()
     }
 
     override fun onPause() {
+        GameNotifications.appVisible = false
         vm.onAppPause()
         super.onPause()
     }

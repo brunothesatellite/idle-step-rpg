@@ -15,12 +15,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,11 +35,16 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -139,7 +147,7 @@ fun GoldButton(
     Row(
         modifier
             .fillMaxWidth()
-            .height(if (subtitle == null) 44.dp else 50.dp)
+            .heightIn(min = if (subtitle == null) 44.dp else 50.dp)
             .clip(shape)
             .background(
                 if (enabled) {
@@ -150,7 +158,7 @@ fun GoldButton(
             )
             .border(1.dp, if (enabled) GoldLight else Line2, shape)
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 10.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {
@@ -159,7 +167,7 @@ fun GoldButton(
                 fontFamily = Press,
                 fontSize = 7.5.sp,
                 color = if (enabled) Ink else Muted,
-                maxLines = 1
+                maxLines = 2
             )
             if (subtitle != null) {
                 Text(
@@ -254,6 +262,63 @@ fun DividerLine(modifier: Modifier = Modifier) {
             .height(1.dp)
             .background(Line.copy(alpha = 0.65f))
     )
+}
+
+/**
+ * Les fenêtres de dialogue vivent dans une fenêtre Android séparée : la densité
+ * locale (donc le réglage « Taille du texte ») n'y est pas transmise. Ce
+ * fournisseur la réapplique depuis [AppTypography].
+ */
+@Composable
+fun WithAppFontScale(content: @Composable () -> Unit) {
+    val density = LocalDensity.current
+    val scale = (density.fontScale * AppTypography.fontScale).coerceAtMost(MAX_FONT_SCALE)
+    CompositionLocalProvider(
+        LocalDensity provides Density(density = density.density, fontScale = scale),
+        content = content
+    )
+}
+
+/** [Dialog] qui applique la taille de texte de l'application. */
+@Composable
+fun AppDialog(
+    onDismissRequest: () -> Unit,
+    properties: DialogProperties = DialogProperties(),
+    content: @Composable () -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest, properties = properties) {
+        WithAppFontScale { content() }
+    }
+}
+
+/** Croix de fermeture commune à toutes les fenêtres, centrée quelle que soit la taille. */
+@Composable
+fun CloseButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    size: Dp = 30.dp,
+    background: Color = Panel2,
+    bordered: Boolean = true
+) {
+    Box(
+        modifier
+            .sizeIn(minWidth = size, minHeight = size)
+            .clip(RoundedCornerShape(4.dp))
+            .background(background)
+            .then(if (bordered) Modifier.border(1.dp, Line2, RoundedCornerShape(4.dp)) else Modifier)
+            .clickable(onClick = onClick)
+            .padding(3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            "×",
+            fontSize = 15.sp,
+            lineHeight = 15.sp,
+            color = Muted,
+            textAlign = TextAlign.Center,
+            maxLines = 1
+        )
+    }
 }
 
 fun Int.coerceAtLeastZero(): Int = if (this < 0) 0 else this

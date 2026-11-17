@@ -286,7 +286,7 @@
   <h3>Reset à 00:00</h3>
   <p>À minuit local : le compteur du jour, la ferveur, les quotas de rations/éclats et les serments repartent à zéro. La distance déjà parcourue, l'or, l'équipement et les paliers sont conservés.</p>
   <div class="ok"><strong>Astuce :</strong> synchronisez après une marche plutôt que toutes les cinq minutes. La réserve s'écoule ensuite automatiquement en arrière-plan.</div>
-  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de 60 000 pas ou 15 minutes simulées. Voir <a href="#absence">Résumé d'absence</a>.</div>
+  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de 30 % des pas du jour et de 4 minutes simulées. La simulation s'arrête aussi sur un événement (rencontre, portail du gardien, coffre) pour vous laisser quelque chose à vivre. Voir <a href="#absence">Résumé d'absence</a>.</div>
 </section>
 
 <section id="interface">
@@ -430,6 +430,7 @@
     <li>Un coffre peut être ignoré : la marche continue.</li>
     <li><strong>Consacrer mes pas</strong> fige la marche et consomme la réserve pour remplir la serrure.</li>
     <li><strong>Arrêter le forçage</strong> rend la marche ; la progression de la serrure est conservée.</li>
+    <li>La <strong>croix</strong> (ou « Masquer · le forçage continue ») ferme la fiche sans interrompre le forçage : la pastille COFFRE affiche alors la progression de la serrure, ou « EN ATTENTE » s'il n'y a plus de pas.</li>
     <li>Les coffres lâchent aussi des consommables : 1 à 3 selon le type.</li>
   </ul>
   <div class="note"><strong>Astuce :</strong> forcez un coffre quand vous n'avez plus de pas à convertir en distance, par exemple le soir.</div>
@@ -789,14 +790,14 @@
   </ul>
   <p>En dessous de ces conditions, le jeu reprend simplement là où il s'était arrêté, sans résumé.</p>
   <h3>Consommation de la réserve</h3>
-  <p>La simulation utilise le <strong>rythme actif normal</strong> (70 ou 140 pas par seconde selon la taille de la réserve), avec deux limites :</p>
+  <p>La simulation utilise le <strong>rythme actif normal</strong> (30 ou 60 pas par seconde selon la taille de la réserve), avec trois limites :</p>
   <div class="kpi">
-    <div><b>60 000</b><span>pas maximum par absence</span></div>
-    <div><b>15 min</b><span>de temps simulé maximum</span></div>
+    <div><b>30 %</b><span>des pas du jour maximum par absence</span></div>
+    <div><b>4 min</b><span>de temps simulé maximum</span></div>
     <div><b>100 %</b><span>du rythme actif</span></div>
     <div><b>7 jours</b><span>absence maximale comptée</span></div>
   </div>
-  <p>La première limite atteinte arrête la simulation. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
+  <p>La première limite atteinte arrête la simulation. Elle s'arrête aussi sur un <strong>événement</strong> : rencontre spéciale, portail du gardien, coffre ou défaite. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
   <h3>Contenu du résumé</h3>
   <ul>
     <li>durée de l'absence ;</li>
@@ -822,7 +823,7 @@
   <h2>20. Questions fréquentes</h2>
   <details>
     <summary>Pourquoi le jeu a-t-il avancé pendant que j'étais absent ?</summary>
-    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite de 60 000 pas ou 15 minutes simulées. La réserve restante est conservée. Voir <a href="#absence">Résumé d'absence</a>.</p>
+    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite de 30 % des pas du jour et de 4 minutes simulées. La réserve restante est conservée. Voir <a href="#absence">Résumé d'absence</a>.</p>
   </details>
   <details>
     <summary>Le héros est bloqué et n'avance plus.</summary>

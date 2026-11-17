@@ -18,6 +18,20 @@ data class OfflineSim(
     val kills: Int
 )
 
+/**
+ * Résultat détaillé d'une action de forge, pour n'annoncer au joueur
+ * que ce qui manque réellement.
+ */
+sealed interface ForgeOutcome {
+    data object Success : ForgeOutcome
+    data object NotFound : ForgeOutcome
+    data object NotIdentified : ForgeOutcome
+    data object Locked : ForgeOutcome
+
+    /** [gold] et [shards] valent 0 quand la ressource est suffisante. */
+    data class Missing(val gold: Int, val shards: Int) : ForgeOutcome
+}
+
 data class AbsenceSim(
     val elapsedMs: Long,
     val simulatedMs: Long,
@@ -32,7 +46,9 @@ data class AbsenceSim(
     val chests: Int,
     val stoppedOnSpecial: Boolean,
     val skippedCamp: Boolean,
-    val defeated: Boolean
+    val defeated: Boolean,
+    val stoppedOnBoss: Boolean = false,
+    val stoppedOnChest: Boolean = false
 )
 
 data class SpecialOutcome(
@@ -99,6 +115,7 @@ object GameEngine {
             state.day = d
             state.stepsToday = 0
             state.processedSteps = 0
+            state.offlineStepsToday = 0
             state.ferveur = 0
             state.ferveurDecayMs = 0.0
             state.ferveurDecayAt = 0L
@@ -162,28 +179,32 @@ object GameEngine {
         maxIterations: Int = 900,
         dtMs: Double = 500.0
     ): OfflineSim {
-        val startGold = state.gold
-        val startFloor = state.floor
-        val startKills = state.kills
-        val startBosses = state.bosses
-        var iterations = 0
-        while (iterations < maxIterations && state.stepBank > 0.0 && state.mode != "special") {
-            tick(state, dtMs)
-            iterations++
-        }
+        // La synchro de fond partage le budget hors ligne de la reprise.
+        val cap = min(maxIterations * dtMs.toLong(), OFFLINE_SIM_MAX_MS)
+        val sim = simulateAbsence(state, elapsedMs = cap, capMs = cap, dtMs = dtMs)
         return OfflineSim(
-            combats = (state.kills - startKills) + (state.bosses - startBosses),
-            gold = max(0, state.gold - startGold),
-            floors = max(0, state.floor - startFloor),
-            kills = state.kills - startKills
+            combats = sim.combats,
+            gold = sim.gold,
+            floors = sim.floors,
+            kills = sim.kills
         )
     }
 
+    /** Nombre de pas encore autorisés à être consommés hors ligne aujourd'hui. */
+    fun offlineBudget(state: GameState): Int =
+        (state.stepsToday * OFFLINE_BANK_SHARE).toInt()
+            .minus(state.offlineStepsToday)
+            .coerceAtLeast(0)
+
+    /**
+     * Progression hors ligne : simule le jeu avec un budget de pas (30 % des pas
+     * du jour) et une durée maximale, en s'arrêtant sur un événement pour que le
+     * joueur retrouve toujours quelque chose à regarder.
+     */
     fun simulateAbsence(
         state: GameState,
         elapsedMs: Long,
-        capMs: Long = 15L * 60L * 1000L,
-        capSteps: Int = 60_000,
+        capMs: Long = OFFLINE_SIM_MAX_MS,
         dtMs: Double = 500.0
     ): AbsenceSim {
         val startBank = state.stepBank.toInt()
@@ -194,8 +215,12 @@ object GameEngine {
         val startLevel = state.level
         val startChests = state.chestsOpened
         val startRetreats = state.retreats
+        val startChest = state.chest
 
-        if (elapsedMs <= 0L || startBank <= 0 || state.mode == "camp" || state.mode == "special") {
+        val budget = min(offlineBudget(state), startBank)
+        if (elapsedMs <= 0L || startBank <= 0 || budget <= 0 ||
+            state.mode == "camp" || state.mode == "special"
+        ) {
             return AbsenceSim(
                 elapsedMs = elapsedMs,
                 simulatedMs = 0L,
@@ -214,21 +239,40 @@ object GameEngine {
             )
         }
 
+        val floorSteps = (FLOOR_METERS * STEPS_PER_METER).toInt()
         val maxIterations = (capMs / dtMs.toLong()).toInt().coerceAtLeast(1)
         var iterations = 0
         var stoppedOnSpecial = false
+        var stoppedOnBoss = false
+        var stoppedOnChest = false
+        var stoppedOnCamp = false
         while (iterations < maxIterations && state.stepBank > 0.0) {
             val consumed = (startBank - state.stepBank).toInt().coerceAtLeast(0)
-            if (consumed >= capSteps) break
+            if (consumed >= budget) break
             tick(state, dtMs)
             iterations++
             if (state.mode == "special") {
                 stoppedOnSpecial = true
                 break
             }
-            if (state.mode == "camp") break
+            if (state.mode == "camp") {
+                stoppedOnCamp = true
+                break
+            }
+            if (startChest == null && state.chest != null) {
+                stoppedOnChest = true
+                break
+            }
+            // Ne pas engloutir un gardien qu'on ne pourrait pas terminer : on
+            // s'arrête devant le portail s'il reste moins d'un palier de budget.
+            val remaining = budget - (startBank - state.stepBank).toInt().coerceAtLeast(0)
+            if (state.fight == null && state.distance >= GATE_METERS && remaining < floorSteps) {
+                stoppedOnBoss = true
+                break
+            }
         }
         val consumed = (startBank - state.stepBank).toInt().coerceAtLeast(0)
+        state.offlineStepsToday += consumed
         return AbsenceSim(
             elapsedMs = elapsedMs,
             simulatedMs = (iterations * dtMs).toLong(),
@@ -242,8 +286,10 @@ object GameEngine {
             levels = (state.level - startLevel).coerceAtLeast(0),
             chests = (state.chestsOpened - startChests).coerceAtLeast(0),
             stoppedOnSpecial = stoppedOnSpecial,
-            skippedCamp = false,
-            defeated = state.retreats > startRetreats
+            skippedCamp = stoppedOnCamp,
+            defeated = state.retreats > startRetreats,
+            stoppedOnBoss = stoppedOnBoss,
+            stoppedOnChest = stoppedOnChest
         )
     }
 
@@ -352,7 +398,7 @@ object GameEngine {
 
     private fun tickWalk(state: GameState, dtMs: Double) {
         if (state.stepBank <= 0.0) return
-        val rate = if (state.stepBank > 600) 140.0 else 70.0
+        val rate = if (state.stepBank > WALK_SLOW_THRESHOLD) WALK_STEPS_PER_SECOND else WALK_STEPS_PER_SECOND_SLOW
         val used = min(state.stepBank, rate * dtMs / 1000.0)
         state.stepBank -= used
         state.distance += used / STEPS_PER_METER
@@ -1167,6 +1213,7 @@ object GameEngine {
         val gold = goldGain(state, baseGold)
         state.gold += gold
         state.goldEarned += gold
+        state.chestFlashGold = gold
         state.rations = min(24, state.rations + 1)
         state.shards = min(12, state.shards + 1)
         state.chestsToday++
@@ -1312,9 +1359,8 @@ object GameEngine {
     }
 
     fun toggleLock(state: GameState, itemId: String): Boolean? {
-        val item = state.inventory.firstOrNull { it.id == itemId } ?: return null
-        val updated = item.copy(locked = !item.locked)
-        state.inventory = state.inventory.map { if (it.id == itemId) updated else it }
+        val item = findItem(state, itemId) ?: return null
+        val updated = updateItem(state, itemId) { it.copy(locked = !it.locked) } ?: return null
         state.journal = addJournal(
             state,
             if (updated.locked) "${item.name} verrouillé" else "${item.name} déverrouillé",
@@ -1332,56 +1378,108 @@ object GameEngine {
     }
 
     fun identifyItem(state: GameState, itemId: String): Boolean {
-        val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
+        val item = findItem(state, itemId) ?: return false
         if (item.identified || state.shards < 1) return false
+        updateItem(state, itemId) { it.copy(identified = true) }
         state.shards--
-        state.inventory = state.inventory.map {
-            if (it.id == itemId) it.copy(identified = true) else it
-        }
         state.journal = addJournal(state, "Objet identifié · ${item.name}", "good")
         return true
     }
 
-    fun rerollEffect(state: GameState, itemId: String): Boolean {
-        val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
-        if (!item.identified || state.shards < 2) return false
-        state.shards -= 2
+    fun rerollEffect(state: GameState, itemId: String): Boolean =
+        rerollEffectDetailed(state, itemId) == ForgeOutcome.Success
+
+    fun rerollEffectDetailed(state: GameState, itemId: String): ForgeOutcome {
+        val item = findItem(state, itemId) ?: return ForgeOutcome.NotFound
+        if (!item.identified) return ForgeOutcome.NotIdentified
+        val missingShards = (2 - state.shards).coerceAtLeast(0)
+        if (missingShards > 0) return ForgeOutcome.Missing(0, missingShards)
         val effect = if (rnd.nextDouble() < 0.25) "" else ITEM_EFFECTS.random(rnd)
         val baseName = item.name.substringBefore(" · ")
-        val updated = item.copy(
-            name = if (effect.isEmpty()) baseName else "$baseName · ${effectLabel(effect)}",
-            effect = effect
-        )
-        state.inventory = state.inventory.map { if (it.id == itemId) updated else it }
+        updateItem(state, itemId) {
+            it.copy(
+                name = if (effect.isEmpty()) baseName else "$baseName · ${effectLabel(effect)}",
+                effect = effect
+            )
+        } ?: return ForgeOutcome.NotFound
+        state.shards -= 2
         state.journal = addJournal(
             state,
             "Forge · ${item.name} → ${if (effect.isEmpty()) "aucun effet" else effectLabel(effect)}",
             "good"
         )
-        return true
+        return ForgeOutcome.Success
     }
 
     fun upgradeCost(item: Item): Int = 30 * item.level + 20
 
-    fun upgradeItem(state: GameState, itemId: String): Boolean {
-        val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
-        if (!item.identified) return false
+    /**
+     * Version niveau +1 d'un objet. Chaque statistique non nulle progresse de 8 %
+     * avec un gain minimal de +1 : sans ce plancher, 8 % de 2 PV ou de 6 % crit.
+     * s'arrondissaient à zéro et le niveau n'apportait rien.
+     */
+    fun upgradedItem(item: Item): Item = item.copy(
+        level = item.level + 1,
+        atk = growStat(item.atk),
+        hp = growStat(item.hp),
+        vitPct = growStat(item.vitPct),
+        critPct = growStat(item.critPct),
+        regen = if (item.regen > 0) ((item.regen + 0.1) * 10).roundToInt() / 10.0 else item.regen,
+        value = (item.value * 1.2).roundToInt()
+    )
+
+    private fun growStat(value: Int): Int =
+        if (value <= 0) value else value + max(1, (value * 0.08).roundToInt())
+
+    fun upgradeItem(state: GameState, itemId: String): Boolean =
+        upgradeItemDetailed(state, itemId) == ForgeOutcome.Success
+
+    fun upgradeItemDetailed(state: GameState, itemId: String): ForgeOutcome {
+        val item = findItem(state, itemId) ?: return ForgeOutcome.NotFound
+        if (!item.identified) return ForgeOutcome.NotIdentified
         val cost = upgradeCost(item)
-        if (state.gold < cost || state.shards < 1) return false
+        val missingGold = (cost - state.gold).coerceAtLeast(0)
+        val missingShards = (1 - state.shards).coerceAtLeast(0)
+        if (missingGold > 0 || missingShards > 0) {
+            return ForgeOutcome.Missing(missingGold, missingShards)
+        }
+        val updated = updateItem(state, itemId) { upgradedItem(it) } ?: return ForgeOutcome.NotFound
         state.gold -= cost
-        state.shards--
-        val updated = item.copy(
-            level = item.level + 1,
-            atk = (item.atk * 1.08).roundToInt(),
-            hp = (item.hp * 1.08).roundToInt(),
-            vitPct = (item.vitPct * 1.08).roundToInt(),
-            critPct = (item.critPct * 1.08).roundToInt(),
-            regen = ((item.regen + if (item.regen > 0) 0.1 else 0.0) * 10).roundToInt() / 10.0,
-            value = (item.value * 1.2).roundToInt()
-        )
-        state.inventory = state.inventory.map { if (it.id == itemId) updated else it }
-        state.journal = addJournal(state, "Forge · ${item.name} niveau ${updated.level}", "good")
-        return true
+        state.shards -= 1
+        state.journal = addJournal(state, "Forge · ${updated.name} niveau ${updated.level}", "good")
+        return ForgeOutcome.Success
+    }
+
+    /** Retrouve un objet, qu'il soit dans le sac ou équipé. */
+    fun findItem(state: GameState, itemId: String): Item? =
+        state.inventory.firstOrNull { it.id == itemId }
+            ?: state.equipment.firstOrNull { it.id == itemId }
+
+    /**
+     * Applique [transform] à l'objet où qu'il soit et réajuste les PV
+     * proportionnellement quand l'objet modifié est équipé.
+     */
+    private fun updateItem(state: GameState, itemId: String, transform: (Item) -> Item): Item? {
+        val backpackIndex = state.inventory.indexOfFirst { it.id == itemId }
+        if (backpackIndex >= 0) {
+            val updated = transform(state.inventory[backpackIndex])
+            state.inventory = state.inventory.toMutableList().also { it[backpackIndex] = updated }
+            return updated
+        }
+        val equippedIndex = state.equipment.indexOfFirst { it.id == itemId }
+        if (equippedIndex >= 0) {
+            val before = state.equipment[equippedIndex]
+            val updated = transform(before)
+            if (updated == before) return updated
+            val oldMax = statsOf(state).maxHp
+            state.equipment = state.equipment.toMutableList().also { it[equippedIndex] = updated }
+            val newMax = statsOf(state).maxHp
+            if (oldMax > 0 && newMax != oldMax) {
+                state.hp = (state.hp * newMax / oldMax).coerceIn(1.0, newMax.toDouble())
+            }
+            return updated
+        }
+        return null
     }
 
     fun dismantleItem(state: GameState, itemId: String): Int {

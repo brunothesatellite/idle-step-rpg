@@ -7,7 +7,7 @@
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.11.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.12.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -32,10 +32,11 @@
 - Le héros consomme automatiquement la réserve de pas : marche, rencontres tous les 10 m, combats, coffres, gardiens.
 - Les combats sont automatiques : ATQ, PV, VIT, critique, régénération, ferveur, équipement, buffs.
 - Le **camp** met la marche en pause, réinitialise un combat, soigne, donne accès au journal, à l’inventaire et aux potions.
-- Les **coffres** restent 24 h, deux maximum en attente. Ils ne bloquent jamais la route.
+- Les **coffres** restent 24 h, deux maximum en attente. Ils ne bloquent jamais la route ; « Consacrer mes pas » fige la marche pour forcer la serrure, et la fiche peut être masquée en laissant le forçage tourner.
+- **Lisibilité** : quatre tailles de texte (**Normal, Grand, Très grand, Maximal**), animations réduites, vibrations réglables.
 - Les **serments journaliers**, la **ferveur**, les **consommables**, la **forge**, les **ensembles** et les **rencontres spéciales** ajoutent de la profondeur.
 - Le **reset quotidien** se fait à **00:00 local**, en accord avec le `calendarDate` Garmin.
-- Le **résumé d'absence** fait avancer le jeu pendant la fermeture : 100 % du rythme actif, plafond 60 000 pas / 15 min simulées, avec un écran **« Bon retour »**.
+- Le **résumé d'absence** fait avancer le jeu pendant la fermeture : **30 % des pas du jour** et **4 min simulées** au maximum, avec arrêt sur événement (rencontre spéciale, portail du gardien, coffre) et un écran **« Bon retour »**.
 
 ### Biomes et contenu
 
@@ -90,7 +91,7 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.11.0.apk
+adb install -r La-Marche-des-Ames-v0.12.0.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.

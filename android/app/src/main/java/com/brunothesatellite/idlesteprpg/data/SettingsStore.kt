@@ -7,8 +7,8 @@ class SettingsStore(context: Context) {
     private val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
 
     var textScale: Float
-        get() = prefs.getFloat("text_scale", 1.35f).coerceIn(1f, 1.7f)
-        set(value) = prefs.edit().putFloat("text_scale", value.coerceIn(1f, 1.7f)).apply()
+        get() = prefs.getFloat("text_scale", 1.35f).coerceIn(1f, 2f)
+        set(value) = prefs.edit().putFloat("text_scale", value.coerceIn(1f, 2f)).apply()
 
     var reducedMotion: Boolean
         get() = prefs.getBoolean("reduced_motion", false)
@@ -41,6 +41,14 @@ class SettingsStore(context: Context) {
     var notifyKey: Boolean
         get() = prefs.getBoolean("notify_key", true)
         set(value) = prefs.edit().putBoolean("notify_key", value).apply()
+
+    var notifySpecial: Boolean
+        get() = prefs.getBoolean("notify_special", true)
+        set(value) = prefs.edit().putBoolean("notify_special", value).apply()
+
+    var notifyBossWaiting: Boolean
+        get() = prefs.getBoolean("notify_boss_waiting", true)
+        set(value) = prefs.edit().putBoolean("notify_boss_waiting", value).apply()
 
     var quietHours: Boolean
         get() = prefs.getBoolean("quiet_hours", false)

@@ -1,6 +1,7 @@
 package com.brunothesatellite.idlesteprpg.engine
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.time.LocalDate
 import kotlin.math.max
 import kotlin.math.min
@@ -10,6 +11,21 @@ import kotlin.math.roundToInt
 const val STEPS_PER_METER = 10.0
 const val FLOOR_METERS = 100
 const val ENCOUNTER_METERS = 10
+
+/** Distance à laquelle le portail du gardien apparaît. */
+const val GATE_METERS = 85.0
+
+/** Marche : pas consommés par seconde, et seuil de passage au rythme lent. */
+const val WALK_STEPS_PER_SECOND = 60.0
+const val WALK_STEPS_PER_SECOND_SLOW = 30.0
+const val WALK_SLOW_THRESHOLD = 600.0
+
+/**
+ * Progression hors ligne : part des pas du jour qui peut être consommée par les
+ * simulations (reprise + synchro de fond), et durée maximale simulée d'un coup.
+ */
+const val OFFLINE_BANK_SHARE = 0.30
+const val OFFLINE_SIM_MAX_MS = 4L * 60L * 1000L
 const val DAY_RESET_HOUR = 0
 const val MAX_STEPS_PER_DAY = 60_000
 const val HISTORY_DAYS = 7
@@ -266,6 +282,8 @@ data class GameState(
     var day: String = "",
     var stepsToday: Int = 0,
     var processedSteps: Int = 0,
+    /** Pas déjà consommés par les simulations hors ligne aujourd'hui (plafond 30 %). */
+    var offlineStepsToday: Int = 0,
     var stepBank: Double = 0.0,
     var gold: Int = 120,
     var rations: Int = 3,
@@ -283,6 +301,8 @@ data class GameState(
     var mode: String = "walk",
     var fight: FightData? = null,
     var chest: ChestData? = null,
+    /** Or du dernier coffre ouvert, pour le toast (non sérialisé). */
+    @Transient var chestFlashGold: Int = 0,
     var farmKills: Int = 0,
     var farmWaitMs: Double = 0.0,
     var bossBlessing: Double = 0.0,

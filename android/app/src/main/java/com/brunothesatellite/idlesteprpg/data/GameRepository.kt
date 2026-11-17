@@ -4,6 +4,7 @@ import android.content.Context
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
+import com.brunothesatellite.idlesteprpg.engine.OfflineSim
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.deepCopy
@@ -148,7 +149,7 @@ class GameRepository(private val context: Context) {
         ingestHistory(mapOf(date.toString() to total), date)
     }
 
-    suspend fun ingestHistory(days: Map<String, Int>, today: LocalDate): OfflineReport? {
+    suspend fun ingestHistory(days: Map<String, Int>, today: LocalDate, simulate: Boolean = true): OfflineReport? {
         val before = _state.value
         var report: OfflineReport? = null
         var after: GameState = before
@@ -166,7 +167,11 @@ class GameRepository(private val context: Context) {
                     )
                     s.offlineReport = report
                 } else {
-                    val sim = GameEngine.simulateOffline(s)
+                    val sim = if (simulate) {
+                        GameEngine.simulateOffline(s)
+                    } else {
+                        OfflineSim(combats = 0, gold = 0, floors = 0, kills = 0)
+                    }
                     report = rawReport.copy(
                         combats = sim.combats,
                         gold = sim.gold,

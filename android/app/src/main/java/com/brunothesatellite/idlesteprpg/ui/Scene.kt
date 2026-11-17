@@ -45,8 +45,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
@@ -77,10 +79,12 @@ import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.biomeFor
 import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
+import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.formatRemaining
 import com.brunothesatellite.idlesteprpg.engine.milestoneBonus
+import com.brunothesatellite.idlesteprpg.engine.mobPoolFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.tierIndex
 import com.brunothesatellite.idlesteprpg.engine.tierName
@@ -303,11 +307,12 @@ fun Scene(
         if (state.fight == null && state.distance >= 85) {
             GateView(
                 state,
+                reducedMotion,
                 Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 0.dp, bottom = 58.dp)
-                    .width(166.dp)
-                    .height(134.dp)
+                    .width(160.dp)
+                    .height(170.dp)
             )
         }
 
@@ -339,6 +344,15 @@ fun Scene(
                     Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 58.dp)
                 )
             }
+        }
+
+        val waitingForSteps = state.stepBank <= 0.0 && state.fight == null
+        if (waitingForSteps && state.distance < 85) {
+            WaitingMob(
+                state,
+                reducedMotion,
+                Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 58.dp)
+            )
         }
 
         if (state.chest != null) {
@@ -1402,8 +1416,65 @@ private fun LevelUpBanner(level: Int, modifier: Modifier = Modifier) {
     }
 }
 
+/** Silhouette d'un rôdeur : teinte unie, lisible sur le sol sombre du couloir. */
+private val Silhouette = Color(0xFF4A3A63)
+
 @Composable
-private fun GateView(state: GameState, modifier: Modifier = Modifier) {
+private fun rememberIdleBob(reducedMotion: Boolean, label: String): Float {
+    val transition = rememberInfiniteTransition(label = label)
+    val bob by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = if (reducedMotion) 0f else 1f,
+        animationSpec = infiniteRepeatable(tween(420), RepeatMode.Reverse),
+        label = "${label}Bob"
+    )
+    return bob
+}
+
+/**
+ * Le prochain combat n'est tiré qu'au démarrage (`Random.Default`) : on ne peut
+ * donc pas annoncer son identité. On montre une silhouette du biome qui sautille,
+ * avec la distance restante avant la rencontre, plutôt qu'un couloir vide.
+ */
+@Composable
+private fun WaitingMob(state: GameState, reducedMotion: Boolean, modifier: Modifier = Modifier) {
+    val pool = remember(state.floor) {
+        val biomePool = mobPoolFor(state.floor)
+        (biomePool.mid + biomePool.hard + biomePool.easy).ifEmpty { biomePool.easy }
+    }
+    val template = remember(pool, state.floor, state.nextFight) {
+        if (pool.isEmpty()) {
+            null
+        } else {
+            pool[Math.floorMod(state.floor * 7 + state.nextFight / 10, pool.size)]
+        }
+    }
+    val art = template?.let { rememberAsset(it.icon) }
+    val bob = rememberIdleBob(reducedMotion, "waitingMob")
+    val remaining = (state.nextFight - state.distance).roundToInt().coerceAtLeast(1)
+
+    Column(
+        modifier = modifier.graphicsLayer { translationY = -bob * 3.dp.toPx() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (art != null) {
+            Image(
+                bitmap = art,
+                contentDescription = null,
+                modifier = Modifier.size(102.dp),
+                filterQuality = FilterQuality.None,
+                colorFilter = ColorFilter.tint(Silhouette, BlendMode.SrcIn)
+            )
+            Spacer(Modifier.height(3.dp))
+        }
+        SceneTag("EN ATTENTE DE PAS", Ember)
+        Spacer(Modifier.height(2.dp))
+        Text("prochain combat dans $remaining m", fontSize = 4.6.sp, color = Muted)
+    }
+}
+
+@Composable
+private fun GateView(state: GameState, reducedMotion: Boolean = false, modifier: Modifier = Modifier) {
     val active = state.distance >= 90 || state.fight?.isBoss == true
     val gateStyle = biomeVisuals(biomeKeyFor(state.floor)).gate
     val gatePrefix = when (gateStyle) {
@@ -1414,28 +1485,21 @@ private fun GateView(state: GameState, modifier: Modifier = Modifier) {
     val left = rememberAsset("${gatePrefix}_left.png")
     val middle = rememberAsset("${gatePrefix}_middle.png")
     val right = rememberAsset("${gatePrefix}_right.png")
+    val guardian = remember(state.floor) { bossFor(state.floor) }
+    val guardianArt = rememberAsset(guardian.icon)
+    val guardianBob = rememberIdleBob(reducedMotion, "guardian")
     Box(modifier, contentAlignment = Alignment.BottomCenter) {
         Canvas(Modifier.fillMaxSize()) {
-            drawRoundRect(
-                color = Color(0xCC090611),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.width * 0.42f, size.width * 0.42f),
-                size = size
-            )
-            drawRoundRect(
-                color = if (active) Gold.copy(alpha = 0.5f) else Color(0xFF3A2C4C),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.width * 0.42f, size.width * 0.42f),
-                size = size,
-                style = Stroke(width = 3.dp.toPx())
-            )
             if (active) {
+                // Halo discret derrière le gardien : plus de cadre en pilule.
                 drawCircle(
                     brush = Brush.radialGradient(
-                        listOf(Color(0x44FF6B4A), Color.Transparent),
-                        center = Offset(size.width / 2, size.height * 0.65f),
-                        radius = size.width * 0.55f
+                        listOf(Color(0x33FF6B4A), Color(0x11FF6B4A), Color.Transparent),
+                        center = Offset(size.width / 2, size.height * 0.78f),
+                        radius = size.width * 0.60f
                     ),
-                    radius = size.width * 0.55f,
-                    center = Offset(size.width / 2, size.height * 0.65f)
+                    radius = size.width * 0.60f,
+                    center = Offset(size.width / 2, size.height * 0.78f)
                 )
             }
         }
@@ -1448,6 +1512,39 @@ private fun GateView(state: GameState, modifier: Modifier = Modifier) {
                 letterSpacing = 0.5.sp,
                 modifier = Modifier.padding(bottom = 1.dp)
             )
+            Text(
+                guardian.name,
+                fontSize = 4.4.sp,
+                color = if (active) Blood else Muted2,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Box(contentAlignment = Alignment.BottomCenter) {
+                Row(Modifier.alpha(if (active) 1f else 0.55f)) {
+                    listOf(left, middle, right).forEach { bmp ->
+                        if (bmp != null) {
+                            Image(
+                                bitmap = bmp,
+                                contentDescription = null,
+                                modifier = Modifier.width(44.dp).height(116.dp),
+                                contentScale = ContentScale.FillBounds,
+                                filterQuality = FilterQuality.None
+                            )
+                        }
+                    }
+                }
+                if (guardianArt != null) {
+                    Image(
+                        bitmap = guardianArt,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(bottom = 2.dp)
+                            .size(96.dp)
+                            .graphicsLayer { translationY = -guardianBob * 2.dp.toPx() },
+                        filterQuality = FilterQuality.None
+                    )
+                }
+            }
             if (state.distance < FLOOR_METERS) {
                 val remaining = (FLOOR_METERS - state.distance).roundToInt().coerceAtLeast(0)
                 val waiting = state.stepBank <= 0.0 && state.fight == null
@@ -1455,20 +1552,8 @@ private fun GateView(state: GameState, modifier: Modifier = Modifier) {
                     if (waiting) "EN ATTENTE DE PAS" else "À $remaining m",
                     fontSize = 4.2.sp,
                     color = if (waiting) Ember else Muted,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    modifier = Modifier.padding(top = 3.dp)
                 )
-            }
-            Row(Modifier.alpha(if (active) 1f else 0.55f)) {
-                listOf(left, middle, right).forEach { bmp ->
-                    if (bmp != null) {
-                        Image(
-                            bitmap = bmp,
-                            contentDescription = null,
-                            modifier = Modifier.size(52.dp),
-                            filterQuality = FilterQuality.None
-                        )
-                    }
-                }
             }
         }
     }
@@ -1553,7 +1638,21 @@ private fun ChestChip(state: GameState, onChest: () -> Unit, modifier: Modifier 
                 fontSize = 5.sp,
                 color = GoldLight
             )
-            Text(formatRemaining(chestRemainingMs(chest)), fontSize = 4.8.sp, color = Ember)
+            val stalled = state.mode == "chest" && state.stepBank <= 0.0
+            Text(
+                if (stalled) "EN ATTENTE" else formatRemaining(chestRemainingMs(chest)),
+                fontSize = 4.8.sp,
+                color = if (stalled) Ember else Muted2
+            )
+            if (chest.progress > 0.0) {
+                Spacer(Modifier.height(2.dp))
+                MiniBar(
+                    fraction = (chest.progress / chest.quota).toFloat(),
+                    color = Gold,
+                    modifier = Modifier.width(58.dp),
+                    height = 3.dp
+                )
+            }
         }
     }
 }

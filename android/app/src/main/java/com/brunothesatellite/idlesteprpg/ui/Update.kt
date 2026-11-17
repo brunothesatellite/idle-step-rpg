@@ -37,7 +37,7 @@ fun UpdateDialog(
     onLater: () -> Unit,
     onRelease: () -> Unit
 ) {
-    Dialog(
+    AppDialog(
         onDismissRequest = { if (!downloading) onLater() },
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
@@ -117,7 +117,7 @@ fun PostUpdateDialog(
     onOpenRelease: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    Dialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {

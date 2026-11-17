@@ -965,7 +965,7 @@ De haut en bas :
 | **Changement de fuseau** | La journée suit l'heure locale. Aucun pas n'est compté deux fois. |
 | **Changement d'appareil** | Les pas déjà synchronisés ne sont pas rejoués. La progression (or, stuff, paliers) est conservée. |
 | **Fermeture pendant un combat** | Au retour, le héros reprend à la dernière halte avec 50 % de PV. Le combat est abandonné sans perte. |
-| **Fermeture prolongée** | Les pas disponibles sont récupérés à la réouverture. La simulation hors ligne est résumée en une ligne (pas, combats, or, paliers). Plafond : 100 000 pas par synchronisation (marathon/ultra couverts). |
+| **Fermeture prolongée** | Les pas disponibles sont récupérés à la réouverture. La simulation hors ligne est résumée en une ligne (pas, combats, or, paliers). Plafond : **30 % des pas du jour** et **4 minutes simulées** par passage, avec arrêt sur rencontre spéciale, portail du gardien, coffre ou défaite. Import : 100 000 pas par synchronisation (marathon/ultra couverts). |
 | **Pas suspects** | Les pas au-delà de 250/min en moyenne ou 60 000/jour ne sont pas comptés. Aucun bannissement, aucune perte. |
 | **Coffre non ouvert** | Conservé 24 h. Passé ce délai, il disparaît et le journal l'indique. |
 | **Coffre forcé au changement de jour** | La progression de la serrure est conservée 24 h. |

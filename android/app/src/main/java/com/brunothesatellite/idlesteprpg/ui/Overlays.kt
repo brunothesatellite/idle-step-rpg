@@ -53,11 +53,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -109,18 +113,32 @@ fun ItemDialog(
     onDismantle: () -> Unit
 ) {
     val equippedItem = equipped(state, item.slot)
+    val equippedHere = state.equipment.any { it.id == item.id }
     val fusionCount = state.inventory.count {
         it.slot == item.slot && it.rarity == item.rarity && !it.locked && it.identified
+    }
+    val upgradePrice = GameEngine.upgradeCost(item)
+    val missingGold = (upgradePrice - state.gold).coerceAtLeast(0)
+    val missingShards = (1 - state.shards).coerceAtLeast(0)
+    val canUpgrade = item.identified && missingGold == 0 && missingShards == 0
+    val upgradeHint = when {
+        !item.identified -> "Objet non identifié."
+        canUpgrade -> "Forge · ${formatInt(upgradePrice)} or + 1 éclat"
+        else -> "Il manque " + buildList {
+            if (missingGold > 0) add("${formatInt(missingGold)} or")
+            if (missingShards > 0) add(if (missingShards > 1) "$missingShards éclats" else "1 éclat")
+        }.joinToString(" et ") + " pour améliorer"
     }
     val setCount = if (item.setName.isBlank()) 0 else {
         state.equipment.count { it.setName == item.setName } +
             if (state.inventory.any { it.id == item.id }) 1 else 0
     }
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(
                 Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .clip(RoundedCornerShape(12.dp))
                     .background(Brush.verticalGradient(listOf(Color(0xFF241930), Color(0xFF130E1C))))
                     .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
@@ -168,17 +186,7 @@ fun ItemDialog(
                             )
                         }
                     }
-                    Text(
-                        "×",
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clickable(onClick = onDismiss)
-                            .background(Panel2, RoundedCornerShape(3.dp))
-                            .padding(top = 3.dp),
-                        textAlign = TextAlign.Center,
-                        fontSize = 17.sp,
-                        color = Muted
-                    )
+                    CloseButton(onDismiss, size = 28.dp, bordered = false)
                 }
                 Spacer(Modifier.height(8.dp))
                 DividerLine()
@@ -207,6 +215,15 @@ fun ItemDialog(
                     StatRow("Régénération", if (item.regen != 0.0) "+${"%.1f".format(item.regen)}" else "—")
                     StatRow("Valeur", "${formatInt(item.value)} or")
                     Spacer(Modifier.height(4.dp))
+                    val nextLevel = GameEngine.upgradedItem(item)
+                    val reference = if (equippedHere) item else equippedItem
+                    val leftTitle = if (equippedHere) "ACTUEL" else "ÉQUIPÉ"
+                    val rightTitle = if (equippedHere) "APRÈS +1 NIV." else "CET OBJET"
+                    val leftLine = when {
+                        equippedHere -> statLine(item)
+                        equippedItem != null -> statLine(equippedItem)
+                        else -> "Emplacement vide"
+                    }
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -216,18 +233,23 @@ fun ItemDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(Modifier.weight(1f)) {
-                            Text("ÉQUIPÉ", fontSize = 5.5.sp, color = Muted2)
+                            Text(leftTitle, fontSize = 5.5.sp, color = Muted2)
                             Text(
-                                equippedItem?.let { statLine(it) } ?: "Emplacement vide",
+                                leftLine,
                                 fontSize = 6.5.sp,
                                 color = Parchment.copy(alpha = 0.75f),
-                                maxLines = 2
+                                maxLines = 3
                             )
                         }
                         Text("→", color = Gold, fontSize = 12.sp)
                         Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                            Text("NOUVEAU", fontSize = 5.5.sp, color = Muted2)
-                            Text(statLine(item), fontSize = 6.5.sp, color = GoldLight, maxLines = 2, textAlign = TextAlign.End)
+                            Text(rightTitle, fontSize = 5.5.sp, color = Muted2)
+                            Text(
+                                comparisonLine(if (equippedHere) nextLevel else item, reference),
+                                fontSize = 6.5.sp,
+                                maxLines = 3,
+                                textAlign = TextAlign.End
+                            )
                         }
                     }
                     if (item.setName.isNotBlank()) {
@@ -284,20 +306,38 @@ fun ItemDialog(
                             "FUSIONNER $fusionCount/3",
                             Modifier.weight(1f),
                             onFuse,
-                            enabled = fusionCount >= 3 && !item.locked
+                            enabled = fusionCount >= 3 && !item.locked && !equippedHere
                         )
                     }
                     if (state.bosses > 0) {
                         Spacer(Modifier.height(5.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                            OverlayAction("REFORGER · 2", Modifier.weight(1f), onReroll)
                             OverlayAction(
-                                "AMÉLIORER · ${formatInt(GameEngine.upgradeCost(item))}",
-                                Modifier.weight(1.2f),
-                                onUpgrade
+                                "REFORGER · 2",
+                                Modifier.weight(1f),
+                                onReroll,
+                                enabled = item.identified && state.shards >= 2
                             )
-                            OverlayAction("DÉMONTER", Modifier.weight(0.9f), onDismantle, danger = true)
+                            OverlayAction(
+                                "AMÉLIORER · ${formatInt(upgradePrice)}",
+                                Modifier.weight(1.2f),
+                                onUpgrade,
+                                enabled = canUpgrade
+                            )
+                            OverlayAction(
+                                "DÉMONTER",
+                                Modifier.weight(0.9f),
+                                onDismantle,
+                                danger = true,
+                                enabled = !item.locked && !equippedHere
+                            )
                         }
+                        Text(
+                            upgradeHint,
+                            fontSize = 6.sp,
+                            color = if (canUpgrade) Muted else Ember,
+                            modifier = Modifier.padding(top = 3.dp)
+                        )
                     } else {
                         Text(
                             "La forge se débloque après le premier gardien vaincu.",
@@ -309,12 +349,19 @@ fun ItemDialog(
                     Spacer(Modifier.height(5.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         OverlayAction(
-                            if (item.locked) "VERROUILLÉ" else "VENDRE +${formatInt(item.value)} or",
+                            if (item.locked) "VERROUILLÉ"
+                            else "VENDRE +${formatInt(item.value)} or",
                             Modifier.weight(0.85f),
                             onSell,
-                            enabled = !item.locked
+                            enabled = !item.locked && !equippedHere
                         )
-                        OverlayAction("ÉQUIPER", Modifier.weight(1.15f), onEquip, primary = true)
+                        OverlayAction(
+                            if (equippedHere) "ÉQUIPÉ" else "ÉQUIPER",
+                            Modifier.weight(1.15f),
+                            onEquip,
+                            primary = true,
+                            enabled = !equippedHere
+                        )
                     }
                 }
             }
@@ -324,12 +371,56 @@ fun ItemDialog(
 
 @Composable
 private fun StatRow(label: String, value: String) {
-    Row(
-        Modifier.fillMaxWidth().padding(vertical = 2.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(label, fontSize = 8.sp, color = Muted)
-        Text(value, fontSize = 8.5.sp, color = Parchment)
+    Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, fontSize = 8.sp, color = Muted, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(6.dp))
+        Text(value, fontSize = 8.5.sp, color = Parchment, textAlign = TextAlign.End)
+    }
+}
+
+private data class StatEntry(val label: String, val value: Double, val text: String)
+
+private fun statEntries(item: Item): List<StatEntry> = buildList {
+    if (item.atk != 0) add(StatEntry("ATQ", item.atk.toDouble(), "+${item.atk}"))
+    if (item.hp != 0) add(StatEntry("PV", item.hp.toDouble(), "+${item.hp}"))
+    if (item.vitPct != 0) add(StatEntry("% VIT", item.vitPct.toDouble(), "+${item.vitPct}"))
+    if (item.critPct != 0) add(StatEntry("% crit.", item.critPct.toDouble(), "+${item.critPct}"))
+    if (item.regen != 0.0) add(StatEntry("PV/s", item.regen, "+${"%.1f".format(item.regen)}"))
+}
+
+private fun formatDelta(delta: Double): String =
+    if (delta % 1.0 == 0.0) delta.toInt().toString() else "%.1f".format(delta)
+
+/**
+ * Ligne de comparaison colorée : vert quand la valeur monte, rouge quand elle
+ * baisse, gris quand elle ne bouge pas. [reference] null = aucune comparaison.
+ */
+private fun comparisonLine(target: Item, reference: Item?): AnnotatedString {
+    val previous = reference?.let { ref -> statEntries(ref).associate { it.label to it.value } }.orEmpty()
+    return buildAnnotatedString {
+        statEntries(target).forEachIndexed { index, entry ->
+            if (index > 0) append(" · ")
+            val before = previous[entry.label]
+            val color = when {
+                before == null -> GoldLight
+                entry.value > before -> Green
+                entry.value < before -> Bad
+                else -> Parchment.copy(alpha = 0.65f)
+            }
+            withStyle(SpanStyle(color = color)) {
+                append(entry.text)
+                append(" ")
+                append(entry.label)
+                if (before != null) {
+                    val delta = entry.value - before
+                    when {
+                        delta > 0 -> append(" ▲+${formatDelta(delta)}")
+                        delta < 0 -> append(" ▼${formatDelta(delta)}")
+                        else -> append(" =")
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -342,18 +433,19 @@ fun ChestDialog(
     onDismiss: () -> Unit
 ) {
     val forcing = state.mode == "chest"
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(22.dp), contentAlignment = Alignment.Center) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Brush.verticalGradient(listOf(Color(0xFF241930), Color(0xFF130E1C))))
-                    .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ChestArt(Modifier.size(78.dp))
+            Box {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Brush.verticalGradient(listOf(Color(0xFF241930), Color(0xFF130E1C))))
+                        .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ChestArt(Modifier.size(78.dp))
                 Spacer(Modifier.height(4.dp))
                 Text(GameEngine.chestTypeLabel(chest.type), fontSize = 5.5.sp, letterSpacing = 1.sp, color = Gold)
                 Text("Serrure de ${formatInt(chest.quota)} pas", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Parchment)
@@ -418,7 +510,13 @@ fun ChestDialog(
                     )
                 }
                 Spacer(Modifier.height(4.dp))
-                OverlayAction("CONTINUER LA MARCHE", Modifier.fillMaxWidth(), onDismiss)
+                OverlayAction(
+                    if (forcing) "MASQUER · LE FORÇAGE CONTINUE" else "CONTINUER LA MARCHE",
+                    Modifier.fillMaxWidth(),
+                    onDismiss
+                )
+                }
+                CloseButton(onDismiss, Modifier.align(Alignment.TopEnd).padding(6.dp))
             }
         }
     }
@@ -451,6 +549,14 @@ fun CampOverlay(
         Canvas(Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
+            // Le panneau d'actions a une hauteur variable (taille du texte choisie) :
+            // tente, sapins et feu sont ancrés sur sa ligne de sol, comme le héros,
+            // pour rester visibles à toutes les tailles.
+            val panel = if (cardHeight > 0) cardHeight.toFloat() else h * 0.45f
+            val ground = (h - panel - 16.dp.toPx()).coerceIn(h * 0.30f, h * 0.86f)
+            val sceneTop = 120.dp.toPx()
+            val sceneH = (ground - sceneTop).coerceAtLeast(100.dp.toPx())
+
             drawCircle(Color(0xFFF4E6C8), radius = 17.dp.toPx(), center = Offset(w * 0.86f, h * 0.08f))
             drawCircle(Color(0x22F4E6C8), radius = 55.dp.toPx(), center = Offset(w * 0.86f, h * 0.08f))
             val random = java.util.Random(7)
@@ -458,50 +564,51 @@ fun CampOverlay(
                 drawCircle(
                     Color(0x99E8DCC4),
                     radius = if (random.nextBoolean()) 1.dp.toPx() else 1.5.dp.toPx(),
-                    center = Offset(random.nextFloat() * w, random.nextFloat() * h * 0.70f)
+                    center = Offset(random.nextFloat() * w, random.nextFloat() * (h * 0.70f).coerceAtMost(ground))
                 )
             }
             // sapins
             drawPath(
                 Path().apply {
-                    moveTo(w * 0.04f, h * 0.54f)
-                    lineTo(w * 0.17f, h * 0.24f)
-                    lineTo(w * 0.30f, h * 0.54f)
+                    moveTo(w * 0.04f, ground)
+                    lineTo(w * 0.17f, ground - sceneH * 0.85f)
+                    lineTo(w * 0.30f, ground)
                     close()
                 },
                 Color(0xFF0C1018)
             )
             drawPath(
                 Path().apply {
-                    moveTo(w * 0.70f, h * 0.54f)
-                    lineTo(w * 0.84f, h * 0.22f)
-                    lineTo(w * 0.98f, h * 0.54f)
+                    moveTo(w * 0.70f, ground)
+                    lineTo(w * 0.84f, ground - sceneH * 0.88f)
+                    lineTo(w * 0.98f, ground)
                     close()
                 },
                 Color(0xFF0C1018)
             )
             // tente
+            val tentH = (sceneH * 0.72f).coerceAtMost(190.dp.toPx())
             drawPath(
                 Path().apply {
-                    moveTo(w * 0.26f, h * 0.54f)
-                    lineTo(w * 0.42f, h * 0.36f)
-                    lineTo(w * 0.58f, h * 0.54f)
+                    moveTo(w * 0.26f, ground)
+                    lineTo(w * 0.42f, ground - tentH)
+                    lineTo(w * 0.58f, ground)
                     close()
                 },
                 Color(0xFF3A2B27)
             )
             drawPath(
                 Path().apply {
-                    moveTo(w * 0.38f, h * 0.54f)
-                    lineTo(w * 0.42f, h * 0.47f)
-                    lineTo(w * 0.46f, h * 0.54f)
+                    moveTo(w * 0.38f, ground)
+                    lineTo(w * 0.42f, ground - tentH * 0.42f)
+                    lineTo(w * 0.46f, ground)
                     close()
                 },
                 Color(0xFF09060D)
             )
             // feu
             val fx = w * 0.57f
-            val fy = h * 0.50f
+            val fy = ground - 2.dp.toPx()
             drawCircle(
                 Brush.radialGradient(
                     listOf(Color(0x77FF9448), Color(0x22FF9448), Color.Transparent),
@@ -537,8 +644,9 @@ fun CampOverlay(
                 .padding(top = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("LE FEU VEILLE", fontFamily = Press, fontSize = 10.sp, color = GoldLight)
-            Text("L'expédition est en pause", fontSize = 7.5.sp, letterSpacing = 1.sp, color = Muted)
+            Text("CAMPEMENT", fontFamily = Press, fontSize = 10.sp, color = GoldLight)
+            Text("Le feu veille", fontSize = 7.5.sp, letterSpacing = 1.sp, color = Muted)
+            Text("L'expédition est en pause", fontSize = 6.2.sp, color = Muted2)
         }
 
         Box(
@@ -558,20 +666,12 @@ fun CampOverlay(
                 .size(88.dp)
         )
 
-        Text(
-            "×",
-            modifier = Modifier
+        CloseButton(
+            onResume,
+            Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 40.dp, start = 14.dp)
-                .size(30.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(Ink.copy(alpha = 0.85f))
-                .border(1.dp, Line2, RoundedCornerShape(4.dp))
-                .clickable(onClick = onResume)
-                .padding(top = 3.dp),
-            textAlign = TextAlign.Center,
-            fontSize = 18.sp,
-            color = Muted
+                .padding(top = 40.dp, start = 14.dp),
+            background = Ink.copy(alpha = 0.85f)
         )
 
         Column(
@@ -597,6 +697,15 @@ fun CampOverlay(
                 CampSummary("OR", formatInt(state.gold))
                 CampSummary("SÉRIE", "${state.streak.coerceAtLeast(1)} j")
                 CampSummary("TOTAL", formatInt(state.totalSteps))
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CurrencyChip("item/meat_ration.png", state.rations.toString())
+                CurrencyChip("item/misc_crystal.png", state.shards.toString())
             }
             Spacer(Modifier.height(7.dp))
             CampAction(
@@ -731,19 +840,7 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 Text("COMPTE GARMIN", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
                 Text("Personal API · lecture seule", fontSize = 7.sp, color = Muted)
             }
-            Text(
-                "×",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Panel2)
-                    .border(1.dp, Line2, RoundedCornerShape(4.dp))
-                    .clickable(onClick = onClose)
-                    .padding(top = 3.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                color = Muted
-            )
+            CloseButton(onClose)
         }
         DividerLine()
         Column(
@@ -909,16 +1006,27 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
     if (confirmRevoke) {
         AlertDialog(
             onDismissRequest = { confirmRevoke = false },
-            title = { Text("Révoquer la clé ?", fontSize = 15.sp) },
-            text = { Text("La clé et le jeton seront supprimés de l'appareil. La progression du jeu est conservée.", fontSize = 9.sp) },
+            title = { WithAppFontScale { Text("Révoquer la clé ?", fontSize = 15.sp) } },
+            text = {
+                WithAppFontScale {
+                    Text(
+                        "La clé et le jeton seront supprimés de l'appareil. La progression du jeu est conservée.",
+                        fontSize = 9.sp
+                    )
+                }
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    confirmRevoke = false
-                    vm.revokeGarmin()
-                }) { Text("RÉVOQUER", color = Blood) }
+                WithAppFontScale {
+                    TextButton(onClick = {
+                        confirmRevoke = false
+                        vm.revokeGarmin()
+                    }) { Text("RÉVOQUER", color = Blood) }
+                }
             },
             dismissButton = {
-                TextButton(onClick = { confirmRevoke = false }) { Text("ANNULER", color = Muted) }
+                WithAppFontScale {
+                    TextButton(onClick = { confirmRevoke = false }) { Text("ANNULER", color = Muted) }
+                }
             },
             containerColor = Panel2
         )
@@ -976,19 +1084,7 @@ fun JournalOverlay(
                         color = Muted
                     )
                 }
-                Text(
-                    "×",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Panel2)
-                        .border(1.dp, Line2, RoundedCornerShape(4.dp))
-                        .clickable(onClick = onClose)
-                        .padding(top = 3.dp),
-                    textAlign = TextAlign.Center,
-                    fontSize = 18.sp,
-                    color = Muted
-                )
+                    CloseButton(onClose)
             }
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 14.dp),
@@ -1146,7 +1242,7 @@ fun OfflineOverlay(
     val absence = report.minutes > 0 || report.stepsConsumed > 0 ||
         report.reason == "absence" || report.reason == "mixed"
     val mixed = report.reason == "mixed" || (report.days > 0 && report.stepsConsumed > 0)
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(
                 Modifier
@@ -1296,7 +1392,7 @@ fun ImportPreviewDialog(
     onConfirm: () -> Unit,
     onCancel: () -> Unit
 ) {
-    Dialog(onDismissRequest = onCancel, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    AppDialog(onDismissRequest = onCancel, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(
                 Modifier
@@ -1354,7 +1450,7 @@ fun SpecialDialog(
         "marchand", "statue", "risque" -> state.gold >= special.goldCost
         else -> false
     }
-    Dialog(onDismissRequest = onDecline, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    AppDialog(onDismissRequest = onDecline, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(22.dp), contentAlignment = Alignment.Center) {
             Column(
                 Modifier
@@ -1442,7 +1538,7 @@ private fun SpecialCost(label: String, affordable: Boolean) {
 
 @Composable
 fun SpecialResultDialog(outcome: SpecialOutcome, onDismiss: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(26.dp), contentAlignment = Alignment.Center) {
             Column(
                 Modifier
@@ -1505,19 +1601,7 @@ fun ConsumablesOverlay(
                         color = Muted
                     )
                 }
-                Text(
-                    "×",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Panel2)
-                        .border(1.dp, Line2, RoundedCornerShape(4.dp))
-                        .clickable(onClick = onClose)
-                        .padding(top = 3.dp),
-                    textAlign = TextAlign.Center,
-                    fontSize = 18.sp,
-                    color = Muted
-                )
+                    CloseButton(onClose)
             }
             if (activeBuffs.isNotEmpty()) {
                 Row(
@@ -1670,7 +1754,7 @@ fun OverlayAction(
     }
     Box(
         modifier
-            .height(38.dp)
+            .heightIn(min = 38.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(
                 when {
@@ -1681,7 +1765,8 @@ fun OverlayAction(
                 }
             )
             .border(1.dp, if (enabled) border else Line, RoundedCornerShape(4.dp))
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 3.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
