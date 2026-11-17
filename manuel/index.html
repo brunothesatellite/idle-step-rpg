@@ -195,7 +195,7 @@
 <header class="hero">
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas Garmin deviennent votre progression.</p>
-  <span class="badge">Version 0.11.0 · Android 14+ · Garmin Personal API uniquement</span>
+  <span class="badge">Version 0.13.0 · Android 14+ · Garmin Personal API uniquement</span>
 </header>
 
 <nav class="toc">
@@ -269,14 +269,14 @@
     <li>Chaque jour n'est compté qu'une fois : pas de double comptage.</li>
     <li>Le rattrapage est plafonné à <strong>100 000 pas</strong> par synchronisation (un marathon fait environ 45 000 pas).</li>
     <li>Les pas récupérés peuvent être simulés hors ligne : combats, or, paliers.</li>
-    <li>La synchronisation tourne toutes les 30 minutes, à l'ouverture et manuellement.</li>
+    <li>La synchronisation tourne toutes les 60 minutes, à l'ouverture et manuellement.</li>
   </ul>
 </section>
 
 <section id="boucle">
   <h2>3. La boucle quotidienne</h2>
   <h3>Des pas à la distance</h3>
-  <p>Chaque pas Garmin augmente la réserve de marche. Le héros consomme cette réserve en continu : environ 70 pas/seconde, ou 140 pas/seconde quand la réserve est grande. Un pas n'est jamais consommé deux fois.</p>
+  <p>Chaque pas Garmin augmente la réserve de marche. Le héros consomme cette réserve en continu : environ 30 pas/seconde, ou 60 pas/seconde quand la réserve est grande. Un pas n'est jamais consommé deux fois.</p>
   <ul>
     <li><strong>Plafond journalier :</strong> 60 000 pas.</li>
     <li><strong>Rythme suspect :</strong> au-delà de 250 pas/minute en moyenne depuis la dernière synchronisation, les pas excédentaires sont ignorés et signalés dans le journal.</li>
@@ -338,7 +338,7 @@
     <li><strong>Stats</strong> : puissance, ATQ, PV, VIT, ressources, ferveur, serments, exploits, journal.</li>
     <li><strong>Inventaire</strong> : équipement, butin, consommables, coffre de camp.</li>
     <li><strong>Améliorations</strong> : trois améliorations permanentes et prochain gardien.</li>
-    <li><strong>Barre de synchronisation</strong> : remplacée par le bouton carré en haut à gauche de la scène. Les détails restent dans la carte Garmin de l'onglet Stats.</li>
+    <li><strong>Barre de synchronisation</strong> : remplacée par le bouton carré en haut à gauche de la scène. Les détails restent dans la section <strong>Compte Garmin</strong> des réglages.</li>
   </ul>
 </section>
 
@@ -728,8 +728,8 @@
     <figcaption>Réglages : lisibilité, notifications, sons, aide, sauvegarde.</figcaption>
   </figure>
   <ul>
-    <li><strong>Taille du texte :</strong> Normal, Grand, Très grand.</li>
-    <li><strong>Notifications :</strong> activées/désactivées, avec cases gardien, niveau, serments, coffres, clé Garmin.</li>
+    <li><strong>Taille du texte :</strong> Normal, Grand, Très grand, Maximal.</li>
+    <li><strong>Notifications :</strong> activées/désactivées, avec cases rencontre en attente, gardien, gardien en attente, niveau, serments, coffres, clé Garmin.</li>
     <li><strong>Heures calmes :</strong> 22:00–08:00, alertes sans vibration.</li>
     <li><strong>Animations réduites :</strong> supprime le balancement, les auras et les nombres flottants.</li>
     <li><strong>Vibrations :</strong> retour haptique des alertes.</li>
@@ -911,7 +911,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.11.0 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.13.0 · <a href="#top">Retour au sommaire</a><br>
   Garmin Personal API uniquement · aucune donnée envoyée à un serveur éditeur.
 </footer>
 
