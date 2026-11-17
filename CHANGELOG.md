@@ -1,5 +1,11 @@
 # Journal des versions
 
+## v0.12.1
+- **Résumé d'absence rétabli** : la synchronisation Garmin est désormais effectuée **avant** la simulation d'absence. La réserve étant presque toujours vide à la fermeture (la marche l'a consommée), la simulation ne se déclenchait jamais et l'écran « Bon retour » n'apparaissait plus.
+- La synchro de reprise est **silencieuse et attendue** : pas de toast avant le résumé, indicateur de synchronisation et `lastAdded` mis à jour, simulation lancée sur une réserve fraîche.
+- Le jeu continue de tourner pendant l'appel réseau ; seule la simulation suspend la marche.
+- Aucun changement de règle : 30 % des pas du jour, 4 minutes simulées, arrêt sur événement.
+
 ## v0.12.0
 - **Progression hors ligne repensée** : la simulation ne consomme plus que **30 % des pas du jour** (et **4 minutes de jeu** au maximum), au lieu de 100 % du rythme jusqu'à 15 minutes. La réserve restante vous attend à l'ouverture.
 - **Budget partagé** : la synchro de fond de 30 minutes puise dans le même quota ; une synchronisation manuelle ne simule plus rien, les pas importés restent à vivre à l'écran.

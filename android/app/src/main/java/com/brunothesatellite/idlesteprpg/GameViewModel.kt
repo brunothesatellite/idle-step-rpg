@@ -187,40 +187,48 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         } else {
             0L
         }
-        val state = game.value
-        val canSimulate = elapsed >= 2L * 60L * 1000L &&
-            state.stepBank > 0.0 &&
-            state.mode != "camp" &&
-            state.mode != "special"
 
-        if (!canSimulate) {
-            visible = true
-            viewModelScope.launch { container.gameRepository.markActive() }
-            syncAfterResume()
-            return
-        }
-
-        resuming = true
-        visible = false
         viewModelScope.launch {
-            try {
-                container.gameRepository.simulateAbsence(elapsed)
-            } finally {
-                container.gameRepository.markActive()
-                resuming = false
-                visible = true
-                syncAfterResume()
+            visible = true
+            // 1. Importer les pas de l'absence AVANT de simuler : la réserve est
+            // presque toujours vide à la fermeture (la marche l'a consommée), donc
+            // simuler d'abord ne déclenchait jamais le résumé « Bon retour ».
+            if (shouldSyncOnResume()) {
+                _ui.update { it.copy(syncing = true) }
+                val result = container.garminRepository.sync(simulateAbsence = false)
+                refreshGarmin()
+                _ui.update {
+                    it.copy(
+                        syncing = false,
+                        lastAdded = if (result.ok) result.added else it.lastAdded
+                    )
+                }
             }
+
+            // 2. Simuler l'absence sur la réserve fraîchement synchronisée.
+            val state = game.value
+            val canSimulate = elapsed >= 2L * 60L * 1000L &&
+                state.stepBank > 0.0 &&
+                state.mode != "camp" &&
+                state.mode != "special"
+
+            if (canSimulate) {
+                resuming = true
+                try {
+                    container.gameRepository.simulateAbsence(elapsed)
+                } finally {
+                    resuming = false
+                }
+            }
+            container.gameRepository.markActive()
+            visible = true
         }
     }
 
-    private fun syncAfterResume() {
+    private fun shouldSyncOnResume(): Boolean {
         val last = _ui.value.lastSync
-        if (container.garminRepository.hasKey() &&
+        return container.garminRepository.hasKey() &&
             (last == 0L || System.currentTimeMillis() - last > 2L * 60L * 1000L)
-        ) {
-            syncNow(silent = true)
-        }
     }
 
     fun onAppPause() {
