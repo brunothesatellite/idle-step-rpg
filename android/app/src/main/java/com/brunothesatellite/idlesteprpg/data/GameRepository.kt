@@ -165,7 +165,29 @@ class GameRepository(private val context: Context) {
         ingestHistory(mapOf(date.toString() to total), date)
     }
 
-    suspend fun ingestHistory(days: Map<String, Int>, today: LocalDate, simulate: Boolean = true): OfflineReport? {
+    /**
+     * Recale la base de pas après un changement de source, sans créditer de pas :
+     * le premier import de la nouvelle source sert uniquement de référence.
+     */
+    suspend fun rebaseHistory(days: Map<String, Int>, today: LocalDate) {
+        val before = _state.value
+        var after: GameState = before
+        mutex.withLock {
+            val s = before.deepCopy()
+            GameEngine.rebaseHistory(s, days, today)
+            _state.value = s
+            after = s
+            saveLocked(s)
+        }
+        GameNotifications.diff(context, before, after)
+    }
+
+    suspend fun ingestHistory(
+        days: Map<String, Int>,
+        today: LocalDate,
+        simulate: Boolean = true,
+        sourceLabel: String = "Garmin"
+    ): OfflineReport? {
         val before = _state.value
         var report: OfflineReport? = null
         var after: GameState = before
@@ -173,7 +195,7 @@ class GameRepository(private val context: Context) {
         mutex.withLock {
             val s = before.deepCopy()
             val existing = s.offlineReport?.takeIf { it.acknowledgedAt == 0L }
-            report = GameEngine.ingestHistory(s, days, today)
+            report = GameEngine.ingestHistory(s, days, today, sourceLabel)
             val rawReport = report
             if (rawReport != null) {
                 if (existing != null) {

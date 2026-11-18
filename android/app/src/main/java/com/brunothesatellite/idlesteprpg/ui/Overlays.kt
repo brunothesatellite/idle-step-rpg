@@ -1263,7 +1263,7 @@ fun OfflineOverlay(
                 )
                 Text(
                     when {
-                        mixed -> "Absence et rattrapage Garmin"
+                        mixed -> "Absence et rattrapage des pas"
                         absence -> "Pendant votre absence"
                         else -> "Récapitulatif hors ligne"
                     },
@@ -1293,7 +1293,7 @@ fun OfflineOverlay(
                     if (mixed) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Garmin : ${report.days} jour(s) · ${formatInt(report.steps)} pas importés",
+                            "Synchro : ${report.days} jour(s) · ${formatInt(report.steps)} pas importés",
                             fontSize = 6.8.sp,
                             color = Gold,
                             textAlign = TextAlign.Center
@@ -1316,10 +1316,10 @@ fun OfflineOverlay(
                 Spacer(Modifier.height(10.dp))
                 Text(
                     when {
-                        mixed -> "Votre réserve de pas et les pas Garmin ont été traités dans le même calcul. Le reste de la réserve vous attend."
+                        mixed -> "Votre réserve de pas et les pas synchronisés ont été traités dans le même calcul. Le reste de la réserve vous attend."
                         report.stepsConsumed == 0 -> "La réserve de pas était vide à la fermeture : rien n'a avancé. Les pas de la synchronisation arrivent à la fermeture de cette fenêtre."
                         absence -> "Votre réserve de pas a été consommée pendant votre absence. Le reste de la réserve vous attend."
-                        else -> "Vos pas Garmin des derniers jours ont été récupérés et ajoutés à la marche, sans double comptage."
+                        else -> "Vos pas des derniers jours ont été récupérés et ajoutés à la marche, sans double comptage."
                     },
                     fontSize = 7.sp,
                     color = Muted,

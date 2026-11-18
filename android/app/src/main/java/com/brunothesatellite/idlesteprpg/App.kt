@@ -22,7 +22,7 @@ class App : Application() {
         container = AppContainer(this)
         GameNotifications.ensureChannels(this)
         SoundFx.init(this)
-        SyncScheduler.schedule(this)
+        SyncScheduler.schedule(this, container.settings.stepSource == "garmin")
         MaintenanceScheduler.schedule(this)
     }
 }
@@ -33,5 +33,13 @@ class AppContainer(val context: Context) {
     val secretStore = SecretStore(context)
     val garminClient = GarminClient()
     val garminRepository = GarminRepository(context, secretStore, garminClient, gameRepository)
+    val healthConnectSource = com.brunothesatellite.idlesteprpg.steps.HealthConnectSource(context)
+    val stepRepository = com.brunothesatellite.idlesteprpg.steps.StepRepository(
+        context,
+        settings,
+        garminRepository,
+        healthConnectSource,
+        gameRepository
+    )
     val ambientMusic = AmbientMusic(context, settings)
 }

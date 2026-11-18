@@ -42,16 +42,18 @@ private data class OnboardingPage(
 private val PAGES = listOf(
     OnboardingPage(
         title = "LA MARCHE DES ÂMES",
-        text = "Vos pas Garmin deviennent la distance parcourue dans un donjon infini. " +
-            "10 pas = 1 mètre. Les combats, gardiens et coffres avancent sans que vous ayez à jouer en continu.",
+        text = "Vos pas deviennent la distance parcourue dans un donjon infini, " +
+            "qu'ils viennent de Garmin ou de Santé Connect. 10 pas = 1 mètre. " +
+            "Les combats, gardiens et coffres avancent sans que vous ayez à jouer en continu.",
         note = "Le jeu se joue en marchant, pas en restant sur l'écran.",
         icon = "hero/human.png"
     ),
     OnboardingPage(
-        title = "GARMIN PERSONAL API",
-        text = "La connexion se fait avec une clé personnelle Garmin et un jeton de 24 h. " +
-            "Le mot de passe et le 2FA restent dans le navigateur : l'application ne les voit jamais.",
-        note = "Sans clé, la marche ne peut pas démarrer : aucune source de pas.",
+        title = "SOURCE DE PAS",
+        text = "Garmin utilise une clé personnelle et un jeton de 24 h. Santé Connect lit les pas " +
+            "enregistrés par Google Fit, Samsung Health ou une montre. Vous pourrez changer " +
+            "de source à tout moment dans les réglages.",
+        note = "Une seule source est active à la fois : pas de double comptage.",
         icon = "item/misc_crystal.png"
     ),
     OnboardingPage(
@@ -71,7 +73,7 @@ private val PAGES = listOf(
 )
 
 @Composable
-fun OnboardingOverlay(onFinish: () -> Unit, onConnect: () -> Unit) {
+fun OnboardingOverlay(onFinish: () -> Unit, onConnect: () -> Unit, onHealth: () -> Unit) {
     var page by remember { mutableIntStateOf(0) }
     val current = PAGES[page]
     Box(
@@ -140,7 +142,9 @@ fun OnboardingOverlay(onFinish: () -> Unit, onConnect: () -> Unit) {
             }
             Spacer(Modifier.height(16.dp))
             if (page == 1) {
-                OverlayAction("CONNECTER GARMIN", Modifier.fillMaxWidth(), onConnect, primary = true)
+                OverlayAction("UTILISER GARMIN", Modifier.fillMaxWidth(), onConnect, primary = true)
+                Spacer(Modifier.height(5.dp))
+                OverlayAction("UTILISER SANTÉ CONNECT", Modifier.fillMaxWidth(), onHealth)
                 Spacer(Modifier.height(5.dp))
             }
             if (page < PAGES.lastIndex) {

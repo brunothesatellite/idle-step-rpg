@@ -194,15 +194,15 @@
 
 <header class="hero">
   <h1>LA MARCHE DES ÂMES</h1>
-  <p>Manuel utilisateur complet — un RPG de marche où vos pas Garmin deviennent votre progression.</p>
-  <span class="badge">Version 0.13.2 · Android 14+ · Garmin Personal API uniquement</span>
+  <p>Manuel utilisateur complet — un RPG de marche où vos pas deviennent votre progression.</p>
+  <span class="badge">Version 0.14.0 · Android 14+ · Garmin ou Santé Connect</span>
 </header>
 
 <nav class="toc">
   <h2>SOMMAIRE</h2>
   <ol>
     <li><a href="#decouvrir">Découvrir le jeu</a></li>
-    <li><a href="#installer">Installer et connecter Garmin</a></li>
+    <li><a href="#installer">Installer et choisir sa source de pas</a></li>
     <li><a href="#boucle">La boucle quotidienne</a></li>
     <li><a href="#interface">Interface et HUD</a></li>
     <li><a href="#combat">Combat automatique</a></li>
@@ -228,7 +228,7 @@
 
 <section id="decouvrir">
   <h2>1. Découvrir le jeu</h2>
-  <p><strong>La Marche des Âmes</strong> est un RPG idle et pixel art. Vous ne pilotez ni la marche ni les combats : vous marchez dans la vraie vie, puis vos pas Garmin sont convertis en distance dans un donjon infini.</p>
+  <p><strong>La Marche des Âmes</strong> est un RPG idle et pixel art. Vous ne pilotez ni la marche ni les combats : vous marchez dans la vraie vie, puis vos pas sont convertis en distance dans un donjon infini.</p>
   <div class="kpi">
     <div><b>10 pas</b><span>= 1 mètre</span></div>
     <div><b>100 m</b><span>= 1 palier + gardien</span></div>
@@ -236,7 +236,7 @@
     <div><b>00:00</b><span>reset local quotidien</span></div>
   </div>
   <ul>
-    <li><strong>Garmin Personal API uniquement</strong> : pas de Health Connect, pas d'autre source de pas.</li>
+    <li><strong>Deux sources de pas au choix</strong> : Garmin (Personal API) ou Santé Connect — une seule active à la fois.</li>
     <li><strong>2FA dans le navigateur</strong> : l'application ne voit jamais votre mot de passe ni votre code Garmin.</li>
     <li><strong>Aucun serveur éditeur</strong> : la progression et la clé restent sur le téléphone.</li>
     <li><strong>16 pistes d'ambiance 8 bits</strong> : deux variantes par biome, boucle longue et démarrage aléatoire.</li>
@@ -246,13 +246,29 @@
 </section>
 
 <section id="installer">
-  <h2>2. Installer et connecter Garmin</h2>
+  <h2>2. Installer et choisir sa source de pas</h2>
   <h3>Installer l'APK</h3>
   <ol>
     <li>Téléchargez le dernier APK depuis GitHub Releases.</li>
     <li>Autorisez l'installation d'applications inconnues pour votre navigateur ou gestionnaire de fichiers.</li>
     <li>Ouvrez l'APK et installez-le. Les mises à jour suivantes conservent les données.</li>
   </ol>
+  <h3>Choisir la source de pas</h3>
+  <p>Le jeu peut lire vos pas de deux façons, <strong>une seule à la fois</strong> :</p>
+  <ul>
+    <li><strong>Garmin</strong> — clé personnelle Garmin (Personal API).</li>
+    <li><strong>Santé Connect</strong> — les pas enregistrés par Google Fit, Samsung Health ou une montre. Aucune clé n'est nécessaire, mais il faut autoriser la lecture des pas.</li>
+  </ul>
+  <p>Le choix se fait à l'installation, puis dans <strong>Réglages → Source de pas</strong>. Changer de source ne recrédite pas les pas déjà comptés dans la journée : le premier import de la nouvelle source sert de base, et les pas suivants comptent normalement.</p>
+  <div class="warn"><strong>Santé Connect</strong> est un hub : sans application fournisseur (Google Fit, Samsung Health, montre), il renvoie zéro pas.</div>
+  <figure class="shot">
+    <img src="images/source_pas.jpg" alt="Réglages, section Source de pas : Garmin sélectionné et actif, Santé Connect proposé en dessous">
+    <figcaption>Réglages → Source de pas : une carte par source, la source active en surbrillance, son état et ses actions. Ici Garmin est actif.</figcaption>
+  </figure>
+  <figure class="shot">
+    <img src="images/source_sante_connect.jpg" alt="Réglages, section Source de pas avec Santé Connect sélectionné et autorisé">
+    <figcaption>Santé Connect sélectionné : l'autorisation de lecture des pas est accordée et la synchronisation se fait localement, sans clé.</figcaption>
+  </figure>
   <h3>Créer la clé Garmin</h3>
   <ol>
     <li>Dans le jeu, ouvrez <strong>RÃ©glages</strong> (âš™) puis la section <strong>Compte Garmin</strong>.</li>
@@ -265,18 +281,20 @@
   <div class="warn"><strong>Sécurité :</strong> ne partagez jamais votre clé. Si elle a été exposée, révoquez-la dans Garmin Connect et créez-en une nouvelle. La clé et le jeton sont chiffrés dans Android Keystore.</div>
   <h3>Ce que fait la synchronisation</h3>
   <ul>
-    <li>Elle lit les <strong>7 derniers jours</strong> de pas.</li>
+    <li>La toute première synchronisation ne crédite que les pas <strong>de la journée</strong> : on ne démarre pas avec une réserve héritée de la semaine passée.</li>
+    <li>Ensuite, elle lit les <strong>7 derniers jours</strong>, sans jamais remonter avant la <strong>date de première connexion</strong>.</li>
     <li>Chaque jour n'est compté qu'une fois : pas de double comptage.</li>
     <li>Le rattrapage est plafonné à <strong>100 000 pas</strong> par synchronisation (un marathon fait environ 45 000 pas).</li>
     <li>Les pas récupérés peuvent être simulés hors ligne : combats, or, paliers.</li>
     <li>La synchronisation tourne toutes les 60 minutes, à l'ouverture et manuellement.</li>
   </ul>
+  <div class="note"><strong>Oubli de synchronisation :</strong> après 3 jours sans ouvrir le jeu, la synchronisation suivante récupère les 3 journées manquantes (dans la limite des 7 jours et du plafond). Au-delà, les jours trop anciens sont ignorés.</div>
 </section>
 
 <section id="boucle">
   <h2>3. La boucle quotidienne</h2>
   <h3>Des pas à la distance</h3>
-  <p>Chaque pas Garmin augmente la réserve de marche. Le héros consomme cette réserve en continu : environ 30 pas/seconde, ou 60 pas/seconde quand la réserve est grande. Un pas n'est jamais consommé deux fois.</p>
+  <p>Chaque pas synchronisé augmente la réserve de marche. Le héros consomme cette réserve en continu : environ 30 pas/seconde, ou 60 pas/seconde quand la réserve est grande. Un pas n'est jamais consommé deux fois.</p>
   <ul>
     <li><strong>Plafond journalier :</strong> 60 000 pas.</li>
     <li><strong>Rythme suspect :</strong> au-delà de 250 pas/minute en moyenne depuis la dernière synchronisation, les pas excédentaires sont ignorés et signalés dans le journal.</li>
@@ -308,9 +326,9 @@
     <li><strong>SAC</strong> — consommables en réserve ; appuyez pour les ouvrir.</li>
     <li><strong>Scène</strong> — le couloir du biome : arches, torches, props au sol, héros à gauche, ennemi ou silhouette d'attente à droite.</li>
     <li><strong>Ferveur</strong> — 0 à 100, gagnée avec les pas, décroissante après 2 h sans pas ; elle accélère la VIT et la régénération.</li>
-    <li><strong>Pas du jour</strong> — total synchronisé depuis Garmin, de minuit à minuit.</li>
+    <li><strong>Pas du jour</strong> — total synchronisé (Garmin ou Santé Connect), de minuit à minuit.</li>
     <li><strong>Personnage</strong> — niveau, titre de palier, barre et valeur d'expérience.</li>
-    <li><strong>Devises et réglages</strong> — or, rations, éclats, et accès aux réglages (⚙). L'alerte « ! » apparaît si Garmin n'est pas configuré ou si la clé expire.</li>
+    <li><strong>Devises et réglages</strong> — or, rations, éclats, et accès aux réglages (⚙). L'alerte « ! » apparaît si aucune source n'est configurée, si la clé Garmin expire ou si l'autorisation Santé Connect manque.</li>
     <li><strong>Puissance</strong> — indicateur global de la force du héros (équipement, niveau, améliorations).</li>
     <li><strong>Rang</strong> — palier de rang atteint (I, II, III…), calculé d'après la profondeur.</li>
     <li><strong>Statistiques</strong> — ATQ (dégâts par attaque), PV maximum, VIT (vitesse d'attaque).</li>
@@ -326,7 +344,7 @@
     <li><strong>Jauge de palier</strong> : 0 à 100 m, avec la porte du gardien dans les 15 derniers mètres.</li>
     <li><strong>SAC</strong> : consommables, soins et buffs.</li>
     <li><strong>COFFRE</strong> : nombre de coffres en attente et temps restant. Un coffre ne bloque jamais la marche.</li>
-    <li><strong>Bouton de synchronisation</strong> : petit carré en haut à gauche, aligné avec le SAC. Icône ↻ et point d'état (vert = récent, ambre = ancien, rouge = erreur). Appuyez pour synchroniser ; si Garmin n'est pas connecté, il ouvre Compte Garmin.</li>
+    <li><strong>Bouton de synchronisation</strong> : petit carré en haut à gauche, aligné avec le SAC. Icône ↻ et point d'état (vert = récent, ambre = ancien, rouge = erreur). Appuyez pour synchroniser ; si la source n'est pas prête (clé Garmin absente, autorisation Santé Connect refusée), il ouvre <strong>Réglages → Source de pas</strong>.</li>
   </ul>
   <h3>Scène</h3>
   <ul>
@@ -339,7 +357,7 @@
     <li><strong>Stats</strong> : puissance, ATQ, PV, VIT, ressources, ferveur, serments, exploits, journal.</li>
     <li><strong>Inventaire</strong> : équipement, butin, consommables, coffre de camp.</li>
     <li><strong>Améliorations</strong> : trois améliorations permanentes et prochain gardien.</li>
-    <li><strong>Barre de synchronisation</strong> : remplacée par le bouton carré en haut à gauche de la scène. Les détails restent dans la section <strong>Compte Garmin</strong> des réglages.</li>
+    <li><strong>Barre de synchronisation</strong> : remplacée par le bouton carré en haut à gauche de la scène. Les détails restent dans <strong>Réglages → Source de pas</strong>.</li>
   </ul>
 </section>
 
@@ -736,8 +754,9 @@
     <li><strong>Vibrations :</strong> retour haptique des alertes.</li>
     <li><strong>Sons 8 bits :</strong> activés/désactivés, volume 0–100 %, bouton Tester le son.</li>
     <li><strong>Vendre les communs automatiquement :</strong> convertit les communs au ramassage.</li>
+    <li><strong>Source de pas :</strong> Garmin ou Santé Connect, avec autorisation, synchronisation manuelle et journal de synchronisation.</li>
     <li><strong>Sauvegarde :</strong> exporter, importer avec aperçu, effacer la progression.</li>
-    <li><strong>Journal de synchronisation :</strong> derniers résultats Garmin.</li>
+    <li><strong>Journal de synchronisation :</strong> derniers résultats de la source active.</li>
     <li><strong>Vérifier les mises à jour :</strong> carte dédiée, avec vérification automatique quotidienne facultative.</li>
     <li><strong>Manuel du jeu :</strong> ouvre ce guide dans l'application.</li>
     <li><strong>Licences et confidentialité :</strong> liens vers les documents du dépôt.</li>
@@ -812,7 +831,7 @@
     <li>Le héros ne doit être ni au campement, ni sur une rencontre spéciale.</li>
     <li>L'onboarding doit être terminé.</li>
   </ul>
-  <p>Le résumé s'affiche dès 2 minutes d'absence, <strong>même si la réserve était vide</strong> : il indique alors que rien n'a avancé. La synchronisation Garmin est téléchargée en parallèle mais <strong>appliquée seulement à la fermeture</strong> du résumé : le compteur de pas et la réserve ne bougent qu'après « REPRENDRE LA MARCHE », et le message « Garmin synchronisé · +N pas » arrive à ce moment-là.</p>
+  <p>Le résumé s'affiche dès 2 minutes d'absence, <strong>même si la réserve était vide</strong> : il indique alors que rien n'a avancé. La synchronisation des pas est téléchargée en parallèle mais <strong>appliquée seulement à la fermeture</strong> du résumé : le compteur de pas et la réserve ne bougent qu'après « REPRENDRE LA MARCHE », et le message « Garmin synchronisé · +N pas » ou « Santé Connect synchronisé · +N pas » arrive à ce moment-là.</p>
 <p>Le résumé liste aussi le <strong>butin</strong> : objets récupérés pendant l'absence, consommables, rations et éclats.</p>
   <h3>Consommation de la réserve</h3>
   <p>La simulation utilise le <strong>rythme actif normal</strong> (30 ou 60 pas par seconde selon la taille de la réserve), avec trois limites :</p>
@@ -836,8 +855,8 @@
   <p>Si la simulation tombe sur une <strong>rencontre spéciale</strong>, elle s'arrête immédiatement. Le résumé l'indique (« Une rencontre vous attend sur le sentier »), puis la rencontre s'affiche normalement. Le jeu ne choisit jamais à votre place.</p>
   <h3>Défaite contre un gardien</h3>
   <p>Si le héros est repoussé pendant la simulation, le résumé l'indique et vous retrouvez la zone de farm correspondante. Aucun combat n'est résolu automatiquement sans que vous le sachiez.</p>
-  <h3>Fusion avec Garmin</h3>
-  <p>Si une synchronisation Garmin et une absence arrivent en même temps, les deux rapports sont <strong>fusionnés</strong> en un seul écran : les pas Garmin importés et la consommation de la réserve apparaissent ensemble, sans double comptage. Le titre devient alors « Absence et rattrapage Garmin ».</p>
+  <h3>Fusion avec la synchronisation des pas</h3>
+  <p>Si une synchronisation de pas (Garmin ou Santé Connect) et une absence arrivent en même temps, les deux rapports sont <strong>fusionnés</strong> en un seul écran : les pas importés et la consommation de la réserve apparaissent ensemble, sans double comptage. Le titre devient alors « Absence et rattrapage des pas ».</p>
   <h3>Rapport persistant</h3>
   <p>Le résumé reste disponible tant que vous n'avez pas appuyé sur <strong>REPRENDRE LA MARCHE</strong>. Quitter l'application ou changer d'écran ne le marque pas comme lu.</p>
   <div class="warn"><strong>Horloge modifiée.</strong> Pour éviter les abus, l'absence est bornée entre 0 et 7 jours. Un changement d'heure ou une horloge avancée ne peut pas déclencher un gain démesuré.</div>
@@ -864,7 +883,7 @@
   </details>
   <details>
     <summary>La synchronisation renvoie toujours le même nombre de pas.</summary>
-    <p>Garmin n'a pas encore reçu les nouveaux pas de la montre. Ouvrez Garmin Connect, laissez la montre synchroniser, puis appuyez sur Synchroniser.</p>
+    <p>Garmin n'a pas encore reçu les nouveaux pas de la montre (ou l'application qui alimente Santé Connect n'a pas écrit). Ouvrez Garmin Connect / l'app de santé, laissez la montre synchroniser, puis appuyez sur Synchroniser.</p>
   </details>
   <details>
     <summary>Je ne vois pas mes rations.</summary>
@@ -880,7 +899,7 @@
   </details>
   <details>
     <summary>Comment sauvegarder ou changer de téléphone ?</summary>
-    <p>Réglages → Sauvegarde → Exporter. Le fichier JSON contient la progression, jamais la clé Garmin. Sur le nouveau téléphone, installez l'app, connectez Garmin, puis Importez la sauvegarde et confirmez l'aperçu.</p>
+    <p>Réglages → Sauvegarde → Exporter. Le fichier JSON contient la progression, jamais la clé Garmin. Sur le nouveau téléphone, installez l'app, choisissez votre source de pas, puis Importez la sauvegarde et confirmez l'aperçu.</p>
     <p>La progression est aussi enregistrée automatiquement toutes les 30 secondes environ, à chaque changement de palier ou de niveau, et juste avant une mise à jour de l'application.</p>
   </details>
   <details>
@@ -894,7 +913,7 @@
   <ul>
     <li>La progression, les préférences et la sauvegarde restent sur l'appareil.</li>
     <li>La clé et le jeton Garmin sont chiffrés dans Android Keystore.</li>
-    <li>L'application ne contacte que Garmin pour les pas et GitHub pour les mises à jour.</li>
+    <li>L'application ne contacte que Garmin (source Garmin) et GitHub (mises à jour). Santé Connect est lu localement sur le téléphone.</li>
     <li><strong>Aucun Health Connect</strong>, aucun serveur éditeur, aucune publicité, aucun traceur.</li>
     <li>« Révoquer la clé » supprime la clé et le jeton ; « Effacer la progression » remet le jeu à zéro.</li>
     <li>La politique complète est dans <code>docs/privacy.md</code>.</li>
@@ -914,8 +933,8 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.13.2 · <a href="#top">Retour au sommaire</a><br>
-  Garmin Personal API uniquement · aucune donnée envoyée à un serveur éditeur.
+  La Marche des Âmes · manuel v0.14.0 · <a href="#top">Retour au sommaire</a><br>
+  Garmin ou Santé Connect · aucune donnée envoyée à un serveur éditeur.
 </footer>
 
 </div>

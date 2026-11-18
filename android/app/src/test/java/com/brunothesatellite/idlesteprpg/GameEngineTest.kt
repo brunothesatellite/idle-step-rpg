@@ -204,6 +204,42 @@ class GameEngineTest {
     }
 
     @Test
+    fun rebaseAfterSourceChangeDoesNotCreditSteps() {
+        val state = GameState()
+        val day = LocalDate.of(2026, 11, 16)
+        GameEngine.ingestSteps(state, 4000, day)
+        val bankBefore = state.stepBank
+
+        // Nouvelle source qui annonce beaucoup plus le même jour.
+        GameEngine.rebaseHistory(state, mapOf(day.toString() to 9000), day)
+        assertEquals(9000, state.stepsToday)
+        assertEquals(bankBefore, state.stepBank, 0.001)
+
+        // Le premier import qui recoupe la base ne crédite rien…
+        GameEngine.ingestSteps(state, 9000, day)
+        assertEquals(bankBefore, state.stepBank, 0.001)
+
+        // … et seuls les pas suivants comptent.
+        GameEngine.ingestSteps(state, 9400, day)
+        assertEquals(bankBefore + 400.0, state.stepBank, 0.001)
+    }
+
+    @Test
+    fun rebaseWithLowerTotalKeepsCurrentProgress() {
+        val state = GameState()
+        val day = LocalDate.of(2026, 11, 17)
+        GameEngine.ingestSteps(state, 6000, day)
+        val bankBefore = state.stepBank
+
+        GameEngine.rebaseHistory(state, mapOf(day.toString() to 2000), day)
+        assertEquals(6000, state.stepsToday)
+        assertEquals(bankBefore, state.stepBank, 0.001)
+
+        GameEngine.ingestSteps(state, 6500, day)
+        assertEquals(bankBefore + 500.0, state.stepBank, 0.001)
+    }
+
+    @Test
     fun dayChangeResetsDailyCounters() {
         val state = GameState()
         val day1 = LocalDate.of(2026, 11, 16)
@@ -232,9 +268,47 @@ class GameEngineTest {
     }
 
     @Test
+    fun firstImportOnlyCountsTodayThenRecoversSinceThatDate() {
+        val state = GameState()
+        val first = LocalDate.of(2026, 11, 16)
+        val initial = GameEngine.ingestHistory(
+            state,
+            mapOf("2026-11-14" to 4_000, "2026-11-15" to 5_000, "2026-11-16" to 2_500),
+            first
+        )
+        assertNull(initial)
+        assertEquals("2026-11-16", state.historyStart)
+        assertEquals(2_500, state.stepsToday)
+        assertEquals(2_500.0, state.stepBank, 0.001)
+
+        // Deux jours plus tard : la veille manquante est rattrapée, mais jamais
+        // les jours antérieurs à la première connexion.
+        val report = GameEngine.ingestHistory(
+            state,
+            mapOf(
+                "2026-11-14" to 4_000,
+                "2026-11-15" to 5_000,
+                "2026-11-16" to 2_500,
+                "2026-11-17" to 8_000,
+                "2026-11-18" to 300
+            ),
+            first.plusDays(2)
+        )
+        assertNotNull(report)
+        assertEquals(1, report!!.days)
+        assertEquals(8_000, report.steps)
+        assertEquals(300, state.stepsToday)
+        assertEquals(10_800.0, state.stepBank, 0.001)
+    }
+
+    @Test
     fun historyImportIsIdempotentAndReported() {
         val state = GameState()
+        val start = LocalDate.of(2026, 11, 14)
         val today = LocalDate.of(2026, 11, 16)
+        GameEngine.ingestHistory(state, mapOf("2026-11-14" to 4_000), start)
+        state.stepBank = 0.0
+
         val days = mapOf(
             "2026-11-14" to 4_000,
             "2026-11-15" to 5_000,
@@ -242,20 +316,21 @@ class GameEngineTest {
         )
         val report = GameEngine.ingestHistory(state, days, today)
         assertNotNull(report)
-        assertEquals(2, report!!.days)
-        assertEquals(9_000, report.steps)
+        assertEquals(1, report!!.days)
+        assertEquals(5_000, report.steps)
         assertEquals(2_500, state.stepsToday)
-        assertEquals(11_500.0, state.stepBank, 0.001)
+        assertEquals(7_500.0, state.stepBank, 0.001)
 
         val again = GameEngine.ingestHistory(state, days, today)
         assertNull(again)
-        assertEquals(11_500.0, state.stepBank, 0.001)
+        assertEquals(7_500.0, state.stepBank, 0.001)
         assertEquals(0, state.lastAdded)
     }
 
     @Test
     fun historyImportIsCappedButLedgerAdvances() {
         val state = GameState()
+        state.historyStart = "2026-11-01"
         val today = LocalDate.of(2026, 11, 16)
         val days = (1..6).associate {
             "2026-11-${it.toString().padStart(2, '0')}" to 20_000
@@ -271,8 +346,25 @@ class GameEngineTest {
     }
 
     @Test
+    fun daysBeforeFirstConnectionAreNeverCounted() {
+        val state = GameState()
+        state.historyStart = "2026-11-10"
+        val today = LocalDate.of(2026, 11, 12)
+        val report = GameEngine.ingestHistory(
+            state,
+            mapOf("2026-11-08" to 30_000, "2026-11-09" to 12_000),
+            today
+        )
+        assertNull(report)
+        assertEquals(0, state.stepsToday)
+        assertEquals(0.0, state.stepBank, 0.001)
+        assertEquals(0, state.stepLedger.size)
+    }
+
+    @Test
     fun marathonDayIsImportedWithoutTruncation() {
         val state = GameState()
+        state.historyStart = "2026-11-15"
         val today = LocalDate.of(2026, 11, 16)
         val report = GameEngine.ingestHistory(
             state,

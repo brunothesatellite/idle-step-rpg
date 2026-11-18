@@ -405,6 +405,11 @@ private fun GameRoot(vm: GameViewModel) {
                     onConnect = {
                         vm.completeOnboarding()
                         vm.openSettings()
+                    },
+                    onHealth = {
+                        vm.completeOnboarding()
+                        vm.setStepSource("health")
+                        vm.openPreferences()
                     }
                 )
             }

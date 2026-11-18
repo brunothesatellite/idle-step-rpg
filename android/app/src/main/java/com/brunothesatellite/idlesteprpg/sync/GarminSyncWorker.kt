@@ -19,8 +19,9 @@ class GarminSyncWorker(
 
     override suspend fun doWork(): Result {
         val app = applicationContext as? App ?: return Result.failure()
-        if (!app.container.garminRepository.hasKey()) return Result.success()
-        val result = app.container.garminRepository.sync()
+        val steps = app.container.stepRepository
+        if (!steps.canSync()) return Result.success()
+        val result = steps.sync()
         return when {
             result.needsKey -> Result.success()
             result.ok -> Result.success()
@@ -32,11 +33,13 @@ class GarminSyncWorker(
 object SyncScheduler {
     private const val WORK_NAME = "garmin-periodic-sync"
 
-    fun schedule(context: Context) {
+    fun schedule(context: Context, requireNetwork: Boolean = true) {
         val request = PeriodicWorkRequestBuilder<GarminSyncWorker>(60, TimeUnit.MINUTES)
             .setConstraints(
                 Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .setRequiredNetworkType(
+                        if (requireNetwork) NetworkType.CONNECTED else NetworkType.NOT_REQUIRED
+                    )
                     .build()
             )
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.MINUTES)

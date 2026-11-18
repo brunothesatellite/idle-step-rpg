@@ -1,13 +1,14 @@
 # La Marche des Âmes
 
-**RPG de marche Android en pixel art.** Vos pas Garmin deviennent la distance parcourue par un pèlerin dans un donjon infini. Le héros marche, combat, ouvre des coffres et affronte les gardiens automatiquement ; vous intervenez sur l’équipement, le camp, les consommables et les choix.
+**RPG de marche Android en pixel art.** Vos pas (Garmin ou Santé Connect) deviennent la distance parcourue par un pèlerin dans un donjon infini. Le héros marche, combat, ouvre des coffres et affronte les gardiens automatiquement ; vous intervenez sur l’équipement, le camp, les consommables et les choix.
 
-- **Garmin Personal API uniquement** — aucun Health Connect.
+- **Deux sources de pas au choix** — Garmin Personal API ou Santé Connect, une seule active à la fois.
+- **Changement de source sans double comptage** — le premier import de la nouvelle source sert de base.
 - **2FA Garmin dans le navigateur** — l’application ne voit jamais le mot de passe ni le code.
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.13.2 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.14.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -59,9 +60,9 @@ Le **Codex** (`Stats → Codex`) suit le bestiaire, les ensembles et les biomes.
 
 ### Boucle quotidienne
 
-1. Vous marchez avec votre montre Garmin.
-2. Garmin Connect reçoit les pas, puis l’application synchronise via la Personal API.
-3. L’application importe les **7 derniers jours** (plafond **100 000 pas** par synchronisation, un marathon fait environ 45 000 pas).
+1. Vous marchez : montre Garmin, téléphone ou application reliée à Santé Connect.
+2. La source choisie expose les pas (Garmin Connect via la Personal API, ou Santé Connect alimenté par Google Fit, Samsung Health ou une montre).
+3. **Première connexion** : seuls les pas de la journée sont importés. Ensuite, l’application peut rattraper les **7 derniers jours** — jamais avant la date de première connexion — avec un plafond de **100 000 pas** par synchronisation (un marathon fait environ 45 000 pas).
 4. Les pas alimentent la réserve de marche et la ferveur.
 5. Le héros avance, combat, ramasse, et vous gérez le camp et l’équipement.
 
@@ -91,7 +92,7 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.13.2.apk
+adb install -r La-Marche-des-Ames-v0.14.0.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.
@@ -114,9 +115,88 @@ En cas d’avertissement ou de blocage **Play Protect**, installez l’APK manue
 
 ---
 
+## Choisir la source de pas
+
+À l’installation, l’onboarding propose **Garmin** ou **Santé Connect**. Le choix se change ensuite dans **Réglages → Source de pas**.
+
+- **Garmin** : clé personnelle, jeton de 24 h, synchronisation réseau toutes les 60 min.
+- **Santé Connect** : lecture locale des pas enregistrés par Google Fit, Samsung Health ou une montre. Permission `android.permission.health.READ_STEPS`. Sans application fournisseur, le hub renvoie zéro pas.
+- **Première connexion** : seuls les pas du jour sont crédités. Les synchronisations suivantes peuvent rattraper jusqu’à **7 jours**, mais jamais avant la date de première connexion : on ne démarre pas avec une réserve de pas héritée de la semaine précédente.
+- **Pas de double comptage** : une seule source est lue à la fois, et les enregistrements Santé Connect sont agrégés par origine (téléphone, montre) en gardant le total le plus élevé par jour.
+
+### Flux de connexion à l’onboarding
+
+```mermaid
+flowchart TD
+    A([Premier lancement]) --> B[Page 1 · Source de pas]
+    B -->|UTILISER GARMIN| C[completeOnboarding<br/>stepSource = garmin]
+    B -->|UTILISER SANTÉ CONNECT| H[completeOnboarding<br/>stepSource = health]
+    B -->|PASSER| P[Aucune source active<br/>alerte ! dans l'en-tête]
+
+    C --> D[Écran Compte Garmin<br/>clé Personal API + date d'expiration]
+    D --> E{Tester et enregistrer}
+    E -->|clé refusée| D
+    E -->|OK| F[syncNow silencieux<br/>1re synchro : pas du jour]
+
+    H --> I[Réglages → Source de pas]
+    I --> J{Permission READ_STEPS}
+    J -->|accordée| K[syncNow silencieux<br/>1re synchro : pas du jour]
+    J -->|refusée| L[Bouton AUTORISER SANTÉ CONNECT]
+    L --> J
+
+    F --> M([La marche peut avancer])
+    K --> M
+    P --> N[Réglages → Source de pas<br/>plus tard]
+```
+
+### Flux de changement de source en jeu
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor J as Joueur
+    participant UI as Réglages → Source de pas
+    participant VM as GameViewModel
+    participant SR as StepRepository
+    participant GR as GameRepository
+
+    J->>UI: touche l'autre source
+    UI->>J: confirmation « les pas du jour sont conservés »
+    J->>UI: CHANGER
+    UI->>VM: setStepSource(id)
+    VM->>SR: changeSource(type)
+    SR->>SR: stepSource = type<br/>pendingSourceRebase = true
+    VM->>VM: SyncScheduler (réseau requis seulement pour Garmin)
+    VM->>SR: sync()
+    SR->>SR: fetch() sur la nouvelle source
+    SR->>GR: rebaseHistory(ledger)
+    Note over GR: ledger = max(ancien, nouveau)<br/>stepsToday ne recule jamais<br/>aucun pas crédité
+    SR-->>VM: « base recalée, aucun pas recrédité »
+    VM-->>J: toast + statut de la source
+    Note over SR,GR: les imports suivants comptent les deltas normaux
+```
+
+Règles appliquées par ce flux :
+
+| Situation | Résultat |
+|---|---|
+| Nouvelle source plus généreuse (ex. 9 000 au lieu de 5 000) | Le total du jour passe à 9 000 **sans créditer** 4 000 pas ; les pas suivants comptent. |
+| Nouvelle source moins généreuse (ex. 2 000 au lieu de 6 000) | Le total reste à 6 000 ; les pas ne reculent jamais. |
+| Changement répété dans la même journée | Chaque changement repose une base ; aucun double comptage. |
+| Partie neuve sans pas | Aucun rebase : le premier import est crédité normalement. |
+| Garmin → Santé Connect → Garmin | La clé Garmin reste stockée, la source est relue à chaque fois. |
+
+Fenêtre d’import des pas :
+
+| Moment | Jours lus | Jours crédités |
+|---|---|---|
+| Toute première synchronisation | Aujourd’hui seulement | Aujourd’hui seulement |
+| Synchronisations suivantes | 7 derniers jours | Uniquement les jours compris entre la **date de première connexion** et aujourd’hui |
+| Oubli de synchronisation de 3 jours | 7 derniers jours | Les 3 jours manquants (dans la limite du plafond de 100 000 pas) |
+
 ## Connecter Garmin (clé Personal API)
 
-1. Ouvrez l’application → **Compte Garmin** (bouton `G` ou « Connecter Garmin »).
+1. Ouvrez l’application → **Réglages → Source de pas → Garmin → Gérer la clé**.
 2. Appuyez sur **Ouvrir Garmin Connect**. La connexion et la **2FA** se font dans le navigateur.
 3. Dans Garmin Connect, créez une **Personal API Key** et copiez-la.
 4. Revenez dans l’application, collez la clé.
@@ -145,7 +225,7 @@ Si Garmin renvoie toujours le même total, la montre n’a pas encore poussé se
 ### Prérequis
 
 - **JDK 21** (Temurin recommandé).
-- **Android SDK 35** et build-tools 35.0.0.
+- **Android SDK 36** et build-tools 36.0.0.
 - Le wrapper Gradle est fourni (`gradlew`, `gradlew.bat`).
 
 ### Debug
@@ -155,7 +235,7 @@ cd android
 ./gradlew :app:assembleDebug
 ```
 
-Le build debug utilise le package `com.brunothesatellite.idlesteprpg.debug` et peut cohabiter avec la version release.
+Le build debug utilise le package `com.brunothesatellite.idlesteprpg.debug` et peut cohabiter avec la version release. Sa copie porte un **nom** (« Marche des Âmes · test ») et une **icône distincte** (fond turquoise), avec ses propres données, sa propre clé Garmin et sa propre autorisation Santé Connect. Le vérificateur de mises à jour y est **désactivé** : il ne peut pas proposer l'APK de production (qui installerait l'autre application).
 
 ### Release signé
 
@@ -200,33 +280,35 @@ La CI GitHub exécute les tests, le lint et l’APK debug. Un workflow de releas
 ## Architecture
 
 ```
-Garmin Personal API
-        │ HTTPS
-        ▼
-GarminClient ──► GarminRepository ──► GameRepository
-  (token, 429)     (7 jours, ledger)      │
-                                          ▼
-                                    GameEngine
-                              (simulation, combats, loot)
-                                          │ StateFlow<GameState>
-                                          ▼
-                                   GameViewModel
-                                          │
-                                          ▼
-                            Jetpack Compose / MainActivity
+Garmin Personal API                  Santé Connect (local)
+   │ HTTPS, jeton 24 h                  │ READ_STEPS, agrégation par origine
+   ▼                                    ▼
+GarminClient ──► GarminRepository   HealthConnectSource
+          └──────────────┬──────────────────┘
+                         ▼
+                   StepRepository  (source active, rebase, journal)
+                         ▼
+                   GameRepository  (sauvegarde atomique)
+                         ▼
+                     GameEngine   (simulation, combats, loot)
+                         │ StateFlow<GameState>
+                         ▼
+                    GameViewModel
+                         ▼
+              Jetpack Compose / MainActivity
 ```
 
 En parallèle :
 
 ```
-WorkManager ──► GarminSyncWorker (30 min)
+WorkManager ──► GarminSyncWorker (60 min, source active)
             └► MaintenanceWorker (15 min : coffres, clé)
 ```
 
 ### Stack
 
 - **Kotlin**, **Jetpack Compose**, Material 3.
-- `minSdk 34`, `targetSdk 35`, un seul module `:app`.
+- `minSdk 34`, `targetSdk 35`, `compileSdk 36`, un seul module `:app`.
 - **OkHttp** pour Garmin.
 - **kotlinx.serialization** pour la sauvegarde JSON.
 - **WorkManager** pour la synchronisation et la maintenance.
@@ -243,6 +325,7 @@ WorkManager ──► GarminSyncWorker (30 min)
 | `App.kt` / `AppContainer` | Initialisation, dépendances, notifications, sons, WorkManager. |
 | `GameViewModel.kt` | État UI, tick 100 ms, synchronisation, réglages, overlays. |
 | `MainActivity.kt` | Composition racine, navigation entre scène et tableau de bord. |
+| `HealthRationaleActivity.kt` | Écran de justification exigé par Santé Connect (Android 14+). |
 | `ManualActivity.kt` | Manuel HTML hors ligne. |
 | `update/UpdateChecker.kt` | Releases GitHub, comparaison de versions, SHA-256, téléchargement de l’APK. |
 | `engine/Model.kt` | État sérialisable, objets, consommables, buffs, ensembles, stats. |
@@ -252,6 +335,8 @@ WorkManager ──► GarminSyncWorker (30 min)
 | `garmin/GarminClient.kt` | Endpoints Garmin Personal API, jeton, pas, erreurs 401/429. |
 | `garmin/GarminRepository.kt` | Synchronisation 7 jours, ledger, expiration de clé, journal de sync. |
 | `garmin/SecretStore.kt` | Chiffrement Keystore. |
+| `steps/StepRepository.kt` | Source de pas active, changement de source, rebase, journal. |
+| `steps/HealthConnectSource.kt` | Permission READ_STEPS, agrégation par origine, 7 jours. |
 | `notify/GameNotifications.kt` | Canaux, catégories, heures calmes, deep links. |
 | `sync/` | Workers WorkManager. |
 | `widget/` | Widget d’écran d’accueil. |
@@ -260,7 +345,7 @@ WorkManager ──► GarminSyncWorker (30 min)
 
 ### Données et persistance
 
-La sauvegarde est un fichier **JSON versionné** (`SAVE_VERSION = 2`) :
+La sauvegarde est un fichier **JSON versionné** (`SAVE_VERSION = 3`) :
 
 - `game_state.json` : état du jeu.
 - `game_state.bak.json` : copie de secours (rotation).
@@ -269,6 +354,8 @@ La sauvegarde est un fichier **JSON versionné** (`SAVE_VERSION = 2`) :
 - export/import avec aperçu ;
 - **aucune clé Garmin dans la sauvegarde**.
 
+Deux champs pilotent l’import des pas : `stepLedger` (total retenu par jour, jamais recrédité) et `historyStart` (date de la première connexion, borne basse du rattrapage).
+
 Les évolutions de schéma utilisent des valeurs par défaut et `GameEngine.migrate()`. Une migration Room est dans le backlog, pas dans cette version.
 
 ### Garmin
@@ -276,7 +363,7 @@ Les évolutions de schéma utilisent des valeurs par défaut et `GameEngine.migr
 - `POST /personalapitoken-service/personal-api/personal-api-key/token` avec `Authorization: ApiKey <clé>`.
 - `GET /usersummary-service/stats/steps/daily/{start}/{end}` avec `Authorization: Bearer <jeton>`.
 - Jeton JWT, expiration lue dans le payload, 24 h.
-- 7 jours d’historique, ledger par jour idempotent.
+- 7 jours d'historique, ledger par jour idempotent, jamais avant la date de première connexion.
 - Plafond **100 000 pas** par synchronisation, **60 000 pas/jour**, contrôle **250 pas/min**.
 - Retry sur 401 (nouveau jeton) et backoff sur 429 (`Retry-After`).
 
@@ -348,8 +435,8 @@ Elle simule les pas (aucune montre réelle) et sert de référence de game desig
 - **Migration Room** non faite : sauvegarde JSON versionnée avec copie de secours.
 - **Publication Play Store** non prévue ; distribution APK/GitHub.
 - Équilibrage long terme, farm automatique à 0 pas et réduction automatique des animations sur batterie faible : backlog.
-- L’historique Garmin est limité à 7 jours et à 100 000 pas par synchronisation.
-- La synchronisation dépend de Garmin Connect : la montre doit avoir poussé ses pas.
+- L'historique est limité à 7 jours, jamais avant la date de première connexion, et à 100 000 pas par synchronisation.
+- La synchronisation Garmin dépend de Garmin Connect : la montre doit avoir poussé ses pas.
 
 Voir [`docs/reste-a-faire.md`](docs/reste-a-faire.md).
 

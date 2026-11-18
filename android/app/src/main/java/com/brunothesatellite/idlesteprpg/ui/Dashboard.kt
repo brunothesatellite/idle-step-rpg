@@ -200,10 +200,14 @@ private fun DashboardHeader(
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 CurrencyChip("item/meat_ration.png", state.rations.toString())
                 CurrencyChip("item/misc_crystal.png", state.shards.toString())
-                val keyDays = ui.keyExpiry?.let { ChronoUnit.DAYS.between(LocalDate.now(), it) }
-                val needsGarmin = !ui.connected || (keyDays != null && keyDays < 7)
-                // Alerte Garmin : n'apparaît que sans clé ou quand elle approche de l'expiration.
-                if (needsGarmin) {
+                val keyDays = if (ui.stepSource == "garmin") {
+                    ui.keyExpiry?.let { ChronoUnit.DAYS.between(LocalDate.now(), it) }
+                } else {
+                    null
+                }
+                val needsSource = !ui.connected || (keyDays != null && keyDays < 7)
+                // Alerte : n'apparaît que sans source active ou quand la clé approche de l'expiration.
+                if (needsSource) {
                     Box(
                         Modifier
                             .size(28.dp)
@@ -211,7 +215,7 @@ private fun DashboardHeader(
                             .background(Panel2)
                             .border(1.dp, Ember.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
                             .clickable(onClick = onOpenSettings)
-                            .semantics { contentDescription = "Configurer Garmin" },
+                            .semantics { contentDescription = "Configurer la source de pas" },
                         contentAlignment = Alignment.Center
                     ) {
                         Text("!", fontFamily = Press, fontSize = 8.sp, color = Ember)
@@ -1277,21 +1281,23 @@ private fun SyncBar(
             )
         }
         Spacer(Modifier.height(4.dp))
+        val sourceLabel = if (ui.stepSource == "health") "SANTÉ CONNECT" else "GARMIN"
+        val sourceDetail = if (ui.stepSource == "health") "Santé Connect" else "Personal API"
         when {
             !ui.connected -> GoldButton(
-                text = "CONNECTER GARMIN",
-                subtitle = "10 pas = 1 m · Personal API",
+                text = "CONNECTER $sourceLabel",
+                subtitle = "10 pas = 1 m · $sourceDetail",
                 onClick = onOpenSettings
             )
             ui.syncing -> GoldButton(
                 text = "SYNCHRONISATION…",
-                subtitle = "Garmin Personal API",
+                subtitle = sourceDetail,
                 enabled = false,
                 onClick = {}
             )
             else -> GoldButton(
-                text = "SYNCHRONISER GARMIN",
-                subtitle = "Garmin · ${formatInt(state.stepsToday)} pas aujourd'hui",
+                text = "SYNCHRONISER $sourceLabel",
+                subtitle = "$sourceDetail · ${formatInt(state.stepsToday)} pas aujourd'hui",
                 badge = if (ui.lastAdded > 0) "+${formatInt(ui.lastAdded)}" else null,
                 onClick = onSync
             )

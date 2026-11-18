@@ -716,22 +716,59 @@ object GameEngine {
     }
 
     /**
-     * Imports a Garmin day ledger. Each calendar day is only ever counted once,
-     * so syncing repeatedly (or importing the same 7 days again) is idempotent.
+     * Recale la base de pas après un changement de source de pas : les totaux
+     * annoncés deviennent la référence, sans créditer de pas. Le total affiché
+     * ne recule jamais et `processedSteps` empêche tout crédit rétroactif.
+     */
+    fun rebaseHistory(
+        state: GameState,
+        days: Map<String, Int>,
+        today: LocalDate = LocalDate.now()
+    ) {
+        ensureDay(state, today)
+        val todayKey = today.toString()
+        if (state.historyStart.isBlank()) state.historyStart = todayKey
+        val startKey = state.historyStart
+        days.forEach { (key, raw) ->
+            if (key < startKey) return@forEach
+            val parsed = runCatching { LocalDate.parse(key) }.getOrNull() ?: return@forEach
+            if (parsed.isAfter(today)) return@forEach
+            val steps = raw.coerceIn(0, MAX_STEPS_PER_DAY)
+            val known = state.stepLedger[key] ?: 0
+            state.stepLedger = state.stepLedger + (key to max(known, steps))
+            if (key == todayKey) {
+                state.stepsToday = max(state.stepsToday, steps)
+                state.processedSteps = max(state.processedSteps, state.stepsToday)
+            }
+        }
+        state.lastSync = System.currentTimeMillis()
+    }
+
+    /**
+     * Imports a day ledger (Garmin or Santé Connect). Each calendar day is only
+     * ever counted once, so syncing repeatedly (or importing the same 7 days
+     * again) is idempotent. [sourceLabel] only feeds the journal and the status.
      */
     fun ingestHistory(
         state: GameState,
         days: Map<String, Int>,
-        today: LocalDate = LocalDate.now()
+        today: LocalDate = LocalDate.now(),
+        sourceLabel: String = "Garmin"
     ): OfflineReport? {
         ensureDay(state, today)
         val todayKey = today.toString()
+        // Première connexion à une source : on ne récupère que la journée en
+        // cours, jamais la semaine passée (sinon on démarre avec une réserve
+        // énorme). Les jours antérieurs restent exclus par la suite aussi.
+        if (state.historyStart.isBlank()) state.historyStart = todayKey
+        val startKey = state.historyStart
         var todayAdded = 0
         var todayTotal = state.stepsToday
         var historyAdded = 0
         var recoveredDays = 0
 
         days.toSortedMap().forEach { (key, raw) ->
+            if (key < startKey) return@forEach
             val parsed = runCatching { LocalDate.parse(key) }.getOrNull() ?: return@forEach
             if (parsed.isAfter(today)) return@forEach
             val steps = raw.coerceIn(0, MAX_STEPS_PER_DAY)
@@ -776,7 +813,7 @@ object GameEngine {
             }
             state.journal = addJournal(
                 state,
-                "$accepted pas Garmin — ${"%.0f".format(accepted / STEPS_PER_METER)} m",
+                "$accepted pas $sourceLabel - ${"%.0f".format(accepted / STEPS_PER_METER)} m",
                 "good"
             )
             if (ignored > 0) {
@@ -797,14 +834,14 @@ object GameEngine {
             state.shards = min(12, state.shards + min(6, importedHistory / 2000))
             state.journal = addJournal(
                 state,
-                "Rattrapage Garmin · $recoveredDays jour(s) · $importedHistory pas",
+                "Rattrapage $sourceLabel · $recoveredDays jour(s) · $importedHistory pas",
                 "good"
             )
         }
 
         state.lastAdded = todayAdded + importedHistory
         state.lastSync = System.currentTimeMillis()
-        state.lastSyncSource = "Garmin"
+        state.lastSyncSource = sourceLabel
         checkOaths(state)
 
         val report = if (recoveredDays > 0) {

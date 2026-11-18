@@ -317,6 +317,12 @@ data class GameState(
     var lastAdded: Int = 0,
     var lastError: String = "",
     var lastSyncSource: String = "",
+    /**
+     * Date de la première synchronisation de pas (AAAA-MM-JJ). Le rattrapage
+     * d'historique ne remonte jamais avant cette date : la première connexion
+     * ne crédite que la journée en cours.
+     */
+    var historyStart: String = "",
     var stepLedger: Map<String, Int> = emptyMap(),
     var offlineReport: OfflineReport? = null,
     var bossesToday: Int = 0,
@@ -875,7 +881,7 @@ fun defaultInventory(): List<Item> = listOf(
 )
 
 fun defaultJournal(): List<JournalEntry> = listOf(
-    JournalEntry("Le sentier attend vos pas Garmin", nowTime(), "neutral"),
+    JournalEntry("Le sentier attend vos pas", nowTime(), "neutral"),
     JournalEntry("Palier 1 — les cryptes s'ouvrent", nowTime(), "good")
 )
 

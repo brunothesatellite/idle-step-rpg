@@ -58,7 +58,11 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
     var confirmClear by remember { mutableStateOf(false) }
+    var pendingSource by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val healthLauncher = rememberLauncherForActivityResult(
+        androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
+    ) { granted -> vm.onHealthPermissionResult(granted.isNotEmpty()) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
@@ -423,57 +427,96 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 Modifier.fillMaxWidth(),
                 borderColor = if (ui.connected) Green.copy(alpha = 0.3f) else Ember.copy(alpha = 0.35f)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        SectionLabel("Compte Garmin")
-                        Text(
-                            if (ui.connected) "Connecté · Personal API" else "Non connecté",
-                            fontSize = 7.5.sp,
-                            color = if (ui.connected) Green else Ember
-                        )
-                    }
-                    Box(
-                        Modifier
-                            .size(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(if (ui.connected) Green else Ember)
-                    )
-                }
-                val keyDays = ui.keyExpiry?.let { ChronoUnit.DAYS.between(LocalDate.now(), it) }
-                if (keyDays != null && keyDays < 30) {
-                    Spacer(Modifier.height(3.dp))
-                    Text(
-                        if (keyDays < 0) "Clé Garmin expirée — remplacez-la."
-                        else "Clé Garmin expire dans $keyDays jour(s).",
-                        fontSize = 6.8.sp,
-                        color = Blood
-                    )
-                }
+                SectionLabel("Source de pas")
+                Text(
+                    ui.stepStatus,
+                    fontSize = 7.5.sp,
+                    color = if (ui.connected) Green else Ember
+                )
                 Spacer(Modifier.height(6.dp))
-                if (ui.connected) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        OverlayAction(
-                            "SYNCHRONISER",
-                            Modifier.weight(1f),
-                            { vm.syncNow() },
-                            enabled = !ui.syncing
+                SourceRow(
+                    title = "Garmin",
+                    subtitle = "Personal API · clé personnelle",
+                    selected = ui.stepSource == "garmin",
+                    onClick = { if (ui.stepSource != "garmin") pendingSource = "garmin" }
+                )
+                Spacer(Modifier.height(4.dp))
+                SourceRow(
+                    title = "Santé Connect",
+                    subtitle = if (ui.healthAvailable) "Google Fit, Samsung Health, montre…"
+                    else "Indisponible sur cet appareil",
+                    selected = ui.stepSource == "health",
+                    enabled = ui.healthAvailable,
+                    onClick = { if (ui.stepSource != "health") pendingSource = "health" }
+                )
+                Spacer(Modifier.height(6.dp))
+                if (ui.stepSource == "garmin") {
+                    val keyDays = ui.keyExpiry?.let { ChronoUnit.DAYS.between(LocalDate.now(), it) }
+                    if (keyDays != null && keyDays < 30) {
+                        Text(
+                            if (keyDays < 0) "Clé Garmin expirée — remplacez-la."
+                            else "Clé Garmin expire dans $keyDays jour(s).",
+                            fontSize = 6.8.sp,
+                            color = Blood
                         )
-                        OverlayAction("GÉRER LA CLÉ", Modifier.weight(1f), { vm.openSettings() })
+                        Spacer(Modifier.height(4.dp))
+                    }
+                    if (ui.connected) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            OverlayAction(
+                                "SYNCHRONISER",
+                                Modifier.weight(1f),
+                                { vm.syncNow() },
+                                enabled = !ui.syncing
+                            )
+                            OverlayAction("GÉRER LA CLÉ", Modifier.weight(1f), { vm.openSettings() })
+                        }
+                    } else {
+                        Text(
+                            "Sans clé Garmin, la marche ne peut pas démarrer avec cette source.",
+                            fontSize = 7.sp,
+                            color = Muted,
+                            lineHeight = 10.sp
+                        )
+                        Spacer(Modifier.height(5.dp))
+                        OverlayAction(
+                            "CONNECTER GARMIN",
+                            Modifier.fillMaxWidth(),
+                            { vm.openSettings() },
+                            primary = true
+                        )
                     }
                 } else {
                     Text(
-                        "Sans clé Garmin, la marche ne peut pas démarrer : aucune source de pas.",
+                        "Les pas sont lus dans Santé Connect. Aucune application ne fournit de pas ? " +
+                            "Installez Google Fit ou synchronisez une montre.",
                         fontSize = 7.sp,
                         color = Muted,
                         lineHeight = 10.sp
                     )
                     Spacer(Modifier.height(5.dp))
-                    OverlayAction(
-                        "CONNECTER GARMIN",
-                        Modifier.fillMaxWidth(),
-                        { vm.openSettings() },
-                        primary = true
-                    )
+                    if (!ui.healthPermission) {
+                        OverlayAction(
+                            "AUTORISER SANTÉ CONNECT",
+                            Modifier.fillMaxWidth(),
+                            { healthLauncher.launch(setOf(vm.healthPermissionName())) },
+                            primary = true
+                        )
+                    } else {
+                        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            OverlayAction(
+                                "SYNCHRONISER",
+                                Modifier.weight(1f),
+                                { vm.syncNow() },
+                                enabled = !ui.syncing
+                            )
+                            OverlayAction(
+                                "AUTORISATION",
+                                Modifier.weight(1f),
+                                { healthLauncher.launch(setOf(vm.healthPermissionName())) }
+                            )
+                        }
+                    }
                 }
             }
             Spacer(Modifier.height(10.dp))
@@ -500,8 +543,8 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 Text("La Marche des Âmes · v${BuildConfig.VERSION_NAME}", fontSize = 8.sp, color = Parchment)
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    "Jeu de marche personnel. Pas de Health Connect, pas de serveur, pas de compte autre que Garmin. " +
-                        "La 2FA Garmin reste dans le navigateur.",
+                    "Jeu de marche personnel. Aucun serveur de jeu : les pas viennent de Garmin " +
+                        "(Personal API) ou de Santé Connect, et la 2FA Garmin reste dans le navigateur.",
                     fontSize = 6.8.sp,
                     color = Muted,
                     lineHeight = 10.sp
@@ -576,6 +619,82 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             },
             containerColor = Panel2
         )
+    }
+
+    val target = pendingSource?.let { com.brunothesatellite.idlesteprpg.steps.StepSourceType.fromId(it) }
+    if (target != null) {
+        AlertDialog(
+            onDismissRequest = { pendingSource = null },
+            title = { WithAppFontScale { Text("Changer de source de pas ?", fontSize = 15.sp) } },
+            text = {
+                WithAppFontScale {
+                    Text(
+                        "La source active devient ${target.label}. Les pas déjà comptés aujourd'hui sont " +
+                            "conservés : le premier import de la nouvelle source sert de base et ne " +
+                            "recrédite rien. Les jours suivants comptent normalement.",
+                        fontSize = 9.sp
+                    )
+                }
+            },
+            confirmButton = {
+                WithAppFontScale {
+                    TextButton(onClick = {
+                        val id = pendingSource
+                        pendingSource = null
+                        if (id != null) vm.setStepSource(id)
+                    }) { Text("CHANGER", color = Gold) }
+                }
+            },
+            dismissButton = {
+                WithAppFontScale {
+                    TextButton(onClick = { pendingSource = null }) { Text("ANNULER", color = Muted) }
+                }
+            },
+            containerColor = Panel2
+        )
+    }
+}
+
+@Composable
+private fun SourceRow(
+    title: String,
+    subtitle: String,
+    selected: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(4.dp))
+            .background(if (selected) Gold.copy(alpha = 0.10f) else Panel3.copy(alpha = 0.35f))
+            .border(
+                1.dp,
+                if (selected) Gold.copy(alpha = 0.55f) else Line.copy(alpha = 0.5f),
+                RoundedCornerShape(4.dp)
+            )
+            .clickable(enabled = enabled && !selected) { onClick() }
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier
+                .size(9.dp)
+                .clip(RoundedCornerShape(5.dp))
+                .background(if (selected) Gold else Color.Transparent)
+                .border(1.dp, if (enabled) (if (selected) Gold else Muted2) else Muted2.copy(alpha = 0.4f), RoundedCornerShape(5.dp))
+        )
+        Spacer(Modifier.width(7.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                title,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (enabled) Parchment else Muted2
+            )
+            Text(subtitle, fontSize = 6.4.sp, color = Muted)
+        }
+        if (selected) Text("ACTIVE", fontFamily = Press, fontSize = 5.5.sp, color = Gold)
     }
 }
 

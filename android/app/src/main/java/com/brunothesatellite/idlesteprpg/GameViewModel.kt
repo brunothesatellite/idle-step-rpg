@@ -51,6 +51,10 @@ data class UiState(
     val lastSync: Long = 0L,
     val lastError: String = "",
     val lastAdded: Int = 0,
+    val stepSource: String = "garmin",
+    val healthAvailable: Boolean = false,
+    val healthPermission: Boolean = false,
+    val stepStatus: String = "",
     val textScale: Float = 1.35f,
     val reducedMotion: Boolean = false,
     val vibrations: Boolean = true,
@@ -97,7 +101,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     @Volatile private var visible = false
     private var resuming = false
-    private var pendingSteps: com.brunothesatellite.idlesteprpg.garmin.GarminFetch? = null
+    private var pendingSteps: com.brunothesatellite.idlesteprpg.steps.StepFetch? = null
     private var pendingImportText: String? = null
     private var lastKnownDay: String = ""
     private var lastBiomeKey: String = ""
@@ -128,7 +132,11 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 musicEnabled = container.settings.musicEnabled,
                 musicVolume = container.settings.musicVolume,
                 autoUpdateCheck = container.settings.autoUpdateCheck,
-                lastUpdateCheckAt = container.settings.lastUpdateCheckAt
+                lastUpdateCheckAt = container.settings.lastUpdateCheckAt,
+                stepSource = container.stepRepository.current().id,
+                healthAvailable = container.stepRepository.healthAvailable(),
+                healthPermission = container.stepRepository.healthPermission(),
+                stepStatus = container.stepRepository.statusLine()
             )
         }
         lastKnownDay = game.value.day
@@ -231,7 +239,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             // qu'à la fermeture du résumé (les pas importés ne nourrissent pas la
             // simulation d'absence).
             val fetch = if (shouldSyncOnResume()) {
-                async { container.garminRepository.fetchSteps() }
+                async { container.stepRepository.fetch() }
             } else {
                 null
             }
@@ -266,7 +274,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         val fetch = pendingSteps ?: return
         pendingSteps = null
         viewModelScope.launch {
-            val result = container.garminRepository.applySteps(fetch)
+            val result = container.stepRepository.apply(fetch)
             refreshGarmin()
             _ui.update {
                 it.copy(
@@ -280,7 +288,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     private fun shouldSyncOnResume(): Boolean {
         val last = _ui.value.lastSync
-        return container.garminRepository.hasKey() &&
+        return container.stepRepository.canSync() &&
             (last == 0L || System.currentTimeMillis() - last > 2L * 60L * 1000L)
     }
 
@@ -295,26 +303,62 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun refreshGarmin() {
         _ui.update {
             it.copy(
-                connected = container.garminRepository.hasKey(),
-                keyExpiry = container.garminRepository.keyExpiry(),
-                tokenExpiry = container.garminRepository.tokenExpiry(),
-                lastSync = container.garminRepository.lastSync(),
-                lastError = container.garminRepository.lastError(),
-                syncLog = container.garminRepository.syncLog()
+                connected = container.stepRepository.canSync(),
+                keyExpiry = container.stepRepository.keyExpiry(),
+                tokenExpiry = container.stepRepository.tokenExpiry(),
+                lastSync = container.stepRepository.lastSync(),
+                lastError = container.stepRepository.lastError(),
+                syncLog = container.stepRepository.syncLog(),
+                stepSource = container.stepRepository.current().id,
+                healthAvailable = container.stepRepository.healthAvailable(),
+                healthPermission = container.stepRepository.healthPermission(),
+                stepStatus = container.stepRepository.statusLine()
             )
         }
-        container.garminRepository.checkKeyExpiryNotice()
+        container.stepRepository.checkKeyExpiryNotice()
+    }
+
+    fun setStepSource(id: String) {
+        val type = com.brunothesatellite.idlesteprpg.steps.StepSourceType.fromId(id)
+        if (type.id == container.stepRepository.current().id) return
+        pendingSteps = null
+        container.stepRepository.changeSource(type)
+        com.brunothesatellite.idlesteprpg.sync.SyncScheduler.schedule(
+            container.context,
+            requireNetwork = type == com.brunothesatellite.idlesteprpg.steps.StepSourceType.GARMIN
+        )
+        refreshGarmin()
+        _toasts.tryEmit(
+            "Source de pas : ${type.label}. La journée en cours reste calée sur l'ancienne source."
+        )
+        if (container.stepRepository.canSync()) syncNow(silent = true)
+    }
+
+    fun healthPermissionName(): String = container.stepRepository.healthPermissionRequest()
+
+    fun onHealthPermissionResult(granted: Boolean) {
+        refreshGarmin()
+        if (granted) {
+            _toasts.tryEmit("Santé Connect autorisé.")
+            syncNow(silent = true)
+        } else {
+            _toasts.tryEmit("Lecture des pas refusée : la marche ne peut pas avancer.")
+        }
     }
 
     fun syncNow(silent: Boolean = false) {
         if (_ui.value.syncing) return
-        if (!container.garminRepository.hasKey()) {
-            _ui.update { it.copy(settingsOpen = true) }
+        if (!container.stepRepository.canSync()) {
+            _ui.update {
+                if (container.stepRepository.current() ==
+                    com.brunothesatellite.idlesteprpg.steps.StepSourceType.GARMIN
+                ) it.copy(settingsOpen = true) else it.copy(prefsOpen = true)
+            }
             return
         }
         _ui.update { it.copy(syncing = true) }
         viewModelScope.launch {
-            val result = container.garminRepository.sync(simulateAbsence = false)
+            val result = container.stepRepository.sync()
             refreshGarmin()
             _ui.update { it.copy(syncing = false, lastAdded = result.added) }
             if (!silent) _toasts.emit(result.message)
@@ -324,7 +368,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun saveKey(rawKey: String, expiry: LocalDate) {
         _ui.update { it.copy(syncing = true) }
         viewModelScope.launch {
-            val result = container.garminRepository.saveKey(rawKey, expiry)
+            val result = container.stepRepository.saveGarminKey(rawKey, expiry)
             _ui.update { it.copy(syncing = false) }
             refreshGarmin()
             if (result.isSuccess) {
@@ -337,13 +381,13 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun updateExpiry(date: LocalDate) {
-        container.garminRepository.setKeyExpiry(date)
+        container.stepRepository.setGarminKeyExpiry(date)
         refreshGarmin()
         _toasts.tryEmit("Date d'expiration mise à jour.")
     }
 
     fun revokeGarmin() {
-        container.garminRepository.revoke()
+        container.stepRepository.revokeGarmin()
         refreshGarmin()
         _toasts.tryEmit("Clé Garmin supprimée de l'appareil.")
     }
@@ -390,7 +434,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 selectedItem = null,
                 chestOpen = false,
                 campOpen = false,
-                syncLog = container.garminRepository.syncLog()
+                syncLog = container.stepRepository.syncLog()
             )
         }
     }
@@ -650,6 +694,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     private fun maybeCheckForUpdates() {
+        // La copie de test (.debug) ne doit jamais proposer l'APK de production :
+        // l'installer remplacerait l'autre application.
+        if (BuildConfig.DEBUG) return
         if (!_ui.value.onboardingDone) return
         if (!container.settings.autoUpdateCheck) return
         val elapsed = System.currentTimeMillis() - container.settings.lastUpdateCheckAt
@@ -700,6 +747,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun installUpdate() {
+        if (BuildConfig.DEBUG) return
         val info = _ui.value.availableUpdate ?: return
         if (_ui.value.updateDownloading) return
         val context = container.context

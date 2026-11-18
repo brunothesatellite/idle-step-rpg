@@ -1,5 +1,14 @@
 # Journal des versions
 
+## v0.14.0
+- **Choix de la source de pas** : Garmin (Personal API) ou **Santé Connect**. Le choix se fait à l'onboarding et se change à tout moment dans **Réglages → Source de pas**, avec une carte par source, son état et son journal de synchronisation.
+- **Santé Connect** : lecture locale des pas (`android.permission.health.READ_STEPS`), agrégation par origine (téléphone, montre, application de santé) en gardant le total le plus élevé par jour, sans double comptage.
+- **Écran de justification Santé Connect** : Android 14+ exige une activité sur `VIEW_PERMISSION_USAGE` + `HEALTH_PERMISSIONS`. Sans elle, la demande d'autorisation était refermée aussitôt (« lecture des pas refusée »).
+- **Changement de source sans double comptage** : le premier import de la nouvelle source sert de base, le total du jour ne recule jamais et aucun pas n'est recrédité.
+- **Nouvelle fenêtre d'import** : la toute première synchronisation ne crédite que les **pas du jour**. Ensuite, le rattrapage lit **7 jours maximum**, borné par la **date de première connexion** (`historyStart`). Un oubli de synchro est donc rattrapé, sans démarrer le jeu avec une réserve héritée de la semaine passée.
+- **Journal générique** : les messages de synchronisation suivent la source active (« Garmin synchronisé » ou « Santé Connect synchronisé »).
+- **Build** : `compileSdk 36`, AGP 8.10.1, Health Connect 1.1.0 stable.
+
 ## v0.13.2
 - **Sauvegarde atomique** : le fichier temporaire est écrit et synchronisé sur disque, puis déplacé sur `game_state.json` en un seul `rename`. L'ancien code supprimait le fichier principal avant de le remplacer : un arrêt du processus entre les deux pouvait faire repartir du `.bak` (ou d'une partie neuve).
 - **Sauvegarde périodique pendant le jeu** : toutes les 30 s environ, et immédiatement à chaque changement de palier ou de niveau. Jusqu'ici rien n'était écrit entre deux événements : installer une mise à jour pouvait ramener le jeu avant un gardien déjà battu.

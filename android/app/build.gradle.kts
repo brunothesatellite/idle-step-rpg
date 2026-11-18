@@ -17,16 +17,18 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "com.brunothesatellite.idlesteprpg"
-    compileSdk = 35
-    buildToolsVersion = "35.0.0"
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId = "com.brunothesatellite.idlesteprpg"
         minSdk = 34
         targetSdk = 35
-        versionCode = 30
-        versionName = "0.13.2"
+        versionCode = 31
+        versionName = "0.14.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
+        manifestPlaceholders["appIconRound"] = "@mipmap/ic_launcher_round"
     }
 
     signingConfigs {
@@ -44,6 +46,9 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
+            // Copie de test installable à côté de la version de production.
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_test"
+            manifestPlaceholders["appIconRound"] = "@mipmap/ic_launcher_test_round"
         }
         release {
             isMinifyEnabled = false
@@ -91,6 +96,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.browser:browser:1.8.0")
     implementation("androidx.work:work-runtime-ktx:2.10.0")
+implementation("androidx.health.connect:connect-client:1.1.0")
     implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")

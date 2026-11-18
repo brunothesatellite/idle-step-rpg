@@ -97,4 +97,18 @@ class SettingsStore(context: Context) {
     var pendingReleaseUrl: String
         get() = prefs.getString("pending_release_url", "").orEmpty()
         set(value) = prefs.edit().putString("pending_release_url", value).apply()
+
+    /** Source de pas active : "garmin" ou "health" (Santé Connect). */
+    var stepSource: String
+        get() = prefs.getString("step_source", "garmin").orEmpty().ifBlank { "garmin" }
+        set(value) = prefs.edit().putString("step_source", value).apply()
+
+    /**
+     * Vrai juste après un changement de source : le premier import sert de base
+     * (les totaux du jour ne sont pas recrédités), pour éviter un saut de pas
+     * quand la nouvelle source annonce plus que l'ancienne.
+     */
+    var pendingSourceRebase: Boolean
+        get() = prefs.getBoolean("pending_source_rebase", false)
+        set(value) = prefs.edit().putBoolean("pending_source_rebase", value).apply()
 }

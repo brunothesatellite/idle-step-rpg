@@ -819,9 +819,9 @@ private fun SyncButton(
         else -> Ember
     }
     val label = when {
-        syncing -> "Synchronisation Garmin en cours"
-        connected -> "Synchroniser Garmin"
-        else -> "Connecter Garmin"
+        syncing -> "Synchronisation des pas en cours"
+        connected -> "Synchroniser les pas"
+        else -> "Connecter une source de pas"
     }
     Box(
         modifier
