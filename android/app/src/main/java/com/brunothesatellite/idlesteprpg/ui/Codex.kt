@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,8 +43,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import com.brunothesatellite.idlesteprpg.engine.BIOMES
 import com.brunothesatellite.idlesteprpg.engine.BIOME_POOLS
+import com.brunothesatellite.idlesteprpg.engine.BiomeRule
 import com.brunothesatellite.idlesteprpg.engine.BossTemplate
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.ITEM_SETS
@@ -59,6 +62,12 @@ import com.brunothesatellite.idlesteprpg.engine.ownedSetSlots
 import com.brunothesatellite.idlesteprpg.engine.setBonusDescription
 import com.brunothesatellite.idlesteprpg.engine.setLabel
 import com.brunothesatellite.idlesteprpg.engine.slotLabel
+import java.util.Locale
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
+import kotlin.math.sqrt
 
 @Composable
 fun CodexOverlay(state: GameState, onClose: () -> Unit) {
@@ -140,6 +149,8 @@ private fun CodexTab(
 
 @Composable
 private fun BestiaryCodex(state: GameState) {
+    var selectedMob by remember { mutableStateOf<MobTemplate?>(null) }
+    var selectedBoss by remember { mutableStateOf<BossTemplate?>(null) }
     val mobs = allMobTemplates()
     val bosses = allBossTemplates()
     val discoveredMobs = mobs.count { (state.bestiary[it.name] ?: 0) > 0 }
@@ -153,7 +164,7 @@ private fun BestiaryCodex(state: GameState) {
             color = GoldLight
         )
         Text(
-            "Les silhouettes inconnues se révèlent au premier combat ou à la première victoire.",
+            "Les silhouettes inconnues se révèlent au premier combat ou à la première victoire. Appuyez sur une créature pour ouvrir sa fiche.",
             fontSize = 6.3.sp,
             color = Muted,
             lineHeight = 9.sp
@@ -184,7 +195,7 @@ private fun BestiaryCodex(state: GameState) {
             biomeMobs.chunked(2).forEach { row ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     row.forEach { mob ->
-                        MobEntry(state, mob, Modifier.weight(1f))
+                        MobEntry(state, mob, Modifier.weight(1f)) { selectedMob = mob }
                     }
                     repeat(2 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
@@ -194,16 +205,27 @@ private fun BestiaryCodex(state: GameState) {
                 Spacer(Modifier.height(2.dp))
                 Text("GARDIENS", fontSize = 5.5.sp, color = Blood, letterSpacing = 0.8.sp)
                 biomeBosses.forEach { boss ->
-                    BossEntry(state, boss, biome.fromFloor)
+                    BossEntry(state, boss, biome.fromFloor) { selectedBoss = boss }
                 }
             }
         }
         Spacer(Modifier.height(7.dp))
     }
+    selectedMob?.let { mob ->
+        MobDetailDialog(state, mob) { selectedMob = null }
+    }
+    selectedBoss?.let { boss ->
+        BossDetailDialog(state, boss) { selectedBoss = null }
+    }
 }
 
 @Composable
-private fun MobEntry(state: GameState, mob: MobTemplate, modifier: Modifier = Modifier) {
+private fun MobEntry(
+    state: GameState,
+    mob: MobTemplate,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
+) {
     val kills = state.bestiary[mob.name] ?: 0
     val known = kills > 0
     Row(
@@ -211,6 +233,7 @@ private fun MobEntry(state: GameState, mob: MobTemplate, modifier: Modifier = Mo
             .clip(RoundedCornerShape(4.dp))
             .background(Panel)
             .border(1.dp, if (known) Green.copy(alpha = 0.35f) else Line, RoundedCornerShape(4.dp))
+            .clickable(onClick = onClick)
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -239,11 +262,453 @@ private fun MobEntry(state: GameState, mob: MobTemplate, modifier: Modifier = Mo
                 color = if (known) Green else Muted2
             )
         }
+        Spacer(Modifier.width(3.dp))
+        Text("›", fontSize = 11.sp, color = if (known) Gold else Muted2)
+    }
+}
+
+private data class MobPreview(
+    val biomeName: String,
+    val rule: BiomeRule,
+    val floor: Int,
+    val level: Int,
+    val hp: Int,
+    val atk: Int,
+    val intervalMs: Long,
+    val gold: Int,
+    val xp: Int,
+    val tier: String,
+    val zone: String
+)
+
+private fun buildMobPreview(state: GameState, mob: MobTemplate): MobPreview {
+    val entry = BIOME_POOLS.entries.firstOrNull { (_, pool) ->
+        (pool.easy + pool.mid + pool.hard).any { it.name == mob.name }
+    }
+    val key = entry?.key ?: biomeKeyFor(state.floor)
+    val pool = entry?.value
+    val tier = when {
+        pool == null -> "easy"
+        pool.easy.any { it.name == mob.name } -> "easy"
+        pool.mid.any { it.name == mob.name } -> "mid"
+        else -> "hard"
+    }
+    val biome = BIOMES.firstOrNull { it.key == key }
+    val floor = if (key == biomeKeyFor(state.floor)) state.floor else (biome?.fromFloor ?: state.floor)
+    val rule = biomeRuleFor(floor)
+    val level = (floor + when (tier) {
+        "easy" -> -1
+        "mid" -> 0
+        else -> 1
+    }).coerceAtLeast(1)
+    val depth = if (floor <= 10) 1.0 else min(1.12.pow(floor - 10.0), 40.0)
+    val hp = ((55 + 34 * (level - 1)) * depth * rule.enemyHpMult).roundToInt()
+    val atk = ((6 + 2.2 * (level - 1)) * depth * rule.enemyAtkMult).roundToInt()
+    val interval = (1250 * rule.enemyIntervalMult).roundToLong()
+    val reward = min(6.0, sqrt(depth))
+    val gold = ((6 + 3 * level) * reward).roundToInt()
+    val xp = ((12 + 5 * level) * reward).roundToInt()
+    val zone = when (tier) {
+        "easy" -> "0–50 m"
+        "mid" -> "50–85 m"
+        else -> "85–100 m"
+    }
+    val tierLabel = when (tier) {
+        "easy" -> "DÉBUT DE PALIER"
+        "mid" -> "MILIEU DE PALIER"
+        else -> "FIN DE PALIER"
+    }
+    return MobPreview(
+        biomeName = biome?.name ?: "RÉGION INCONNUE",
+        rule = rule,
+        floor = floor,
+        level = level,
+        hp = hp,
+        atk = atk,
+        intervalMs = interval,
+        gold = gold,
+        xp = xp,
+        tier = tierLabel,
+        zone = zone
+    )
+}
+
+@Composable
+private fun MobStat(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    color: Color = GoldLight
+) {
+    Column(
+        modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(Panel)
+            .border(1.dp, Line, RoundedCornerShape(4.dp))
+            .padding(vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(value, fontFamily = Press, fontSize = 9.sp, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, fontSize = 5.sp, color = Muted, letterSpacing = 0.4.sp, maxLines = 1)
     }
 }
 
 @Composable
-private fun BossEntry(state: GameState, boss: BossTemplate, floor: Int) {
+private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () -> Unit) {
+    val kills = state.bestiary[mob.name] ?: 0
+    val known = kills > 0
+    val preview = remember(mob.name, state.floor, kills) { buildMobPreview(state, mob) }
+    AppDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(Modifier.fillMaxWidth().padding(22.dp), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 620.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Brush.verticalGradient(listOf(Color(0xFF241930), Color(0xFF130E1C))))
+                    .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("BESTIAIRE", fontFamily = Press, fontSize = 6.5.sp, color = Muted)
+                        Text(
+                            if (known) mob.name else "Créature inconnue",
+                            fontFamily = Press,
+                            fontSize = 10.sp,
+                            color = if (known) GoldLight else Muted2,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    CloseButton(onDismiss)
+                }
+                Spacer(Modifier.height(8.dp))
+                Box(
+                    Modifier
+                        .size(96.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Panel2)
+                        .border(
+                            1.dp,
+                            if (known) Green.copy(alpha = 0.4f) else Line,
+                            RoundedCornerShape(8.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (known) {
+                        AssetImage(mob.icon, Modifier.size(84.dp), contentDescription = mob.name)
+                    } else {
+                        Text("?", fontFamily = Press, fontSize = 30.sp, color = Muted2)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    preview.biomeName,
+                    fontFamily = Press,
+                    fontSize = 7.sp,
+                    color = Gold,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    "${preview.tier} · ${preview.zone} · Palier ${preview.floor}",
+                    fontSize = 6.sp,
+                    color = Muted,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(10.dp))
+                if (!known) {
+                    Text(
+                        "Cette créature n'a pas encore été vaincue. Sa fiche et ses statistiques " +
+                            "se révéleront au premier combat gagné.",
+                        fontSize = 7.sp,
+                        color = Muted,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 10.sp
+                    )
+                } else {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        MobStat("PV", formatInt(preview.hp), Modifier.weight(1f))
+                        MobStat("ATQ", formatInt(preview.atk), Modifier.weight(1f), Ember)
+                        MobStat(
+                            "CADENCE",
+                            String.format(Locale.FRENCH, "%.2f s", preview.intervalMs / 1000.0),
+                            Modifier.weight(1f),
+                            Color(0xFF86B8D9)
+                        )
+                    }
+                    Spacer(Modifier.height(5.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        MobStat("OR", formatInt(preview.gold), Modifier.weight(1f))
+                        MobStat("XP", formatInt(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
+                        MobStat("VICTIMES", formatInt(kills), Modifier.weight(1f))
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Panel.copy(alpha = 0.7f))
+                            .border(1.dp, Line2, RoundedCornerShape(6.dp))
+                            .padding(9.dp)
+                    ) {
+                        Column {
+                            SectionLabel("RÈGLE DE BIOME", color = Ember)
+                            Text(
+                                preview.rule.label,
+                                fontSize = 7.sp,
+                                color = GoldLight,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(preview.rule.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
+                        }
+                    }
+                    Spacer(Modifier.height(7.dp))
+                    Text(
+                        "Statistiques de base au palier ${preview.floor}, règle de biome incluse. " +
+                            "10 % de chance d'élite : Niv. +2, PV ×2,2, ATQ ×1,3.",
+                        fontSize = 5.6.sp,
+                        color = Muted2,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 8.sp
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                GoldButton(if (known) "FERMER" else "COMPRIS", onClick = onDismiss)
+            }
+        }
+    }
+}
+
+private data class BossPreview(
+    val biomeName: String,
+    val rule: BiomeRule,
+    val floor: Int,
+    val level: Int,
+    val hp: Int,
+    val atk: Int,
+    val intervalMs: Long,
+    val gold: Int,
+    val xp: Int,
+    val abilityLabel: String,
+    val abilityId: String
+)
+
+private fun buildBossPreview(state: GameState, boss: BossTemplate): BossPreview {
+    val entry = BIOME_POOLS.entries.firstOrNull { (_, pool) ->
+        pool.bosses.any { it.name == boss.name }
+    }
+    val key = entry?.key ?: biomeKeyFor(state.floor)
+    val biome = BIOMES.firstOrNull { it.key == key }
+    val floor = if (key == biomeKeyFor(state.floor)) state.floor else (biome?.fromFloor ?: state.floor)
+    val rule = biomeRuleFor(floor)
+    val level = floor + 2
+    val depth = if (floor <= 10) 1.0 else min(1.08.pow(floor - 10.0), 40.0)
+    val ability = bossAbilityFor(boss.name, floor)
+    val reward = min(10.0, sqrt(depth))
+    return BossPreview(
+        biomeName = biome?.name ?: "RÉGION INCONNUE",
+        rule = rule,
+        floor = floor,
+        level = level,
+        hp = (6.0 * (55 + 34 * (level - 1)) * depth * rule.enemyHpMult).roundToInt(),
+        atk = (1.6 * (6 + 2.2 * (level - 1)) * depth * rule.enemyAtkMult).roundToInt(),
+        intervalMs = (1250 * rule.enemyIntervalMult).roundToLong(),
+        gold = (12 * (6 + 3 * level) * reward).roundToInt(),
+        xp = (10 * (12 + 5 * level) * reward).roundToInt(),
+        abilityLabel = ability.label,
+        abilityId = ability.id
+    )
+}
+
+private fun bossAbilityDescription(id: String): String = when (id) {
+    "slam" -> "Frappe lourde : inflige 240 % de l'ATQ."
+    "drain" -> "Drain d'âme : inflige 150 % de l'ATQ et soigne le gardien de 80 % des dégâts."
+    "regen" -> "Régénération : récupère 7 % de ses PV maximum."
+    "shield" -> "Blindage : réduit les dégâts subis de 65 % pendant 4,5 s."
+    "breath" -> "Souffle : inflige 200 % de l'ATQ et applique GIVRE (+15 % de dégâts subis, 6 s)."
+    "roots" -> "Racines : inflige 120 % de l'ATQ et applique RACINES (-25 % VIT, 5 s)."
+    "acid" -> "Acide : inflige 140 % de l'ATQ et applique ACIDE (+15 % de dégâts subis, 6 s)."
+    "pressure" -> "Pression : inflige 180 % de l'ATQ et retire 10 points de ferveur."
+    else -> "Frappe : inflige 180 % de l'ATQ."
+}
+
+@Composable
+private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: () -> Unit) {
+    val kills = state.bossKills[boss.name] ?: 0
+    val known = kills > 0
+    val preview = remember(boss.name, state.floor, kills) { buildBossPreview(state, boss) }
+    AppDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(Modifier.fillMaxWidth().padding(22.dp), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 640.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Brush.verticalGradient(listOf(Color(0xFF2A1620), Color(0xFF140B12))))
+                    .border(1.dp, Blood.copy(alpha = 0.75f), RoundedCornerShape(12.dp))
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("CODEX · GARDIEN", fontFamily = Press, fontSize = 6.5.sp, color = Muted)
+                        Text(
+                            if (known) boss.name else "Gardien inconnu",
+                            fontFamily = Press,
+                            fontSize = 10.sp,
+                            color = if (known) GoldLight else Muted2,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    CloseButton(onDismiss)
+                }
+                Spacer(Modifier.height(8.dp))
+                Box(
+                    Modifier
+                        .size(104.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF20121B))
+                        .border(
+                            1.dp,
+                            if (known) Blood.copy(alpha = 0.6f) else Line,
+                            RoundedCornerShape(8.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (known) {
+                        AssetImage(boss.icon, Modifier.size(92.dp), contentDescription = boss.name)
+                    } else {
+                        Text("?", fontFamily = Press, fontSize = 30.sp, color = Muted2)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    preview.biomeName,
+                    fontFamily = Press,
+                    fontSize = 7.sp,
+                    color = Blood,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    "GARDIEN · PALIER ${preview.floor} · NIV. ${preview.level}",
+                    fontSize = 6.sp,
+                    color = Muted,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(10.dp))
+                if (!known) {
+                    Text(
+                        "Ce gardien n'a pas encore été vaincu. Sa fiche et ses statistiques " +
+                            "se révéleront à la première victoire.",
+                        fontSize = 7.sp,
+                        color = Muted,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 10.sp
+                    )
+                } else {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        MobStat("PV", formatInt(preview.hp), Modifier.weight(1f))
+                        MobStat("ATQ", formatInt(preview.atk), Modifier.weight(1f), Blood)
+                        MobStat(
+                            "CADENCE",
+                            String.format(Locale.FRENCH, "%.2f s", preview.intervalMs / 1000.0),
+                            Modifier.weight(1f),
+                            Color(0xFF86B8D9)
+                        )
+                    }
+                    Spacer(Modifier.height(5.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        MobStat("OR", formatInt(preview.gold), Modifier.weight(1f))
+                        MobStat("XP", formatInt(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
+                        MobStat("VICTIMES", formatInt(kills), Modifier.weight(1f))
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF20121B))
+                            .border(1.dp, Blood.copy(alpha = 0.35f), RoundedCornerShape(6.dp))
+                            .padding(9.dp)
+                    ) {
+                        Column {
+                            SectionLabel("CAPACITÉ", color = Blood)
+                            Text(
+                                preview.abilityLabel,
+                                fontSize = 7.sp,
+                                color = GoldLight,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                bossAbilityDescription(preview.abilityId),
+                                fontSize = 6.3.sp,
+                                color = Muted,
+                                lineHeight = 9.sp
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text("Déclenchée toutes les 7 s.", fontSize = 5.6.sp, color = Muted2)
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Panel.copy(alpha = 0.7f))
+                            .border(1.dp, Line2, RoundedCornerShape(6.dp))
+                            .padding(9.dp)
+                    ) {
+                        Column {
+                            SectionLabel("RÈGLE DE BIOME", color = Ember)
+                            Text(
+                                preview.rule.label,
+                                fontSize = 7.sp,
+                                color = GoldLight,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(preview.rule.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
+                        }
+                    }
+                    Spacer(Modifier.height(7.dp))
+                    Text(
+                        "Statistiques de base au palier ${preview.floor}, règle de biome incluse, " +
+                            "hors modificateur. Modificateur aléatoire : RAPIDE (cadence 0,90 s), " +
+                            "BLINDÉ (PV +30 %), BERSERK (ATQ +30 %), RÉGÉNÉRANT (PV +15 %, régénération), " +
+                            "VOLEUR (ATQ +10 %, vole de l'or).",
+                        fontSize = 5.6.sp,
+                        color = Muted2,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 8.sp
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                GoldButton(if (known) "FERMER" else "COMPRIS", onClick = onDismiss)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BossEntry(
+    state: GameState,
+    boss: BossTemplate,
+    floor: Int,
+    onClick: () -> Unit = {}
+) {
     val kills = state.bossKills[boss.name] ?: 0
     val known = kills > 0
     Row(
@@ -253,6 +718,7 @@ private fun BossEntry(state: GameState, boss: BossTemplate, floor: Int) {
             .clip(RoundedCornerShape(4.dp))
             .background(Color(0xFF20121B))
             .border(1.dp, if (known) Blood.copy(alpha = 0.55f) else Line, RoundedCornerShape(4.dp))
+            .clickable(onClick = onClick)
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -288,6 +754,8 @@ private fun BossEntry(state: GameState, boss: BossTemplate, floor: Int) {
             fontSize = 6.sp,
             color = if (known) Gold else Muted2
         )
+        Spacer(Modifier.width(4.dp))
+        Text("›", fontSize = 11.sp, color = if (known) Blood else Muted2)
     }
 }
 

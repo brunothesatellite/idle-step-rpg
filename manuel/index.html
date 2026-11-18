@@ -195,7 +195,7 @@
 <header class="hero">
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas deviennent votre progression.</p>
-  <span class="badge">Version 0.14.0 · Android 14+ · Garmin ou Santé Connect</span>
+  <span class="badge">Version 0.16.0 · Android 14+ · Garmin ou Santé Connect</span>
 </header>
 
 <nav class="toc">
@@ -580,7 +580,25 @@
     <li><strong>Coffres :</strong> 1 à 3 objets selon le type.</li>
     <li><strong>Départ :</strong> 2 potions de soin et 1 herbe de lune.</li>
   </ul>
-  <p>Les buffs actifs apparaissent à droite de la scène avec leur compte à rebours : <code>RAGE 18s</code>, <code>ÉCORCE 12s</code>, etc.</p>
+  <h3>Effets actifs et durée restante</h3>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/effects_1.jpg" alt="Bandeau d'effets actifs avec un seul chip RAGE, largeur plafonnée à un tiers">
+      <figcaption>Un seul effet : le chip occupe un tiers de la ligne.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/effects_6.jpg" alt="Bandeau d'effets actifs avec six chips RAGE, ÉCORCE, VIF, CRIT, VAMP et FRAGILE">
+      <figcaption>Six effets : une seule ligne, six chips et malus en rouge.</figcaption>
+    </figure>
+  </div>
+  <p>Les effets temporisés apparaissent dans un bandeau d'une seule ligne, juste au-dessus de la ferveur et de la réserve. Il affiche jusqu'à <strong>6 effets</strong> avec leur durée restante. La largeur de chaque chip est la largeur disponible divisée par le nombre d'effets, <strong>plafonnée à un tiers</strong>.</p>
+  <ul>
+    <li>Les bonus sont colorés par famille : attaque, défense, vitesse, critique, vol de vie et régénération.</li>
+    <li>Les malus (<strong>FRAGILE</strong>, <strong>RACINES</strong>, <strong>ACIDE</strong>, <strong>GIVRE</strong>) apparaissent en rouge.</li>
+    <li>Le compte à rebours se rafraîchit chaque seconde, même quand le jeu est en pause ou le sac ouvert.</li>
+    <li>Les durées sont réelles : un effet de 30 s expire au bout de 30 s, même application fermée. Utilisez-les juste avant de jouer.</li>
+    <li>Le bandeau disparaît quand aucun effet n'est actif et ne réserve aucun espace.</li>
+  </ul>
 </section>
 
 <section id="rencontres">
@@ -739,6 +757,18 @@
     <li><strong>Biomes :</strong> un biome est découvert dès que vous atteignez son premier palier. Le Codex affiche sa règle, ses créatures, ses gardiens et ses objets.</li>
     <li>Les objets déjà possédés sont reconnus immédiatement ; les objets ramassés ensuite sont ajoutés à la collection.</li>
   </ul>
+  <h3>Fiche de créature et de gardien</h3>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/codex_mob_detail.jpg" alt="Fiche Chauve-souris avec image, biome, zone, PV, ATQ, cadence, or, XP, victimes et règle de biome">
+      <figcaption>Fiche d'une créature : image, biome, zone d'apparition, statistiques, butin et règle de biome.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_boss_detail.jpg" alt="Fiche Roi des Cryptes avec capacité Drain d'âme, statistiques, règle de biome et modificateurs">
+      <figcaption>Fiche d'un gardien : capacité, statistiques, règle de biome et modificateurs aléatoires.</figcaption>
+    </figure>
+  </div>
+  <p>Appuyez sur une créature ou un gardien pour ouvrir sa fiche. Elle affiche son image, son biome, sa zone d'apparition, son niveau, ses PV, son ATQ, sa cadence, l'or et l'XP donnés, le nombre de victimes et la règle de biome. Pour un gardien, la capacité et ses effets sont aussi détaillés, ainsi que les modificateurs aléatoires possibles. Une créature non vaincue reste verrouillée jusqu'à la première victoire. Les fiches suivent la <strong>taille du texte</strong> choisie dans les réglages.</p>
 </section>
 
 <section id="reglages">
@@ -935,7 +965,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.14.0 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.16.0 · <a href="#top">Retour au sommaire</a><br>
   Garmin ou Santé Connect · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

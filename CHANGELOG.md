@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.16.0
+- **Bandeau des effets actifs** : une seule ligne au-dessus du HUD bas, jusqu'à **6 effets** simultanés, avec la **durée restante en direct** (rafraîchie chaque seconde, même en pause). La largeur de chaque chip s'adapte au nombre d'effets, **plafonnée à un tiers**. Les bonus sont colorés, les malus apparaissent en rouge. Il remplace les anciennes chips discrètes à droite de la scène.
+- **Fiche de créature dans le Codex** : appuyer sur un monstre ouvre une **popup dans le thème du jeu** avec son image, son biome, sa zone d'apparition, son niveau, ses PV, son ATQ, sa cadence, l'or et l'XP donnés, le nombre de victimes et la règle de biome appliquée. Les créatures non rencontrées restent verrouillées.
+- **Fiche de gardien** : la même popup est disponible pour les gardiens, avec en plus leur capacité, ses effets réels et les modificateurs aléatoires possibles (RAPIDE, BLINDÉ, BERSERK, RÉGÉNÉRANT, VOLEUR).
+- **Taille du texte** : les fiches du Codex utilisent la taille de texte choisie dans les réglages, comme les autres fenêtres de dialogue.
+- 81 tests unitaires et lint Android OK.
+
 ## v0.15.0
 - **Diagnostic de synchronisation** : nouvel écran dans **Réglages → Diagnostic**. Il montre la source active, la fenêtre d'import des 7 derniers jours avec l'état de chaque journée (crédité, aujourd'hui, avant connexion, aucun pas), les garde-fous appliqués (7 jours, 60 000 pas/jour, 100 000 pas par import, 250 pas/min) et un bouton de synchronisation manuelle. Lecture seule : aucun pas n'y est ajouté.
 - **Journal de synchronisation horodaté** : les lignes portent désormais le jour **et l'heure** (`18/11 16:32 · OK · +12 pas`).

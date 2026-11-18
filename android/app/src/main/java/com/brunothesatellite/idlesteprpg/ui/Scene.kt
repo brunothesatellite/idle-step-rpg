@@ -72,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.brunothesatellite.idlesteprpg.audio.SoundFx
+import com.brunothesatellite.idlesteprpg.engine.Buff
 import com.brunothesatellite.idlesteprpg.engine.FLOOR_METERS
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
@@ -386,12 +387,6 @@ fun Scene(
             Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 58.dp, end = 10.dp)
-        )
-        BuffTags(
-            state,
-            Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 8.dp)
         )
 
         if (state.fight?.isBoss == true) {
@@ -1654,29 +1649,65 @@ private fun ConsumablesChip(state: GameState, onClick: () -> Unit, modifier: Mod
 }
 
 @Composable
-private fun BuffTags(state: GameState, modifier: Modifier = Modifier) {
-    val now = System.currentTimeMillis()
-    val active = state.buffs.filter { it.expiresAt > now }.take(4)
-    if (active.isEmpty()) return
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+private fun BuffStrip(state: GameState, modifier: Modifier = Modifier) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    val hasBuffs = state.buffs.any { it.expiresAt > now }
+    LaunchedEffect(hasBuffs) {
+        if (!hasBuffs) return@LaunchedEffect
+        while (true) {
+            delay(500)
+            now = System.currentTimeMillis()
+        }
+    }
+    if (!hasBuffs) return
+    val active = state.buffs
+        .filter { it.expiresAt > now }
+        .sortedBy { it.expiresAt }
+        .take(6)
+    val description = active.joinToString(", ") { "${it.label} ${buffTime(it.expiresAt - now)}" }
+    Row(
+        modifier.semantics { contentDescription = "Effets actifs : $description" },
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
         active.forEach { buff ->
-            val seconds = ((buff.expiresAt - now) / 1000L).coerceAtLeast(0L)
+            val color = buffColor(buff)
             Box(
                 Modifier
+                    .weight(1f)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(Ink.copy(alpha = 0.82f))
-                    .border(1.dp, Ember.copy(alpha = 0.5f), RoundedCornerShape(3.dp))
-                    .padding(horizontal = 5.dp, vertical = 2.dp)
+                    .background(Ink.copy(alpha = 0.86f))
+                    .border(1.dp, color.copy(alpha = 0.45f), RoundedCornerShape(3.dp))
+                    .padding(horizontal = 4.dp, vertical = 1.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "${buff.label} ${seconds}s",
-                    fontSize = 4.8.sp,
-                    color = Ember,
-                    maxLines = 1
+                    "${buff.label} ${buffTime(buff.expiresAt - now)}",
+                    fontSize = 4.6.sp,
+                    color = color,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
+        // Largeur plafonnée à 1/3 : on complète la ligne avec des slots vides
+        // quand il y a moins de trois effets.
+        repeat((3 - active.size).coerceAtLeast(0)) { Spacer(Modifier.weight(1f)) }
     }
+}
+
+private fun buffTime(remainingMs: Long): String {
+    val total = (remainingMs / 1000L).coerceAtLeast(0L)
+    return if (total < 60L) "${total}s" else "${total / 60}:${(total % 60).toString().padStart(2, '0')}"
+}
+
+private fun buffColor(buff: Buff): Color = when {
+    buff.type == "vulnerable" || buff.magnitude < 0.0 -> Blood
+    buff.type == "def" -> Color(0xFF86B8D9)
+    buff.type == "vit" -> Color(0xFF8FD39B)
+    buff.type == "crit" -> GoldLight
+    buff.type == "lifesteal" -> Color(0xFFC79BE0)
+    buff.type == "regen" -> Color(0xFF9BE0B0)
+    else -> Ember
 }
 
 @Composable
@@ -1793,10 +1824,12 @@ private fun ChestButton(state: GameState, onChest: () -> Unit, modifier: Modifie
 
 @Composable
 private fun BottomHud(state: GameState, modifier: Modifier = Modifier) {
-    Row(
-        modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
+    Column(modifier.fillMaxWidth()) {
+        BuffStrip(state, Modifier.fillMaxWidth().padding(horizontal = 10.dp))
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
         Row(
             Modifier
                 .weight(1.15f)
@@ -1849,6 +1882,7 @@ private fun BottomHud(state: GameState, modifier: Modifier = Modifier) {
                 Text(formatInt(state.stepsToday), fontFamily = Press, fontSize = 7.sp, color = Parchment, maxLines = 1)
                 Text("pas aujourd'hui", fontSize = 5.5.sp, color = Muted)
             }
+        }
         }
     }
 }
