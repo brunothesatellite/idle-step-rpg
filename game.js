@@ -20,6 +20,13 @@ const timeAgo = (minutes) => {
   const d = new Date(Date.now() - minutes * 60000);
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 };
+const isoDay = (offset = 0) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+};
+const dayLabel = iso => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+const dayLabelFull = iso => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
 
 /* ============================ DONNÉES ============================ */
 
@@ -137,6 +144,21 @@ const BIOMES = [
   { max: 999, name: 'CIMES DU SERMENT', cls: 'peak' }
 ];
 
+const SOURCE_META = {
+  garmin: {
+    label: 'Garmin',
+    tag: 'GARMIN',
+    state: 'Connecté · Personal API',
+    capsule: 'clé personnelle · jeton 24 h'
+  },
+  health: {
+    label: 'Santé Connect',
+    tag: 'SANTÉ CONNECT',
+    state: 'Autorisé · lecture des pas',
+    capsule: 'Google Fit, Samsung Health, montre'
+  }
+};
+
 /* ============================ ÉTAT ============================ */
 
 const state = {
@@ -147,6 +169,12 @@ const state = {
   stepsToday: 3124,
   bank: 1240,
   unsynced: 1240,
+  /* Source de pas : une seule active à la fois (comme dans l'application). */
+  stepSource: 'garmin',
+  historyStart: isoDay(-3),
+  ledger: {},
+  pendingDays: {},
+  catchUpCap: 100000,
   campPending: 0,
   gold: 1240,
   rations: 9,
@@ -558,17 +586,169 @@ function scrollScene() {
 
 /* ============================ SYSTÈME DE PAS ============================ */
 
+/* ============================ SOURCE & SYNCHRO ============================ */
+
+function sourceMeta() {
+  return SOURCE_META[state.stepSource];
+}
+
+function dayStatus(day) {
+  const today = isoDay(0);
+  if (day < state.historyStart) {
+    return { label: 'AVANT CONNEXION', cls: 'out', steps: state.pendingDays[day] || 0 };
+  }
+  if (state.pendingDays[day]) {
+    return { label: 'EN ATTENTE', cls: 'pending', steps: state.pendingDays[day] };
+  }
+  if (state.ledger[day]) {
+    return { label: 'CRÉDITÉ', cls: 'done', steps: state.ledger[day] };
+  }
+  if (day === today) {
+    return { label: 'EN COURS', cls: 'pending', steps: Math.round(state.unsynced) };
+  }
+  return { label: 'AUCUN PAS', cls: 'out', steps: 0 };
+}
+
+function renderDayList() {
+  const list = $('#dayList');
+  if (!list) return;
+  const rows = [];
+  for (let i = 0; i >= -6; i--) {
+    const day = isoDay(i);
+    const s = dayStatus(day);
+    rows.push(`<div class="dayRow${i === 0 ? ' today' : ''}${s.cls === 'out' ? ' out' : ''}">
+      <b>${i === 0 ? "Aujourd'hui" : dayLabel(day)}</b>
+      <span class="daySteps">${s.steps > 0 ? fmt(s.steps) + ' pas' : '—'}</span>
+      <span class="dayState ${s.cls}">${s.label}</span>
+    </div>`);
+  }
+  list.innerHTML = rows.join('');
+}
+
+function renderSourceUi() {
+  const meta = sourceMeta();
+  $$('#sourceChips .sourceChip').forEach(chip => {
+    const on = chip.dataset.source === state.stepSource;
+    chip.classList.toggle('active', on);
+    chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  const pending = Object.keys(state.pendingDays).length;
+  const stateEl = $('#sourceState');
+  if (stateEl) {
+    stateEl.innerHTML = `<b>${meta.state}</b> · 1re connexion ${dayLabel(state.historyStart)}` +
+      ` · ${pending ? pending + ' jour(s) à rattraper' : 'rattrapage ≤ 7 j'}`;
+  }
+  const tag = $('#syncSourceTag');
+  if (tag) tag.textContent = meta.tag;
+  const metaEl = $('#syncSourceMeta');
+  if (metaEl) metaEl.textContent = meta.state;
+  const startEl = $('#syncStart');
+  if (startEl) startEl.textContent = dayLabelFull(state.historyStart);
+  const sub = $('#syncSub');
+  if (sub) sub.textContent = `${meta.label} · 1re fois : pas du jour · ensuite ≤ 7 j`;
+  const sheetState = $('#syncSheetState');
+  if (sheetState) sheetState.textContent = `${meta.label} · ${meta.capsule}`;
+  const freeDays = [];
+  for (let i = -1; i >= -6; i--) {
+    const day = isoDay(i);
+    if (day >= state.historyStart && !state.ledger[day] && !state.pendingDays[day]) freeDays.push(day);
+  }
+  const missed = $('#missedBtn');
+  if (missed) {
+    missed.disabled = freeDays.length === 0;
+    missed.textContent = freeDays.length ? 'SIMULER UN OUBLI' : 'OUBLI RATTRAPÉ';
+  }
+  const sheet = $('#syncSheet');
+  if (sheet && !sheet.classList.contains('hidden')) renderDayList();
+}
+
+function setStepSource(src) {
+  if (!SOURCE_META[src] || src === state.stepSource) return;
+  state.stepSource = src;
+  renderSourceUi();
+  updateHud();
+  toast(`Source active : <b>${SOURCE_META[src].label}</b>. Le premier import de cette source sert de base : les pas déjà comptés ne sont pas recrédités.`);
+  addJournal(`Source de pas : ${SOURCE_META[src].label}`, 'neutral');
+}
+
+function openSyncSheet() {
+  renderSourceUi();
+  renderDayList();
+  $('#syncSheet').classList.remove('hidden');
+  state.modalOpen = true;
+}
+
+function closeSyncSheet() {
+  $('#syncSheet').classList.add('hidden');
+  state.modalOpen = false;
+}
+
+function simulateMissedDays() {
+  // Comme une lecture des 7 derniers jours : trois journées reçues, dont une
+  // antérieure à la première connexion (elle sera ignorée à la synchronisation).
+  const free = [];
+  for (let i = -1; i >= -6 && free.length < 3; i--) {
+    const day = isoDay(i);
+    if (day >= state.historyStart && !state.ledger[day] && !state.pendingDays[day]) free.push(day);
+  }
+  if (!free.length) {
+    toast('Tous les jours de la fenêtre sont déjà crédités. Rechargez la page pour rejouer la démo.');
+    return;
+  }
+  free.forEach(day => { state.pendingDays[day] = randInt(3800, 9200); });
+  const old = isoDay(-4);
+  if (old < state.historyStart && !state.ledger[old] && !state.pendingDays[old]) {
+    state.pendingDays[old] = randInt(3000, 7000);
+  }
+  renderSourceUi();
+  renderDayList();
+  const total = free.length + (state.pendingDays[old] ? 1 : 0);
+  toast(`<b>Oubli simulé</b> · ${total} journées reçues, dont une avant la première connexion.`);
+  addJournal(`Oubli de synchronisation simulé — ${total} journées reçues`, 'neutral');
+}
+
 function syncSteps() {
-  const amount = Math.round(state.unsynced);
-  if (amount < 1) {
+  const meta = sourceMeta();
+  const today = isoDay(0);
+  const minDay = isoDay(-6);
+  const cap = state.catchUpCap;
+  let used = 0, daysCredited = 0, stepsCredited = 0, daysIgnored = 0;
+
+  // 1. Rattrapage : chaque jour de la fenêtre, une seule fois.
+  Object.keys(state.pendingDays).sort().forEach(day => {
+    const steps = state.pendingDays[day];
+    if (day < state.historyStart || day < minDay || day > today) {
+      if (day < state.historyStart) daysIgnored++;
+      delete state.pendingDays[day];
+      return;
+    }
+    const room = cap - used;
+    if (room <= 0) return;
+    const add = Math.min(steps, room);
+    state.ledger[day] = add;
+    stepsCredited += add;
+    used += add;
+    daysCredited++;
+    delete state.pendingDays[day];
+  });
+
+  // 2. Les pas du jour, plafonnés par le reste de la synchronisation.
+  const incoming = Math.round(state.unsynced);
+  const amount = Math.min(incoming, Math.max(0, cap - used));
+  state.unsynced = Math.max(0, incoming - amount);
+  if (amount > 0) {
+    state.stepsToday += amount;
+    state.bank += amount;
+    state.ledger[today] = (state.ledger[today] || 0) + amount;
+  }
+
+  if (daysCredited === 0 && amount === 0) {
     toast('Aucun nouveau pas pour le moment. Le compteur se remplit en marchant.');
     return;
   }
+
   const btn = $('#syncBtn');
   btn.classList.add('busy');
-  state.unsynced = 0;
-  state.stepsToday += amount;
-  state.bank += amount;
 
   const newGenR = Math.min(24, Math.floor(state.stepsToday / 200));
   const newGenS = Math.min(12, Math.floor(state.stepsToday / 500));
@@ -584,15 +764,27 @@ function syncSteps() {
   updateHud();
   renderOaths();
   renderWallet();
+  renderSourceUi();
+
   const extras = [];
   if (gainR) extras.push(`+${gainR} ration${gainR > 1 ? 's' : ''}`);
   if (gainS) extras.push(`+${gainS} éclat${gainS > 1 ? 's' : ''}`);
-  toast(`<b>${fmt(amount)} pas</b> synchronisés · ${fmt(amount / 10)} m ajoutés${extras.length ? ' · ' + extras.join(' · ') : ''}.`);
-  addJournal(`${fmt(amount)} pas synchronisés — ${fmt(amount / 10)} m`, 'good');
+  const parts = [];
+  if (daysCredited) parts.push(`<b>${daysCredited} jour${daysCredited > 1 ? 's' : ''}</b> rattrapé${daysCredited > 1 ? 's' : ''} · +${fmt(stepsCredited)} pas`);
+  if (amount) parts.push(`<b>${meta.label}</b> · +${fmt(amount)} pas`);
+  if (daysIgnored) parts.push(`${daysIgnored} j avant connexion ignoré${daysIgnored > 1 ? 's' : ''}`);
+  if (extras.length) parts.push(extras.join(' · '));
+  toast(parts.join(' · '), 3200);
+
+  if (daysCredited) addJournal(`${meta.label} · rattrapage ${daysCredited} jour${daysCredited > 1 ? 's' : ''} · +${fmt(stepsCredited)} pas`, 'good');
+  if (amount) addJournal(`${meta.label} · +${fmt(amount)} pas aujourd'hui`, 'good');
+  if (daysIgnored) addJournal(`${daysIgnored} jour${daysIgnored > 1 ? 's' : ''} avant la première connexion ignoré${daysIgnored > 1 ? 's' : ''}`, 'bad');
+
   setTimeout(() => {
     btn.classList.remove('busy');
     updateHud();
     updateSyncMeta();
+    renderSourceUi();
   }, 760);
 }
 
@@ -1551,6 +1743,15 @@ function bind() {
 
   $('#syncBtn').addEventListener('click', syncSteps);
 
+  $('#sourceChips').addEventListener('click', e => {
+    const chip = e.target.closest('.sourceChip');
+    if (chip) setStepSource(chip.dataset.source);
+  });
+  $('#windowBtn').addEventListener('click', openSyncSheet);
+  $('#syncSheetBtn').addEventListener('click', syncSteps);
+  $('#missedBtn').addEventListener('click', simulateMissedDays);
+  $$('[data-close="sync"]').forEach(el => el.addEventListener('click', closeSyncSheet));
+
   $('#campBtn').addEventListener('click', openCamp);
   $('#campClose').addEventListener('click', resumeCamp);
   $('#resumeBtn').addEventListener('click', resumeCamp);
@@ -1620,6 +1821,8 @@ function bind() {
     } else if (!$('#chestSheet').classList.contains('hidden')) {
       $('#chestSheet').classList.add('hidden');
       state.modalOpen = false;
+    } else if (!$('#syncSheet').classList.contains('hidden')) {
+      closeSyncSheet();
     }
   });
 
@@ -1656,6 +1859,7 @@ function init() {
   renderInventory();
   renderUpgrades();
   renderStats();
+  renderSourceUi();
   updateHud();
 
   // Horloge réelle de la barre d'état
@@ -1680,6 +1884,8 @@ function applyHash() {
       switchTab('upgrades');
     } else if (h === 'chest') {
       openChestSheet();
+    } else if (h === 'sync') {
+      openSyncSheet();
     } else if (h === 'sheet') {
       openItem(state.inventory[0].id, false);
     } else if (h === 'fight') {

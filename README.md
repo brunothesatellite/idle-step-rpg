@@ -425,7 +425,7 @@ La maquette d’origine reste disponible :
 - [`game.js`](game.js) ;
 - en ligne : <https://brunothesatellite.github.io/idle-step-rpg/>.
 
-Elle simule les pas (aucune montre réelle) et sert de référence de game design. Les spécifications complètes sont dans [`docs/specifications-fonctionnelles.md`](docs/specifications-fonctionnelles.md).
+Elle simule les pas (aucune montre réelle), le choix de la source de pas (Garmin ou Santé Connect) et la fenêtre d'import : première connexion = pas du jour seulement, puis rattrapage borné à 7 jours, jamais avant la date de première connexion. Le bouton **FENÊTRE ›** ouvre le détail (jours crédités, en attente, hors fenêtre, plafond de 100 000 pas) et permet de simuler un oubli de synchronisation. Elle sert de référence de game design. Les spécifications complètes sont dans [`docs/specifications-fonctionnelles.md`](docs/specifications-fonctionnelles.md).
 
 ---
 

@@ -28,17 +28,18 @@
       </div>
     </div>
 
-    <p class="pitch">Vos pas réels font avancer un pèlerin dans un donjon sans fin. Il marche seul, combat seul, tombe parfois — et se relève toujours vingt mètres plus tôt, là où le farm est plus doux.</p>
+    <p class="pitch">Vos pas réels font avancer un pèlerin dans un donjon sans fin. Il marche seul, combat seul, tombe parfois — et se relève toujours vingt mètres plus tôt, là où le farm est plus doux. Les pas viennent de <b>Garmin</b> ou de <b>Santé Connect</b>, une seule source à la fois.</p>
 
     <ul class="featureList">
       <li><span class="feat ico-steps"></span><div><b>10 pas = 1 mètre</b><small>100 m par palier, un gardien tous les 100 m.</small></div></li>
       <li><span class="feat ico-flame"></span><div><b>La ferveur du jour</b><small>Plus vous marchez, plus le héros frappe vite.</small></div></li>
       <li><span class="feat ico-camp"></span><div><b>Un feu, jamais loin</b><small>Améliorer, comparer, soigner. Puis repartir.</small></div></li>
+      <li><span class="feat ico-steps"></span><div><b>Une source, puis 7 jours</b><small>1re connexion : pas du jour seulement. Ensuite, rattrapage ≤ 7 jours.</small></div></li>
     </ul>
 
     <div class="introNote">
       <div class="noteLine"><span>MAQUETTE</span><b>390 × 844</b></div>
-      <p>Interface réelle, simulation de marche et de combat. Les onglets, le camp, les achats, l'équipement et le forçage de coffre sont jouables.</p>
+      <p>Interface réelle, simulation de marche et de combat. Les onglets, le camp, les achats, l'équipement, le forçage de coffre et la fenêtre d'import sont jouables. « FENÊTRE › » simule un oubli de synchronisation.</p>
     </div>
 
     <div class="credits">
@@ -334,6 +335,15 @@
           </div>
 
           <footer class="syncBar">
+            <div class="sourceBar">
+              <span class="sourceLbl">SOURCE</span>
+              <div class="sourceChips" id="sourceChips" role="group" aria-label="Source de pas">
+                <button class="sourceChip active" data-source="garmin" aria-pressed="true">GARMIN</button>
+                <button class="sourceChip" data-source="health" aria-pressed="false">SANTÉ CONNECT</button>
+              </div>
+              <button class="windowBtn" id="windowBtn" aria-label="Voir la fenêtre d'import">FENÊTRE ›</button>
+            </div>
+            <p class="sourceState" id="sourceState">Connecté · Personal API · 1re connexion 15/11</p>
             <div class="syncMeta">
               <span id="lastSync">Dernière synchro · 21:42</span>
               <span class="pendingSteps">≈ <b id="unsynced">1 240</b> pas en attente</span>
@@ -342,7 +352,7 @@
               <span class="syncIcon" aria-hidden="true">
                 <svg viewBox="0 0 18 22" shape-rendering="crispEdges"><path d="M3 0h6v3h2v3h-2v3h2v2h4v3h2v4h-3v3H8v1H4v-2H2v-4H1V9H0V4h1V1h2V0z" fill="currentColor"/></svg>
               </span>
-              <span class="syncText"><b>SYNCHRONISER LES PAS</b><small>10 pas = 1 m · conversion immédiate</small></span>
+              <span class="syncText"><b>SYNCHRONISER LES PAS</b><small id="syncSub">Garmin · 1re fois : pas du jour · ensuite ≤ 7 j</small></span>
               <span class="syncBadge" id="syncBadge">+1 240</span>
             </button>
           </footer>
@@ -485,6 +495,35 @@
               <button class="btnGhost" data-close="chest">PLUS TARD</button>
               <button class="btnGold" id="chestForce">CONSACRER MES PAS</button>
             </div>
+          </div>
+        </div>
+
+        <!-- ================= FENÊTRE D'IMPORT ================= -->
+        <div class="sheetWrap hidden" id="syncSheet">
+          <div class="scrim" data-close="sync"></div>
+          <div class="sheet syncSheet">
+            <div class="sheetHandle"></div>
+            <div class="sheetHead">
+              <div class="sheetIcon"><img src="assets/item/misc_crystal.png" alt=""></div>
+              <div class="sheetTitle">
+                <span class="rarityTag" id="syncSourceTag">GARMIN</span>
+                <h3>Fenêtre d'import</h3>
+                <span id="syncSourceMeta">Connecté · Personal API</span>
+              </div>
+              <button class="sheetClose" data-close="sync" aria-label="Fermer">×</button>
+            </div>
+            <p class="syncIntro">La première synchronisation ne crédite que les <b>pas du jour</b>. Ensuite, le jeu rattrape jusqu'à <b>7 jours</b>, jamais avant la <b>date de première connexion</b>.</p>
+            <ul class="syncRules">
+              <li><b>Première connexion</b> — <span id="syncStart">15/11/2026</span> · les jours antérieurs ne sont jamais crédités.</li>
+              <li><b>Fenêtre</b> — 7 derniers jours, plafond <b>100 000 pas</b> par synchronisation, chaque jour compté une fois.</li>
+            </ul>
+            <div class="dayList" id="dayList"></div>
+            <p class="syncSheetState" id="syncSheetState">Garmin · clé personnelle · jeton 24 h</p>
+            <div class="sheetActions">
+              <button class="btnGhost" id="missedBtn">SIMULER UN OUBLI</button>
+              <button class="btnGold" id="syncSheetBtn">SYNCHRONISER</button>
+            </div>
+            <p class="syncFoot">Changer de source ne recrédite pas les pas déjà comptés : le premier import de la nouvelle source sert de base.</p>
           </div>
         </div>
 

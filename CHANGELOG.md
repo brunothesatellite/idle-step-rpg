@@ -7,6 +7,7 @@
 - **Changement de source sans double comptage** : le premier import de la nouvelle source sert de base, le total du jour ne recule jamais et aucun pas n'est recrédité.
 - **Nouvelle fenêtre d'import** : la toute première synchronisation ne crédite que les **pas du jour**. Ensuite, le rattrapage lit **7 jours maximum**, borné par la **date de première connexion** (`historyStart`). Un oubli de synchro est donc rattrapé, sans démarrer le jeu avec une réserve héritée de la semaine passée.
 - **Journal générique** : les messages de synchronisation suivent la source active (« Garmin synchronisé » ou « Santé Connect synchronisé »).
+- **Démo web** : choix de la source de pas, fenêtre d'import (1re connexion = pas du jour, puis ≤ 7 jours) et simulation d'un oubli de synchronisation.
 - **Build** : `compileSdk 36`, AGP 8.10.1, Health Connect 1.1.0 stable.
 
 ## v0.13.2
