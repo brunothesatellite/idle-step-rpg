@@ -320,11 +320,30 @@ class GameRepository(private val context: Context) {
                 lastBackupAt = now
             }
             val tmp = File(context.filesDir, "game_state.json.tmp")
-            tmp.writeText(json.encodeToString(snapshot))
-            if (file.exists()) file.delete()
-            if (!tmp.renameTo(file)) {
-                tmp.copyTo(file, overwrite = true)
-                tmp.delete()
+            // Écriture complète + fsync du temporaire avant de toucher au fichier
+            // courant : une coupure de courant ne laisse jamais un JSON tronqué.
+            val payload = json.encodeToString(snapshot).toByteArray(Charsets.UTF_8)
+            java.io.FileOutputStream(tmp).use { out ->
+                out.write(payload)
+                out.flush()
+                out.fd.sync()
+            }
+            // Remplacement atomique. Surtout PAS de file.delete() avant le rename :
+            // entre les deux il n'y aurait plus aucune sauvegarde principale et un
+            // kill du processus (mise à jour, batterie) ferait repartir du .bak.
+            val moved = runCatching {
+                java.nio.file.Files.move(
+                    tmp.toPath(),
+                    file.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE
+                )
+            }.isSuccess
+            if (!moved) {
+                if (!tmp.renameTo(file)) {
+                    tmp.copyTo(file, overwrite = true)
+                    tmp.delete()
+                }
             }
             context.getSharedPreferences("widget", Context.MODE_PRIVATE).edit()
                 .putInt("steps", snapshot.stepsToday)

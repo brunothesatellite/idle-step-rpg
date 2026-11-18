@@ -24,8 +24,8 @@ android {
         applicationId = "com.brunothesatellite.idlesteprpg"
         minSdk = 34
         targetSdk = 35
-        versionCode = 29
-        versionName = "0.13.1"
+        versionCode = 30
+        versionName = "0.13.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

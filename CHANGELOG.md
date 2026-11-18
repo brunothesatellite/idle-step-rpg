@@ -1,5 +1,10 @@
 # Journal des versions
 
+## v0.13.2
+- **Sauvegarde atomique** : le fichier temporaire est écrit et synchronisé sur disque, puis déplacé sur `game_state.json` en un seul `rename`. L'ancien code supprimait le fichier principal avant de le remplacer : un arrêt du processus entre les deux pouvait faire repartir du `.bak` (ou d'une partie neuve).
+- **Sauvegarde périodique pendant le jeu** : toutes les 30 s environ, et immédiatement à chaque changement de palier ou de niveau. Jusqu'ici rien n'était écrit entre deux événements : installer une mise à jour pouvait ramener le jeu avant un gardien déjà battu.
+- **Sauvegarde avant l'installateur de mise à jour** : la progression est écrite sur disque juste avant de lancer l'installation de l'APK, qui tue le processus sans passer par `onPause`.
+
 ## v0.13.1
 - **Réserve de pas visible** : une seconde jauge sous celle de la ferveur, avec la valeur (pleine à 4 000 pas).
 - **Idle sur la réserve héritée** : la synchronisation Garmin est téléchargée **en parallèle** mais n'est **appliquée qu'à la fermeture du résumé**. La simulation d'absence travaille donc uniquement sur la réserve présente au moment de la fermeture, et plus jamais sur les pas qui viennent d'arriver.

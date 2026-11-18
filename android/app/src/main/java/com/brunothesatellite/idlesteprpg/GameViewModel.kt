@@ -101,6 +101,10 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     private var pendingImportText: String? = null
     private var lastKnownDay: String = ""
     private var lastBiomeKey: String = ""
+    private var lastAutosaveAt: Long = 0L
+    private var lastSavedFloor: Int = -1
+    private var lastSavedLevel: Int = -1
+    private var autosaving: Boolean = false
 
     init {
         _ui.update {
@@ -129,6 +133,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         }
         lastKnownDay = game.value.day
         lastBiomeKey = biomeKeyFor(game.value.floor)
+        lastSavedFloor = game.value.floor
+        lastSavedLevel = game.value.level
         container.ambientMusic.setBiome(lastBiomeKey)
         refreshGarmin()
         viewModelScope.launch {
@@ -152,6 +158,26 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                         _toasts.tryEmit(
                             "Coffre ouvert · +${formatInt(game.value.chestFlashGold)} or"
                         )
+                    }
+                    // Sauvegarde périodique pendant le jeu : une mise à jour d'APK
+                    // tue le processus sans onPause, et sans elle on pouvait perdre
+                    // toute la session (gardien battu, palier, butin). On sauvegarde
+                    // aussi immédiatement sur changement de palier ou de niveau.
+                    val now = System.currentTimeMillis()
+                    val after = game.value
+                    val milestone = after.floor != lastSavedFloor || after.level != lastSavedLevel
+                    if (!autosaving && (milestone || now - lastAutosaveAt >= 30_000L)) {
+                        autosaving = true
+                        lastAutosaveAt = now
+                        lastSavedFloor = after.floor
+                        lastSavedLevel = after.level
+                        viewModelScope.launch {
+                            try {
+                                container.gameRepository.save()
+                            } finally {
+                                autosaving = false
+                            }
+                        }
                     }
                 }
                 val today = game.value.day
@@ -714,6 +740,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             _ui.update { it.copy(updateDownloading = false, updateProgress = 1f) }
             container.settings.pendingReleaseTag = info.tag
             container.settings.pendingReleaseUrl = info.releaseUrl
+            // L'installation remplace l'APK et tue le processus : on écrit la
+            // progression sur disque avant de lancer l'installateur.
+            container.gameRepository.save()
             launchInstaller(file)
         }
     }
