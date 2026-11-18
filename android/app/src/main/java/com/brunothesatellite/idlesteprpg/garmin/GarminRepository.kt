@@ -23,6 +23,12 @@ data class SyncResult(
     val retryAt: Long = 0L
 )
 
+/** Pas téléchargés depuis Garmin, pas encore appliqués à la partie. */
+data class GarminFetch(
+    val ledger: Map<String, Int>,
+    val today: LocalDate
+)
+
 class GarminRepository(
     context: Context,
     private val secrets: SecretStore,
@@ -112,6 +118,58 @@ class GarminRepository(
             prefs.edit().putString(KEY_LAST_ERROR, message).apply()
             Result.failure(IOException(message, e))
         }
+    }
+
+    suspend fun fetchSteps(): GarminFetch? = withContext(Dispatchers.IO) {
+        runCatching {
+            val key = secrets.key() ?: return@withContext null
+            var token = secrets.token()
+            val expiry = secrets.tokenExpiresAt()
+            val now = System.currentTimeMillis() / 1000L
+            if (token == null || expiry < now + 3600) {
+                val fresh = client.obtainToken(key)
+                token = fresh.value
+                secrets.saveToken(fresh.value, fresh.expiresAtEpochSeconds)
+            }
+            val today = LocalDate.now()
+            val start = today.minusDays((HISTORY_DAYS - 1).toLong())
+            val access = token ?: return@withContext null
+            val days = try {
+                client.steps(access, start, today)
+            } catch (e: GarminException) {
+                if (e.code == 401) {
+                    val fresh = client.obtainToken(key)
+                    secrets.saveToken(fresh.value, fresh.expiresAtEpochSeconds)
+                    client.steps(fresh.value, start, today)
+                } else {
+                    throw e
+                }
+            }
+            GarminFetch(
+                ledger = days.filter { it.date.isNotBlank() }.associate { it.date to it.steps },
+                today = today
+            )
+        }.getOrNull()
+    }
+
+    /** Applique des pas déjà téléchargés (utilisé à la fermeture du résumé d'absence). */
+    suspend fun applySteps(fetch: GarminFetch): SyncResult = withContext(Dispatchers.IO) {
+        val report = game.ingestHistory(fetch.ledger, fetch.today, simulate = false)
+        val state = game.state.value
+        val total = fetch.ledger[fetch.today.toString()] ?: state.stepsToday
+        val added = state.lastAdded
+        prefs.edit()
+            .putLong(KEY_LAST_SYNC, System.currentTimeMillis())
+            .putString(KEY_LAST_ERROR, "")
+            .remove(KEY_RETRY_AT)
+            .apply()
+        val message = when {
+            report != null -> "Rattrapage Garmin · ${report.days} jour(s), ${report.steps} pas"
+            added > 0 -> "Garmin synchronisé · +$added pas"
+            else -> "Garmin synchronisé · aucun nouveau pas"
+        }
+        logSync("OK · +$added pas · total $total")
+        SyncResult(true, message, total = total, added = added)
     }
 
     suspend fun sync(simulateAbsence: Boolean = true): SyncResult = withContext(Dispatchers.IO) {

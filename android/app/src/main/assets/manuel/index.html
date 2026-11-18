@@ -317,6 +317,7 @@
     <li><strong>Ressources</strong> — rations (plafond 24), éclats d'âme (plafond 12), or et consommables.</li>
     <li><strong>Biome et farm</strong> — règle du biome et bouton <strong>FARM</strong> pour verrouiller le palier courant.</li>
     <li><strong>Codex</strong> — bestiaire, ensembles et biomes découverts, avec accès direct.</li>
+    <li><strong>Réserve de pas</strong> — pas disponibles que le héros consomme (marche, combats, coffres). La barre est pleine à 4 000 pas.</li>
   </ol>
   <h3>Bandeau supérieur</h3>
   <ul>
@@ -807,11 +808,12 @@
   <h3>Quand le calcul se lance</h3>
   <ul>
     <li>L'absence doit durer <strong>au moins 2 minutes</strong>.</li>
-    <li>La réserve de pas doit être <strong>supérieure à zéro</strong>.</li>
+    <li>La simulation ne consomme que la <strong>réserve présente à la fermeture</strong> : les pas synchronisés à l'ouverture ne sont jamais avalés par l'absence.</li>
     <li>Le héros ne doit être ni au campement, ni sur une rencontre spéciale.</li>
     <li>L'onboarding doit être terminé.</li>
   </ul>
-  <p>En dessous de ces conditions, le jeu reprend simplement là où il s'était arrêté, sans résumé.</p>
+  <p>Le résumé s'affiche dès 2 minutes d'absence, <strong>même si la réserve était vide</strong> : il indique alors que rien n'a avancé. La synchronisation Garmin est téléchargée en parallèle mais <strong>appliquée seulement à la fermeture</strong> du résumé : le compteur de pas et la réserve ne bougent qu'après « REPRENDRE LA MARCHE », et le message « Garmin synchronisé · +N pas » arrive à ce moment-là.</p>
+<p>Le résumé liste aussi le <strong>butin</strong> : objets récupérés pendant l'absence, consommables, rations et éclats.</p>
   <h3>Consommation de la réserve</h3>
   <p>La simulation utilise le <strong>rythme actif normal</strong> (30 ou 60 pas par seconde selon la taille de la réserve), avec trois limites :</p>
   <div class="kpi">

@@ -48,7 +48,11 @@ data class AbsenceSim(
     val skippedCamp: Boolean,
     val defeated: Boolean,
     val stoppedOnBoss: Boolean = false,
-    val stoppedOnChest: Boolean = false
+    val stoppedOnChest: Boolean = false,
+    val lootItems: List<String> = emptyList(),
+    val consumables: Int = 0,
+    val rations: Int = 0,
+    val shards: Int = 0
 )
 
 data class SpecialOutcome(
@@ -216,6 +220,10 @@ object GameEngine {
         val startChests = state.chestsOpened
         val startRetreats = state.retreats
         val startChest = state.chest
+        val namesBefore = (state.inventory + state.stash).map { it.name }.toSet()
+        val consumablesBefore = state.consumables.values.sum()
+        val rationsBefore = state.rations
+        val shardsBefore = state.shards
 
         val budget = min(offlineBudget(state), startBank)
         if (elapsedMs <= 0L || startBank <= 0 || budget <= 0 ||
@@ -273,6 +281,11 @@ object GameEngine {
         }
         val consumed = (startBank - state.stepBank).toInt().coerceAtLeast(0)
         state.offlineStepsToday += consumed
+        val loot = (state.inventory + state.stash)
+            .map { it.name }
+            .filterNot { it in namesBefore }
+            .distinct()
+            .take(12)
         return AbsenceSim(
             elapsedMs = elapsedMs,
             simulatedMs = (iterations * dtMs).toLong(),
@@ -289,7 +302,11 @@ object GameEngine {
             skippedCamp = stoppedOnCamp,
             defeated = state.retreats > startRetreats,
             stoppedOnBoss = stoppedOnBoss,
-            stoppedOnChest = stoppedOnChest
+            stoppedOnChest = stoppedOnChest,
+            lootItems = loot,
+            consumables = (state.consumables.values.sum() - consumablesBefore).coerceAtLeast(0),
+            rations = (state.rations - rationsBefore).coerceAtLeast(0),
+            shards = (state.shards - shardsBefore).coerceAtLeast(0)
         )
     }
 
@@ -310,6 +327,10 @@ object GameEngine {
             bosses = a.bosses + b.bosses,
             levels = a.levels + b.levels,
             chests = a.chests + b.chests,
+            lootItems = (a.lootItems + b.lootItems).distinct(),
+            consumables = a.consumables + b.consumables,
+            rations = a.rations + b.rations,
+            shards = a.shards + b.shards,
             reason = when {
                 a.reason.isBlank() -> b.reason
                 b.reason.isBlank() || a.reason == b.reason -> a.reason

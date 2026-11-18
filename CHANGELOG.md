@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.13.1
+- **Réserve de pas visible** : une seconde jauge sous celle de la ferveur, avec la valeur (pleine à 4 000 pas).
+- **Idle sur la réserve héritée** : la synchronisation Garmin est téléchargée **en parallèle** mais n'est **appliquée qu'à la fermeture du résumé**. La simulation d'absence travaille donc uniquement sur la réserve présente au moment de la fermeture, et plus jamais sur les pas qui viennent d'arriver.
+- **Résumé systématique** dès 2 min d'absence, y compris réserve vide : le rapport explique alors que rien n'a avancé et annonce que les pas de la synchro arrivent ensuite.
+- **Butin détaillé** dans le résumé : objets récupérés (nom, 8 max puis « … et N autres »), consommables, rations et éclats, en plus de l'or, des combats, paliers, gardiens, niveaux et coffres.
+- **Message de synchro après fermeture** : « Garmin synchronisé · +N pas » (ou le rattrapage) n'apparaît qu'une fois le résumé refermé ; si aucun résumé n'est affiché, l'application est immédiate.
+
 ## v0.13.0
 - **Consommation** : le décor animé se fige après 10 s sans pas (météo, aura de ferveur, balancements) et la simulation passe de 10 Hz à 2 Hz au repos. Mesuré sur appareil : **~60 fps → 2 fps**, CPU à l'écran **~60-70 % → ~30 %**, arrière-plan inchangé à 0 %.
 - **Boucles supprimées** : l'horodatage d'activité n'écrit plus la sauvegarde toutes les 5 s (mémoire seule, toutes les 30 s) ; maintenance toutes les **2 h** (au lieu de 15 min), synchro de fond toutes les **60 min** avec backoff, widget toutes les 15 min.

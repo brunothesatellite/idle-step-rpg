@@ -1317,6 +1317,7 @@ fun OfflineOverlay(
                 Text(
                     when {
                         mixed -> "Votre réserve de pas et les pas Garmin ont été traités dans le même calcul. Le reste de la réserve vous attend."
+                        report.stepsConsumed == 0 -> "La réserve de pas était vide à la fermeture : rien n'a avancé. Les pas de la synchronisation arrivent à la fermeture de cette fenêtre."
                         absence -> "Votre réserve de pas a été consommée pendant votre absence. Le reste de la réserve vous attend."
                         else -> "Vos pas Garmin des derniers jours ont été récupérés et ajoutés à la marche, sans double comptage."
                     },
@@ -1325,6 +1326,35 @@ fun OfflineOverlay(
                     textAlign = TextAlign.Center,
                     lineHeight = 10.sp
                 )
+                val hasLoot = report.lootItems.isNotEmpty() || report.consumables > 0 ||
+                    report.rations > 0 || report.shards > 0
+                if (hasLoot) {
+                    Spacer(Modifier.height(8.dp))
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Panel2)
+                            .border(1.dp, Gold.copy(alpha = 0.25f), RoundedCornerShape(4.dp))
+                            .padding(7.dp)
+                    ) {
+                        Text("BUTIN", fontFamily = Press, fontSize = 6.sp, color = Gold)
+                        val counts = buildList {
+                            if (report.consumables > 0) add("${report.consumables} consommable(s)")
+                            if (report.rations > 0) add("${report.rations} ration(s)")
+                            if (report.shards > 0) add("${report.shards} éclat(s)")
+                        }
+                        if (counts.isNotEmpty()) {
+                            Text(counts.joinToString(" · "), fontSize = 6.5.sp, color = Parchment)
+                        }
+                        report.lootItems.take(8).forEach { name ->
+                            Text("• $name", fontSize = 6.2.sp, color = Green, maxLines = 1)
+                        }
+                        if (report.lootItems.size > 8) {
+                            Text("… et ${report.lootItems.size - 8} autre(s)", fontSize = 6.sp, color = Muted)
+                        }
+                    }
+                }
                 if (report.special) {
                     Spacer(Modifier.height(6.dp))
                     Text(

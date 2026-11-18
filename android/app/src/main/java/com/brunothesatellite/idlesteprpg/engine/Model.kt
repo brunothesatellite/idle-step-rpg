@@ -243,6 +243,11 @@ data class OfflineReport(
     val reason: String = "",
     val special: Boolean = false,
     val defeated: Boolean = false,
+    /** Butin récupéré pendant la simulation : noms d'objets, consommables, rations, éclats. */
+    val lootItems: List<String> = emptyList(),
+    val consumables: Int = 0,
+    val rations: Int = 0,
+    val shards: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),
     val acknowledgedAt: Long = 0L
 )

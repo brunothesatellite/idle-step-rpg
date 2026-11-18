@@ -20,6 +20,7 @@ import com.brunothesatellite.idlesteprpg.ui.formatInt
 import com.brunothesatellite.idlesteprpg.update.UpdateChecker
 import com.brunothesatellite.idlesteprpg.update.UpdateInfo
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -96,6 +97,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     @Volatile private var visible = false
     private var resuming = false
+    private var pendingSteps: com.brunothesatellite.idlesteprpg.garmin.GarminFetch? = null
     private var pendingImportText: String? = null
     private var lastKnownDay: String = ""
     private var lastBiomeKey: String = ""
@@ -199,28 +201,20 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
         viewModelScope.launch {
             visible = true
-            // 1. Importer les pas de l'absence AVANT de simuler : la réserve est
-            // presque toujours vide à la fermeture (la marche l'a consommée), donc
-            // simuler d'abord ne déclenchait jamais le résumé « Bon retour ».
-            if (shouldSyncOnResume()) {
-                _ui.update { it.copy(syncing = true) }
-                val result = container.garminRepository.sync(simulateAbsence = false)
-                refreshGarmin()
-                _ui.update {
-                    it.copy(
-                        syncing = false,
-                        lastAdded = if (result.ok) result.added else it.lastAdded
-                    )
-                }
+            // Synchro en parallèle : elle télécharge, mais n'écrit dans la partie
+            // qu'à la fermeture du résumé (les pas importés ne nourrissent pas la
+            // simulation d'absence).
+            val fetch = if (shouldSyncOnResume()) {
+                async { container.garminRepository.fetchSteps() }
+            } else {
+                null
             }
 
-            // 2. Simuler l'absence sur la réserve fraîchement synchronisée.
+            // La simulation travaille sur la réserve héritée de la fermeture.
             val state = game.value
             val canSimulate = elapsed >= 2L * 60L * 1000L &&
-                state.stepBank > 0.0 &&
                 state.mode != "camp" &&
                 state.mode != "special"
-
             if (canSimulate) {
                 resuming = true
                 try {
@@ -229,8 +223,32 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                     resuming = false
                 }
             }
+            pendingSteps = fetch?.await()
             container.gameRepository.markActive()
             visible = true
+
+            // Aucun résumé à l'écran : on applique tout de suite les pas.
+            val report = game.value.offlineReport
+            if (report == null || report.acknowledgedAt != 0L) {
+                applyPendingSteps()
+            }
+        }
+    }
+
+    /** Applique les pas téléchargés pendant le résumé, puis prévient le joueur. */
+    private fun applyPendingSteps() {
+        val fetch = pendingSteps ?: return
+        pendingSteps = null
+        viewModelScope.launch {
+            val result = container.garminRepository.applySteps(fetch)
+            refreshGarmin()
+            _ui.update {
+                it.copy(
+                    syncing = false,
+                    lastAdded = if (result.ok) result.added else it.lastAdded
+                )
+            }
+            if (result.ok) _toasts.tryEmit(result.message)
         }
     }
 
@@ -491,6 +509,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun dismissOfflineReport() {
         viewModelScope.launch {
             container.gameRepository.mutate { it.offlineReport = null }
+            applyPendingSteps()
         }
     }
 

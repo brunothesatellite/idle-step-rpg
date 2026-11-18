@@ -122,7 +122,9 @@ class GameRepository(private val context: Context) {
             val existing = s.offlineReport?.takeIf { it.acknowledgedAt == 0L }
             val sim = GameEngine.simulateAbsence(s, elapsedMs)
             s.lastActiveAt = System.currentTimeMillis()
-            if (sim.simulatedMs > 0L || sim.stepsConsumed > 0) {
+            // Rapport systématique dès 2 min : même sans réserve, on explique
+            // pourquoi rien n'a avancé.
+            if (elapsedMs >= 2L * 60L * 1000L && !sim.skippedCamp) {
                 val absence = OfflineReport(
                     days = 0,
                     steps = 0,
@@ -139,7 +141,11 @@ class GameRepository(private val context: Context) {
                     chests = sim.chests,
                     reason = "absence",
                     special = sim.stoppedOnSpecial,
-                    defeated = sim.defeated
+                    defeated = sim.defeated,
+                    lootItems = sim.lootItems,
+                    consumables = sim.consumables,
+                    rations = sim.rations,
+                    shards = sim.shards
                 )
                 report = GameEngine.mergeOfflineReports(existing, absence)
                 s.offlineReport = report

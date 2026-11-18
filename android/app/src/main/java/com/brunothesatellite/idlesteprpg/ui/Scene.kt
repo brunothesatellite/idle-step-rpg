@@ -401,14 +401,14 @@ fun Scene(
                 SceneTag(
                     "PHASE 2 · EMBRASÉ",
                     Ember,
-                    Modifier.align(Alignment.TopCenter).padding(top = 104.dp)
+                    Modifier.align(Alignment.TopCenter).padding(top = 74.dp)
                 )
             }
             if (state.bossBlessing > 0) {
                 SceneTag(
                     "BÉNÉDICTION +25 %",
                     Green,
-                    Modifier.align(Alignment.TopCenter).padding(top = 128.dp)
+                    Modifier.align(Alignment.TopCenter).padding(top = 96.dp)
                 )
             }
         }
@@ -1814,6 +1814,22 @@ private fun BottomHud(state: GameState, modifier: Modifier = Modifier) {
                     Text("${state.ferveur}", fontFamily = Press, fontSize = 6.5.sp, color = Ember)
                 }
                 MiniBar(state.ferveur / 100f, Ember, Modifier.fillMaxWidth(), height = 3.dp)
+                Spacer(Modifier.height(3.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Réserve", fontSize = 6.5.sp, color = Muted)
+                    Text(
+                        formatInt(state.stepBank.toInt()),
+                        fontFamily = Press,
+                        fontSize = 6.5.sp,
+                        color = GoldLight
+                    )
+                }
+                MiniBar(
+                    (state.stepBank / 4000.0).toFloat().coerceIn(0f, 1f),
+                    Gold,
+                    Modifier.fillMaxWidth(),
+                    height = 3.dp
+                )
             }
             Spacer(Modifier.width(4.dp))
             Text(tierName(state.ferveur), fontSize = 5.5.sp, color = Ember)
@@ -1843,20 +1859,23 @@ private fun BossBanner(state: GameState) {
     Box(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 40.dp)
-            .padding(top = 72.dp)
+            .padding(horizontal = 26.dp)
+            .padding(top = 122.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(Ink.copy(alpha = 0.95f))
             .border(1.dp, Blood, RoundedCornerShape(4.dp))
-            .padding(vertical = 6.dp),
+            .padding(vertical = 3.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("GARDIEN DU PALIER", fontFamily = Press, fontSize = 7.sp, color = Blood)
-            Text("${fight.enemyName} · Niv. ${fight.enemyLevel}", fontSize = 7.sp, color = Muted)
-            if (fight.modifier.isNotBlank()) {
-                Text("MODIFICATEUR · ${fight.modifier}", fontSize = 5.5.sp, color = Ember)
-            }
+            Text(
+                "GARDIEN · ${fight.enemyName}" +
+                    (if (fight.modifier.isNotBlank()) " · ${fight.modifier}" else "") +
+                    " · Niv. ${fight.enemyLevel}",
+                fontSize = 6.sp,
+                color = Blood,
+                maxLines = 1
+            )
         }
     }
 }
