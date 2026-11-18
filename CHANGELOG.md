@@ -1,5 +1,11 @@
 # Journal des versions
 
+## v0.15.0
+- **Diagnostic de synchronisation** : nouvel écran dans **Réglages → Diagnostic**. Il montre la source active, la fenêtre d'import des 7 derniers jours avec l'état de chaque journée (crédité, aujourd'hui, avant connexion, aucun pas), les garde-fous appliqués (7 jours, 60 000 pas/jour, 100 000 pas par import, 250 pas/min) et un bouton de synchronisation manuelle. Lecture seule : aucun pas n'y est ajouté.
+- **Journal de synchronisation horodaté** : les lignes portent désormais le jour **et l'heure** (`18/11 16:32 · OK · +12 pas`).
+- **Santé Connect et arrière-plan** : le worker périodique ne tente plus la lecture Santé Connect. Android refuse la lecture en arrière-plan sans la permission `READ_HEALTH_DATA_IN_BACKGROUND`, ce qui remplissait le journal d'erreurs « lecture impossible » toutes les heures. La synchronisation Santé Connect se fait à l'ouverture et manuellement.
+- **Cause réelle des échecs** : une lecture Santé Connect en échec conserve désormais l'exception (type et message), l'écrit dans le journal et dans logcat, au lieu d'un message générique.
+
 ## v0.14.0
 - **Choix de la source de pas** : Garmin (Personal API) ou **Santé Connect**. Le choix se fait à l'onboarding et se change à tout moment dans **Réglages → Source de pas**, avec une carte par source, son état et son journal de synchronisation.
 - **Santé Connect** : lecture locale des pas (`android.permission.health.READ_STEPS`), agrégation par origine (téléphone, montre, application de santé) en gardant le total le plus élevé par jour, sans double comptage.

@@ -286,7 +286,8 @@
     <li>Chaque jour n'est compté qu'une fois : pas de double comptage.</li>
     <li>Le rattrapage est plafonné à <strong>100 000 pas</strong> par synchronisation (un marathon fait environ 45 000 pas).</li>
     <li>Les pas récupérés peuvent être simulés hors ligne : combats, or, paliers.</li>
-    <li>La synchronisation tourne toutes les 60 minutes, à l'ouverture et manuellement.</li>
+    <li>La synchronisation Garmin tourne toutes les 60 minutes, à l'ouverture et manuellement. Santé Connect est lu à l'ouverture et manuellement : Android interdit sa lecture en arrière-plan sans une autorisation dédiée, donc le jeu ne la tente pas.</li>
+    <li>Le <strong>diagnostic de synchronisation</strong> (Réglages) montre la source active, les 7 jours avec leur état (crédité, aujourd'hui, avant connexion, aucun pas) et les garde-fous appliqués.</li>
   </ul>
   <div class="note"><strong>Oubli de synchronisation :</strong> après 3 jours sans ouvrir le jeu, la synchronisation suivante récupère les 3 journées manquantes (dans la limite des 7 jours et du plafond). Au-delà, les jours trop anciens sont ignorés.</div>
 </section>
@@ -755,8 +756,9 @@
     <li><strong>Sons 8 bits :</strong> activés/désactivés, volume 0–100 %, bouton Tester le son.</li>
     <li><strong>Vendre les communs automatiquement :</strong> convertit les communs au ramassage.</li>
     <li><strong>Source de pas :</strong> Garmin ou Santé Connect, avec autorisation, synchronisation manuelle et journal de synchronisation.</li>
+    <li><strong>Diagnostic de synchronisation :</strong> source active, fenêtre d'import jour par jour avec l'état de chaque journée, garde-fous (7 jours, 60 000 pas/jour, 100 000 pas par import, 250 pas/min) et bouton de synchronisation.</li>
     <li><strong>Sauvegarde :</strong> exporter, importer avec aperçu, effacer la progression.</li>
-    <li><strong>Journal de synchronisation :</strong> derniers résultats de la source active.</li>
+    <li><strong>Journal de synchronisation :</strong> derniers résultats de la source active, horodatés au jour et à l'heure.</li>
     <li><strong>Vérifier les mises à jour :</strong> carte dédiée, avec vérification automatique quotidienne facultative.</li>
     <li><strong>Manuel du jeu :</strong> ouvre ce guide dans l'application.</li>
     <li><strong>Licences et confidentialité :</strong> liens vers les documents du dépôt.</li>

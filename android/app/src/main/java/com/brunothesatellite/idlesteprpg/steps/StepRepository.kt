@@ -7,6 +7,7 @@ import com.brunothesatellite.idlesteprpg.garmin.GarminFetch
 import com.brunothesatellite.idlesteprpg.garmin.GarminRepository
 import com.brunothesatellite.idlesteprpg.garmin.SyncResult
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 enum class StepSourceType(val id: String, val label: String) {
@@ -172,10 +173,12 @@ class StepRepository(
         StepSourceType.HEALTH -> {
             val fetch = health.fetch(HISTORY_DAYS)
             if (fetch == null) {
+                val reason = health.lastFailure().takeIf { it.isNotBlank() }
                 val message = when {
                     !health.isAvailable() -> "Santé Connect indisponible sur cet appareil."
                     !health.hasPermission() -> "Autorisation Santé Connect refusée."
-                    else -> "Santé Connect : lecture impossible."
+                    else -> "Santé Connect : lecture impossible" +
+                        (reason?.let { " ($it)" } ?: "")
                 }
                 record(HEALTH, 0, message)
                 SyncResult(false, message, needsKey = !health.hasPermission())
@@ -187,7 +190,7 @@ class StepRepository(
 
     private fun record(source: String, added: Int, error: String) {
         val now = System.currentTimeMillis()
-        val stamp = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM"))
+        val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM HH:mm"))
         val line = if (error.isBlank()) {
             "$stamp · OK · +$added pas"
         } else {

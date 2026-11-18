@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg.steps
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
@@ -46,10 +47,19 @@ class HealthConnectSource(private val context: Context) {
     /**
      * Télécharge les [days] derniers jours. Retourne null si la permission ou le
      * service manque ; une carte vide signifie « aucun fournisseur de pas ».
+     * La cause exacte d'un échec est conservée dans [lastFailure] pour le journal.
      */
     suspend fun fetch(days: Int = 7): StepFetch? = withContext(Dispatchers.IO) {
-        if (!isAvailable() || !hasPermission()) return@withContext null
-        runCatching {
+        failure = ""
+        if (!isAvailable()) {
+            failure = "service indisponible"
+            return@withContext null
+        }
+        if (!hasPermission()) {
+            failure = "autorisation manquante"
+            return@withContext null
+        }
+        try {
             val client = HealthConnectClient.getOrCreate(context)
             val zone = ZoneId.systemDefault()
             val today = LocalDate.now(zone)
@@ -92,10 +102,22 @@ class HealthConnectSource(private val context: Context) {
                 if (best > 0L) ledger[day.toString()] = best.toInt()
             }
             StepFetch(ledger = ledger, today = today, source = StepRepository.HEALTH)
-        }.getOrNull()
+        } catch (e: Exception) {
+            failure = e.javaClass.simpleName +
+                (e.message?.let { message -> ": ${message.take(90)}" } ?: "")
+            Log.w(TAG, "Lecture des pas impossible", e)
+            null
+        }
     }
 
+    /** Dernière cause d'échec de lecture (vide si la dernière lecture a réussi). */
+    fun lastFailure(): String = failure
+
     private companion object {
+        const val TAG = "HealthConnect"
         val COUNT_TOTAL: AggregateMetric<Long> = StepsRecord.COUNT_TOTAL
     }
+
+    @Volatile
+    private var failure: String = ""
 }

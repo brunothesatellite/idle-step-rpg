@@ -10,6 +10,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.brunothesatellite.idlesteprpg.App
+import com.brunothesatellite.idlesteprpg.steps.StepSourceType
 import java.util.concurrent.TimeUnit
 
 class GarminSyncWorker(
@@ -20,6 +21,11 @@ class GarminSyncWorker(
     override suspend fun doWork(): Result {
         val app = applicationContext as? App ?: return Result.failure()
         val steps = app.container.stepRepository
+        // Santé Connect refuse la lecture en arrière-plan sans la permission
+        // READ_HEALTH_DATA_IN_BACKGROUND : le worker périodique ne doit pas
+        // tenter la lecture (elle échouait et polluait le journal). La synchro
+        // Santé Connect se fait au retour au premier plan.
+        if (steps.current() != StepSourceType.GARMIN) return Result.success()
         if (!steps.canSync()) return Result.success()
         val result = steps.sync()
         return when {

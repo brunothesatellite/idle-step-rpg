@@ -284,7 +284,7 @@ private fun GameRoot(vm: GameViewModel) {
             }
 
             if (ui.prefsOpen) {
-                SettingsOverlay(vm = vm, ui = ui, onClose = vm::closePreferences)
+                SettingsOverlay(vm = vm, ui = ui, state = state, onClose = vm::closePreferences)
             }
             // GarminScreen est dessiné après les réglages pour s'empiler par-dessus
             // (on y accède depuis la section « Compte Garmin »).

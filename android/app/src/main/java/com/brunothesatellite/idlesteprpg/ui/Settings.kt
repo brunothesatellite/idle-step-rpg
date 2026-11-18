@@ -52,13 +52,15 @@ import kotlin.math.roundToInt
 import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
+import com.brunothesatellite.idlesteprpg.engine.GameState
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
+fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: () -> Unit) {
     var confirmClear by remember { mutableStateOf(false) }
     var pendingSource by remember { mutableStateOf<String?>(null) }
+    var diagnosticOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val healthLauncher = rememberLauncherForActivityResult(
         androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
@@ -521,6 +523,23 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
+                SectionLabel("Diagnostic")
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Fenêtre d'import, jours crédités et garde-fous appliqués par la synchronisation.",
+                    fontSize = 6.8.sp,
+                    color = Muted,
+                    lineHeight = 10.sp
+                )
+                Spacer(Modifier.height(6.dp))
+                OverlayAction(
+                    "OUVRIR LE DIAGNOSTIC",
+                    Modifier.fillMaxWidth(),
+                    onClick = { diagnosticOpen = true }
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            PixelCard(Modifier.fillMaxWidth()) {
                 SectionLabel("Journal de synchronisation")
                 Spacer(Modifier.height(4.dp))
                 if (ui.syncLog.isEmpty()) {
@@ -651,6 +670,15 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 }
             },
             containerColor = Panel2
+        )
+    }
+
+    if (diagnosticOpen) {
+        SyncDiagnosticDialog(
+            vm = vm,
+            ui = ui,
+            state = state,
+            onClose = { diagnosticOpen = false }
         )
     }
 }

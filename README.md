@@ -120,9 +120,10 @@ En cas d’avertissement ou de blocage **Play Protect**, installez l’APK manue
 À l’installation, l’onboarding propose **Garmin** ou **Santé Connect**. Le choix se change ensuite dans **Réglages → Source de pas**.
 
 - **Garmin** : clé personnelle, jeton de 24 h, synchronisation réseau toutes les 60 min.
-- **Santé Connect** : lecture locale des pas enregistrés par Google Fit, Samsung Health ou une montre. Permission `android.permission.health.READ_STEPS`. Sans application fournisseur, le hub renvoie zéro pas.
+- **Santé Connect** : lecture locale des pas enregistrés par Google Fit, Samsung Health ou une montre. Permission `android.permission.health.READ_STEPS`. Sans application fournisseur, le hub renvoie zéro pas. La lecture se fait à l’ouverture et manuellement : Android refuse l’accès en arrière-plan sans la permission `READ_HEALTH_DATA_IN_BACKGROUND`, donc le worker périodique ne la tente pas.
 - **Première connexion** : seuls les pas du jour sont crédités. Les synchronisations suivantes peuvent rattraper jusqu’à **7 jours**, mais jamais avant la date de première connexion : on ne démarre pas avec une réserve de pas héritée de la semaine précédente.
 - **Pas de double comptage** : une seule source est lue à la fois, et les enregistrements Santé Connect sont agrégés par origine (téléphone, montre) en gardant le total le plus élevé par jour.
+- **Diagnostic** : **Réglages → Diagnostic** affiche la source active et les 7 derniers jours avec leur état (crédité, aujourd’hui, avant connexion, aucun pas), les garde-fous et un bouton de synchronisation. Le journal de synchronisation est horodaté au jour et à l’heure.
 
 ### Flux de connexion à l’onboarding
 
