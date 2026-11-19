@@ -38,6 +38,7 @@ import java.time.LocalDate
 
 data class UiState(
     val campOpen: Boolean = false,
+    val paused: Boolean = false,
     val settingsOpen: Boolean = false,
     val prefsOpen: Boolean = false,
     val journalOpen: Boolean = false,
@@ -149,7 +150,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             while (isActive) {
                 val reportOpen = game.value.offlineReport?.let { it.acknowledgedAt == 0L } == true
                 var stepMs = 500L
-                if (visible && !resuming && !_ui.value.campOpen && !_ui.value.settingsOpen &&
+                if (visible && !resuming && !_ui.value.paused && !_ui.value.campOpen &&
+                    !_ui.value.settingsOpen &&
                     !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen &&
                     !_ui.value.consumablesOpen
                 ) {
@@ -247,6 +249,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             // La simulation travaille sur la réserve héritée de la fermeture.
             val state = game.value
             val canSimulate = elapsed >= 2L * 60L * 1000L &&
+                !_ui.value.paused &&
                 state.mode != "camp" &&
                 state.mode != "special"
             if (canSimulate) {
@@ -298,6 +301,12 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             container.gameRepository.markActive()
         }
+    }
+
+    fun togglePause() {
+        val next = !_ui.value.paused
+        _ui.update { it.copy(paused = next) }
+        _toasts.tryEmit(if (next) "Marche en pause." else "Marche reprise.")
     }
 
     fun refreshGarmin() {

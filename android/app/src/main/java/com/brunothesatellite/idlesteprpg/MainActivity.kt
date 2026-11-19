@@ -197,12 +197,14 @@ private fun GameRoot(vm: GameViewModel) {
                             onChest = vm::openChest,
                             onConsumables = vm::openConsumables,
                             onSync = vm::syncNow,
+                            onTogglePause = vm::togglePause,
                             connected = ui.connected,
                             syncing = ui.syncing,
                             lastSync = ui.lastSync,
                             lastError = ui.lastError,
                             reducedMotion = ui.reducedMotion,
                             vibrations = ui.vibrations,
+                            paused = ui.paused,
                             modifier = Modifier.weight(0.58f).fillMaxHeight()
                         )
                         Dashboard(
@@ -240,12 +242,14 @@ private fun GameRoot(vm: GameViewModel) {
                             onChest = vm::openChest,
                             onConsumables = vm::openConsumables,
                             onSync = vm::syncNow,
+                            onTogglePause = vm::togglePause,
                             connected = ui.connected,
                             syncing = ui.syncing,
                             lastSync = ui.lastSync,
                             lastError = ui.lastError,
                             reducedMotion = ui.reducedMotion,
                             vibrations = ui.vibrations,
+                            paused = ui.paused,
                             modifier = Modifier.weight(0.46f)
                         )
                         Dashboard(

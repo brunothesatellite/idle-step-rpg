@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.17.1
+- **Bouton de pause** : sous la synchronisation, il fige la marche, les combats, l'ouverture des coffres et les animations. Un second appui reprend exactement au même point.
+- **Pause de session** : elle reste active en arrière-plan ; fermer complètement l'application la termine et la simulation d'absence reprend normalement.
+- **Temps réel conservé** : la ferveur, les buffs temporisés, les coffres et le reset de minuit continuent de suivre l'horloge réelle.
+- **Manuel** : nouvelle section « Pause de la marche » avec capture.
+- 81 tests unitaires, lint Android OK.
+
 ## v0.17.0
 - **Deux variantes de distribution** : `github` (APK avec mise à jour intégrée depuis GitHub) et `play` (AAB sans installateur d'APK ni vérification GitHub). Même nom de paquet et même clé release : la mise à jour croisée Play ↔ GitHub conserve les données.
 - **Variante Play** : `REQUEST_INSTALL_PACKAGES` et le `FileProvider` d'installation sont retirés du manifeste ; la carte « Mises à jour », les dialogues et la vérification GitHub sont neutralisés (`BuildConfig.PLAY_DISTRIBUTION`).

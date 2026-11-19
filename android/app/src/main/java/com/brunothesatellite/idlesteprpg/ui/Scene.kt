@@ -267,15 +267,17 @@ fun Scene(
     onChest: () -> Unit,
     onConsumables: () -> Unit,
     onSync: () -> Unit = {},
+    onTogglePause: () -> Unit = {},
     connected: Boolean = false,
     syncing: Boolean = false,
     lastSync: Long = 0L,
     lastError: String = "",
     reducedMotion: Boolean = false,
     vibrations: Boolean = true,
+    paused: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val walking = GameEngine.isWalking(state)
+    val walking = GameEngine.isWalking(state) && !paused
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
@@ -301,8 +303,8 @@ fun Scene(
 
     // Rien ne peut bouger (réserve vide, pas de combat) : au bout de 10 s on gèle
     // le décor animé pour ne plus redessiner 60 fois par seconde.
-    val sceneIdle = !walking && state.fight == null && state.special == null &&
-        state.stepBank <= 0.0
+    val sceneIdle = paused || (!walking && state.fight == null && state.special == null &&
+        state.stepBank <= 0.0)
     var decorationsFrozen by remember { mutableStateOf(false) }
     LaunchedEffect(sceneIdle) {
         if (!sceneIdle) {
@@ -312,7 +314,7 @@ fun Scene(
             decorationsFrozen = true
         }
     }
-    val animateDecor = !reducedMotion && !decorationsFrozen
+    val animateDecor = !reducedMotion && !decorationsFrozen && !paused
 
     BoxWithConstraints(modifier.fillMaxSize().background(Ink)) {
         val sceneWidth = maxWidth
@@ -344,6 +346,22 @@ fun Scene(
                 .align(Alignment.TopStart)
                 .padding(start = 10.dp, top = 58.dp)
         )
+        PauseButton(
+            paused = paused,
+            onClick = onTogglePause,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 10.dp, top = 104.dp)
+        )
+        if (paused) {
+            SceneTag(
+                "PAUSE",
+                Ember,
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 56.dp, top = 112.dp)
+            )
+        }
 
         HeroUnit(
             state,
@@ -863,6 +881,62 @@ private fun SyncGlyph(color: Color, modifier: Modifier = Modifier) {
         tint = color,
         modifier = modifier
     )
+}
+
+@Composable
+private fun PauseButton(
+    paused: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(5.dp))
+            .background(Ink.copy(alpha = 0.88f))
+            .border(
+                1.dp,
+                if (paused) Ember.copy(alpha = 0.75f) else Line2,
+                RoundedCornerShape(5.dp)
+            )
+            .clickable(onClick = onClick)
+            .semantics {
+                contentDescription =
+                    if (paused) "Reprendre la marche" else "Mettre la marche en pause"
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        PauseGlyph(
+            paused = paused,
+            color = if (paused) GoldLight else Muted,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+@Composable
+private fun PauseGlyph(paused: Boolean, color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        if (paused) {
+            val path = Path().apply {
+                moveTo(size.width * 0.28f, 0f)
+                lineTo(size.width, size.height * 0.5f)
+                lineTo(size.width * 0.28f, size.height)
+                close()
+            }
+            drawPath(path, color)
+        } else {
+            val bar = size.width * 0.24f
+            val gap = size.width * 0.20f
+            val left = (size.width - bar * 2f - gap) / 2f
+            drawRect(color, topLeft = Offset(left, 0f), size = Size(bar, size.height))
+            drawRect(
+                color,
+                topLeft = Offset(left + bar + gap, 0f),
+                size = Size(bar, size.height)
+            )
+        }
+    }
 }
 
 @Composable
