@@ -233,7 +233,7 @@ Si Garmin renvoie toujours le même total, la montre n’a pas encore poussé se
 
 ```bash
 cd android
-./gradlew :app:assembleDebug
+./gradlew :app:assembleGithubDebug
 ```
 
 Le build debug utilise le package `com.brunothesatellite.idlesteprpg.debug` et peut cohabiter avec la version release. Sa copie porte un **nom** (« Marche des Âmes · test ») et une **icône distincte** (fond turquoise), avec ses propres données, sa propre clé Garmin et sa propre autorisation Santé Connect. Le vérificateur de mises à jour y est **désactivé** : il ne peut pas proposer l'APK de production (qui installerait l'autre application).
@@ -249,17 +249,21 @@ keyAlias=idle-step-rpg
 keyPassword=...
 ```
 
-Puis :
+Deux variantes partagent le même paquet et la même clé :
 
 ```bash
 cd android
-./gradlew :app:assembleRelease
+# APK GitHub (mise à jour intégrée)
+./gradlew :app:assembleGithubRelease
+
+# AAB Play (sans installateur d'APK ni vérification GitHub)
+./gradlew :app:bundlePlayRelease
 ```
 
-APK : `android/app/build/outputs/apk/release/app-release.apk`  
-AAB : `android/app/build/outputs/bundle/release/app-release.aab`
+APK : `android/app/build/outputs/apk/github/release/app-github-release.apk`  
+AAB : `android/app/build/outputs/bundle/playRelease/app-play-release.aab`
 
-Sans keystore, seul le build debug est possible. Le keystore et les mots de passe ne sont **jamais** dans le dépôt.
+Sans keystore, seul le build debug est possible. Le keystore et les mots de passe ne sont **jamais** dans le dépôt. La distribution, la mise à jour croisée et la clé Play sont détaillées dans [`playstore/05-distribution/`](playstore/05-distribution/).
 
 ### Tests et lint
 

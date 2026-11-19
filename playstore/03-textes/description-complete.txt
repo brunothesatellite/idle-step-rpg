@@ -1,0 +1,28 @@
+DungeonStep — Marche des Âmes
+
+Vos pas réels sont la seule ressource du jeu.
+
+Chaque pas fait dans la journée devient la distance parcourue par Kaelen, un pèlerin qui descend les donjons pour libérer les âmes retenues. Dix pas font un mètre. Cent mètres font un palier. Et chaque palier est scellé par un gardien.
+
+Vous ne pilotez pas Kaelen : il marche, combat et tombe seul. Vous choisissez ce qui compte — l'équipement à garder, les améliorations à payer, le moment de vous reposer au camp, la source de pas à connecter.
+
+CE QUI VOUS ATTEND
+• 8 biomes en pixel art, des Cryptes de Vael au Trône des Âmes.
+• Un gardien à chaque palier, avec ses attaques et ses faiblesses.
+• Des combats automatiques, une ferveur qui monte avec vos pas, des coffres à forcer.
+• De l'équipement à comparer, des sets à compléter, des objets à fusionner.
+• Un camp pour se reposer, s'équiper et repartir.
+• Un Codex qui garde la trace des monstres, des gardiens et des ensembles rencontrés.
+• Un journal et une légende qui racontent la marche.
+
+VOS PAS, VOTRE RYTHME
+• 10 pas = 1 mètre, 1 000 pas = 1 palier.
+• Sources : Garmin (Personal API) ou Santé Connect, une seule à la fois.
+• Première connexion : seuls les pas du jour sont crédités. Ensuite, le jeu rattrape jusqu'à 7 jours, jamais avant la date de première connexion.
+• Plafond de 60 000 pas par jour, 100 000 pas par synchronisation, 250 pas/minute au-delà desquels les pas sont ignorés.
+• Aucun GPS, aucun compte de jeu : la progression reste sur votre téléphone.
+
+LA PROMESSE
+Pas de publicité, pas d'achat intégré, pas de classement. Juste vos pas, un pèlerin, et des âmes qui attendent.
+
+DungeonStep est un jeu de marche personnel. Il lui faut une source de pas : sans Garmin ni Santé Connect, Kaelen reste immobile.

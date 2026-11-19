@@ -318,6 +318,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 }
             }
             Spacer(Modifier.height(10.dp))
+            if (!BuildConfig.PLAY_DISTRIBUTION) {
             PixelCard(Modifier.fillMaxWidth()) {
                 SectionLabel("Mises à jour")
                 Spacer(Modifier.height(5.dp))
@@ -368,6 +369,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     color = Muted2,
                     lineHeight = 9.sp
                 )
+            }
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {

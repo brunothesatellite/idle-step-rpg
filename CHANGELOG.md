@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.17.0
+- **Deux variantes de distribution** : `github` (APK avec mise à jour intégrée depuis GitHub) et `play` (AAB sans installateur d'APK ni vérification GitHub). Même nom de paquet et même clé release : la mise à jour croisée Play ↔ GitHub conserve les données.
+- **Variante Play** : `REQUEST_INSTALL_PACKAGES` et le `FileProvider` d'installation sont retirés du manifeste ; la carte « Mises à jour », les dialogues et la vérification GitHub sont neutralisés (`BuildConfig.PLAY_DISTRIBUTION`).
+- **Pack Play Store** (`playstore/`) : icône définitive composée avec les sprites du jeu (porte, Kaelen, Balrug, statue, lanterne), calques adaptive icon, 4 captures 1080×1920, feature graphic, titre, descriptions, lore, checklist et procédure de clé Play.
+- **Manuel** : section « Durée de vie estimée » avec trois scénarios de marche (5 000, 8 000 et 10 000 pas par jour).
+- **Build** : commandes `assembleGithubRelease` / `bundlePlayRelease` documentées.
+
 ## v0.16.0
 - **Bandeau des effets actifs** : une seule ligne au-dessus du HUD bas, jusqu'à **6 effets** simultanés, avec la **durée restante en direct** (rafraîchie chaque seconde, même en pause). La largeur de chaque chip s'adapte au nombre d'effets, **plafonnée à un tiers**. Les bonus sont colorés, les malus apparaissent en rouge. Il remplace les anciennes chips discrètes à droite de la scène.
 - **Fiche de créature dans le Codex** : appuyer sur un monstre ouvre une **popup dans le thème du jeu** avec son image, son biome, sa zone d'apparition, son niveau, ses PV, son ATQ, sa cadence, l'or et l'XP donnés, le nombre de victimes et la règle de biome appliquée. Les créatures non rencontrées restent verrouillées.

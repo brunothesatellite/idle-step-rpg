@@ -659,6 +659,10 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun checkForUpdate(manual: Boolean = false) {
+        if (BuildConfig.PLAY_DISTRIBUTION) {
+            if (manual) _toasts.tryEmit("Les mises à jour sont gérées par Google Play.")
+            return
+        }
         if (_ui.value.updateChecking) return
         _ui.update { it.copy(updateChecking = true, updateError = null) }
         viewModelScope.launch {
@@ -697,6 +701,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         // La copie de test (.debug) ne doit jamais proposer l'APK de production :
         // l'installer remplacerait l'autre application.
         if (BuildConfig.DEBUG) return
+        // La variante Play ne vérifie jamais GitHub : Play gère les mises à jour.
+        if (BuildConfig.PLAY_DISTRIBUTION) return
         if (!_ui.value.onboardingDone) return
         if (!container.settings.autoUpdateCheck) return
         val elapsed = System.currentTimeMillis() - container.settings.lastUpdateCheckAt
@@ -727,6 +733,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     private fun checkPendingRelease() {
+        if (BuildConfig.PLAY_DISTRIBUTION) return
         val tag = container.settings.pendingReleaseTag
         val url = container.settings.pendingReleaseUrl
         if (tag.isBlank() || url.isBlank()) return
@@ -748,6 +755,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun installUpdate() {
         if (BuildConfig.DEBUG) return
+        if (BuildConfig.PLAY_DISTRIBUTION) return
         val info = _ui.value.availableUpdate ?: return
         if (_ui.value.updateDownloading) return
         val context = container.context

@@ -1,0 +1,16 @@
+# Mots-clés (référence ASO, pas un champ Play Console)
+
+Le titre et la description courte sont les seuls champs indexés par la recherche Play. Ces mots servent à guider les textes et les campagnes, sans bourrage.
+
+- jeu de marche
+- podomètre RPG
+- RPG idle
+- jeu de rôle pas
+- donjon pixel art
+- fantasy sombre
+- Garmin
+- Santé Connect
+- jeu sans publicité
+- jeu de rôle automatique
+
+À éviter : « meilleur RPG », « n°1 », « millions de joueurs », « gratuit » si une source de pas payante est requise, et toute promesse de gain d'argent ou de récompense réelle.

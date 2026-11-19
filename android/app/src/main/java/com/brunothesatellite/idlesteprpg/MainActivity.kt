@@ -380,6 +380,7 @@ private fun GameRoot(vm: GameViewModel) {
                     onCancel = vm::cancelImport
                 )
             }
+            if (!BuildConfig.PLAY_DISTRIBUTION) {
             ui.availableUpdate?.let { info ->
                 UpdateDialog(
                     info = info,
@@ -398,6 +399,7 @@ private fun GameRoot(vm: GameViewModel) {
                     onOpenRelease = vm::openPostUpdateRelease,
                     onDismiss = vm::dismissPostUpdate
                 )
+            }
             }
             if (!ui.onboardingDone) {
                 OnboardingOverlay(

@@ -1,0 +1,1 @@
+Première version Play. Kaelen marche sur vos pas réels : 8 biomes, un gardien par palier, camp, butin et Codex. Diagnostic de synchronisation, journal horodaté, Santé Connect stabilisé. Sans publicité, sans achat intégré.

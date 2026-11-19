@@ -24,11 +24,28 @@ android {
         applicationId = "com.brunothesatellite.idlesteprpg"
         minSdk = 34
         targetSdk = 35
-        versionCode = 33
-        versionName = "0.16.0"
+        versionCode = 34
+        versionName = "0.17.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
         manifestPlaceholders["appIconRound"] = "@mipmap/ic_launcher_round"
+    }
+
+    flavorDimensions += "distribution"
+
+    productFlavors {
+        // Distribution GitHub : APK signé avec la clé release, mise à jour
+        // intégrée depuis les releases GitHub.
+        create("github") {
+            dimension = "distribution"
+            buildConfigField("boolean", "PLAY_DISTRIBUTION", "false")
+        }
+        // Distribution Play : aucun installateur d'APK, aucune vérification de
+        // mise à jour GitHub. Play gère les mises à jour.
+        create("play") {
+            dimension = "distribution"
+            buildConfigField("boolean", "PLAY_DISTRIBUTION", "true")
+        }
     }
 
     signingConfigs {
