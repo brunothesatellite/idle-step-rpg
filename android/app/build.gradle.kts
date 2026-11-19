@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId = "com.brunothesatellite.idlesteprpg"
         minSdk = 34
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 34
         versionName = "0.17.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

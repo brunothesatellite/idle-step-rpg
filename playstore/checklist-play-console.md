@@ -4,8 +4,8 @@ Cocher au fur et à mesure. Les points marqués ⚠️ demandent une décision o
 
 ## 1. Avant de créer la fiche
 
-- [ ] Compte Play Console en règle (ou compte Android Developer Console pour la vérification hors Play).
-- [ ] Vérification d'identité du développeur terminée.
+- [x] Compte Play Console en règle (ou compte Android Developer Console pour la vérification hors Play).
+- [x] Vérification d'identité du développeur terminée.
 - [ ] Nom de paquet : `com.brunothesatellite.idlesteprpg` — il ne changera plus après publication.
 - [ ] `versionCode` incrémenté et `versionName` à jour (`android/app/build.gradle.kts`).
 - [ ] **AAB signé** avec la clé d'upload (ou la clé release si vous gardez une seule clé). La clé release doit être fournie à Play comme **clé de signature d'application** : voir `05-distribution/procedure-cle-play.md`, à faire **avant** le premier test ouvert/production.

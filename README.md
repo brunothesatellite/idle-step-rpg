@@ -436,10 +436,10 @@ idle-step-rpg/
 ## Confidentialité
 
 - Aucun compte propriétaire, aucun backend, aucune publicité, aucun traceur.
-- La clé Garmin et le jeton sont chiffrés localement.
-- Aucun Health Connect.
-- Les pas sont lus uniquement via la Garmin Personal API.
-- La politique complète est dans [`docs/privacy.md`](docs/privacy.md).
+- La clé Garmin et le jeton sont chiffrés localement (Android Keystore) et ne partent que vers Garmin.
+- **Santé Connect** : les pas sont lus localement avec la permission `READ_STEPS`, jamais envoyés à l'éditeur.
+- **Garmin** : la clé personnelle sert uniquement à interroger la Garmin Personal API.
+- La politique complète est publiée sur [`/privacy/`](https://brunothesatellite.github.io/idle-step-rpg/privacy/) et dans [`docs/privacy.md`](docs/privacy.md).
 
 ---
 
