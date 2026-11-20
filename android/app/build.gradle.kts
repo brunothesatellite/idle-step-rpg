@@ -14,6 +14,8 @@ val keystoreProperties = Properties().apply {
         keystorePropertiesFile.inputStream().use { load(it) }
     }
 }
+// Keystore debug du dépôt : garde la compatibilité avec l'APK debug déjà installé.
+val debugKeystoreFile = rootProject.file("../.keystore/debug.keystore")
 
 android {
     namespace = "com.brunothesatellite.idlesteprpg"
@@ -57,10 +59,21 @@ android {
                 keyPassword = keystoreProperties.getProperty("keyPassword")
             }
         }
+        // Utilise le keystore debug du dépôt s'il est présent. Sinon, Gradle
+        // reprend la clé debug Android standard.
+        if (debugKeystoreFile.exists()) {
+            create("debugProject") {
+                storeFile = debugKeystoreFile
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
     }
 
     buildTypes {
         debug {
+            signingConfigs.findByName("debugProject")?.let { signingConfig = it }
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             // Copie de test installable à côté de la version de production.
