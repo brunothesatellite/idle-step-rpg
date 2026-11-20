@@ -11,8 +11,8 @@
 > désactivation). Le reste de la liste ci-dessous est conservé comme backlog.
 >
 > **Backlog explicite — pas maintenant** : localisation anglaise, migration Room,
-> publication Play Store (non prévue), équilibrage long terme, farm automatique à
-> 0 pas, réduction automatique des animations sur batterie faible.
+> équilibrage long terme, farm automatique à 0 pas, réduction automatique des
+> animations sur batterie faible, mise à jour Gradle, R8/mapping et symboles natifs.
 
 ## Backlog — non planifié
 
@@ -20,7 +20,10 @@
 |---|---|
 | Localisation anglaise | Plus tard, interface française pour l'instant. |
 | Migration Room | Plus tard, sauvegarde JSON versionnée conservée. |
-| Publication Play Store | Non prévue, distribution APK/GitHub. |
+| Publication Play Store | **Livrée en v0.17.3** (AAB signé, fiche, signature Play). |
+| Mise à jour Gradle | Wrapper 8.11.1 en fin de support. Monter Gradle, vérifier AGP/Kotlin, rebuild complet et CI. |
+| R8 / minification | Activer R8 et `shrinkResources`, conserver kotlinx.serialization, tester, uploader `mapping.txt` pour supprimer l'avertissement Play. |
+| Symboles natifs Play | `libandroidx.graphics.path.so` est fourni strippé par AndroidX. Chercher une source de symboles ou documenter l'avertissement (non bloquant). |
 | Équilibrage long terme | À faire après plusieurs semaines de données réelles. |
 | Farm automatique à 0 pas | Plus tard. |
 | Animations réduites automatiquement sur batterie faible | Plus tard. |
@@ -229,7 +232,7 @@ Effort : **XL**, à découper.
 | Room | Remplacer le JSON par Room avec migrations testées. Sinon, conserver JSON mais ajouter `version` + migrations explicites. | XL |
 | Tests Garmin | 401, 403, 429, réponse vide, JSON invalide, coupure réseau, changement de fuseau. | M |
 | Tests UI | Camp, overlays, journal, coffres, inventaire, réglages, imports. | L |
-| CI release | Compiler et signer la release via secrets GitHub (keystore base64), publier l’APK + SHA. Aujourd’hui CI debug uniquement. | M |
+| CI release | **Livré** : CI debug (tests, lint, APK) et workflow release signé via secrets GitHub. | S |
 | Lint / static analysis | ktlint ou detekt, avertissements Kotlin, dépendances obsolètes. | M |
 | Crash et diagnostics | Journal local circulaire, export de diagnostic sans données sensibles. | M |
 | Performance | 10 Hz de recomposition, deep copies à chaque tick, sauvegardes JSON. Profiler et optimiser. | M |
@@ -240,7 +243,7 @@ Effort : **XL**, à découper.
 | Accessibilité | Audit TalkBack, descriptions des éléments de scène, contraste, ordre de focus, mode daltonien, test 200 %. | L |
 | Grands écrans | Paysage et tablette : la spec prévoit un tableau de bord élargi. Aujourd’hui portrait uniquement. | L |
 | Widget / raccourci | Widget pas du jour + bouton synchroniser. | M |
-| Play Store | AAB, fiche, politique de confidentialité, signature Play. Optionnel si sideload suffit. | L |
+| Play Store | **Livré v0.17.3** : AAB, fiche, politique, signature Play. Restant : R8/mapping et symboles natifs. | S |
 | Mise à jour in-app | **Livré v0.6.2** : release GitHub, vérification quotidienne/manuelle, APK SHA-256, installation confirmée, lien vers les notes après mise à jour. Restant : vérification périodique en arrière-plan via WorkManager. | S |
 
 ---
@@ -260,7 +263,6 @@ Effort : **M**.
 
 ## 8. Hors périmètre confirmé
 
-- Health Connect.
 - Backend ou compte propriétaire.
 - Saisie du mot de passe ou du 2FA Garmin dans l’app.
 - Classements et guildes en ligne (aucun serveur).

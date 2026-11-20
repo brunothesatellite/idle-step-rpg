@@ -460,7 +460,10 @@ Elle simule les pas (aucune montre réelle), le choix de la source de pas (Garmi
 
 - Interface en **français** uniquement.
 - **Migration Room** non faite : sauvegarde JSON versionnée avec copie de secours.
-- **Publication Play Store** non prévue ; distribution APK/GitHub.
+- **Publication Play Store** : livrée en 0.17.3 (`versionCode 37`).
+- **Mise à jour Gradle** : wrapper 8.11.1 en fin de support ; monter Gradle puis revérifier AGP, Kotlin et un build complet.
+- **R8 / minification** : activer R8 + `shrinkResources`, tester kotlinx.serialization, puis uploader `mapping.txt` (supprime l'avertissement Play).
+- **Symboles natifs Play** : `libandroidx.graphics.path.so` est fourni strippé par AndroidX ; vérifier une source de symboles ou documenter l'avertissement.
 - Équilibrage long terme, farm automatique à 0 pas et réduction automatique des animations sur batterie faible : backlog.
 - L'historique est limité à 7 jours, jamais avant la date de première connexion, et à 100 000 pas par synchronisation.
 - La synchronisation Garmin dépend de Garmin Connect : la montre doit avoir poussé ses pas.
