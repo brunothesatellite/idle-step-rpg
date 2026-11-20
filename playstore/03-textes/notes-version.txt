@@ -1,1 +1,1 @@
-Première version Play. Kaelen marche sur vos pas réels : 8 biomes, un gardien par palier, camp, butin et Codex. Diagnostic de synchronisation, journal horodaté, Santé Connect stabilisé. Sans publicité, sans achat intégré.
+Collections d'ensembles permanentes : une pièce découverte reste acquise même vendue. Codex clarifié avec Collection x/6 et Équipé y/6, slots manquants et biome à farmer. Fiche d'objet avec les deux compteurs. Huit biomes, un gardien par palier, camp, butin et Codex. Sans publicité, sans achat intégré.

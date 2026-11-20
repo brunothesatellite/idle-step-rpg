@@ -37,7 +37,7 @@ const val INVENTORY_CAP = 24
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250
-const val SAVE_VERSION = 3
+const val SAVE_VERSION = 4
 
 @Serializable
 data class Upgrades(
@@ -344,6 +344,11 @@ data class GameState(
     var bestiary: Map<String, Int> = emptyMap(),
     var bossKills: Map<String, Int> = emptyMap(),
     var discoveredItems: List<String> = emptyList(),
+    /**
+     * Collection permanente des ensembles : nom d'ensemble → slots découverts.
+     * Une pièce reste acquise même si elle est vendue, démontée ou échangée.
+     */
+    var setPiecesDiscovered: Map<String, List<String>> = emptyMap(),
     var holdFloor: Boolean = false,
     var weeklySteps: Int = 0,
     var weekKey: String = "",
@@ -758,6 +763,39 @@ fun ownedSetSlots(state: GameState, setName: String): Set<String> =
         .filter { it.setName == setName }
         .map { it.slot }
         .toSet()
+
+/** Ajoute une pièce à la collection permanente (si ce slot n'est pas déjà connu). */
+fun recordSetPiece(state: GameState, item: Item) {
+    if (item.setName.isBlank() || item.slot.isBlank()) return
+    val known = state.setPiecesDiscovered[item.setName].orEmpty()
+    if (item.slot in known) return
+    state.setPiecesDiscovered = state.setPiecesDiscovered + (item.setName to (known + item.slot))
+}
+
+/** Recale la collection permanente sur les pièces déjà possédées (migration, import). */
+fun seedSetCollections(state: GameState) {
+    (state.equipment + state.inventory + state.stash).forEach { recordSetPiece(state, it) }
+}
+
+/** Slots découverts d'un ensemble : la collection est permanente. */
+fun discoveredSetSlots(state: GameState, setName: String): Set<String> =
+    state.setPiecesDiscovered[setName].orEmpty().toSet()
+
+/** Slots réellement équipés d'un ensemble : seuls ceux-ci donnent le bonus. */
+fun equippedSetSlots(state: GameState, setName: String): Set<String> =
+    state.equipment.filter { it.setName == setName }.map { it.slot }.toSet()
+
+/** Biomes où l'ensemble peut tomber, avec leur plage de paliers. */
+fun setSourceLabel(setName: String): String {
+    val keys = BIOME_SETS.filterValues { setName in it }.keys
+    if (keys.isEmpty()) return ""
+    return keys.mapNotNull { key ->
+        val biome = BIOMES.firstOrNull { it.key == key } ?: return@mapNotNull null
+        val next = BIOMES.firstOrNull { it.fromFloor > biome.fromFloor }
+        val range = if (next == null) "${biome.fromFloor}+" else "${biome.fromFloor}–${next.fromFloor - 1}"
+        "${biome.name} ($range)"
+    }.joinToString(" · ")
+}
 
 fun mobPoolFor(floor: Int): MobPool =
     BIOME_POOLS[biomeKeyFor(floor)] ?: CRYPT_POOL
@@ -1274,6 +1312,7 @@ fun GameState.deepCopy(): GameState = copy(
     stash = stash.toList(),
     legend = legend.toList(),
     bestiary = bestiary.toMap(),
+    setPiecesDiscovered = setPiecesDiscovered.mapValues { it.value.toList() },
     consumables = consumables.toMap(),
     buffs = buffs.toList(),
     special = special?.let { it.copy(offer = it.offer?.copy()) }

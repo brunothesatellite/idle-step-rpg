@@ -8,6 +8,7 @@ import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_STEPS_PER_DAY
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
+import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
 import com.brunothesatellite.idlesteprpg.engine.oathsFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
@@ -183,7 +184,7 @@ class GameEngineTest {
         GameEngine.migrate(state)
         assertEquals(2, state.bossKills["Roi des Cryptes"])
         assertEquals(1, state.bossKills["Hydre de Lerne"])
-        assertEquals(3, state.version)
+        assertEquals(SAVE_VERSION, state.version)
     }
 
     @Test

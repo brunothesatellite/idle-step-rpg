@@ -84,6 +84,7 @@ import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
 import com.brunothesatellite.idlesteprpg.engine.effectDescription
 import com.brunothesatellite.idlesteprpg.engine.effectLabel
 import com.brunothesatellite.idlesteprpg.engine.formatRemaining
+import com.brunothesatellite.idlesteprpg.engine.discoveredSetSlots
 import com.brunothesatellite.idlesteprpg.engine.setBonusDescription
 import com.brunothesatellite.idlesteprpg.engine.setLabel
 import com.brunothesatellite.idlesteprpg.engine.equipped
@@ -129,10 +130,8 @@ fun ItemDialog(
             if (missingShards > 0) add(if (missingShards > 1) "$missingShards éclats" else "1 éclat")
         }.joinToString(" et ") + " pour améliorer"
     }
-    val setCount = if (item.setName.isBlank()) 0 else {
-        state.equipment.count { it.setName == item.setName } +
-            if (state.inventory.any { it.id == item.id }) 1 else 0
-    }
+    val equippedSetCount = state.equipment.count { it.setName == item.setName }
+    val collectionSetCount = discoveredSetSlots(state, item.setName).size
     AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(
@@ -180,7 +179,7 @@ fun ItemDialog(
                         }
                         if (item.identified && item.setName.isNotBlank()) {
                             Text(
-                                "${setLabel(item.setName)} · ${setCount}/6",
+                                "${setLabel(item.setName)} · équipé $equippedSetCount/6 · collection $collectionSetCount/6",
                                 fontSize = 5.8.sp,
                                 color = Blue
                             )
@@ -252,11 +251,11 @@ fun ItemDialog(
                             )
                         }
                     }
-                    if (item.setName.isNotBlank()) {
+                    if (item.identified && item.setName.isNotBlank()) {
                         Spacer(Modifier.height(5.dp))
                         val tier = when {
-                            setCount >= 6 -> 6
-                            setCount >= 4 -> 4
+                            equippedSetCount >= 6 -> 6
+                            equippedSetCount >= 4 -> 4
                             else -> 2
                         }
                         Column(
@@ -268,14 +267,14 @@ fun ItemDialog(
                                 .padding(6.dp)
                         ) {
                             Text(
-                                "${setLabel(item.setName)} · $setCount/6",
+                                "${setLabel(item.setName)} · équipé $equippedSetCount/6 · collection $collectionSetCount/6",
                                 fontSize = 6.sp,
                                 letterSpacing = 0.5.sp,
                                 color = Blue
                             )
                             Text(
-                                if (setCount >= 2) setBonusDescription(item.setName, tier)
-                                else "2 pièces : ${setBonusDescription(item.setName, 2)}",
+                                if (equippedSetCount >= 2) setBonusDescription(item.setName, tier)
+                                else "2 pièces équipées : ${setBonusDescription(item.setName, 2)}",
                                 fontSize = 6.3.sp,
                                 color = Parchment.copy(alpha = 0.8f)
                             )

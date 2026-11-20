@@ -57,10 +57,12 @@ import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
 import com.brunothesatellite.idlesteprpg.engine.biomeRuleFor
 import com.brunothesatellite.idlesteprpg.engine.bossAbilityFor
 import com.brunothesatellite.idlesteprpg.engine.discoveredItemNames
+import com.brunothesatellite.idlesteprpg.engine.discoveredSetSlots
+import com.brunothesatellite.idlesteprpg.engine.equippedSetSlots
 import com.brunothesatellite.idlesteprpg.engine.lootTemplatesFor
-import com.brunothesatellite.idlesteprpg.engine.ownedSetSlots
 import com.brunothesatellite.idlesteprpg.engine.setBonusDescription
 import com.brunothesatellite.idlesteprpg.engine.setLabel
+import com.brunothesatellite.idlesteprpg.engine.setSourceLabel
 import com.brunothesatellite.idlesteprpg.engine.slotLabel
 import java.util.Locale
 import kotlin.math.min
@@ -761,17 +763,19 @@ private fun BossEntry(
 
 @Composable
 private fun SetsCodex(state: GameState) {
-    val ownedSets = ITEM_SETS.count { ownedSetSlots(state, it).isNotEmpty() }
+    val completed = ITEM_SETS.count { discoveredSetSlots(state, it).size >= 6 }
+    val started = ITEM_SETS.count { discoveredSetSlots(state, it).isNotEmpty() }
     PixelCard(Modifier.fillMaxWidth(), borderColor = Gold.copy(alpha = 0.3f)) {
         SectionLabel("ENSEMBLES")
         Text(
-            "$ownedSets / ${ITEM_SETS.size} ensembles commencés",
+            "$completed / ${ITEM_SETS.size} collections complètes · $started commencées",
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             color = GoldLight
         )
         Text(
-            "Les bonus s'activent à 2, 4 et 6 pièces équipées. Les pièces du sac et du coffre comptent pour la collection.",
+            "La collection est permanente : une pièce découverte reste acquise même si vous la vendez. " +
+                "Les bonus s'activent à 2, 4 et 6 pièces équipées.",
             fontSize = 6.3.sp,
             color = Muted,
             lineHeight = 9.sp
@@ -779,66 +783,114 @@ private fun SetsCodex(state: GameState) {
     }
     Spacer(Modifier.height(8.dp))
     ITEM_SETS.forEach { set ->
-        val slots = ownedSetSlots(state, set)
-        val count = slots.size
+        val collected = discoveredSetSlots(state, set)
+        val equipped = equippedSetSlots(state, set)
+        val collectedCount = collected.size
+        val equippedCount = equipped.size
         val next = when {
-            count < 2 -> 2
-            count < 4 -> 4
-            count < 6 -> 6
+            equippedCount < 2 -> 2
+            equippedCount < 4 -> 4
             else -> 6
         }
         PixelCard(
             Modifier.fillMaxWidth(),
-            borderColor = if (count >= 2) Gold.copy(alpha = 0.35f) else Line
+            borderColor = when {
+                equippedCount >= 2 -> Gold.copy(alpha = 0.45f)
+                collectedCount >= 2 -> Gold.copy(alpha = 0.22f)
+                else -> Line
+            }
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     SectionLabel(setLabel(set))
                     Text(
-                        "$count / 6 pièces",
+                        "Collection $collectedCount/6 · Équipé $equippedCount/6",
                         fontSize = 7.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (count >= 2) GoldLight else Muted
+                        color = if (collectedCount >= 2) GoldLight else Muted
                     )
                 }
                 Text(
-                    if (count >= 2) "BONUS ACTIF" else "À COMPLÉTER",
+                    when {
+                        equippedCount >= 2 -> "BONUS ACTIF"
+                        collectedCount >= 2 -> "À ÉQUIPER"
+                        else -> "À COMPLÉTER"
+                    },
                     fontFamily = Press,
                     fontSize = 5.sp,
-                    color = if (count >= 2) Green else Muted2
+                    color = when {
+                        equippedCount >= 2 -> Green
+                        collectedCount >= 2 -> Gold
+                        else -> Muted2
+                    }
                 )
             }
             Spacer(Modifier.height(5.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 listOf("weapon", "head", "body", "hands", "feet", "talisman").forEach { slot ->
-                    val has = slot in slots
+                    val has = slot in collected
+                    val on = slot in equipped
                     Box(
                         Modifier
                             .weight(1f)
-                            .heightIn(min = 26.dp)
+                            .heightIn(min = 28.dp)
                             .clip(RoundedCornerShape(3.dp))
-                            .background(if (has) Gold.copy(alpha = 0.18f) else Panel3)
-                            .border(1.dp, if (has) Gold.copy(alpha = 0.55f) else Line, RoundedCornerShape(3.dp)),
+                            .background(
+                                when {
+                                    on -> Gold.copy(alpha = 0.28f)
+                                    has -> Gold.copy(alpha = 0.10f)
+                                    else -> Panel3
+                                }
+                            )
+                            .border(
+                                1.dp,
+                                when {
+                                    on -> Gold
+                                    has -> Gold.copy(alpha = 0.45f)
+                                    else -> Line
+                                },
+                                RoundedCornerShape(3.dp)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             slotLabel(slot).take(4).uppercase(),
                             fontSize = 4.5.sp,
-                            color = if (has) GoldLight else Muted2,
+                            color = when {
+                                on -> GoldLight
+                                has -> Gold
+                                else -> Muted2
+                            },
                             maxLines = 1
                         )
                     }
                 }
             }
-            if (count >= 2) {
+            if (collectedCount >= 1) {
                 Spacer(Modifier.height(4.dp))
-                Text(setBonusDescription(set, count), fontSize = 6.2.sp, color = Green)
-            }
-            if (count < 6) {
                 Text(
-                    "Prochain palier ($next pièces) : ${setBonusDescription(set, next)}",
+                    if (equippedCount >= 2) setBonusDescription(set, equippedCount)
+                    else "2 pièces équipées : ${setBonusDescription(set, 2)}",
+                    fontSize = 6.2.sp,
+                    color = if (equippedCount >= 2) Green else Muted
+                )
+            }
+            if (equippedCount in 2..5) {
+                Text(
+                    "Prochain palier ($next équipées) : ${setBonusDescription(set, next)}",
                     fontSize = 5.6.sp,
                     color = Muted,
+                    lineHeight = 8.sp
+                )
+            } else if (equippedCount >= 6) {
+                Text("Bonus maximal actif.", fontSize = 5.6.sp, color = Green)
+            }
+            val source = setSourceLabel(set)
+            if (source.isNotBlank()) {
+                Text(
+                    "Se trouve : $source",
+                    fontSize = 5.6.sp,
+                    color = Muted2,
                     lineHeight = 8.sp
                 )
             }

@@ -80,6 +80,9 @@ object GameEngine {
             if (kills.isNotEmpty()) state.bossKills = kills
         }
         if (state.version < SAVE_VERSION) state.version = SAVE_VERSION
+        // Collection permanente : recale les pièces déjà possédées (anciennes
+        // sauvegardes, import, pièces acquises avant la v0.17.2).
+        seedSetCollections(state)
         return state
     }
 
@@ -1591,6 +1594,9 @@ object GameEngine {
     }
 
     fun addLoot(state: GameState, item: Item) {
+        // La collection d'ensembles est permanente : on l'enregistre au ramassage,
+        // avant de savoir si l'objet finit au sac ou au coffre.
+        recordSetPiece(state, item)
         val baseName = item.name.substringBefore(" · ")
         if (baseName.isNotBlank() && baseName !in state.discoveredItems) {
             state.discoveredItems = state.discoveredItems + baseName

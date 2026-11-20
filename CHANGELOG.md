@@ -1,5 +1,13 @@
 # Journal des versions
 
+## v0.17.2
+- **Collections d'ensembles permanentes** : une pièce découverte reste acquise même si elle est vendue, démontée ou fusionnée. Nouveau champ `setPiecesDiscovered` dans la sauvegarde (version 4), recalé automatiquement depuis l'équipement, le sac et le coffre au chargement ou à l'import.
+- **Codex → Ensembles clarifié** : deux compteurs distincts, **Collection x/6** (permanente) et **Équipé y/6** (bonus 2/4/6). Le badge « BONUS ACTIF » ne s'affiche plus que si les pièces sont réellement équipées ; les slots manquants et le biome où farmer sont indiqués.
+- **Fiche d'objet** : affiche « équipé y/6 · collection x/6 » ; le détail de l'ensemble reste masqué tant que l'objet n'est pas identifié, mais la pièce compte déjà dans la collection.
+- **Carte Codex** : le compteur d'ensembles affiche désormais les collections **complètes** (6/6).
+- **Manuel** : nouvelle section « Compléter une collection » avec les règles de drop, les deux compteurs et le tableau des onze ensembles (biomes, bonus 2/4/6).
+- **Build** : `versionCode 36`, `versionName 0.17.2`.
+
 ## v0.17.1
 - **Bouton de pause** : sous la synchronisation, il fige la marche, les combats, l'ouverture des coffres et les animations. Un second appui reprend exactement au même point.
 - **Pause de session** : elle reste active en arrière-plan ; fermer complètement l'application la termine et la simulation d'absence reprend normalement.

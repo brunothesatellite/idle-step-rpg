@@ -197,7 +197,7 @@
 <header class="hero">
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas deviennent votre progression.</p>
-  <span class="badge">Version 0.17.1 · Android 14+ · Garmin ou Santé Connect</span>
+  <span class="badge">Version 0.17.2 · Android 14+ · Garmin ou Santé Connect</span>
 </header>
 
 <nav class="toc">
@@ -552,8 +552,11 @@
   </ul>
   <h3>Ensembles et forge</h3>
   <ul>
-    <li>Les ensembles <strong>Veilleur</strong>, <strong>Braise</strong>, <strong>Givre</strong>, <strong>Ossature</strong>, <strong>Toile</strong>, <strong>Cendre</strong>, <strong>Forge</strong>, <strong>Serment</strong>, <strong>Bois</strong>, <strong>Abîme</strong> et <strong>Trône</strong> donnent des bonus à 2, 4 et 6 pièces.</li>
-    <li>Chaque biome privilégie ses propres ensembles dans ses tables de butin.</li>
+    <li>Onze ensembles : <strong>Veilleur</strong>, <strong>Braise</strong>, <strong>Givre</strong>, <strong>Ossature</strong>, <strong>Toile</strong>, <strong>Cendre</strong>, <strong>Forge</strong>, <strong>Serment</strong>, <strong>Bois</strong>, <strong>Abîme</strong> et <strong>Trône</strong>.</li>
+    <li>Chaque ensemble couvre les <strong>6 emplacements</strong> : arme, tête, torse, mains, bottes, talisman. Il se complète à <strong>6/6</strong>.</li>
+    <li>La <strong>collection est permanente</strong> : une pièce découverte reste acquise même si vous la vendez, la démontez ou la fusionnez. Les pièces du sac, du coffre et de l'équipement comptent, identifiées ou non.</li>
+    <li>Les <strong>bonus</strong> ne s'appliquent qu'aux pièces <strong>équipées</strong> : paliers à <strong>2, 4 et 6</strong> pièces. Avoir 6 pièces au sac ne donne aucun bonus.</li>
+    <li>Chaque biome ne fait tomber que ses propres ensembles, sur un butin <strong>rare, épique ou légendaire</strong>, avec <strong>30 %</strong> de chance d'être une pièce d'ensemble. Le slot est tiré au hasard : les doublons sont fréquents.</li>
     <li>La forge se débloque après le premier gardien vaincu.</li>
     <li>Les objets peuvent porter <strong>Vampirisme</strong>, <strong>Rempart</strong>, <strong>Frénésie</strong>, <strong>Chasse</strong>, <strong>Vitalité</strong> ou <strong>Précision</strong>.</li>
     <li>Le héros affiche un <strong>paper doll</strong> : casque, armure, jambes, bottes et arme changent selon l'équipement porté.</li>
@@ -780,8 +783,8 @@
       <figcaption>Bestiaire : créatures et gardiens découverts, silhouettes encore inconnues.</figcaption>
     </figure>
     <figure class="shot">
-      <img src="images/codex_sets.jpg" alt="Codex Ensembles avec progression 2/4/6 pièces et slots possédés">
-      <figcaption>Ensembles : pièces possédées par emplacement, bonus actif et prochain palier.</figcaption>
+      <img src="images/codex_sets.jpg" alt="Codex Ensembles avec collection permanente, pièces équipées et slots possédés">
+      <figcaption>Ensembles : collection permanente, pièces équipées, slots manquants et prochain palier.</figcaption>
     </figure>
     <figure class="shot">
       <img src="images/codex_biomes.jpg" alt="Codex Biomes avec progression des créatures, gardiens et objets par biome">
@@ -790,10 +793,33 @@
   </div>
   <ul>
     <li><strong>Bestiaire :</strong> une créature est révélée au premier combat ou à la première victime. Les gardiens sont suivis séparément.</li>
-    <li><strong>Ensembles :</strong> les pièces du sac, de l'équipement et du coffre comptent. Le bonus 2/4/6 et le prochain palier sont affichés.</li>
+    <li><strong>Ensembles :</strong> la collection est <strong>permanente</strong> (une pièce découverte reste acquise même si vous la vendez) ; l'onglet distingue <strong>Collection x/6</strong> et <strong>Équipé y/6</strong>, affiche les slots manquants, le biome où farmer et le prochain palier. Seules les pièces équipées donnent le bonus 2/4/6.</li>
     <li><strong>Biomes :</strong> un biome est découvert dès que vous atteignez son premier palier. Le Codex affiche sa règle, ses créatures, ses gardiens et ses objets.</li>
     <li>Les objets déjà possédés sont reconnus immédiatement ; les objets ramassés ensuite sont ajoutés à la collection.</li>
   </ul>
+  <h3>Compléter une collection</h3>
+  <p>Un ensemble se complète à <strong>6/6</strong> : il faut une pièce de chacun des six emplacements (arme, tête, torse, mains, bottes, talisman) portant le même nom d'ensemble.</p>
+  <div class="note"><strong>Deux compteurs à ne pas confondre :</strong> la <strong>collection</strong> (x/6) est permanente et compte tout ce que vous avez découvert, où qu'il soit — équipé, au sac ou au coffre, identifié ou non. L'<strong>équipé</strong> (y/6) ne compte que les pièces portées, et c'est lui qui déclenche le bonus à 2, 4 ou 6 pièces. Vendre ou démonter une pièce ne fait pas reculer la collection.</div>
+  <ul>
+    <li><strong>Où farmer :</strong> chaque ensemble ne tombe que dans un ou deux biomes. Le Codex affiche « Se trouve : … » sur la fiche de l'ensemble.</li>
+    <li><strong>Quand :</strong> seuls les butins <strong>rares, épiques ou légendaires</strong> peuvent être des pièces d'ensemble, avec <strong>30 %</strong> de chance. Le slot est tiré au hasard : les doublons sont fréquents et n'aident pas à compléter.</li>
+    <li><strong>Pièce non identifiée :</strong> elle compte déjà dans la collection. Identifiez-la (1 éclat) pour révéler son ensemble et son bonus dans la fiche.</li>
+    <li><strong>Bonus :</strong> équipez 2, 4 puis 6 pièces du même ensemble. Le Codex affiche le bonus actif et le prochain palier ; la fiche d'objet rappelle « équipé y/6 · collection x/6 ».</li>
+  </ul>
+  <table>
+    <tr><th>Ensemble</th><th>Biome(s)</th><th>2 pièces</th><th>4 pièces</th><th>6 pièces</th></tr>
+    <tr><td>Veilleur</td><td>Cryptes de Vael (1–10)</td><td>+10 ATQ, +30 PV</td><td>+20 ATQ, +60 PV</td><td>+30 ATQ, +90 PV</td></tr>
+    <tr><td>Ossature</td><td>Cryptes (1–10), Catacombes (11–20)</td><td>+6 ATQ, +25 PV</td><td>+12 ATQ, +50 PV</td><td>+18 ATQ, +75 PV</td></tr>
+    <tr><td>Toile</td><td>Catacombes (11–20)</td><td>+3 % VIT, +2 % critique</td><td>+6 % VIT, +4 % critique</td><td>+9 % VIT, +6 % critique</td></tr>
+    <tr><td>Braise</td><td>Cavernes de cendre (21–30)</td><td>+3 % critique, +5 % vol de vie</td><td>+6 % critique, +10 % vol de vie</td><td>+9 % critique, +15 % vol de vie</td></tr>
+    <tr><td>Cendre</td><td>Cavernes de cendre (21–30)</td><td>+8 ATQ</td><td>+16 ATQ, +3 % critique</td><td>+24 ATQ, +6 % critique</td></tr>
+    <tr><td>Forge</td><td>Forge noyée (31–40)</td><td>+35 PV</td><td>+70 PV, −3 % dégâts subis</td><td>+105 PV, −6 % dégâts subis</td></tr>
+    <tr><td>Givre</td><td>Cimes du Serment (41–50)</td><td>+5 % VIT, +0,3 PV/s</td><td>+10 % VIT, +0,6 PV/s</td><td>+15 % VIT, +0,9 PV/s</td></tr>
+    <tr><td>Serment</td><td>Cimes du Serment (41–50)</td><td>+7 ATQ</td><td>+14 ATQ, +8 % dégâts gardiens</td><td>+21 ATQ, +16 % dégâts gardiens</td></tr>
+    <tr><td>Bois</td><td>Bois des Âmes (51–60)</td><td>+4 % VIT</td><td>+8 % VIT, +0,7 PV/s</td><td>+12 % VIT, +1,2 PV/s</td></tr>
+    <tr><td>Abîme</td><td>Abîme organique (61–70)</td><td>+20 PV, +4 % vol de vie</td><td>+40 PV, +8 % vol de vie</td><td>+60 PV, +12 % vol de vie</td></tr>
+    <tr><td>Trône</td><td>Trône des Âmes (71+)</td><td>+10 ATQ</td><td>+20 ATQ, +15 % dégâts critiques</td><td>+30 ATQ, +30 % dégâts critiques</td></tr>
+  </table>
   <h3>Fiche de créature et de gardien</h3>
   <div class="grid">
     <figure class="shot">
@@ -1002,7 +1028,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.17.1 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.17.2 · <a href="#top">Retour au sommaire</a><br>
   Garmin ou Santé Connect · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

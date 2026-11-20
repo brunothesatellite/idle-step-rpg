@@ -60,7 +60,7 @@ import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.itemScore
 import com.brunothesatellite.idlesteprpg.engine.powerOf
-import com.brunothesatellite.idlesteprpg.engine.ownedSetSlots
+import com.brunothesatellite.idlesteprpg.engine.discoveredSetSlots
 import com.brunothesatellite.idlesteprpg.engine.rarityLabel
 import com.brunothesatellite.idlesteprpg.engine.rankLabel
 import com.brunothesatellite.idlesteprpg.engine.setLabel
@@ -427,7 +427,7 @@ private fun CodexCard(state: GameState, onOpen: () -> Unit) {
     val bosses = allBossTemplates()
     val discoveredMobs = mobs.count { (state.bestiary[it.name] ?: 0) > 0 }
     val discoveredBosses = bosses.count { (state.bossKills[it.name] ?: 0) > 0 }
-    val sets = ITEM_SETS.count { ownedSetSlots(state, it).isNotEmpty() }
+    val sets = ITEM_SETS.count { discoveredSetSlots(state, it).size >= 6 }
     val biomes = BIOMES.count { state.floor >= it.fromFloor }
     PixelCard(
         Modifier.fillMaxWidth(),

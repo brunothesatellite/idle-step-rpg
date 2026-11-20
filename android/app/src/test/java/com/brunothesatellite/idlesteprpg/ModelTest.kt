@@ -2,10 +2,12 @@ package com.brunothesatellite.idlesteprpg
 
 import com.brunothesatellite.idlesteprpg.engine.BIOME_POOLS
 import com.brunothesatellite.idlesteprpg.engine.CONSUMABLES
+import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.LOOT_TEMPLATES
 import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
+import com.brunothesatellite.idlesteprpg.engine.discoveredSetSlots
 import com.brunothesatellite.idlesteprpg.engine.lootTemplatesFor
 import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.allBossTemplates
@@ -211,6 +213,53 @@ class ModelTest {
         }
         val slots = com.brunothesatellite.idlesteprpg.engine.ownedSetSlots(state, "os")
         assertEquals(setOf("weapon", "head", "body"), slots)
+    }
+
+    @Test
+    fun setCollectionSurvivesSale() {
+        val state = GameState()
+        val item = Item(
+            "set_sale", "Lame d'os", "weapon", "rare", "item/short_sword1.png", 1,
+            setName = "os"
+        )
+        GameEngine.addLoot(state, item)
+        assertTrue("weapon" in discoveredSetSlots(state, "os"))
+
+        state.inventory = state.inventory.filterNot { it.id == item.id }
+        state.stash = state.stash.filterNot { it.id == item.id }
+
+        assertTrue("weapon" in discoveredSetSlots(state, "os"))
+    }
+
+    @Test
+    fun migrateSeedsCollectionFromOwnedPieces() {
+        val state = GameState().apply {
+            inventory = listOf(
+                Item("set_head", "Heaume d'os", "head", "rare", "item/helmet2.png", 1, setName = "os"),
+                Item("set_body", "Plate d'os", "body", "rare", "item/plate1.png", 1, setName = "os")
+            )
+        }
+
+        GameEngine.migrate(state)
+
+        assertEquals(setOf("head", "body"), discoveredSetSlots(state, "os"))
+    }
+
+    @Test
+    fun collectionCompletesAtSixDistinctSlots() {
+        val state = GameState()
+        listOf("weapon", "head", "body", "hands", "feet", "talisman")
+            .forEachIndexed { index, slot ->
+                GameEngine.addLoot(
+                    state,
+                    Item(
+                        "set_$index", "Pièce d'os", slot, "rare", "item/plate1.png", 1,
+                        setName = "os"
+                    )
+                )
+            }
+
+        assertEquals(6, discoveredSetSlots(state, "os").size)
     }
 
     @Test
