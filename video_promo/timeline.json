@@ -1,0 +1,2857 @@
+{
+  "version": 1,
+  "source_audio": "video_promo/audio.mp3",
+  "duration": 143.932,
+  "duration_after_vad": 125.104,
+  "language": "fr",
+  "language_probability": 1.0,
+  "model": "medium",
+  "device": "cuda",
+  "compute_type": "float16",
+  "generated_at": "2026-11-20T17:51:46.407443+00:00",
+  "transcription_seconds": 17.57,
+  "reference_file": "playstore\\03-textes\\lore.md",
+  "reference_text": "Les âmes ne meurent pas. Elles attendent. On raconte qu'aux portes de Vael, la terre s'est ouverte un matin sans trembler. Pas de gouffre, pas de feu : une porte de pierre, basse, couverte de runes, et derrière elle un escalier qui descendait plus loin que la lumière. Les premiers à y entrer ne sont pas revenus. Pas morts retenus. Leurs noms sont restés accrochés aux murs, et depuis, chaque salle du donjon respire avec le souffle de quelqu'un qui n'a pas fini de partir. Kaelen était pèlerin. Il portait une besace, une lame héritée, et une braise dans un pot de fer. On le disait lent. C'est pour ça qu'on lui a confié la marche : les âmes n'ont pas besoin de héros pressés. Il a compris une chose simple : les donjons ne sont pas des tombeaux, ce sont des nœuds. Chaque palier est un fil serré autour d'une âme. Le gardien qui le scelle n'est pas un bourreau c'est le dernier gardien d'une douleur, celui qui refuse de la laisser partir. Alors Kaelen marche. Dix pas pour un mètre, cent mètres pour un palier. Chaque pas est un mot dans une prière qu'il ne prononce pas à voix haute. Aux Cryptes de Vael, la pierre est froide et les cierges brûlent sans cire. Aux Catacombes, l'air sent la mousse et les serments anciens. Dans les Cavernes de cendre, il apprend à respirer court. Dans la Forge noyée, il pose la main sur les enclumes et sent encore la chaleur de ceux qui forgeaient pour les vivants. Aux Cimes du Serment, le vent lui vole ses mots. Dans le Bois des Âmes, les arbres ont des feuilles d'or et des racines qui se souviennent. Dans l'Abîme organique, la pierre saigne et il ne s'arrête pas. Au Trône des Âmes, il n'y a plus de couloir : seulement une porte, un gardien, et derrière, la Première Âme, celle qui a refusé de partir la première. La braise ne s'éteint jamais. Tant qu'il marche, elle veille ; quand il s'arrête, il la pose au centre du camp, et les âmes qui passent s'y réchauffent sans oser s'approcher. Kaelen ne cherche pas la fin. Il sait qu'il n'y en a pas. Il cherche la prochaine âme qui acceptera de respirer. « La défaite n'est qu'un détour. Vingt mètres en arrière, l'or coule encore. » ---",
+  "segments": [
+    {
+      "id": 0,
+      "start": 0.47,
+      "end": 2.03,
+      "text": "Les âmes ne meurent pas.",
+      "words": [
+        {
+          "word": "Les",
+          "start": 0.47,
+          "end": 0.97,
+          "probability": 0.5405
+        },
+        {
+          "word": "âmes",
+          "start": 0.97,
+          "end": 1.19,
+          "probability": 0.9937
+        },
+        {
+          "word": "ne",
+          "start": 1.19,
+          "end": 1.37,
+          "probability": 0.9971
+        },
+        {
+          "word": "meurent",
+          "start": 1.37,
+          "end": 1.61,
+          "probability": 0.9917
+        },
+        {
+          "word": "pas.",
+          "start": 1.61,
+          "end": 2.03,
+          "probability": 0.999
+        }
+      ],
+      "raw_segment_id": 0
+    },
+    {
+      "id": 1,
+      "start": 2.36,
+      "end": 3.5,
+      "text": "Elles attendent.",
+      "words": [
+        {
+          "word": "Elles",
+          "start": 2.36,
+          "end": 2.66,
+          "probability": 0.9902
+        },
+        {
+          "word": "attendent.",
+          "start": 2.66,
+          "end": 3.5,
+          "probability": 0.9868
+        }
+      ],
+      "raw_segment_id": 0
+    },
+    {
+      "id": 2,
+      "start": 5.12,
+      "end": 9.42,
+      "text": "On raconte qu'aux portes de Vael, la terre s'est ouverte un matin sans trembler.",
+      "words": [
+        {
+          "word": "On",
+          "start": 5.12,
+          "end": 5.36,
+          "probability": 0.9727
+        },
+        {
+          "word": "raconte",
+          "start": 5.36,
+          "end": 5.68,
+          "probability": 0.9968
+        },
+        {
+          "word": "qu",
+          "start": 5.68,
+          "end": 5.78,
+          "probability": 0.9927
+        },
+        {
+          "word": "'aux",
+          "start": 5.78,
+          "end": 5.92,
+          "probability": 0.8638
+        },
+        {
+          "word": "portes",
+          "start": 5.92,
+          "end": 6.22,
+          "probability": 0.9941
+        },
+        {
+          "word": "de",
+          "start": 6.22,
+          "end": 6.46,
+          "probability": 0.9985
+        },
+        {
+          "word": "Vael,",
+          "start": 6.46,
+          "end": 6.8,
+          "probability": 0.3204
+        },
+        {
+          "word": "la",
+          "start": 7.34,
+          "end": 7.52,
+          "probability": 0.9565
+        },
+        {
+          "word": "terre",
+          "start": 7.52,
+          "end": 7.72,
+          "probability": 0.8818
+        },
+        {
+          "word": "s",
+          "start": 7.72,
+          "end": 7.84,
+          "probability": 0.9956
+        },
+        {
+          "word": "'est",
+          "start": 7.84,
+          "end": 8.0,
+          "probability": 0.9988
+        },
+        {
+          "word": "ouverte",
+          "start": 8.0,
+          "end": 8.26,
+          "probability": 0.994
+        },
+        {
+          "word": "un",
+          "start": 8.26,
+          "end": 8.48,
+          "probability": 0.9854
+        },
+        {
+          "word": "matin",
+          "start": 8.48,
+          "end": 8.68,
+          "probability": 0.998
+        },
+        {
+          "word": "sans",
+          "start": 8.68,
+          "end": 8.96,
+          "probability": 0.9849
+        },
+        {
+          "word": "trembler.",
+          "start": 8.96,
+          "end": 9.42,
+          "probability": 0.9885
+        }
+      ],
+      "raw_segment_id": 0
+    },
+    {
+      "id": 3,
+      "start": 9.88,
+      "end": 11.46,
+      "text": "Pas de gouffre, pas de feu.",
+      "words": [
+        {
+          "word": "Pas",
+          "start": 9.88,
+          "end": 10.06,
+          "probability": 0.9897
+        },
+        {
+          "word": "de",
+          "start": 10.06,
+          "end": 10.26,
+          "probability": 0.9995
+        },
+        {
+          "word": "gouffre,",
+          "start": 10.26,
+          "end": 10.76,
+          "probability": 0.891
+        },
+        {
+          "word": "pas",
+          "start": 10.84,
+          "end": 11.04,
+          "probability": 0.9995
+        },
+        {
+          "word": "de",
+          "start": 11.04,
+          "end": 11.3,
+          "probability": 0.999
+        },
+        {
+          "word": "feu.",
+          "start": 11.3,
+          "end": 11.46,
+          "probability": 0.9775
+        }
+      ],
+      "raw_segment_id": 1
+    },
+    {
+      "id": 4,
+      "start": 11.86,
+      "end": 18.28,
+      "text": "Une porte de pierre, basse, couverte de runes, et derrière elle un escalier qui descendait plus loin que la lumière.",
+      "words": [
+        {
+          "word": "Une",
+          "start": 11.86,
+          "end": 12.06,
+          "probability": 0.9854
+        },
+        {
+          "word": "porte",
+          "start": 12.06,
+          "end": 12.32,
+          "probability": 0.9995
+        },
+        {
+          "word": "de",
+          "start": 12.32,
+          "end": 12.58,
+          "probability": 0.999
+        },
+        {
+          "word": "pierre,",
+          "start": 12.58,
+          "end": 13.24,
+          "probability": 0.9487
+        },
+        {
+          "word": "basse,",
+          "start": 13.34,
+          "end": 13.98,
+          "probability": 0.9941
+        },
+        {
+          "word": "couverte",
+          "start": 14.14,
+          "end": 14.52,
+          "probability": 0.9915
+        },
+        {
+          "word": "de",
+          "start": 14.52,
+          "end": 14.76,
+          "probability": 0.998
+        },
+        {
+          "word": "runes,",
+          "start": 14.76,
+          "end": 15.22,
+          "probability": 0.8677
+        },
+        {
+          "word": "et",
+          "start": 15.44,
+          "end": 15.6,
+          "probability": 0.9697
+        },
+        {
+          "word": "derrière",
+          "start": 15.6,
+          "end": 15.84,
+          "probability": 0.9868
+        },
+        {
+          "word": "elle",
+          "start": 15.84,
+          "end": 15.96,
+          "probability": 0.9365
+        },
+        {
+          "word": "un",
+          "start": 15.96,
+          "end": 16.16,
+          "probability": 0.8994
+        },
+        {
+          "word": "escalier",
+          "start": 16.16,
+          "end": 16.6,
+          "probability": 0.998
+        },
+        {
+          "word": "qui",
+          "start": 16.6,
+          "end": 16.86,
+          "probability": 0.9893
+        },
+        {
+          "word": "descendait",
+          "start": 16.86,
+          "end": 17.22,
+          "probability": 0.9949
+        },
+        {
+          "word": "plus",
+          "start": 17.22,
+          "end": 17.44,
+          "probability": 0.999
+        },
+        {
+          "word": "loin",
+          "start": 17.44,
+          "end": 17.56,
+          "probability": 0.9985
+        },
+        {
+          "word": "que",
+          "start": 17.56,
+          "end": 17.7,
+          "probability": 0.999
+        },
+        {
+          "word": "la",
+          "start": 17.7,
+          "end": 17.9,
+          "probability": 0.9976
+        },
+        {
+          "word": "lumière.",
+          "start": 17.9,
+          "end": 18.28,
+          "probability": 0.9888
+        }
+      ],
+      "raw_segment_id": 1
+    },
+    {
+      "id": 5,
+      "start": 20.23,
+      "end": 22.69,
+      "text": "Les premiers à y entrer ne sont pas revenus.",
+      "words": [
+        {
+          "word": "Les",
+          "start": 20.23,
+          "end": 20.51,
+          "probability": 0.9941
+        },
+        {
+          "word": "premiers",
+          "start": 20.51,
+          "end": 20.85,
+          "probability": 0.9932
+        },
+        {
+          "word": "à",
+          "start": 20.85,
+          "end": 21.05,
+          "probability": 0.854
+        },
+        {
+          "word": "y",
+          "start": 21.05,
+          "end": 21.21,
+          "probability": 0.999
+        },
+        {
+          "word": "entrer",
+          "start": 21.21,
+          "end": 21.53,
+          "probability": 0.9944
+        },
+        {
+          "word": "ne",
+          "start": 21.53,
+          "end": 21.69,
+          "probability": 0.9946
+        },
+        {
+          "word": "sont",
+          "start": 21.69,
+          "end": 21.85,
+          "probability": 0.998
+        },
+        {
+          "word": "pas",
+          "start": 21.85,
+          "end": 22.11,
+          "probability": 0.998
+        },
+        {
+          "word": "revenus.",
+          "start": 22.11,
+          "end": 22.69,
+          "probability": 0.9807
+        }
+      ],
+      "raw_segment_id": 2
+    },
+    {
+      "id": 6,
+      "start": 23.0,
+      "end": 24.98,
+      "text": "Pas morts, retenus.",
+      "words": [
+        {
+          "word": "Pas",
+          "start": 23.0,
+          "end": 23.24,
+          "probability": 0.9941
+        },
+        {
+          "word": "morts,",
+          "start": 23.24,
+          "end": 23.94,
+          "probability": 0.9573
+        },
+        {
+          "word": "retenus.",
+          "start": 24.24,
+          "end": 24.98,
+          "probability": 0.993
+        }
+      ],
+      "raw_segment_id": 2
+    },
+    {
+      "id": 7,
+      "start": 25.22,
+      "end": 32.44,
+      "text": "Leurs noms sont restés accrochés au mur, et depuis, chaque salle du donjon respire avec le souffle de quelqu'un qui n'a pas fini de partir.",
+      "words": [
+        {
+          "word": "Leurs",
+          "start": 25.22,
+          "end": 25.48,
+          "probability": 0.9805
+        },
+        {
+          "word": "noms",
+          "start": 25.48,
+          "end": 25.62,
+          "probability": 0.9944
+        },
+        {
+          "word": "sont",
+          "start": 25.62,
+          "end": 25.8,
+          "probability": 0.9971
+        },
+        {
+          "word": "restés",
+          "start": 25.8,
+          "end": 26.16,
+          "probability": 0.9946
+        },
+        {
+          "word": "accrochés",
+          "start": 26.16,
+          "end": 26.56,
+          "probability": 0.9952
+        },
+        {
+          "word": "au",
+          "start": 26.56,
+          "end": 26.78,
+          "probability": 0.6143
+        },
+        {
+          "word": "mur,",
+          "start": 26.78,
+          "end": 27.08,
+          "probability": 0.9937
+        },
+        {
+          "word": "et",
+          "start": 27.48,
+          "end": 27.6,
+          "probability": 0.9932
+        },
+        {
+          "word": "depuis,",
+          "start": 27.6,
+          "end": 28.04,
+          "probability": 0.9731
+        },
+        {
+          "word": "chaque",
+          "start": 28.56,
+          "end": 28.62,
+          "probability": 0.9985
+        },
+        {
+          "word": "salle",
+          "start": 28.62,
+          "end": 28.86,
+          "probability": 0.9675
+        },
+        {
+          "word": "du",
+          "start": 28.86,
+          "end": 29.08,
+          "probability": 0.9976
+        },
+        {
+          "word": "donjon",
+          "start": 29.08,
+          "end": 29.34,
+          "probability": 0.9434
+        },
+        {
+          "word": "respire",
+          "start": 29.34,
+          "end": 29.82,
+          "probability": 0.9924
+        },
+        {
+          "word": "avec",
+          "start": 29.82,
+          "end": 30.06,
+          "probability": 0.9966
+        },
+        {
+          "word": "le",
+          "start": 30.06,
+          "end": 30.26,
+          "probability": 0.999
+        },
+        {
+          "word": "souffle",
+          "start": 30.26,
+          "end": 30.54,
+          "probability": 0.9961
+        },
+        {
+          "word": "de",
+          "start": 30.54,
+          "end": 30.74,
+          "probability": 0.998
+        },
+        {
+          "word": "quelqu",
+          "start": 30.74,
+          "end": 31.0,
+          "probability": 0.9995
+        },
+        {
+          "word": "'un",
+          "start": 31.0,
+          "end": 31.14,
+          "probability": 0.9993
+        },
+        {
+          "word": "qui",
+          "start": 31.14,
+          "end": 31.3,
+          "probability": 0.9941
+        },
+        {
+          "word": "n",
+          "start": 31.3,
+          "end": 31.4,
+          "probability": 0.9995
+        },
+        {
+          "word": "'a",
+          "start": 31.4,
+          "end": 31.44,
+          "probability": 0.998
+        },
+        {
+          "word": "pas",
+          "start": 31.44,
+          "end": 31.6,
+          "probability": 0.998
+        },
+        {
+          "word": "fini",
+          "start": 31.6,
+          "end": 31.8,
+          "probability": 0.9941
+        },
+        {
+          "word": "de",
+          "start": 31.8,
+          "end": 32.0,
+          "probability": 0.9995
+        },
+        {
+          "word": "partir.",
+          "start": 32.0,
+          "end": 32.44,
+          "probability": 0.9985
+        }
+      ],
+      "raw_segment_id": 2
+    },
+    {
+      "id": 8,
+      "start": 34.06,
+      "end": 35.62,
+      "text": "Kaëlen était pèlerin.",
+      "words": [
+        {
+          "word": "Kaëlen",
+          "start": 34.06,
+          "end": 34.92,
+          "probability": 0.3513
+        },
+        {
+          "word": "était",
+          "start": 34.92,
+          "end": 35.2,
+          "probability": 0.8848
+        },
+        {
+          "word": "pèlerin.",
+          "start": 35.2,
+          "end": 35.62,
+          "probability": 0.9302
+        }
+      ],
+      "raw_segment_id": 3
+    },
+    {
+      "id": 9,
+      "start": 36.28,
+      "end": 40.74,
+      "text": "Il portait une besasse, une lame héritée et une braise dans un pot de fer.",
+      "words": [
+        {
+          "word": "Il",
+          "start": 36.28,
+          "end": 36.46,
+          "probability": 0.9663
+        },
+        {
+          "word": "portait",
+          "start": 36.46,
+          "end": 36.74,
+          "probability": 0.9983
+        },
+        {
+          "word": "une",
+          "start": 36.74,
+          "end": 36.92,
+          "probability": 0.9946
+        },
+        {
+          "word": "besasse,",
+          "start": 36.92,
+          "end": 37.58,
+          "probability": 0.7185
+        },
+        {
+          "word": "une",
+          "start": 37.86,
+          "end": 37.98,
+          "probability": 0.9893
+        },
+        {
+          "word": "lame",
+          "start": 37.98,
+          "end": 38.14,
+          "probability": 0.9897
+        },
+        {
+          "word": "héritée",
+          "start": 38.14,
+          "end": 38.96,
+          "probability": 0.9648
+        },
+        {
+          "word": "et",
+          "start": 38.96,
+          "end": 39.24,
+          "probability": 0.7305
+        },
+        {
+          "word": "une",
+          "start": 39.24,
+          "end": 39.54,
+          "probability": 0.9966
+        },
+        {
+          "word": "braise",
+          "start": 39.54,
+          "end": 39.72,
+          "probability": 0.9658
+        },
+        {
+          "word": "dans",
+          "start": 39.72,
+          "end": 39.96,
+          "probability": 0.9985
+        },
+        {
+          "word": "un",
+          "start": 39.96,
+          "end": 40.1,
+          "probability": 0.9985
+        },
+        {
+          "word": "pot",
+          "start": 40.1,
+          "end": 40.2,
+          "probability": 0.9736
+        },
+        {
+          "word": "de",
+          "start": 40.2,
+          "end": 40.46,
+          "probability": 0.9956
+        },
+        {
+          "word": "fer.",
+          "start": 40.46,
+          "end": 40.74,
+          "probability": 0.9946
+        }
+      ],
+      "raw_segment_id": 3
+    },
+    {
+      "id": 10,
+      "start": 41.34,
+      "end": 42.28,
+      "text": "On le disait lent.",
+      "words": [
+        {
+          "word": "On",
+          "start": 41.34,
+          "end": 41.46,
+          "probability": 0.9629
+        },
+        {
+          "word": "le",
+          "start": 41.46,
+          "end": 41.7,
+          "probability": 0.9966
+        },
+        {
+          "word": "disait",
+          "start": 41.7,
+          "end": 42.06,
+          "probability": 0.9824
+        },
+        {
+          "word": "lent.",
+          "start": 42.06,
+          "end": 42.28,
+          "probability": 0.9614
+        }
+      ],
+      "raw_segment_id": 3
+    },
+    {
+      "id": 11,
+      "start": 42.86,
+      "end": 44.62,
+      "text": "C'est pour ça qu'on lui a confié la marche.",
+      "words": [
+        {
+          "word": "C",
+          "start": 42.86,
+          "end": 42.92,
+          "probability": 0.9922
+        },
+        {
+          "word": "'est",
+          "start": 42.92,
+          "end": 43.0,
+          "probability": 0.9983
+        },
+        {
+          "word": "pour",
+          "start": 43.0,
+          "end": 43.28,
+          "probability": 0.998
+        },
+        {
+          "word": "ça",
+          "start": 43.28,
+          "end": 43.38,
+          "probability": 0.9756
+        },
+        {
+          "word": "qu",
+          "start": 43.38,
+          "end": 43.5,
+          "probability": 0.9824
+        },
+        {
+          "word": "'on",
+          "start": 43.5,
+          "end": 43.52,
+          "probability": 0.9976
+        },
+        {
+          "word": "lui",
+          "start": 43.52,
+          "end": 43.66,
+          "probability": 0.9976
+        },
+        {
+          "word": "a",
+          "start": 43.66,
+          "end": 43.84,
+          "probability": 0.9961
+        },
+        {
+          "word": "confié",
+          "start": 43.84,
+          "end": 44.04,
+          "probability": 0.9963
+        },
+        {
+          "word": "la",
+          "start": 44.04,
+          "end": 44.28,
+          "probability": 0.9722
+        },
+        {
+          "word": "marche.",
+          "start": 44.28,
+          "end": 44.62,
+          "probability": 0.9492
+        }
+      ],
+      "raw_segment_id": 3
+    },
+    {
+      "id": 12,
+      "start": 45.06,
+      "end": 47.1,
+      "text": "Les âmes n'ont pas besoin de héros pressés.",
+      "words": [
+        {
+          "word": "Les",
+          "start": 45.06,
+          "end": 45.34,
+          "probability": 0.9702
+        },
+        {
+          "word": "âmes",
+          "start": 45.34,
+          "end": 45.46,
+          "probability": 0.9932
+        },
+        {
+          "word": "n",
+          "start": 45.46,
+          "end": 45.6,
+          "probability": 0.998
+        },
+        {
+          "word": "'ont",
+          "start": 45.6,
+          "end": 45.68,
+          "probability": 0.9988
+        },
+        {
+          "word": "pas",
+          "start": 45.68,
+          "end": 45.92,
+          "probability": 0.9995
+        },
+        {
+          "word": "besoin",
+          "start": 45.92,
+          "end": 46.18,
+          "probability": 0.999
+        },
+        {
+          "word": "de",
+          "start": 46.18,
+          "end": 46.38,
+          "probability": 0.9751
+        },
+        {
+          "word": "héros",
+          "start": 46.38,
+          "end": 46.68,
+          "probability": 0.9502
+        },
+        {
+          "word": "pressés.",
+          "start": 46.68,
+          "end": 47.1,
+          "probability": 0.9832
+        }
+      ],
+      "raw_segment_id": 3
+    },
+    {
+      "id": 13,
+      "start": 48.93,
+      "end": 50.35,
+      "text": "Il a compris une chose simple.",
+      "words": [
+        {
+          "word": "Il",
+          "start": 48.93,
+          "end": 49.05,
+          "probability": 0.9917
+        },
+        {
+          "word": "a",
+          "start": 49.05,
+          "end": 49.27,
+          "probability": 0.9966
+        },
+        {
+          "word": "compris",
+          "start": 49.27,
+          "end": 49.45,
+          "probability": 0.999
+        },
+        {
+          "word": "une",
+          "start": 49.45,
+          "end": 49.67,
+          "probability": 0.9971
+        },
+        {
+          "word": "chose",
+          "start": 49.67,
+          "end": 49.89,
+          "probability": 0.9985
+        },
+        {
+          "word": "simple.",
+          "start": 49.89,
+          "end": 50.35,
+          "probability": 0.999
+        }
+      ],
+      "raw_segment_id": 4
+    },
+    {
+      "id": 14,
+      "start": 50.71,
+      "end": 52.47,
+      "text": "Les donjons ne sont pas des tombeaux.",
+      "words": [
+        {
+          "word": "Les",
+          "start": 50.71,
+          "end": 50.97,
+          "probability": 0.9824
+        },
+        {
+          "word": "donjons",
+          "start": 50.97,
+          "end": 51.25,
+          "probability": 0.9297
+        },
+        {
+          "word": "ne",
+          "start": 51.25,
+          "end": 51.41,
+          "probability": 0.9971
+        },
+        {
+          "word": "sont",
+          "start": 51.41,
+          "end": 51.59,
+          "probability": 0.9985
+        },
+        {
+          "word": "pas",
+          "start": 51.59,
+          "end": 51.73,
+          "probability": 0.9995
+        },
+        {
+          "word": "des",
+          "start": 51.73,
+          "end": 51.91,
+          "probability": 0.9995
+        },
+        {
+          "word": "tombeaux.",
+          "start": 51.91,
+          "end": 52.47,
+          "probability": 0.8507
+        }
+      ],
+      "raw_segment_id": 4
+    },
+    {
+      "id": 15,
+      "start": 52.61,
+      "end": 53.49,
+      "text": "Ce sont des nœuds.",
+      "words": [
+        {
+          "word": "Ce",
+          "start": 52.61,
+          "end": 52.75,
+          "probability": 0.979
+        },
+        {
+          "word": "sont",
+          "start": 52.75,
+          "end": 52.93,
+          "probability": 0.999
+        },
+        {
+          "word": "des",
+          "start": 52.93,
+          "end": 53.13,
+          "probability": 0.999
+        },
+        {
+          "word": "nœuds.",
+          "start": 53.13,
+          "end": 53.49,
+          "probability": 0.9035
+        }
+      ],
+      "raw_segment_id": 4
+    },
+    {
+      "id": 16,
+      "start": 53.87,
+      "end": 56.77,
+      "text": "Chaque palier est un fil serré autour d'une âme.",
+      "words": [
+        {
+          "word": "Chaque",
+          "start": 53.87,
+          "end": 54.21,
+          "probability": 0.9924
+        },
+        {
+          "word": "palier",
+          "start": 54.21,
+          "end": 54.69,
+          "probability": 0.9622
+        },
+        {
+          "word": "est",
+          "start": 54.69,
+          "end": 54.95,
+          "probability": 0.9956
+        },
+        {
+          "word": "un",
+          "start": 54.95,
+          "end": 55.19,
+          "probability": 0.999
+        },
+        {
+          "word": "fil",
+          "start": 55.19,
+          "end": 55.35,
+          "probability": 0.9771
+        },
+        {
+          "word": "serré",
+          "start": 55.35,
+          "end": 55.73,
+          "probability": 0.9978
+        },
+        {
+          "word": "autour",
+          "start": 55.73,
+          "end": 56.03,
+          "probability": 0.9956
+        },
+        {
+          "word": "d",
+          "start": 56.03,
+          "end": 56.15,
+          "probability": 0.9985
+        },
+        {
+          "word": "'une",
+          "start": 56.15,
+          "end": 56.27,
+          "probability": 0.9949
+        },
+        {
+          "word": "âme.",
+          "start": 56.27,
+          "end": 56.77,
+          "probability": 0.9968
+        }
+      ],
+      "raw_segment_id": 4
+    },
+    {
+      "id": 17,
+      "start": 57.13,
+      "end": 59.57,
+      "text": "Le gardien qui le sel n'est pas un bourreau.",
+      "words": [
+        {
+          "word": "Le",
+          "start": 57.13,
+          "end": 57.33,
+          "probability": 0.9946
+        },
+        {
+          "word": "gardien",
+          "start": 57.33,
+          "end": 57.75,
+          "probability": 0.9846
+        },
+        {
+          "word": "qui",
+          "start": 57.75,
+          "end": 57.91,
+          "probability": 0.9985
+        },
+        {
+          "word": "le",
+          "start": 57.91,
+          "end": 58.15,
+          "probability": 0.9956
+        },
+        {
+          "word": "sel",
+          "start": 58.15,
+          "end": 58.25,
+          "probability": 0.2377
+        },
+        {
+          "word": "n",
+          "start": 58.25,
+          "end": 58.39,
+          "probability": 0.8872
+        },
+        {
+          "word": "'est",
+          "start": 58.39,
+          "end": 58.49,
+          "probability": 0.999
+        },
+        {
+          "word": "pas",
+          "start": 58.49,
+          "end": 58.67,
+          "probability": 0.999
+        },
+        {
+          "word": "un",
+          "start": 58.67,
+          "end": 58.87,
+          "probability": 0.9961
+        },
+        {
+          "word": "bourreau.",
+          "start": 58.87,
+          "end": 59.57,
+          "probability": 0.9821
+        }
+      ],
+      "raw_segment_id": 4
+    },
+    {
+      "id": 18,
+      "start": 59.71,
+      "end": 61.67,
+      "text": "C'est le dernier gardien d'une douleur.",
+      "words": [
+        {
+          "word": "C",
+          "start": 59.71,
+          "end": 59.83,
+          "probability": 0.9956
+        },
+        {
+          "word": "'est",
+          "start": 59.83,
+          "end": 59.87,
+          "probability": 0.9995
+        },
+        {
+          "word": "le",
+          "start": 59.87,
+          "end": 60.05,
+          "probability": 0.998
+        },
+        {
+          "word": "dernier",
+          "start": 60.05,
+          "end": 60.31,
+          "probability": 0.999
+        },
+        {
+          "word": "gardien",
+          "start": 60.31,
+          "end": 60.67,
+          "probability": 0.9988
+        },
+        {
+          "word": "d",
+          "start": 60.67,
+          "end": 60.81,
+          "probability": 0.999
+        },
+        {
+          "word": "'une",
+          "start": 60.81,
+          "end": 60.91,
+          "probability": 0.9995
+        },
+        {
+          "word": "douleur.",
+          "start": 60.91,
+          "end": 61.67,
+          "probability": 0.9989
+        }
+      ],
+      "raw_segment_id": 4
+    },
+    {
+      "id": 19,
+      "start": 61.89,
+      "end": 63.71,
+      "text": "Celui qui refuse de la laisser partir.",
+      "words": [
+        {
+          "word": "Celui",
+          "start": 61.89,
+          "end": 62.13,
+          "probability": 0.9983
+        },
+        {
+          "word": "qui",
+          "start": 62.13,
+          "end": 62.31,
+          "probability": 0.999
+        },
+        {
+          "word": "refuse",
+          "start": 62.31,
+          "end": 62.63,
+          "probability": 0.9966
+        },
+        {
+          "word": "de",
+          "start": 62.63,
+          "end": 62.83,
+          "probability": 0.9976
+        },
+        {
+          "word": "la",
+          "start": 62.83,
+          "end": 62.97,
+          "probability": 0.9941
+        },
+        {
+          "word": "laisser",
+          "start": 62.97,
+          "end": 63.17,
+          "probability": 0.9985
+        },
+        {
+          "word": "partir.",
+          "start": 63.17,
+          "end": 63.71,
+          "probability": 0.998
+        }
+      ],
+      "raw_segment_id": 4
+    },
+    {
+      "id": 20,
+      "start": 63.98,
+      "end": 65.84,
+      "text": "Alors Kaëlen marche.",
+      "words": [
+        {
+          "word": "Alors",
+          "start": 63.98,
+          "end": 64.8,
+          "probability": 0.3796
+        },
+        {
+          "word": "Kaëlen",
+          "start": 64.8,
+          "end": 65.24,
+          "probability": 0.3585
+        },
+        {
+          "word": "marche.",
+          "start": 65.24,
+          "end": 65.84,
+          "probability": 0.9912
+        }
+      ],
+      "raw_segment_id": 5
+    },
+    {
+      "id": 21,
+      "start": 66.47,
+      "end": 69.33,
+      "text": "Dix pas pour un mètre, cent mètres pour un palier.",
+      "words": [
+        {
+          "word": "Dix",
+          "start": 66.47,
+          "end": 66.65,
+          "probability": 0.7705
+        },
+        {
+          "word": "pas",
+          "start": 66.65,
+          "end": 66.77,
+          "probability": 0.9653
+        },
+        {
+          "word": "pour",
+          "start": 66.77,
+          "end": 66.97,
+          "probability": 0.9956
+        },
+        {
+          "word": "un",
+          "start": 66.97,
+          "end": 67.17,
+          "probability": 0.9937
+        },
+        {
+          "word": "mètre,",
+          "start": 67.17,
+          "end": 67.83,
+          "probability": 0.736
+        },
+        {
+          "word": "cent",
+          "start": 67.99,
+          "end": 68.17,
+          "probability": 0.7329
+        },
+        {
+          "word": "mètres",
+          "start": 68.17,
+          "end": 68.51,
+          "probability": 0.9524
+        },
+        {
+          "word": "pour",
+          "start": 68.51,
+          "end": 68.65,
+          "probability": 0.998
+        },
+        {
+          "word": "un",
+          "start": 68.65,
+          "end": 68.87,
+          "probability": 0.9971
+        },
+        {
+          "word": "palier.",
+          "start": 68.87,
+          "end": 69.33,
+          "probability": 0.9783
+        }
+      ],
+      "raw_segment_id": 5
+    },
+    {
+      "id": 22,
+      "start": 69.91,
+      "end": 73.25,
+      "text": "Chaque pas est un mot dans une prière qu'il ne prononce pas à voix haute.",
+      "words": [
+        {
+          "word": "Chaque",
+          "start": 69.91,
+          "end": 70.17,
+          "probability": 0.9448
+        },
+        {
+          "word": "pas",
+          "start": 70.17,
+          "end": 70.29,
+          "probability": 0.9976
+        },
+        {
+          "word": "est",
+          "start": 70.29,
+          "end": 70.47,
+          "probability": 0.9854
+        },
+        {
+          "word": "un",
+          "start": 70.47,
+          "end": 70.67,
+          "probability": 0.9976
+        },
+        {
+          "word": "mot",
+          "start": 70.67,
+          "end": 70.75,
+          "probability": 0.9956
+        },
+        {
+          "word": "dans",
+          "start": 70.75,
+          "end": 70.97,
+          "probability": 0.998
+        },
+        {
+          "word": "une",
+          "start": 70.97,
+          "end": 71.19,
+          "probability": 0.9985
+        },
+        {
+          "word": "prière",
+          "start": 71.19,
+          "end": 71.69,
+          "probability": 0.9956
+        },
+        {
+          "word": "qu",
+          "start": 71.69,
+          "end": 71.85,
+          "probability": 0.9634
+        },
+        {
+          "word": "'il",
+          "start": 71.85,
+          "end": 71.97,
+          "probability": 0.9849
+        },
+        {
+          "word": "ne",
+          "start": 71.97,
+          "end": 72.15,
+          "probability": 0.998
+        },
+        {
+          "word": "prononce",
+          "start": 72.15,
+          "end": 72.43,
+          "probability": 0.9883
+        },
+        {
+          "word": "pas",
+          "start": 72.43,
+          "end": 72.69,
+          "probability": 0.998
+        },
+        {
+          "word": "à",
+          "start": 72.69,
+          "end": 72.79,
+          "probability": 0.9907
+        },
+        {
+          "word": "voix",
+          "start": 72.79,
+          "end": 72.93,
+          "probability": 0.9883
+        },
+        {
+          "word": "haute.",
+          "start": 72.93,
+          "end": 73.25,
+          "probability": 0.9885
+        }
+      ],
+      "raw_segment_id": 5
+    },
+    {
+      "id": 23,
+      "start": 75.18,
+      "end": 79.18,
+      "text": "Au crypte de Vaël, la pierre est froide et les cierges brûlent sans cire.",
+      "words": [
+        {
+          "word": "Au",
+          "start": 75.18,
+          "end": 75.34,
+          "probability": 0.9307
+        },
+        {
+          "word": "crypte",
+          "start": 75.34,
+          "end": 75.7,
+          "probability": 0.8782
+        },
+        {
+          "word": "de",
+          "start": 75.7,
+          "end": 75.92,
+          "probability": 0.9976
+        },
+        {
+          "word": "Vaël,",
+          "start": 75.92,
+          "end": 76.54,
+          "probability": 0.5831
+        },
+        {
+          "word": "la",
+          "start": 76.8,
+          "end": 76.94,
+          "probability": 0.9858
+        },
+        {
+          "word": "pierre",
+          "start": 76.94,
+          "end": 77.18,
+          "probability": 0.9944
+        },
+        {
+          "word": "est",
+          "start": 77.18,
+          "end": 77.42,
+          "probability": 0.9902
+        },
+        {
+          "word": "froide",
+          "start": 77.42,
+          "end": 77.62,
+          "probability": 0.9946
+        },
+        {
+          "word": "et",
+          "start": 77.62,
+          "end": 77.72,
+          "probability": 0.9873
+        },
+        {
+          "word": "les",
+          "start": 77.72,
+          "end": 77.94,
+          "probability": 0.9966
+        },
+        {
+          "word": "cierges",
+          "start": 77.94,
+          "end": 78.24,
+          "probability": 0.791
+        },
+        {
+          "word": "brûlent",
+          "start": 78.24,
+          "end": 78.6,
+          "probability": 0.9937
+        },
+        {
+          "word": "sans",
+          "start": 78.6,
+          "end": 78.86,
+          "probability": 0.9697
+        },
+        {
+          "word": "cire.",
+          "start": 78.86,
+          "end": 79.18,
+          "probability": 0.8586
+        }
+      ],
+      "raw_segment_id": 5
+    },
+    {
+      "id": 24,
+      "start": 79.42,
+      "end": 83.26,
+      "text": "Au catacombe, l'air sent la mousse et les serments anciens.",
+      "words": [
+        {
+          "word": "Au",
+          "start": 79.42,
+          "end": 79.9,
+          "probability": 0.4846
+        },
+        {
+          "word": "catacombe,",
+          "start": 79.9,
+          "end": 80.92,
+          "probability": 0.9366
+        },
+        {
+          "word": "l",
+          "start": 81.14,
+          "end": 81.22,
+          "probability": 0.8662
+        },
+        {
+          "word": "'air",
+          "start": 81.22,
+          "end": 81.3,
+          "probability": 0.9224
+        },
+        {
+          "word": "sent",
+          "start": 81.3,
+          "end": 81.46,
+          "probability": 0.9653
+        },
+        {
+          "word": "la",
+          "start": 81.46,
+          "end": 81.7,
+          "probability": 0.9951
+        },
+        {
+          "word": "mousse",
+          "start": 81.7,
+          "end": 81.9,
+          "probability": 0.9944
+        },
+        {
+          "word": "et",
+          "start": 81.9,
+          "end": 82.06,
+          "probability": 0.9932
+        },
+        {
+          "word": "les",
+          "start": 82.06,
+          "end": 82.26,
+          "probability": 0.9922
+        },
+        {
+          "word": "serments",
+          "start": 82.26,
+          "end": 82.5,
+          "probability": 0.8049
+        },
+        {
+          "word": "anciens.",
+          "start": 82.5,
+          "end": 83.26,
+          "probability": 0.9963
+        }
+      ],
+      "raw_segment_id": 6
+    },
+    {
+      "id": 25,
+      "start": 83.6,
+      "end": 86.74,
+      "text": "Dans les cavernes de cendres, il apprend à respirer court.",
+      "words": [
+        {
+          "word": "Dans",
+          "start": 83.6,
+          "end": 83.72,
+          "probability": 0.9941
+        },
+        {
+          "word": "les",
+          "start": 83.72,
+          "end": 83.96,
+          "probability": 0.9961
+        },
+        {
+          "word": "cavernes",
+          "start": 83.96,
+          "end": 84.3,
+          "probability": 0.9906
+        },
+        {
+          "word": "de",
+          "start": 84.3,
+          "end": 84.6,
+          "probability": 0.998
+        },
+        {
+          "word": "cendres,",
+          "start": 84.6,
+          "end": 85.16,
+          "probability": 0.9198
+        },
+        {
+          "word": "il",
+          "start": 85.3,
+          "end": 85.5,
+          "probability": 0.9888
+        },
+        {
+          "word": "apprend",
+          "start": 85.5,
+          "end": 85.76,
+          "probability": 0.991
+        },
+        {
+          "word": "à",
+          "start": 85.76,
+          "end": 85.96,
+          "probability": 0.9873
+        },
+        {
+          "word": "respirer",
+          "start": 85.96,
+          "end": 86.46,
+          "probability": 0.9976
+        },
+        {
+          "word": "court.",
+          "start": 86.46,
+          "end": 86.74,
+          "probability": 0.9927
+        }
+      ],
+      "raw_segment_id": 6
+    },
+    {
+      "id": 26,
+      "start": 87.42,
+      "end": 93.38,
+      "text": "Dans la forge noyée, il pose la main sur les enclumes et sent encore la chaleur de ceux qui forgaient pour les vivants.",
+      "words": [
+        {
+          "word": "Dans",
+          "start": 87.42,
+          "end": 87.54,
+          "probability": 0.9976
+        },
+        {
+          "word": "la",
+          "start": 87.54,
+          "end": 87.8,
+          "probability": 0.998
+        },
+        {
+          "word": "forge",
+          "start": 87.8,
+          "end": 87.98,
+          "probability": 0.7671
+        },
+        {
+          "word": "noyée,",
+          "start": 87.98,
+          "end": 88.52,
+          "probability": 0.9637
+        },
+        {
+          "word": "il",
+          "start": 88.84,
+          "end": 89.04,
+          "probability": 0.9927
+        },
+        {
+          "word": "pose",
+          "start": 89.04,
+          "end": 89.26,
+          "probability": 0.9912
+        },
+        {
+          "word": "la",
+          "start": 89.26,
+          "end": 89.44,
+          "probability": 0.998
+        },
+        {
+          "word": "main",
+          "start": 89.44,
+          "end": 89.56,
+          "probability": 0.999
+        },
+        {
+          "word": "sur",
+          "start": 89.56,
+          "end": 89.72,
+          "probability": 0.9995
+        },
+        {
+          "word": "les",
+          "start": 89.72,
+          "end": 89.94,
+          "probability": 0.998
+        },
+        {
+          "word": "enclumes",
+          "start": 89.94,
+          "end": 90.42,
+          "probability": 0.7126
+        },
+        {
+          "word": "et",
+          "start": 90.42,
+          "end": 90.74,
+          "probability": 0.9561
+        },
+        {
+          "word": "sent",
+          "start": 90.74,
+          "end": 90.82,
+          "probability": 0.9897
+        },
+        {
+          "word": "encore",
+          "start": 90.82,
+          "end": 91.18,
+          "probability": 0.9951
+        },
+        {
+          "word": "la",
+          "start": 91.18,
+          "end": 91.38,
+          "probability": 0.9976
+        },
+        {
+          "word": "chaleur",
+          "start": 91.38,
+          "end": 91.66,
+          "probability": 0.9974
+        },
+        {
+          "word": "de",
+          "start": 91.66,
+          "end": 91.92,
+          "probability": 0.9966
+        },
+        {
+          "word": "ceux",
+          "start": 91.92,
+          "end": 92.02,
+          "probability": 0.9937
+        },
+        {
+          "word": "qui",
+          "start": 92.02,
+          "end": 92.28,
+          "probability": 0.9883
+        },
+        {
+          "word": "forgaient",
+          "start": 92.28,
+          "end": 92.52,
+          "probability": 0.7463
+        },
+        {
+          "word": "pour",
+          "start": 92.52,
+          "end": 92.7,
+          "probability": 0.9971
+        },
+        {
+          "word": "les",
+          "start": 92.7,
+          "end": 92.88,
+          "probability": 0.9976
+        },
+        {
+          "word": "vivants.",
+          "start": 92.88,
+          "end": 93.38,
+          "probability": 0.9949
+        }
+      ],
+      "raw_segment_id": 6
+    },
+    {
+      "id": 27,
+      "start": 93.52,
+      "end": 96.42,
+      "text": "Au cime du serment, le vent lui vole ses mots.",
+      "words": [
+        {
+          "word": "Au",
+          "start": 93.52,
+          "end": 93.9,
+          "probability": 0.5703
+        },
+        {
+          "word": "cime",
+          "start": 93.9,
+          "end": 94.12,
+          "probability": 0.7463
+        },
+        {
+          "word": "du",
+          "start": 94.12,
+          "end": 94.34,
+          "probability": 0.9961
+        },
+        {
+          "word": "serment,",
+          "start": 94.34,
+          "end": 95.1,
+          "probability": 0.8665
+        },
+        {
+          "word": "le",
+          "start": 95.34,
+          "end": 95.46,
+          "probability": 0.978
+        },
+        {
+          "word": "vent",
+          "start": 95.46,
+          "end": 95.58,
+          "probability": 0.9951
+        },
+        {
+          "word": "lui",
+          "start": 95.58,
+          "end": 95.78,
+          "probability": 0.9907
+        },
+        {
+          "word": "vole",
+          "start": 95.78,
+          "end": 95.96,
+          "probability": 0.9722
+        },
+        {
+          "word": "ses",
+          "start": 95.96,
+          "end": 96.22,
+          "probability": 0.9819
+        },
+        {
+          "word": "mots.",
+          "start": 96.22,
+          "end": 96.42,
+          "probability": 0.8296
+        }
+      ],
+      "raw_segment_id": 7
+    },
+    {
+      "id": 28,
+      "start": 97.04,
+      "end": 101.48,
+      "text": "Dans le bois des âmes, les arbres ont des feuilles d'or et des racines qui se souviennent.",
+      "words": [
+        {
+          "word": "Dans",
+          "start": 97.04,
+          "end": 97.14,
+          "probability": 0.9858
+        },
+        {
+          "word": "le",
+          "start": 97.14,
+          "end": 97.34,
+          "probability": 0.9932
+        },
+        {
+          "word": "bois",
+          "start": 97.34,
+          "end": 97.42,
+          "probability": 0.9033
+        },
+        {
+          "word": "des",
+          "start": 97.42,
+          "end": 97.72,
+          "probability": 0.9966
+        },
+        {
+          "word": "âmes,",
+          "start": 97.72,
+          "end": 98.28,
+          "probability": 0.9932
+        },
+        {
+          "word": "les",
+          "start": 98.5,
+          "end": 98.7,
+          "probability": 0.9771
+        },
+        {
+          "word": "arbres",
+          "start": 98.7,
+          "end": 98.9,
+          "probability": 0.999
+        },
+        {
+          "word": "ont",
+          "start": 98.9,
+          "end": 99.02,
+          "probability": 0.9976
+        },
+        {
+          "word": "des",
+          "start": 99.02,
+          "end": 99.22,
+          "probability": 0.9971
+        },
+        {
+          "word": "feuilles",
+          "start": 99.22,
+          "end": 99.46,
+          "probability": 0.9973
+        },
+        {
+          "word": "d",
+          "start": 99.46,
+          "end": 99.68,
+          "probability": 0.9922
+        },
+        {
+          "word": "'or",
+          "start": 99.68,
+          "end": 99.72,
+          "probability": 0.6967
+        },
+        {
+          "word": "et",
+          "start": 99.72,
+          "end": 99.84,
+          "probability": 0.6426
+        },
+        {
+          "word": "des",
+          "start": 99.84,
+          "end": 100.06,
+          "probability": 0.9946
+        },
+        {
+          "word": "racines",
+          "start": 100.06,
+          "end": 100.44,
+          "probability": 0.9971
+        },
+        {
+          "word": "qui",
+          "start": 100.44,
+          "end": 100.64,
+          "probability": 0.9907
+        },
+        {
+          "word": "se",
+          "start": 100.64,
+          "end": 100.88,
+          "probability": 0.9941
+        },
+        {
+          "word": "souviennent.",
+          "start": 100.88,
+          "end": 101.48,
+          "probability": 0.9928
+        }
+      ],
+      "raw_segment_id": 7
+    },
+    {
+      "id": 29,
+      "start": 101.95,
+      "end": 105.41,
+      "text": "Dans l'abîme organique, la pierre saigne et il ne s'arrête pas.",
+      "words": [
+        {
+          "word": "Dans",
+          "start": 101.95,
+          "end": 102.09,
+          "probability": 0.9927
+        },
+        {
+          "word": "l",
+          "start": 102.09,
+          "end": 102.29,
+          "probability": 0.8838
+        },
+        {
+          "word": "'abîme",
+          "start": 102.29,
+          "end": 102.51,
+          "probability": 0.8713
+        },
+        {
+          "word": "organique,",
+          "start": 102.51,
+          "end": 103.31,
+          "probability": 0.9968
+        },
+        {
+          "word": "la",
+          "start": 103.65,
+          "end": 103.77,
+          "probability": 0.9907
+        },
+        {
+          "word": "pierre",
+          "start": 103.77,
+          "end": 104.15,
+          "probability": 0.9932
+        },
+        {
+          "word": "saigne",
+          "start": 104.15,
+          "end": 104.37,
+          "probability": 0.991
+        },
+        {
+          "word": "et",
+          "start": 104.37,
+          "end": 104.47,
+          "probability": 0.9473
+        },
+        {
+          "word": "il",
+          "start": 104.47,
+          "end": 104.65,
+          "probability": 0.8765
+        },
+        {
+          "word": "ne",
+          "start": 104.65,
+          "end": 104.71,
+          "probability": 0.9985
+        },
+        {
+          "word": "s",
+          "start": 104.71,
+          "end": 104.89,
+          "probability": 0.9995
+        },
+        {
+          "word": "'arrête",
+          "start": 104.89,
+          "end": 105.09,
+          "probability": 0.9972
+        },
+        {
+          "word": "pas.",
+          "start": 105.09,
+          "end": 105.41,
+          "probability": 0.999
+        }
+      ],
+      "raw_segment_id": 7
+    },
+    {
+      "id": 30,
+      "start": 105.41,
+      "end": 108.37,
+      "text": "Au trône des âmes, il n'y a plus de couloir.",
+      "words": [
+        {
+          "word": "Au",
+          "start": 105.41,
+          "end": 106.01,
+          "probability": 0.7065
+        },
+        {
+          "word": "trône",
+          "start": 106.01,
+          "end": 106.25,
+          "probability": 0.9663
+        },
+        {
+          "word": "des",
+          "start": 106.25,
+          "end": 106.53,
+          "probability": 0.9976
+        },
+        {
+          "word": "âmes,",
+          "start": 106.53,
+          "end": 106.81,
+          "probability": 0.9924
+        },
+        {
+          "word": "il",
+          "start": 107.15,
+          "end": 107.25,
+          "probability": 0.9893
+        },
+        {
+          "word": "n",
+          "start": 107.25,
+          "end": 107.29,
+          "probability": 0.9985
+        },
+        {
+          "word": "'y",
+          "start": 107.29,
+          "end": 107.35,
+          "probability": 0.9924
+        },
+        {
+          "word": "a",
+          "start": 107.35,
+          "end": 107.37,
+          "probability": 0.9951
+        },
+        {
+          "word": "plus",
+          "start": 107.37,
+          "end": 107.55,
+          "probability": 0.999
+        },
+        {
+          "word": "de",
+          "start": 107.55,
+          "end": 107.73,
+          "probability": 0.9985
+        },
+        {
+          "word": "couloir.",
+          "start": 107.73,
+          "end": 108.37,
+          "probability": 0.9222
+        }
+      ],
+      "raw_segment_id": 8
+    },
+    {
+      "id": 31,
+      "start": 108.59,
+      "end": 114.71,
+      "text": "Seulement une porte, un gardien et derrière, la première âme, celle qui a refusé de partir la première.",
+      "words": [
+        {
+          "word": "Seulement",
+          "start": 108.59,
+          "end": 108.91,
+          "probability": 0.9891
+        },
+        {
+          "word": "une",
+          "start": 108.91,
+          "end": 109.13,
+          "probability": 0.9961
+        },
+        {
+          "word": "porte,",
+          "start": 109.13,
+          "end": 109.47,
+          "probability": 0.998
+        },
+        {
+          "word": "un",
+          "start": 109.69,
+          "end": 109.89,
+          "probability": 0.9946
+        },
+        {
+          "word": "gardien",
+          "start": 109.89,
+          "end": 110.49,
+          "probability": 0.9919
+        },
+        {
+          "word": "et",
+          "start": 110.49,
+          "end": 110.81,
+          "probability": 0.2876
+        },
+        {
+          "word": "derrière,",
+          "start": 110.81,
+          "end": 111.41,
+          "probability": 0.8438
+        },
+        {
+          "word": "la",
+          "start": 111.65,
+          "end": 111.81,
+          "probability": 0.9883
+        },
+        {
+          "word": "première",
+          "start": 111.81,
+          "end": 112.11,
+          "probability": 0.877
+        },
+        {
+          "word": "âme,",
+          "start": 112.11,
+          "end": 112.65,
+          "probability": 0.999
+        },
+        {
+          "word": "celle",
+          "start": 112.91,
+          "end": 113.01,
+          "probability": 0.9834
+        },
+        {
+          "word": "qui",
+          "start": 113.01,
+          "end": 113.17,
+          "probability": 0.9888
+        },
+        {
+          "word": "a",
+          "start": 113.17,
+          "end": 113.33,
+          "probability": 0.9956
+        },
+        {
+          "word": "refusé",
+          "start": 113.33,
+          "end": 113.63,
+          "probability": 0.995
+        },
+        {
+          "word": "de",
+          "start": 113.63,
+          "end": 113.79,
+          "probability": 0.9995
+        },
+        {
+          "word": "partir",
+          "start": 113.79,
+          "end": 114.05,
+          "probability": 0.9961
+        },
+        {
+          "word": "la",
+          "start": 114.05,
+          "end": 114.29,
+          "probability": 0.9858
+        },
+        {
+          "word": "première.",
+          "start": 114.29,
+          "end": 114.71,
+          "probability": 0.9956
+        }
+      ],
+      "raw_segment_id": 8
+    },
+    {
+      "id": 32,
+      "start": 116.61,
+      "end": 118.29,
+      "text": "La braise ne s'éteint jamais.",
+      "words": [
+        {
+          "word": "La",
+          "start": 116.61,
+          "end": 116.89,
+          "probability": 0.9922
+        },
+        {
+          "word": "braise",
+          "start": 116.89,
+          "end": 117.31,
+          "probability": 0.9517
+        },
+        {
+          "word": "ne",
+          "start": 117.31,
+          "end": 117.51,
+          "probability": 0.9956
+        },
+        {
+          "word": "s",
+          "start": 117.51,
+          "end": 117.69,
+          "probability": 0.998
+        },
+        {
+          "word": "'éteint",
+          "start": 117.69,
+          "end": 117.83,
+          "probability": 0.9956
+        },
+        {
+          "word": "jamais.",
+          "start": 117.83,
+          "end": 118.29,
+          "probability": 0.9995
+        }
+      ],
+      "raw_segment_id": 9
+    },
+    {
+      "id": 33,
+      "start": 118.82,
+      "end": 120.74,
+      "text": "Tant qu'il marche, elle veille.",
+      "words": [
+        {
+          "word": "Tant",
+          "start": 118.82,
+          "end": 119.02,
+          "probability": 0.9905
+        },
+        {
+          "word": "qu",
+          "start": 119.02,
+          "end": 119.12,
+          "probability": 0.9961
+        },
+        {
+          "word": "'il",
+          "start": 119.12,
+          "end": 119.24,
+          "probability": 0.947
+        },
+        {
+          "word": "marche,",
+          "start": 119.24,
+          "end": 119.64,
+          "probability": 0.9976
+        },
+        {
+          "word": "elle",
+          "start": 119.88,
+          "end": 120.04,
+          "probability": 0.9951
+        },
+        {
+          "word": "veille.",
+          "start": 120.04,
+          "end": 120.74,
+          "probability": 0.9897
+        }
+      ],
+      "raw_segment_id": 9
+    },
+    {
+      "id": 34,
+      "start": 120.84,
+      "end": 126.54,
+      "text": "Quand il s'arrête, il la pose au centre du camp et les âmes qui passent s'y réchauffent sans oser s'approcher.",
+      "words": [
+        {
+          "word": "Quand",
+          "start": 120.84,
+          "end": 121.04,
+          "probability": 0.9956
+        },
+        {
+          "word": "il",
+          "start": 121.04,
+          "end": 121.18,
+          "probability": 0.9814
+        },
+        {
+          "word": "s",
+          "start": 121.18,
+          "end": 121.38,
+          "probability": 0.9995
+        },
+        {
+          "word": "'arrête,",
+          "start": 121.38,
+          "end": 121.76,
+          "probability": 0.9971
+        },
+        {
+          "word": "il",
+          "start": 121.98,
+          "end": 122.18,
+          "probability": 0.9937
+        },
+        {
+          "word": "la",
+          "start": 122.18,
+          "end": 122.34,
+          "probability": 0.5283
+        },
+        {
+          "word": "pose",
+          "start": 122.34,
+          "end": 122.42,
+          "probability": 0.9824
+        },
+        {
+          "word": "au",
+          "start": 122.42,
+          "end": 122.62,
+          "probability": 0.9976
+        },
+        {
+          "word": "centre",
+          "start": 122.62,
+          "end": 122.84,
+          "probability": 0.9937
+        },
+        {
+          "word": "du",
+          "start": 122.84,
+          "end": 123.1,
+          "probability": 0.9985
+        },
+        {
+          "word": "camp",
+          "start": 123.1,
+          "end": 123.34,
+          "probability": 0.9463
+        },
+        {
+          "word": "et",
+          "start": 123.34,
+          "end": 123.84,
+          "probability": 0.7305
+        },
+        {
+          "word": "les",
+          "start": 123.84,
+          "end": 124.06,
+          "probability": 0.9961
+        },
+        {
+          "word": "âmes",
+          "start": 124.06,
+          "end": 124.18,
+          "probability": 0.998
+        },
+        {
+          "word": "qui",
+          "start": 124.18,
+          "end": 124.42,
+          "probability": 0.9966
+        },
+        {
+          "word": "passent",
+          "start": 124.42,
+          "end": 124.66,
+          "probability": 0.9958
+        },
+        {
+          "word": "s",
+          "start": 124.66,
+          "end": 124.84,
+          "probability": 0.9868
+        },
+        {
+          "word": "'y",
+          "start": 124.84,
+          "end": 124.92,
+          "probability": 0.9988
+        },
+        {
+          "word": "réchauffent",
+          "start": 124.92,
+          "end": 125.26,
+          "probability": 0.9866
+        },
+        {
+          "word": "sans",
+          "start": 125.26,
+          "end": 125.5,
+          "probability": 0.9849
+        },
+        {
+          "word": "oser",
+          "start": 125.5,
+          "end": 125.72,
+          "probability": 0.9949
+        },
+        {
+          "word": "s",
+          "start": 125.72,
+          "end": 125.94,
+          "probability": 0.9966
+        },
+        {
+          "word": "'approcher.",
+          "start": 125.94,
+          "end": 126.54,
+          "probability": 0.9976
+        }
+      ],
+      "raw_segment_id": 9
+    },
+    {
+      "id": 35,
+      "start": 128.06,
+      "end": 129.84,
+      "text": "Kaelen ne cherche pas la fin.",
+      "words": [
+        {
+          "word": "Kaelen",
+          "start": 128.06,
+          "end": 128.72,
+          "probability": 0.378
+        },
+        {
+          "word": "ne",
+          "start": 128.72,
+          "end": 128.98,
+          "probability": 0.9902
+        },
+        {
+          "word": "cherche",
+          "start": 128.98,
+          "end": 129.22,
+          "probability": 0.9971
+        },
+        {
+          "word": "pas",
+          "start": 129.22,
+          "end": 129.42,
+          "probability": 0.9985
+        },
+        {
+          "word": "la",
+          "start": 129.42,
+          "end": 129.66,
+          "probability": 0.9878
+        },
+        {
+          "word": "fin.",
+          "start": 129.66,
+          "end": 129.84,
+          "probability": 0.9727
+        }
+      ],
+      "raw_segment_id": 10
+    },
+    {
+      "id": 36,
+      "start": 130.4,
+      "end": 131.7,
+      "text": "Il sait qu'il n'y en a pas.",
+      "words": [
+        {
+          "word": "Il",
+          "start": 130.4,
+          "end": 130.54,
+          "probability": 0.9727
+        },
+        {
+          "word": "sait",
+          "start": 130.54,
+          "end": 130.74,
+          "probability": 0.9956
+        },
+        {
+          "word": "qu",
+          "start": 130.74,
+          "end": 130.92,
+          "probability": 0.9956
+        },
+        {
+          "word": "'il",
+          "start": 130.92,
+          "end": 131.06,
+          "probability": 0.9946
+        },
+        {
+          "word": "n",
+          "start": 131.06,
+          "end": 131.16,
+          "probability": 0.9971
+        },
+        {
+          "word": "'y",
+          "start": 131.16,
+          "end": 131.2,
+          "probability": 0.9978
+        },
+        {
+          "word": "en",
+          "start": 131.2,
+          "end": 131.28,
+          "probability": 0.9937
+        },
+        {
+          "word": "a",
+          "start": 131.28,
+          "end": 131.48,
+          "probability": 0.9819
+        },
+        {
+          "word": "pas.",
+          "start": 131.48,
+          "end": 131.7,
+          "probability": 0.9995
+        }
+      ],
+      "raw_segment_id": 10
+    },
+    {
+      "id": 37,
+      "start": 132.16,
+      "end": 135.24,
+      "text": "Il cherche la prochaine âme qui acceptera de respirer.",
+      "words": [
+        {
+          "word": "Il",
+          "start": 132.16,
+          "end": 132.36,
+          "probability": 0.9731
+        },
+        {
+          "word": "cherche",
+          "start": 132.36,
+          "end": 132.66,
+          "probability": 0.998
+        },
+        {
+          "word": "la",
+          "start": 132.66,
+          "end": 132.94,
+          "probability": 0.9941
+        },
+        {
+          "word": "prochaine",
+          "start": 132.94,
+          "end": 133.22,
+          "probability": 0.9824
+        },
+        {
+          "word": "âme",
+          "start": 133.22,
+          "end": 133.62,
+          "probability": 0.9978
+        },
+        {
+          "word": "qui",
+          "start": 133.62,
+          "end": 133.94,
+          "probability": 0.9644
+        },
+        {
+          "word": "acceptera",
+          "start": 133.94,
+          "end": 134.32,
+          "probability": 0.9665
+        },
+        {
+          "word": "de",
+          "start": 134.32,
+          "end": 134.54,
+          "probability": 0.999
+        },
+        {
+          "word": "respirer.",
+          "start": 134.54,
+          "end": 135.24,
+          "probability": 0.999
+        }
+      ],
+      "raw_segment_id": 10
+    },
+    {
+      "id": 38,
+      "start": 137.03,
+      "end": 138.67,
+      "text": "La défaite n'est qu'un détour.",
+      "words": [
+        {
+          "word": "La",
+          "start": 137.03,
+          "end": 137.17,
+          "probability": 0.9927
+        },
+        {
+          "word": "défaite",
+          "start": 137.17,
+          "end": 137.65,
+          "probability": 0.9608
+        },
+        {
+          "word": "n",
+          "start": 137.65,
+          "end": 137.75,
+          "probability": 0.999
+        },
+        {
+          "word": "'est",
+          "start": 137.75,
+          "end": 137.85,
+          "probability": 0.9985
+        },
+        {
+          "word": "qu",
+          "start": 137.85,
+          "end": 137.91,
+          "probability": 0.9976
+        },
+        {
+          "word": "'un",
+          "start": 137.91,
+          "end": 138.03,
+          "probability": 0.9988
+        },
+        {
+          "word": "détour.",
+          "start": 138.03,
+          "end": 138.67,
+          "probability": 0.9963
+        }
+      ],
+      "raw_segment_id": 10
+    },
+    {
+      "id": 39,
+      "start": 139.28,
+      "end": 141.6,
+      "text": "Vingt mètres en arrière, l'or coule encore.",
+      "words": [
+        {
+          "word": "Vingt",
+          "start": 139.28,
+          "end": 139.38,
+          "probability": 0.7607
+        },
+        {
+          "word": "mètres",
+          "start": 139.38,
+          "end": 139.68,
+          "probability": 0.9619
+        },
+        {
+          "word": "en",
+          "start": 139.68,
+          "end": 139.92,
+          "probability": 0.9985
+        },
+        {
+          "word": "arrière,",
+          "start": 139.92,
+          "end": 140.58,
+          "probability": 0.9983
+        },
+        {
+          "word": "l",
+          "start": 140.84,
+          "end": 140.84,
+          "probability": 0.9619
+        },
+        {
+          "word": "'or",
+          "start": 140.84,
+          "end": 140.98,
+          "probability": 0.9709
+        },
+        {
+          "word": "coule",
+          "start": 140.98,
+          "end": 141.12,
+          "probability": 0.9912
+        },
+        {
+          "word": "encore.",
+          "start": 141.12,
+          "end": 141.6,
+          "probability": 0.9956
+        }
+      ],
+      "raw_segment_id": 10
+    }
+  ],
+  "full_text": "Les âmes ne meurent pas. Elles attendent. On raconte qu'aux portes de Vael, la terre s'est ouverte un matin sans trembler. Pas de gouffre, pas de feu. Une porte de pierre, basse, couverte de runes, et derrière elle un escalier qui descendait plus loin que la lumière. Les premiers à y entrer ne sont pas revenus. Pas morts, retenus. Leurs noms sont restés accrochés au mur, et depuis, chaque salle du donjon respire avec le souffle de quelqu'un qui n'a pas fini de partir. Kaëlen était pèlerin. Il portait une besasse, une lame héritée et une braise dans un pot de fer. On le disait lent. C'est pour ça qu'on lui a confié la marche. Les âmes n'ont pas besoin de héros pressés. Il a compris une chose simple. Les donjons ne sont pas des tombeaux. Ce sont des nœuds. Chaque palier est un fil serré autour d'une âme. Le gardien qui le sel n'est pas un bourreau. C'est le dernier gardien d'une douleur. Celui qui refuse de la laisser partir. Alors Kaëlen marche. Dix pas pour un mètre, cent mètres pour un palier. Chaque pas est un mot dans une prière qu'il ne prononce pas à voix haute. Au crypte de Vaël, la pierre est froide et les cierges brûlent sans cire. Au catacombe, l'air sent la mousse et les serments anciens. Dans les cavernes de cendres, il apprend à respirer court. Dans la forge noyée, il pose la main sur les enclumes et sent encore la chaleur de ceux qui forgaient pour les vivants. Au cime du serment, le vent lui vole ses mots. Dans le bois des âmes, les arbres ont des feuilles d'or et des racines qui se souviennent. Dans l'abîme organique, la pierre saigne et il ne s'arrête pas. Au trône des âmes, il n'y a plus de couloir. Seulement une porte, un gardien et derrière, la première âme, celle qui a refusé de partir la première. La braise ne s'éteint jamais. Tant qu'il marche, elle veille. Quand il s'arrête, il la pose au centre du camp et les âmes qui passent s'y réchauffent sans oser s'approcher. Kaelen ne cherche pas la fin. Il sait qu'il n'y en a pas. Il cherche la prochaine âme qui acceptera de respirer. La défaite n'est qu'un détour. Vingt mètres en arrière, l'or coule encore.",
+  "segmenter": "sentences"
+}

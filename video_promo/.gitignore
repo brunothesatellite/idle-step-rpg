@@ -1,0 +1,28 @@
+# Ce dossier ne versionne que la chaîne de production de la vidéo
+# (scripts, storyboard, timeline, voix, clips ADB) et la vidéo finale.
+
+# Environnement Python local
+.venv/
+__pycache__/
+
+# Sauvegardes d'état du téléphone et fichiers temporaires de capture
+.capture_backup/
+.capture_*
+
+# Captures de contrôle, regénérables avec les scripts
+clips/frames/
+clips/frames_all/
+clips/frames_exact/
+frames_render/
+clips/capture_log.json
+
+# Fichiers générés par 03_render_video.py
+subtitles.ass
+endcard.png
+*.mix.mp4
+*.norm*.mp4
+
+# Vidéos : seuls les rushs de capture et le rendu final sont versionnés
+*.mp4
+!clips/*.mp4
+!la_marche_des_ames_vertical.mp4

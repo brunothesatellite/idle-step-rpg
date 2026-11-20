@@ -1,0 +1,6 @@
+# Chaîne de production de la vidéo promo.
+# FFmpeg complet (avec libass et libx264) doit être installé séparément.
+pillow==13.0.0
+
+# Uniquement pour régénérer timeline.json depuis audio.mp3.
+faster-whisper==1.2.1
