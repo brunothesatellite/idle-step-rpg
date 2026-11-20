@@ -53,15 +53,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -74,6 +70,7 @@ import com.brunothesatellite.idlesteprpg.engine.CONSUMABLES
 import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.ITEM_EFFECTS
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.JournalEntry
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
@@ -98,6 +95,17 @@ import com.brunothesatellite.idlesteprpg.engine.upgradeLevel
 import com.brunothesatellite.idlesteprpg.engine.upgradeName
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+
+private enum class ForgeMode { UPGRADE, REFORGE }
+
+private data class UpgradeSnapshot(
+    val fromLevel: Int,
+    val fromAtk: Int,
+    val fromHp: Int,
+    val toLevel: Int,
+    val toAtk: Int,
+    val toHp: Int
+)
 
 @Composable
 fun ItemDialog(
@@ -132,6 +140,9 @@ fun ItemDialog(
     }
     val equippedSetCount = state.equipment.count { it.setName == item.setName }
     val collectionSetCount = discoveredSetSlots(state, item.setName).size
+    var forgeMode by remember(item.id) { mutableStateOf<ForgeMode?>(null) }
+    var lastUpgrade by remember(item.id) { mutableStateOf<UpgradeSnapshot?>(null) }
+    var lastReforgeOld by remember(item.id) { mutableStateOf<String?>(null) }
     AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(
@@ -190,6 +201,34 @@ fun ItemDialog(
                 Spacer(Modifier.height(8.dp))
                 DividerLine()
                 Spacer(Modifier.height(6.dp))
+                if (forgeMode != null) {
+                    ForgePanel(
+                        mode = forgeMode!!,
+                        item = item,
+                        state = state,
+                        equippedItem = equippedItem,
+                        equippedHere = equippedHere,
+                        canUpgrade = canUpgrade,
+                        upgradePrice = upgradePrice,
+                        upgradeHint = upgradeHint,
+                        lastUpgrade = lastUpgrade,
+                        lastReforgeOld = lastReforgeOld,
+                        onBack = { forgeMode = null },
+                        onConfirmUpgrade = {
+                            val next = GameEngine.upgradedItem(item)
+                            lastUpgrade = UpgradeSnapshot(
+                                item.level, item.atk, item.hp,
+                                next.level, next.atk, next.hp
+                            )
+                            onUpgrade()
+                        },
+                        onConfirmReforge = {
+                            lastReforgeOld = if (item.effect.isBlank()) "Aucun effet" else effectLabel(item.effect)
+                            onReroll()
+                        },
+                        onClose = onDismiss
+                    )
+                } else {
                 if (!item.identified) {
                     Text(
                         "Un éclat d'âme suffit pour révéler les statistiques, l'effet et l'ensemble de cet objet.",
@@ -207,50 +246,38 @@ fun ItemDialog(
                         enabled = !item.locked
                     )
                 } else {
-                    StatRow("ATQ", if (item.atk != 0) "+${item.atk}" else "—")
-                    StatRow("PV", if (item.hp != 0) "+${item.hp}" else "—")
-                    StatRow("% VIT", if (item.vitPct != 0) "+${item.vitPct}" else "—")
-                    StatRow("% critique", if (item.critPct != 0) "+${item.critPct}" else "—")
-                    StatRow("Régénération", if (item.regen != 0.0) "+${"%.1f".format(item.regen)}" else "—")
-                    StatRow("Valeur", "${formatInt(item.value)} or")
+                    if (equippedHere) {
+                        val nextLevel = GameEngine.upgradedItem(item)
+                        ItemCompareTable(
+                            leftTitle = "Actuel",
+                            rightTitle = "Après +1 niv.",
+                            left = item,
+                            right = nextLevel
+                        )
+                        val before = statsOf(state)
+                        val after = statsOf(
+                            state.copy(
+                                equipment = state.equipment.map {
+                                    if (it.id == item.id) nextLevel else it
+                                }
+                            )
+                        )
+                        Text(
+                            "Héros · ATQ ${before.atk} → ${after.atk} · PV ${before.maxHp} → ${after.maxHp}",
+                            fontSize = 6.5.sp,
+                            color = Blue,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    } else {
+                        ItemCompareTable(
+                            leftTitle = "Équipé",
+                            rightTitle = "Cet objet",
+                            left = equippedItem,
+                            right = item
+                        )
+                    }
                     Spacer(Modifier.height(4.dp))
-                    val nextLevel = GameEngine.upgradedItem(item)
-                    val reference = if (equippedHere) item else equippedItem
-                    val leftTitle = if (equippedHere) "ACTUEL" else "ÉQUIPÉ"
-                    val rightTitle = if (equippedHere) "APRÈS +1 NIV." else "CET OBJET"
-                    val leftLine = when {
-                        equippedHere -> statLine(item)
-                        equippedItem != null -> statLine(equippedItem)
-                        else -> "Emplacement vide"
-                    }
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Panel)
-                            .padding(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(leftTitle, fontSize = 5.5.sp, color = Muted2)
-                            Text(
-                                leftLine,
-                                fontSize = 6.5.sp,
-                                color = Parchment.copy(alpha = 0.75f),
-                                maxLines = 3
-                            )
-                        }
-                        Text("→", color = Gold, fontSize = 12.sp)
-                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                            Text(rightTitle, fontSize = 5.5.sp, color = Muted2)
-                            Text(
-                                comparisonLine(if (equippedHere) nextLevel else item, reference),
-                                fontSize = 6.5.sp,
-                                maxLines = 3,
-                                textAlign = TextAlign.End
-                            )
-                        }
-                    }
+                    StatRow("Valeur", "${formatInt(item.value)} or")
                     if (item.identified && item.setName.isNotBlank()) {
                         Spacer(Modifier.height(5.dp))
                         val tier = when {
@@ -314,13 +341,13 @@ fun ItemDialog(
                             OverlayAction(
                                 "REFORGER · 2",
                                 Modifier.weight(1f),
-                                onReroll,
+                                { lastReforgeOld = null; forgeMode = ForgeMode.REFORGE },
                                 enabled = item.identified && state.shards >= 2
                             )
                             OverlayAction(
                                 "AMÉLIORER · ${formatInt(upgradePrice)}",
                                 Modifier.weight(1.2f),
-                                onUpgrade,
+                                { lastUpgrade = null; forgeMode = ForgeMode.UPGRADE },
                                 enabled = canUpgrade
                             )
                             OverlayAction(
@@ -363,6 +390,531 @@ fun ItemDialog(
                         )
                     }
                 }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ForgePanel(
+    mode: ForgeMode,
+    item: Item,
+    state: GameState,
+    equippedItem: Item?,
+    equippedHere: Boolean,
+    canUpgrade: Boolean,
+    upgradePrice: Int,
+    upgradeHint: String,
+    lastUpgrade: UpgradeSnapshot?,
+    lastReforgeOld: String?,
+    onBack: () -> Unit,
+    onConfirmUpgrade: () -> Unit,
+    onConfirmReforge: () -> Unit,
+    onClose: () -> Unit
+) {
+    Row(
+        Modifier.fillMaxWidth().clickable(onClick = onBack).padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("←", fontSize = 15.sp, color = Gold)
+        Spacer(Modifier.width(7.dp))
+        Text(
+            if (mode == ForgeMode.UPGRADE) "ATELIER · AMÉLIORER" else "ATELIER · REFORGER",
+            fontFamily = Press,
+            fontSize = 9.sp,
+            color = GoldLight
+        )
+    }
+    Spacer(Modifier.height(7.dp))
+    if (mode == ForgeMode.UPGRADE) {
+        UpgradePanel(
+            item = item,
+            state = state,
+            equippedItem = equippedItem,
+            equippedHere = equippedHere,
+            canUpgrade = canUpgrade,
+            upgradePrice = upgradePrice,
+            upgradeHint = upgradeHint,
+            lastUpgrade = lastUpgrade,
+            onConfirm = onConfirmUpgrade,
+            onClose = onClose
+        )
+    } else {
+        ReforgePanel(
+            item = item,
+            state = state,
+            lastReforgeOld = lastReforgeOld,
+            onConfirm = onConfirmReforge,
+            onBack = onBack,
+            onClose = onClose
+        )
+    }
+}
+
+@Composable
+private fun UpgradePanel(
+    item: Item,
+    state: GameState,
+    equippedItem: Item?,
+    equippedHere: Boolean,
+    canUpgrade: Boolean,
+    upgradePrice: Int,
+    upgradeHint: String,
+    lastUpgrade: UpgradeSnapshot?,
+    onConfirm: () -> Unit,
+    onClose: () -> Unit
+) {
+    val next = GameEngine.upgradedItem(item)
+    val result = lastUpgrade?.takeIf { item.level >= it.toLevel }
+
+    Text(
+        "Niv. ${item.level} → ${next.level}",
+        fontFamily = Press,
+        fontSize = 11.sp,
+        color = GoldLight
+    )
+    Spacer(Modifier.height(2.dp))
+    Text(
+        if (equippedHere) "Objet équipé : l'amélioration change aussi les statistiques du héros."
+        else "Aperçu de l'objet après amélioration, comparé à l'équipement actuel.",
+        fontSize = 6.2.sp,
+        color = Muted,
+        lineHeight = 9.sp
+    )
+    Spacer(Modifier.height(5.dp))
+
+    if (result != null) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(4.dp))
+                .background(Green.copy(alpha = 0.08f))
+                .border(1.dp, Green.copy(alpha = 0.35f), RoundedCornerShape(4.dp))
+                .padding(6.dp)
+        ) {
+            Text(
+                "Amélioration appliquée · Niv. ${result.fromLevel} → ${result.toLevel}",
+                fontSize = 6.6.sp,
+                fontWeight = FontWeight.Bold,
+                color = Green
+            )
+            Text(
+                "ATQ ${result.fromAtk} → ${result.toAtk} · PV ${result.fromHp} → ${result.toHp}",
+                fontSize = 6.2.sp,
+                color = Parchment.copy(alpha = 0.85f)
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+    }
+
+    if (equippedHere) {
+        UpgradeTable(reference = null, current = item, next = next)
+        val before = statsOf(state)
+        val afterState = state.copy(
+            equipment = state.equipment.map { if (it.id == item.id) next else it }
+        )
+        val after = statsOf(afterState)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "Héros · ATQ ${before.atk} → ${after.atk} · PV ${before.maxHp} → ${after.maxHp}",
+            fontSize = 6.5.sp,
+            color = Blue
+        )
+    } else {
+        UpgradeTable(reference = equippedItem, current = item, next = next)
+        Text(
+            if (equippedItem == null) "Aucun objet équipé dans cet emplacement."
+            else "Référence : ${equippedItem.name}.",
+            fontSize = 6.1.sp,
+            color = Muted2
+        )
+    }
+
+    Spacer(Modifier.height(7.dp))
+    CostRow("Coût", "${formatInt(upgradePrice)} or · 1 éclat")
+    CostRow("Disponible", "${formatInt(state.gold)} or · ${state.shards} éclats")
+    if (!canUpgrade) {
+        Text(upgradeHint, fontSize = 6.2.sp, color = Ember, lineHeight = 9.sp)
+    }
+    Spacer(Modifier.height(8.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        OverlayAction(
+            if (result != null) "CONTINUER À AMÉLIORER" else "AMÉLIORER",
+            Modifier.weight(1.35f),
+            onConfirm,
+            primary = true,
+            enabled = canUpgrade
+        )
+        OverlayAction("FERMER", Modifier.weight(0.65f), onClose)
+    }
+    Text(
+        "L'objet reste dans le sac ; le gain n'est actif qu'une fois équipé.",
+        fontSize = 5.9.sp,
+        color = Muted2,
+        modifier = Modifier.padding(top = 5.dp)
+    )
+}
+
+@Composable
+private fun ItemCompareTable(
+    leftTitle: String,
+    rightTitle: String,
+    left: Item?,
+    right: Item
+) {
+    Row(Modifier.fillMaxWidth().padding(bottom = 2.dp)) {
+        Text("Statistique", Modifier.weight(1.25f), fontSize = 5.7.sp, color = Muted2)
+        Text(leftTitle, Modifier.weight(1f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
+        Text(rightTitle, Modifier.weight(1.15f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
+    }
+    CompareLine("ATQ", left?.atk, right.atk, percent = false)
+    CompareLine("PV", left?.hp, right.hp, percent = false)
+    CompareLine("% VIT", left?.vitPct, right.vitPct, percent = true)
+    CompareLine("Critique", left?.critPct, right.critPct, percent = true)
+    CompareRegenLine(left?.regen, right.regen)
+}
+
+@Composable
+private fun CompareLine(
+    label: String,
+    left: Int?,
+    right: Int,
+    percent: Boolean
+) {
+    val delta = if (left != null) right - left else 0
+    val rightColor = when {
+        left == null -> GoldLight
+        right > left -> Green
+        right < left -> Blood
+        else -> Parchment
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
+        Text(
+            left?.let { statText(it, percent) } ?: "—",
+            Modifier.weight(1f),
+            fontSize = 6.3.sp,
+            color = Muted,
+            textAlign = TextAlign.End
+        )
+        Row(Modifier.weight(1.15f), horizontalArrangement = Arrangement.End) {
+            Text(
+                statText(right, percent),
+                fontSize = 6.4.sp,
+                fontWeight = FontWeight.Bold,
+                color = rightColor
+            )
+            if (delta > 0) {
+                Spacer(Modifier.width(3.dp))
+                Text("+$delta", fontSize = 5.3.sp, color = Green)
+            }
+        }
+    }
+    Box(Modifier.fillMaxWidth().height(1.dp).background(Line.copy(alpha = 0.45f)))
+}
+
+@Composable
+private fun CompareRegenLine(left: Double?, right: Double) {
+    val delta = if (left != null) right - left else 0.0
+    val rightColor = when {
+        left == null -> GoldLight
+        right > left -> Green
+        right < left -> Blood
+        else -> Parchment
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Régénération", Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
+        Text(
+            left?.let { regenText(it) } ?: "—",
+            Modifier.weight(1f),
+            fontSize = 6.3.sp,
+            color = Muted,
+            textAlign = TextAlign.End
+        )
+        Row(Modifier.weight(1.15f), horizontalArrangement = Arrangement.End) {
+            Text(
+                regenText(right),
+                fontSize = 6.4.sp,
+                fontWeight = FontWeight.Bold,
+                color = rightColor
+            )
+            if (delta > 0.001) {
+                Spacer(Modifier.width(3.dp))
+                Text("+${"%.1f".format(delta)}", fontSize = 5.3.sp, color = Green)
+            }
+        }
+    }
+    Box(Modifier.fillMaxWidth().height(1.dp).background(Line.copy(alpha = 0.45f)))
+}
+
+@Composable
+private fun UpgradeTable(reference: Item?, current: Item, next: Item) {
+    Row(Modifier.fillMaxWidth().padding(bottom = 2.dp)) {
+        Text("Statistique", Modifier.weight(1.25f), fontSize = 5.7.sp, color = Muted2)
+        if (reference != null) {
+            Text("Équipé", Modifier.weight(1f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
+        }
+        Text(
+            if (reference == null) "Actuel" else "Objet",
+            Modifier.weight(0.9f),
+            fontSize = 5.7.sp,
+            color = Muted2,
+            textAlign = TextAlign.End
+        )
+        Text("Après", Modifier.weight(1.15f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
+    }
+    UpgradeLine("ATQ", reference?.atk, current.atk, next.atk, percent = false)
+    UpgradeLine("PV", reference?.hp, current.hp, next.hp, percent = false)
+    UpgradeLine("% VIT", reference?.vitPct, current.vitPct, next.vitPct, percent = true)
+    UpgradeLine("Critique", reference?.critPct, current.critPct, next.critPct, percent = true)
+    UpgradeRegenLine(reference?.regen, current.regen, next.regen)
+}
+
+@Composable
+private fun UpgradeLine(
+    label: String,
+    reference: Int?,
+    before: Int,
+    after: Int,
+    percent: Boolean
+) {
+    val delta = after - before
+    val afterColor = when {
+        reference == null -> GoldLight
+        after > reference -> Green
+        after < reference -> Blood
+        else -> Parchment
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
+        if (reference != null) {
+            Text(
+                statText(reference, percent),
+                Modifier.weight(1f),
+                fontSize = 6.3.sp,
+                color = Muted,
+                textAlign = TextAlign.End
+            )
+        }
+        Text(
+            statText(before, percent),
+            Modifier.weight(0.9f),
+            fontSize = 6.3.sp,
+            color = Parchment,
+            textAlign = TextAlign.End
+        )
+        Row(Modifier.weight(1.15f), horizontalArrangement = Arrangement.End) {
+            Text(
+                statText(after, percent),
+                fontSize = 6.4.sp,
+                fontWeight = FontWeight.Bold,
+                color = afterColor
+            )
+            if (delta > 0) {
+                Spacer(Modifier.width(3.dp))
+                Text("+$delta", fontSize = 5.3.sp, color = Green)
+            }
+        }
+    }
+    Box(Modifier.fillMaxWidth().height(1.dp).background(Line.copy(alpha = 0.45f)))
+}
+
+@Composable
+private fun UpgradeRegenLine(reference: Double?, before: Double, after: Double) {
+    val delta = after - before
+    val afterColor = when {
+        reference == null -> GoldLight
+        after > reference -> Green
+        after < reference -> Blood
+        else -> Parchment
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Régén.", Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
+        if (reference != null) {
+            Text(
+                regenText(reference),
+                Modifier.weight(1f),
+                fontSize = 6.3.sp,
+                color = Muted,
+                textAlign = TextAlign.End
+            )
+        }
+        Text(
+            regenText(before),
+            Modifier.weight(0.9f),
+            fontSize = 6.3.sp,
+            color = Parchment,
+            textAlign = TextAlign.End
+        )
+        Row(Modifier.weight(1.15f), horizontalArrangement = Arrangement.End) {
+            Text(
+                regenText(after),
+                fontSize = 6.4.sp,
+                fontWeight = FontWeight.Bold,
+                color = afterColor
+            )
+            if (delta > 0.001) {
+                Spacer(Modifier.width(3.dp))
+                Text("+${"%.1f".format(delta)}", fontSize = 5.3.sp, color = Green)
+            }
+        }
+    }
+    Box(Modifier.fillMaxWidth().height(1.dp).background(Line.copy(alpha = 0.45f)))
+}
+
+private fun statText(value: Int, percent: Boolean): String = when {
+    value == 0 -> "—"
+    percent -> "+$value %"
+    else -> "+$value"
+}
+
+private fun regenText(value: Double): String =
+    if (value == 0.0) "—" else "+${"%.1f".format(value)}"
+
+@Composable
+private fun CostRow(label: String, value: String) {
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, fontSize = 6.5.sp, color = Muted)
+        Text(value, fontSize = 6.7.sp, color = GoldLight)
+    }
+}
+
+@Composable
+private fun ReforgePanel(
+    item: Item,
+    state: GameState,
+    lastReforgeOld: String?,
+    onConfirm: () -> Unit,
+    onBack: () -> Unit,
+    onClose: () -> Unit
+) {
+    val current = if (item.effect.isBlank()) "Aucun effet" else effectLabel(item.effect)
+    val result = lastReforgeOld
+    Text(
+        "Effet : $current → ${if (result == null) "aléatoire" else current}",
+        fontFamily = Press,
+        fontSize = 10.sp,
+        color = GoldLight
+    )
+    Spacer(Modifier.height(4.dp))
+
+    if (result == null) {
+        Text(
+            "L'effet est tiré au hasard. Le niveau, les statistiques et l'ensemble ne changent pas. " +
+                "L'effet peut être identique ou disparaître.",
+            fontSize = 6.3.sp,
+            color = Muted,
+            lineHeight = 9.sp
+        )
+        Spacer(Modifier.height(7.dp))
+        ReforgePool(currentEffect = item.effect)
+        Spacer(Modifier.height(7.dp))
+        CostRow("Coût", "2 éclats")
+        CostRow("Disponible", "${state.shards} éclats")
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            OverlayAction(
+                "REFORGER",
+                Modifier.weight(1.35f),
+                onConfirm,
+                primary = true,
+                enabled = state.shards >= 2
+            )
+            OverlayAction("ANNULER", Modifier.weight(0.65f), onBack)
+        }
+        if (state.shards < 2) {
+            Text("2 éclats requis.", fontSize = 6.2.sp, color = Ember, modifier = Modifier.padding(top = 5.dp))
+        }
+    } else {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(4.dp))
+                .background(Green.copy(alpha = 0.08f))
+                .border(1.dp, Green.copy(alpha = 0.35f), RoundedCornerShape(4.dp))
+                .padding(7.dp)
+        ) {
+            Text(
+                "$result → $current" + if (result == current) " (identique)" else "",
+                fontSize = 7.sp,
+                fontWeight = FontWeight.Bold,
+                color = Green
+            )
+            Text("Nom : ${item.name}", fontSize = 6.2.sp, color = Parchment.copy(alpha = 0.85f))
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "Statistiques, niveau et ensemble inchangés. L'objet reste dans le sac.",
+            fontSize = 6.1.sp,
+            color = Muted,
+            lineHeight = 9.sp
+        )
+        Spacer(Modifier.height(6.dp))
+        CostRow("Éclats restants", "${state.shards}")
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            OverlayAction(
+                "REFORGER ENCORE",
+                Modifier.weight(1.35f),
+                onConfirm,
+                primary = true,
+                enabled = state.shards >= 2
+            )
+            OverlayAction("FERMER", Modifier.weight(0.65f), onClose)
+        }
+    }
+}
+
+@Composable
+private fun ReforgePool(currentEffect: String) {
+    val options: List<String?> = listOf(null) + ITEM_EFFECTS
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        options.chunked(3).forEach { row ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                row.forEach { effect ->
+                    val active = if (effect == null) currentEffect.isBlank() else currentEffect == effect
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(if (active) Gold.copy(alpha = 0.12f) else Panel2)
+                            .border(
+                                1.dp,
+                                if (active) Gold.copy(alpha = 0.55f) else Line,
+                                RoundedCornerShape(3.dp)
+                            )
+                            .padding(horizontal = 4.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            effect?.let { effectLabel(it) } ?: "Aucun",
+                            fontSize = 5.6.sp,
+                            color = if (active) GoldLight else Muted,
+                            maxLines = 1
+                        )
+                        Text(
+                            if (effect == null) "25 %" else "12,5 %",
+                            fontSize = 5.3.sp,
+                            color = Muted2
+                        )
+                    }
+                }
+                repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
@@ -374,52 +926,6 @@ private fun StatRow(label: String, value: String) {
         Text(label, fontSize = 8.sp, color = Muted, modifier = Modifier.weight(1f))
         Spacer(Modifier.width(6.dp))
         Text(value, fontSize = 8.5.sp, color = Parchment, textAlign = TextAlign.End)
-    }
-}
-
-private data class StatEntry(val label: String, val value: Double, val text: String)
-
-private fun statEntries(item: Item): List<StatEntry> = buildList {
-    if (item.atk != 0) add(StatEntry("ATQ", item.atk.toDouble(), "+${item.atk}"))
-    if (item.hp != 0) add(StatEntry("PV", item.hp.toDouble(), "+${item.hp}"))
-    if (item.vitPct != 0) add(StatEntry("% VIT", item.vitPct.toDouble(), "+${item.vitPct}"))
-    if (item.critPct != 0) add(StatEntry("% crit.", item.critPct.toDouble(), "+${item.critPct}"))
-    if (item.regen != 0.0) add(StatEntry("PV/s", item.regen, "+${"%.1f".format(item.regen)}"))
-}
-
-private fun formatDelta(delta: Double): String =
-    if (delta % 1.0 == 0.0) delta.toInt().toString() else "%.1f".format(delta)
-
-/**
- * Ligne de comparaison colorée : vert quand la valeur monte, rouge quand elle
- * baisse, gris quand elle ne bouge pas. [reference] null = aucune comparaison.
- */
-private fun comparisonLine(target: Item, reference: Item?): AnnotatedString {
-    val previous = reference?.let { ref -> statEntries(ref).associate { it.label to it.value } }.orEmpty()
-    return buildAnnotatedString {
-        statEntries(target).forEachIndexed { index, entry ->
-            if (index > 0) append(" · ")
-            val before = previous[entry.label]
-            val color = when {
-                before == null -> GoldLight
-                entry.value > before -> Green
-                entry.value < before -> Bad
-                else -> Parchment.copy(alpha = 0.65f)
-            }
-            withStyle(SpanStyle(color = color)) {
-                append(entry.text)
-                append(" ")
-                append(entry.label)
-                if (before != null) {
-                    val delta = entry.value - before
-                    when {
-                        delta > 0 -> append(" ▲+${formatDelta(delta)}")
-                        delta < 0 -> append(" ▼${formatDelta(delta)}")
-                        else -> append(" =")
-                    }
-                }
-            }
-        }
     }
 }
 

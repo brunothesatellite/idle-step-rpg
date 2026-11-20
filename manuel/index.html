@@ -197,7 +197,7 @@
 <header class="hero">
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas deviennent votre progression.</p>
-  <span class="badge">Version 0.17.2 · Android 14+ · Garmin ou Santé Connect</span>
+  <span class="badge">Version 0.17.3 · Android 14+ · Garmin ou Santé Connect</span>
 </header>
 
 <nav class="toc">
@@ -531,8 +531,12 @@
       <figcaption>Équipement, tri, filtres et butin.</figcaption>
     </figure>
     <figure class="shot">
-      <img src="images/item.jpg" alt="Fiche d'un objet avec statistiques, effet, verrouillage, fusion, forge et équiper">
-      <figcaption>Comparaison, effet, forge, fusion et verrouillage.</figcaption>
+      <img src="images/item.jpg" alt="Fiche d'un objet avec tableau de comparaison Équipé et Cet objet, effet, forge, fusion et équiper">
+      <figcaption>Comparaison chiffrée, effet, forge, fusion et verrouillage.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/atelier.jpg" alt="Atelier d'amélioration avec tableau Équipé, Objet et Après, coût et bouton Continuer à améliorer">
+      <figcaption>Atelier : niveau suivant, coût et amélioration enchaînée.</figcaption>
     </figure>
   </div>
   <h3>Six emplacements</h3>
@@ -546,10 +550,14 @@
     <li><strong>Verrouiller :</strong> protège un objet de la vente et de la fusion.</li>
     <li><strong>Fusionner 3/3 :</strong> trois objets du même emplacement et de même rareté donnent un objet de rareté supérieure.</li>
     <li><strong>Identifier :</strong> 1 éclat révèle les statistiques d'un objet mystérieux.</li>
-    <li><strong>Reforger :</strong> 2 éclats changent l'effet.</li>
-    <li><strong>Améliorer :</strong> or + 1 éclat augmentent le niveau et les statistiques.</li>
+    <li><strong>Reforger :</strong> 2 éclats retirent ou remplacent l'effet (tirage aléatoire).</li>
+    <li><strong>Améliorer :</strong> or + 1 éclat augmentent le niveau, l'ATQ et les PV.</li>
     <li><strong>Démonter :</strong> détruit l'objet contre des éclats.</li>
   </ul>
+  <h3>Atelier : comparer, améliorer, reforger</h3>
+  <p>La fiche d'objet commence par un tableau <strong>Statistique / Équipé / Cet objet</strong> : la valeur de l'objet est verte si elle dépasse l'équipement, rouge sinon, avec le gain en petit. Pour un objet équipé, le tableau devient <strong>Actuel / Après +1 niv.</strong> et une ligne <strong>Héros</strong> indique l'impact sur l'ATQ et les PV totaux. La valeur de vente reste sous le tableau.</p>
+  <p><strong>AMÉLIORER</strong> ouvre l'atelier : niveau actuel → suivant, tableau des statistiques (Équipé, Objet, Après), coût en or et éclats, puis bouton de validation. Après une amélioration, la feuille reste ouverte : un bandeau rappelle le gain appliqué, l'aperçu passe au niveau suivant et <strong>CONTINUER À AMÉLIORER</strong> enchaîne sans revenir à l'inventaire. La flèche ← revient à la fiche, FERMER quitte.</p>
+  <p><strong>REFORGER</strong> ouvre l'atelier des effets pour 2 éclats. Le tirage est aléatoire : <strong>25 %</strong> aucun effet, <strong>12,5 %</strong> pour chacun des six effets. Le niveau, les statistiques et l'ensemble ne changent pas ; l'effet peut rester identique ou disparaître. Le résultat affiche <strong>ancien → nouveau</strong>, puis <strong>REFORGER ENCORE</strong> relance un tirage.</p>
   <h3>Ensembles et forge</h3>
   <ul>
     <li>Onze ensembles : <strong>Veilleur</strong>, <strong>Braise</strong>, <strong>Givre</strong>, <strong>Ossature</strong>, <strong>Toile</strong>, <strong>Cendre</strong>, <strong>Forge</strong>, <strong>Serment</strong>, <strong>Bois</strong>, <strong>Abîme</strong> et <strong>Trône</strong>.</li>
@@ -1028,7 +1036,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.17.2 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.17.3 · <a href="#top">Retour au sommaire</a><br>
   Garmin ou Santé Connect · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

@@ -23,7 +23,7 @@ Cocher au fur et à mesure. Les points marqués ⚠️ demandent une décision o
 - [ ] Description complète : `03-textes/description-complete.txt`.
 - [ ] Icône : `01-icone/icon-512.png`.
 - [ ] Feature graphic : `04-feature-graphic/feature-graphic-1024x500.png`.
-- [ ] Captures téléphone : les 4 fichiers de `02-captures/` (2 à 8 exigées).
+- [ ] Captures téléphone : les 5 fichiers de `02-captures/` (2 à 8 exigées).
 - [ ] Catégorie : Jeux → Jeu de rôle.
 - [ ] Tags : RPG, idle, pixel art, podomètre.
 - [ ] Coordonnées développeur et e-mail de support.

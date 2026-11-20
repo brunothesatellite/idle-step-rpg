@@ -1,5 +1,13 @@
 # Journal des versions
 
+## v0.17.3
+- **Atelier d'amélioration** : la fiche d'objet ouvre un atelier persistant. `AMÉLIORER` affiche le niveau suivant, le tableau `Équipé / Objet / Après`, le coût en or et éclats ; après validation, la feuille reste ouverte avec le gain appliqué, l'aperçu du niveau suivant et `CONTINUER À AMÉLIORER`.
+- **Atelier de reforge** : `REFORGER` montre le pool complet (25 % aucun effet, 12,5 % par effet), applique le tirage pour 2 éclats, puis affiche `ancien → nouveau` avec `REFORGER ENCORE`. Le niveau, les statistiques et l'ensemble restent inchangés.
+- **Tableau de statistiques sur la fiche d'objet** : `Statistique / Équipé / Cet objet` avec valeurs vertes ou rouges et gains, ou `Actuel / Après +1 niv.` pour un objet équipé avec la ligne `Héros` (ATQ et PV totaux). La valeur de vente reste sous le tableau.
+- **Manuel** : nouvelle section « Atelier : comparer, améliorer, reforger », captures `item.jpg`, `atelier.jpg` et `codex_sets.jpg` actualisées.
+- **Play Store** : cinquième capture `05-atelier.png`.
+- **Build** : `versionCode 37`, `versionName 0.17.3`.
+
 ## v0.17.2
 - **Collections d'ensembles permanentes** : une pièce découverte reste acquise même si elle est vendue, démontée ou fusionnée. Nouveau champ `setPiecesDiscovered` dans la sauvegarde (version 4), recalé automatiquement depuis l'équipement, le sac et le coffre au chargement ou à l'import.
 - **Codex → Ensembles clarifié** : deux compteurs distincts, **Collection x/6** (permanente) et **Équipé y/6** (bonus 2/4/6). Le badge « BONUS ACTIF » ne s'affiche plus que si les pièces sont réellement équipées ; les slots manquants et le biome où farmer sont indiqués.

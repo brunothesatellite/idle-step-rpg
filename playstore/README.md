@@ -23,7 +23,8 @@ playstore/
 │   ├── 01-marche.png                 1080×1920
 │   ├── 02-gardien.png                1080×1920
 │   ├── 03-campement.png              1080×1920
-│   └── 04-butin.png                  1080×1920
+│   ├── 04-butin.png                  1080×1920
+│   └── 05-atelier.png                1080×1920
 ├── 03-textes/
 │   ├── titre.txt
 │   ├── description-courte.txt
