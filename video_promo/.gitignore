@@ -22,7 +22,8 @@ endcard.png
 *.mix.mp4
 *.norm*.mp4
 
-# Vidéos : seuls les rushs de capture et le rendu final sont versionnés
+# Vidéos : seuls les rushs de capture et les rendus finaux sont versionnés
 *.mp4
 !clips/*.mp4
 !la_marche_des_ames_vertical.mp4
+!la_marche_des_ames_github.mp4

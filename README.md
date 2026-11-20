@@ -47,6 +47,26 @@ Kaelen ne cherche pas la fin. Il sait qu'il n'y en a pas. Il cherche la prochain
   <img src="manuel/images/camp.jpg" alt="Campement" width="250">
 </div>
 
+<div align="center">
+  <a href="video_promo/la_marche_des_ames_github.mp4">
+    <img src="video_promo/la_marche_des_ames_poster.jpg" alt="Lancer la démo vidéo de La Marche des Âmes" width="270">
+  </a>
+</div>
+
+<p align="center">▶ <a href="video_promo/la_marche_des_ames_github.mp4">Démo vidéo — 2 min 24, 540×960, MP4 5,6 Mo</a></p>
+
+<!--
+Lecteur intégré : GitHub n'affiche un lecteur dans un README que pour une vidéo
+hébergée sur github.com/user-attachments (glisser-déposer dans l'éditeur web).
+Pour l'activer : ouvrir ce fichier sur github.com, cliquer sur ✏️, glisser
+video_promo/la_marche_des_ames_github.mp4 dans l'éditeur, remplacer l'URL
+ci-dessous par celle qui est générée, puis décommenter ce bloc.
+
+<video src="https://github.com/user-attachments/assets/REMPLACER_PAR_URL_USER_ATTACHMENTS" controls>
+  <a href="video_promo/la_marche_des_ames_github.mp4">Voir la démo vidéo</a>
+</video>
+-->
+
 ---
 
 ## Le jeu en bref
