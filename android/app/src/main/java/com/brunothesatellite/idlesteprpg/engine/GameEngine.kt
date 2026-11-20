@@ -1559,15 +1559,29 @@ object GameEngine {
         return shards
     }
 
+    /** Objets éligibles à la fusion : même emplacement, même rareté, non verrouillés et identifiés. */
+    fun fusionGroup(state: GameState, item: Item): List<Item> =
+        state.inventory.filter {
+            it.slot == item.slot && it.rarity == item.rarity && !it.locked && it.identified
+        }
+
+    /** Vrai si le bouton « Fusionner » doit être actif pour cet objet. */
+    fun canFuse(state: GameState, item: Item): Boolean =
+        !item.locked &&
+            item.identified &&
+            state.equipment.none { it.id == item.id } &&
+            fusionGroup(state, item).size >= 3
+
     fun fuseItem(state: GameState, itemId: String): Item? {
         val item = state.inventory.firstOrNull { it.id == itemId } ?: return null
-        if (item.locked || !item.identified) return null
-        val group = state.inventory
-            .filter { it.slot == item.slot && it.rarity == item.rarity && !it.locked && it.identified }
+        if (!canFuse(state, item)) return null
+        // L'objet ouvert fait toujours partie du trio, complété par les 2 meilleurs autres.
+        val chosen = listOf(item) + fusionGroup(state, item)
+            .asSequence()
+            .filter { it.id != item.id }
             .sortedByDescending { itemScore(it) }
-        if (group.size < 3) return null
-        val chosen = group.take(3)
-        if (chosen.none { it.id == itemId }) return null
+            .take(2)
+            .toList()
         val next = nextRarity(item.rarity)
         val effect = when {
             next == "legendary" -> ITEM_EFFECTS.random(rnd)

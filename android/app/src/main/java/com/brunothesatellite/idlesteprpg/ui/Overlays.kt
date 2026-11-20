@@ -123,9 +123,7 @@ fun ItemDialog(
 ) {
     val equippedItem = equipped(state, item.slot)
     val equippedHere = state.equipment.any { it.id == item.id }
-    val fusionCount = state.inventory.count {
-        it.slot == item.slot && it.rarity == item.rarity && !it.locked && it.identified
-    }
+    val fusionCount = GameEngine.fusionGroup(state, item).size
     val upgradePrice = GameEngine.upgradeCost(item)
     val missingGold = (upgradePrice - state.gold).coerceAtLeast(0)
     val missingShards = (1 - state.shards).coerceAtLeast(0)
@@ -329,10 +327,10 @@ fun ItemDialog(
                             onToggleLock
                         )
                         OverlayAction(
-                            "FUSIONNER $fusionCount/3",
+                            if (fusionCount >= 3) "FUSIONNER" else "FUSIONNER $fusionCount/3",
                             Modifier.weight(1f),
                             onFuse,
-                            enabled = fusionCount >= 3 && !item.locked && !equippedHere
+                            enabled = GameEngine.canFuse(state, item)
                         )
                     }
                     if (state.bosses > 0) {

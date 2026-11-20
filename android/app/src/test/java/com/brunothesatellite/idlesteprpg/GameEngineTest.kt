@@ -510,6 +510,33 @@ class GameEngineTest {
     }
 
     @Test
+    fun fusionAlwaysKeepsTheOpenedItem() {
+        val state = GameState()
+        state.inventory = (1..4).map {
+            Item("rare_$it", "Rare $it", "weapon", "rare", "item/mace2.png", 3, atk = 10 + it, value = 50)
+        }
+        val weakest = state.inventory.first { it.id == "rare_1" }
+        assertTrue(GameEngine.canFuse(state, weakest))
+        val fused = GameEngine.fuseItem(state, "rare_1")
+        assertNotNull(fused)
+        assertEquals("epic", fused!!.rarity)
+        assertTrue(state.inventory.none { it.id == "rare_1" })
+        assertEquals(2, state.inventory.size)
+    }
+
+    @Test
+    fun canFuseRequiresThreeEligibleItems() {
+        val state = GameState()
+        val item = Item("rare_1", "Rare 1", "weapon", "rare", "item/mace2.png", 3, atk = 10, value = 50)
+        state.inventory = listOf(item, item.copy(id = "rare_2"))
+        assertEquals(false, GameEngine.canFuse(state, item))
+        state.inventory = listOf(item, item.copy(id = "rare_2"), item.copy(id = "rare_3", locked = true))
+        assertEquals(false, GameEngine.canFuse(state, item))
+        state.inventory = state.inventory + item.copy(id = "rare_4")
+        assertTrue(GameEngine.canFuse(state, item))
+    }
+
+    @Test
     fun fullInventoryGoesToCampStash() {
         val state = GameState()
         state.inventory = (1..INVENTORY_CAP).map {

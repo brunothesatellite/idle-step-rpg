@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
+import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.ITEM_SETS
@@ -752,11 +753,13 @@ private fun InventoryTab(
 ) {
     var sort by rememberSaveable { mutableStateOf("score") }
     var slotFilter by rememberSaveable { mutableStateOf("all") }
+    var fusionOnly by rememberSaveable { mutableStateOf(false) }
     var stashOpen by remember { mutableStateOf(false) }
     var invSection by rememberSaveable { mutableStateOf("gear") }
     val consumableCount = state.consumables.values.sum()
     val filtered = state.inventory
         .filter { slotFilter == "all" || it.slot == slotFilter }
+        .filter { !fusionOnly || GameEngine.canFuse(state, it) }
         .sortedWith(
             when (sort) {
                 "rarity" -> compareByDescending<Item> { rarityRank(it.rarity) }
@@ -828,6 +831,7 @@ private fun InventoryTab(
         MiniChip("Score", sort == "score") { sort = "score" }
         MiniChip("Rareté", sort == "rarity") { sort = "rarity" }
         MiniChip("Niveau", sort == "level") { sort = "level" }
+        MiniChip("Fusion", fusionOnly) { fusionOnly = !fusionOnly }
     }
     Spacer(Modifier.height(4.dp))
     Row(
@@ -859,7 +863,7 @@ private fun InventoryTab(
     Spacer(Modifier.height(4.dp))
     if (filtered.isEmpty()) {
         Text(
-            "Aucun objet dans ce filtre.",
+            if (fusionOnly) "Aucun objet fusionnable." else "Aucun objet dans ce filtre.",
             modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
             textAlign = TextAlign.Center,
             fontSize = 7.sp,
