@@ -63,7 +63,7 @@ Kaelen ne cherche pas la fin. Il sait qu'il n'y en a pas. Il cherche la prochain
 - **Lisibilité** : quatre tailles de texte (**Normal, Grand, Très grand, Maximal**), animations réduites, vibrations réglables.
 - Les **serments journaliers**, la **ferveur**, les **consommables**, la **forge**, les **ensembles** et les **rencontres spéciales** ajoutent de la profondeur.
 - Le **reset quotidien** se fait à **00:00 local**, en accord avec le `calendarDate` Garmin.
-- Le **résumé d'absence** fait avancer le jeu pendant la fermeture : **30 % des pas du jour** et **4 min simulées** au maximum, avec arrêt sur événement (rencontre spéciale, portail du gardien, coffre) et un écran **« Bon retour »**.
+- Le **résumé d'absence** fait avancer le jeu pendant la fermeture : **30 % des pas du jour** et **4 min simulées** au maximum, avec arrêt sur événement (rencontre spéciale, nouveau coffre, passage au camp) ; devant le gardien, la simulation ne s'arrête que s'il reste moins d'un palier de budget, sinon le combat est joué et le gardien peut être vaincu. Un écran **« Bon retour »** résume l'absence.
 
 ### Biomes et contenu
 
