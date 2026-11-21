@@ -1,302 +1,140 @@
-# La Marche des Âmes — reste à faire après la v0.3.1
+# La Marche des Âmes — reste à faire
 
-> **Mise à jour v0.11.0** : le **résumé d'absence** est livré — consommation de la réserve
-> à 100 % du rythme actif, plafond 60 000 pas / 15 min simulées, overlay « Bon retour »,
-> arrêt sur rencontre spéciale et fusion avec le rattrapage Garmin.
+> **État au 21/11/2026 — v0.17.5.** Ce document remplace le backlog rédigé après la v0.3.1 :
+> la majorité des P0/P1/P2 d’alors sont livrés. Ne restent que les écarts vérifiés ci-dessous.
 >
-> **Mise à jour v0.7.0** : 8 biomes illustrés, pools de monstres et tables de butin par biome,
-> 8 ensembles, 2 effets, 4 consommables et paper doll du héros sont livrés.
->
-> **Mise à jour v0.6.0** : les sons 8 bits sont livrés (licence CC0, volume réglable,
-> désactivation). Le reste de la liste ci-dessous est conservé comme backlog.
->
-> **Backlog explicite — pas maintenant** : localisation anglaise, migration Room,
-> équilibrage long terme, farm automatique à 0 pas, réduction automatique des
-> animations sur batterie faible, mise à jour Gradle, R8/mapping et symboles natifs.
-
-## Backlog — non planifié
-
-| Sujet | Décision |
-|---|---|
-| Localisation anglaise | Plus tard, interface française pour l'instant. |
-| Migration Room | Plus tard, sauvegarde JSON versionnée conservée. |
-| Publication Play Store | **Livrée en v0.17.3** (AAB signé, fiche, signature Play). |
-| Mise à jour Gradle | Wrapper 8.11.1 en fin de support. Monter Gradle, vérifier AGP/Kotlin, rebuild complet et CI. |
-| R8 / minification | Activer R8 et `shrinkResources`, conserver kotlinx.serialization, tester, uploader `mapping.txt` pour supprimer l'avertissement Play. |
-| Symboles natifs Play | `libandroidx.graphics.path.so` est fourni strippé par AndroidX. Chercher une source de symboles ou documenter l'avertissement (non bloquant). |
-| Équilibrage long terme | À faire après plusieurs semaines de données réelles. |
-| Farm automatique à 0 pas | Plus tard. |
-| Animations réduites automatiquement sur batterie faible | Plus tard. |
-
-Document de travail : fonctionnalités non terminées, écarts avec la spécification,
-dette technique et ordre recommandé.
+> Rappels à jour : absence = **30 % des pas du jour par défaut** (réglable 0–30 % ou en pas,
+> 0–5 000) et **4 min simulées** ; tests unitaires = **91** ; Play Store livré en **0.17.5**.
+> La localisation est étudiée dans [`langue.md`](langue.md) (document de décision, non implémenté).
 
 Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusieurs jours.
 
 ---
 
-## 1. État actuel
+## 1. Déjà livré depuis l’ancien backlog
 
-Déjà livré en v0.3.1 :
+Pour mémoire, ne plus planifier :
 
-- Garmin Personal API, clé chiffrée, jeton 24 h, 2FA navigateur, historique 7 jours.
-- Marche, combats automatiques, gardiens, coffres 24 h / 2 en attente, farm, camp.
-- Serments journaliers variables, ferveur avec décroissance, journal filtrable.
-- Réglages : texte, notifications on/off, animations, vibrations, journal de sync,
-  export/import JSON, effacement.
-- Inventaire : équiper le meilleur, vendre les communs, verrouiller, fusionner,
-  effets légendaires, coffre de camp.
-- Biomes colorés, rencontres spéciales, jalons, rang, modificateurs de gardien.
-- Tests unitaires (17), CI Android debug, sauvegarde de secours.
+- **P0** : camp qui réinitialise le combat, veillée gratuite à **+15 %**, décroissance de la
+  ferveur rattrapée hors ligne, deep links des notifications (`open_screen`), écran de
+  permission notifications, import avec aperçu, contrôle **250 pas/min**, worker de clé Garmin.
+- **P1** : simulation d’absence complète et son rapport, onboarding 4 pages + relecture depuis
+  les réglages, facteur de profondeur (+12 %/+8 % après le palier 10), bandeau « nouveau jour »,
+  notifications par catégorie et heures calmes, camp avec journal/inventaire/potions.
+- **P2** : objets non identifiés, 11 ensembles 2/4/6, effets, reroll, amélioration, démontage,
+  fusion corrigée, tri/filtre (Score, Rareté, Niveau, Fusion), vente des communs, coffre de camp,
+  rencontres spéciales (autel, source, marchand, statue, risque), Codex (bestiaire, ensembles,
+  biomes), journal de légende, widget, mise à jour in-app, CI debug + release, manuel.
+- **v0.17.5** : budget d’absence réglable (Réglages avancés), icône debug émeraude, badge ver,
+  libellé `· dev`, manuel et capture mis à jour.
 
 ---
 
-## 2. P0 — correctifs et robustesse
+## 2. P0 — robustesse restante
 
 | # | Sujet | Détail | Effort |
 |---|---|---|---|
-| P0-1 | Camp et combat en cours | La spec demande que le combat soit **réinitialisé** à l’ouverture du camp (PV et timers de l’ennemi), avec le gardien soigné. Aujourd’hui le combat est seulement figé. | M |
-| P0-2 | Veillée gratuite | La spec dit **+15 % PV**, le code applique +25 %. Aligner le texte et l’effet. | S |
-| P0-3 | Décroissance hors ligne de la ferveur | La décroissance n’avance que pendant que l’app est ouverte. Après 3 jours fermés, la ferveur reste haute jusqu’à plusieurs heures d’usage. Calculer le temps écoulé à la reprise et appliquer la décroissance manquante. | M |
-| P0-4 | Coffre qui expire app fermée | `expireChests()` supprime le coffre à la réouverture sans prévenir. Ajouter un Worker qui vérifie les échéances et notifie avant expiration. | M |
-| P0-5 | Clé Garmin expirée app fermée | La vérification 30/7/1 jour ne tourne qu’à l’ouverture. Ajouter un Worker quotidien (ou une vérification WorkManager) qui notifie même sans lancement. | M |
-| P0-6 | Deep links des notifications | Toutes les notifications ouvrent l’écran principal. Router vers : Compte Garmin, coffre, camp, journal selon le type. | M |
-| P0-7 | Permission notifications refusée | Aucun écran d’explication ni bouton « Réessayer ». Afficher un état clair dans les réglages et un accès aux réglages système. | S |
-| P0-8 | Import de sauvegarde | Aucun aperçu, aucune vérification de version. Ajouter : validation du schéma, résumé (date, niveau, or, palier), confirmation, migration `GameState.version`. | M |
-| P0-9 | Pas suspects | Seul le plafond 60 000/jour existe. Ajouter le contrôle **250 pas/min en moyenne** et un journal explicite des pas ignorés. | M |
-| P0-10 | Changement de fuseau | Le ledger est indexé par date locale. Tester et documenter le cas ; éviter le double comptage ou la perte au changement de fuseau. | M |
-| P0-11 | Régression overlays | Les taps ne passent plus derrière les overlays, mais aucun test UI ne le garantit. Ajouter des tests instrumentés. | M |
+| P0-1 | Expiration de coffre app fermée | `chestWarnings()` et les notifications ne tournent qu’à l’ouverture/import. Le `MaintenanceWorker` ne vérifie que la clé Garmin. Ajouter la vérification des coffres au worker existant (ou un worker dédié) pour notifier avant expiration sans lancer l’app. | M |
+| P0-2 | Changement de fuseau | Le ledger est indexé par date locale (`HealthConnectSource`), mais aucun test ne couvre le passage de fuseau ni le changement d’heure. Ajouter des tests et documenter le comportement (double comptage, perte). | M |
+| P0-3 | Migrations de sauvegarde | `SAVE_VERSION = 4` et le JSON versionné existent, l’import affiche un résumé. Il manque une **migration explicite** par version et un test d’ouverture d’une sauvegarde v1→v4. | M |
+| P0-4 | Tests d’overlays | `OverlayUiTest` existe mais reste minimal. Ajouter : dialogue objet, forge, absence, réglages, import, camp. | L |
 
 ---
 
-## 3. P1 — boucle de jeu et rétention
+## 3. P1 — rétention et finitions
 
-### 3.1 Simulation hors ligne complète
-
-La spec attend un récapitulatif **pas, combats, or, paliers**. Aujourd’hui seuls les pas
-sont ajoutés à la réserve, puis les combats se déroulent en direct.
-
-À faire :
-
-- simuler en accéléré les pas récupérés (plafond 100 000) ;
-- produire un bilan : pas, combats, or, paliers gravis, gardiens, butin ;
-- afficher ce bilan dans l’overlay hors ligne ;
-- conserver un mode « différé » si la simulation est trop longue.
-
-Effort : **L**.
-
-### 3.2 Onboarding
-
-- 3 à 4 écrans de première ouverture : concept, Personal API + 2FA navigateur,
-  reset 00:00, permissions notifications.
-- Tutoriel contextuel : premiers 10 m, premier combat, premier coffre, premier gardien,
-  premier camp.
-- Écran « aucune clé Garmin » avec lien direct vers la création de clé.
-- Explication si permission refusée.
-- Possibilité de revoir l’onboarding depuis les réglages.
-
-Effort : **L**.
-
-### 3.3 Jalons complets
-
-Aujourd’hui : bonus de stats automatique + entrée de journal + rang.
-
-Manque (spec 14.3) :
-
-- +5 % d’or permanent par jalon ;
-- titre affiché (pas seulement un rang romain) ;
-- apparence du feu de camp par palier ;
-- 5 éclats d’âme par jalon ;
-- journal de légende persistant (séparé des 80 entrées) ;
-- tous les 100 paliers : palier légendaire, apparence de héros, statue au camp ;
-- premier gardien : déblocage de la forge ;
-- 10 coffres ouverts : compteur de quotas avancé ;
-- 50 000 pas cumulés : apparence « Âme ardente ».
-
-Nécessite des **compteurs de vie** : pas cumulés, coffres ouverts, gardiens tués, or gagné.
-
-Effort : **L**.
-
-### 3.4 Facteur de profondeur
-
-Spec 14.1 : au-delà du palier 10, +12 % PV/ATQ des monstres et +8 % des gardiens
-par palier. Aujourd’hui la difficulté suit seulement le niveau linéaire. Ajouter ce
-facteur, puis rééquilibrer les courbes de puissance et d’or.
-
-Effort : **M**.
-
-### 3.5 Campement complet
-
-- Gestion de l’équipement depuis le camp (comparer, équiper, vendre).
-- Liste du coffre de camp avec récupération objet par objet.
-- Journal complet accessible depuis le camp.
-- Résumé : palier, distance, **pas en attente**, **or**, ferveur.
-- Réinitialisation des combats (P0-1).
-- Animation de soin par flammes.
-- Bilan de veillée.
-
-Effort : **L**.
-
-### 3.6 Notifications et synchronisation
-
-- Cases par catégorie : gardien, niveau, serments, coffre, clé Garmin.
-- Heures calmes / ne pas déranger.
-- Action directe sur 401 : « Remplacer la clé ».
-- Backoff explicite sur 429 avec heure de nouvel essai.
-- Fin de synchronisation en arrière-plan : notification optionnelle.
-- Vérification de clé planifiée (P0-5).
-
-Effort : **M**.
-
-### 3.7 Accueil et changement de jour
-
-- Bandeau « nouveau jour » à 00:00 avec serments renouvelés.
-- ~~Écran de retour après plusieurs jours : résumé doux, pas de pression.~~ **Livré en v0.11.0** (résumé d'absence « Bon retour »).
-- Notification de rappel quotidien optionnelle.
-
-Effort : **M**.
+| # | Sujet | Détail | Effort |
+|---|---|---|---|
+| P1-1 | Jalons complets | Livré : +5 % d’or par jalon, +5 éclats, entrée de légende, titre, rang. Restant : apparence du feu de camp par palier, héros/statue au palier 100, déblocage de la forge au premier gardien, compteur des 10 coffres, apparence « Âme ardente » à 50 000 pas. | L |
+| P1-2 | Tutoriel contextuel | L’onboarding initial existe, mais pas les aides des premiers 10 m, premier combat, premier coffre, premier gardien, premier camp. | M |
+| P1-3 | Notifications réseau | Action « Remplacer la clé » sur 401, backoff explicite sur 429 avec heure de nouvel essai, notification de fin de synchronisation de fond. | M |
+| P1-4 | Rappel quotidien | Notification optionnelle de rappel (serments, pas du jour) ; aujourd’hui seul le bandeau « nouveau jour » existe. | S |
+| P1-5 | Campement | Restant : animation de soin par flammes, bilan de veillée détaillé, apparence du feu par palier (lié à P1-1). | M |
 
 ---
 
-## 4. P2 — profondeur de gestion
+## 4. P2 — confort et profondeur
 
-### 4.1 Objets
-
-- Objets **non identifiés** + parchemin ou éclat d’identification.
-- **Sets** d’équipement avec bonus 2/4/6 pièces.
-- Plus d’effets légendaires uniques (vol de vie, zone, bouclier, exécution…).
-- **Reroll** d’affixe à la forge.
-- **Forge** : améliorer un objet avec or + éclats, casser un objet en éclats.
-- Filtres et tri de l’inventaire (rareté, emplacement, niveau, score).
-- Sélection multiple, vente multiple, verrou visible dans la grille.
-- Comparaison avec la **meilleure alternative** du sac, pas seulement l’objet équipé.
-- Loadouts / ensembles favoris.
-- Filtre de vente automatique (ex. vendre les communs sous un niveau).
-- Coffre de camp avec liste et recherche.
-
-Effort : **XL** (découper en 3 lots).
-
-### 4.2 Rencontres spéciales
-
-- Choix risqués : sacrifier des PV, de l’or ou un objet pour un gain aléatoire.
-- Marchand avec stock tournant et achat au camp.
-- Malédictions/bénédictions temporaires.
-- Autels à plusieurs offrandes.
-- Fréquence et cooldown pour éviter la répétition.
-- Illustrations et sons dédiés.
-
-Effort : **L**.
-
-### 4.3 Biomes et ambiance
-
-- **Livré v0.7.0** : tuiles, sols, props, statues, portes et météo propres à 8 biomes.
-- **Livré v0.7.0** : pools de monstres et tables de butin par biome.
-- **Livré v0.7.0** : boss de biome et ensembles thématiques.
-- Restant : transitions animées entre paliers, musique et ambiance sonore.
-
-Effort restant : **M**.
-
-### 4.4 Combat
-
-- Critique distingué visuellement, soin de vampirisme flottant, dégâts réduits affichés.
-- Télégraphe de l’attaque spéciale du gardien.
-- Troisième phase de gardien.
-- Animations de victoire/défaite et butin qui vole vers l’inventaire.
-- Modificateurs supplémentaires : invocateur, régénérant, voleur d’or, bouclier.
-- Équilibrage des 4 effets légendaires.
-
-Effort : **L**.
-
----
-
-## 5. Contenu et endgame
-
-- **Livré v0.7.0** : plus de 60 nouvelles créatures, 8 biomes, 32 objets de butin, 8 ensembles.
-- Restant : boucle de biomes au-delà du palier 80 et variantes d'élites nommées.
-- Boss uniques aux paliers 10, 25, 50, 100. **Livré** : boss de biome + jalons.
-- Journal de légende persistant.
-- Bestiaire / collection.
-- Succès et statistiques de vie.
-- Serments hebdomadaires, séries, reroll de serment.
-- Bilan quotidien/hebdomadaire.
-- Économie de fin de jeu : puits d’or, coûts d’artisanat, plafonds de ressources.
-
-Effort : **XL**, à découper.
-
----
-
-## 6. Technique et qualité
+### 4.1 Inventaire
 
 | Sujet | Détail | Effort |
 |---|---|---|
-| Room | Remplacer le JSON par Room avec migrations testées. Sinon, conserver JSON mais ajouter `version` + migrations explicites. | XL |
-| Tests Garmin | 401, 403, 429, réponse vide, JSON invalide, coupure réseau, changement de fuseau. | M |
-| Tests UI | Camp, overlays, journal, coffres, inventaire, réglages, imports. | L |
-| CI release | **Livré** : CI debug (tests, lint, APK) et workflow release signé via secrets GitHub. | S |
-| Lint / static analysis | ktlint ou detekt, avertissements Kotlin, dépendances obsolètes. | M |
-| Crash et diagnostics | Journal local circulaire, export de diagnostic sans données sensibles. | M |
-| Performance | 10 Hz de recomposition, deep copies à chaque tick, sauvegardes JSON. Profiler et optimiser. | M |
-| WorkManager | Intervalle adaptatif, contraintes batterie, backoff exponentiel, workers séparés (sync, clé, coffre). | M |
-| Sécurité | Vérifier qu’aucune clé ne peut partir dans un export, option FLAG_SECURE globale, politique de capture. | S |
-| Sauvegarde | Export horodaté, aperçu avant import, rotation des `.bak`, restauration manuelle. | M |
-| Localisation | Extraire les chaînes, ajouter l’anglais. Aujourd’hui français en dur. | L |
-| Accessibilité | Audit TalkBack, descriptions des éléments de scène, contraste, ordre de focus, mode daltonien, test 200 %. | L |
-| Grands écrans | Paysage et tablette : la spec prévoit un tableau de bord élargi. Aujourd’hui portrait uniquement. | L |
-| Widget / raccourci | Widget pas du jour + bouton synchroniser. | M |
-| Play Store | **Livré v0.17.3** : AAB, fiche, politique, signature Play. Restant : R8/mapping et symboles natifs. | S |
-| Mise à jour in-app | **Livré v0.6.2** : release GitHub, vérification quotidienne/manuelle, APK SHA-256, installation confirmée, lien vers les notes après mise à jour. Restant : vérification périodique en arrière-plan via WorkManager. | S |
+| Sélection multiple | Vente multiple et démontage multiple ; aujourd’hui action objet par objet. | M |
+| Meilleure alternative | Comparer à la meilleure pièce du sac, pas seulement à l’objet équipé. | M |
+| Loadouts | Ensembles favoris et changement rapide. | L |
+| Seuil de vente auto | Vendre automatiquement les communs sous un niveau donné. | S |
+| Recherche dans le coffre | Le coffre de camp liste et retire à l’unité ; pas de recherche ni de filtre. | S |
+
+### 4.2 Rencontres et combat
+
+| Sujet | Détail | Effort |
+|---|---|---|
+| Fréquence des rencontres | Cooldown pour éviter les répétitions rapprochées. | S |
+| Illustrations/sons dédiés | Les rencontres utilisent le décor existant. | M |
+| Télégraphe du gardien | Annoncer l’attaque spéciale avant impact. | M |
+| Troisième phase de gardien | Ajouter une phase et l’équilibrer. | L |
+| Animations de combat | Victoire/défaite, butin qui vole vers l’inventaire, soin de vampirisme flottant, dégâts réduits affichés. | L |
+| Modificateurs supplémentaires | Invocateur, bouclier, etc. ; les 5 actuels couvrent déjà RAPIDE, BLINDÉ, BERSERK, RÉGÉNÉRANT, VOLEUR. | M |
+
+### 4.3 Contenu et endgame
+
+| Sujet | Détail | Effort |
+|---|---|---|
+| Succès et statistiques de vie | Les compteurs existent (`kills`, `bossKills`, `goldEarned`, `chestsOpened`, `retreats`), mais pas d’écran de succès ni de statistiques de vie. | L |
+| Serments hebdomadaires | Aujourd’hui journaliers uniquement ; ajouter séries et reroll. | M |
+| Boucle au-delà du palier 80 | Vérifier le cycle des biomes et des boss sur très longue durée. | M |
+| Économie de fin de jeu | Puits d’or, coûts d’artisanat, plafonds de ressources. | L |
+| Transitions de biome | La météo et les décors existent ; les transitions animées entre paliers restent à faire. | M |
 
 ---
 
-## 7. Légal et documentation
+## 5. Technique et qualité
 
-- Politique de confidentialité : aucune collecte, clé locale, Garmin uniquement.
-- Écran licences cliquable dans l’app (MIT, CC0, OFL).
-- CHANGELOG.md.
-- Mettre à jour la spécification pour les écarts assumés (veillée +25 %, notifications,
-  auto-équipement, coffre de camp).
-- Guide de récupération : clé perdue, téléphone changé, sauvegarde corrompue.
-
-Effort : **M**.
-
----
-
-## 8. Hors périmètre confirmé
-
-- Backend ou compte propriétaire.
-- Saisie du mot de passe ou du 2FA Garmin dans l’app.
-- Classements et guildes en ligne (aucun serveur).
-
----
-
-## 9. Ordre recommandé
-
-### Sprint 1 — robustesse (P0)
-Camp/combat, ferveur hors ligne, workers coffre et clé, deep links, import validé,
-plafond de pas/minute, tests de régression.
-
-### Sprint 2 — rétention (P1)
-Onboarding, simulation hors ligne complète, notifications par catégorie, retour après
-plusieurs jours.
-
-### Sprint 3 — progression
-Jalons complets + compteurs de vie, facteur de profondeur après le palier 10,
-rééquilibrage, campement complet.
-
-### Sprint 4 — objets
-Forge, objets non identifiés, sets, reroll, filtres/tri, loadouts, coffre de camp listé.
-
-### Sprint 5 — contenu
-Biomes illustrés, météo, rencontres enrichies, modificateurs de boss, plus de pools,
-journal de légende, succès.
-
-### Sprint 6 — industrialisation
-Room ou migrations, CI release signée, tests UI, accessibilité, localisation,
-grands écrans, politique de confidentialité.
+| Sujet | État / détail | Effort |
+|---|---|---|
+| Room | Non fait ; JSON versionné + `.bak`. Décision : garder JSON avec migrations explicites, ou migrer Room. | XL |
+| R8 / minification | `isMinifyEnabled = false`, `isShrinkResources = false`. Activer, conserver kotlinx.serialization, tester, fournir `mapping.txt`. | M |
+| Gradle | Wrapper **8.11.1** en fin de support ; monter Gradle puis AGP/Kotlin et rebuild complet. | M |
+| Tests Garmin | 401, 403, 429, réponse vide, JSON invalide, coupure réseau, fuseau. | M |
+| Tests UI | Un seul fichier (`OverlayUiTest`) ; à étendre (voir P0-4). | L |
+| Lint / dette Kotlin | Pas de ktlint/detekt ; warnings Kotlin (dépréciations Canvas) à traiter. | M |
+| Crash et diagnostic | Panneau Diagnostic et journal de sync existent ; pas de journal de crash local exportable. | M |
+| Performance | 10 Hz de recomposition, deep copies par tick, sauvegardes JSON : profiler et optimiser. | M |
+| WorkManager | 2 workers (sync Garmin, maintenance clé) ; ajouter coffres, intervalles adaptatifs, backoff. | M |
+| Sécurité | Vérifier qu’aucune clé ne peut sortir dans un export ; envisager `FLAG_SECURE` ; politique de capture. | S |
+| Sauvegarde | Export/import + aperçu + `.bak` livrés ; ajouter rotation horodatée et restauration manuelle. | M |
+| Localisation | Étude dans [`langue.md`](langue.md) ; non implémentée. | Voir l’étude |
+| Accessibilité | Quelques `contentDescription` ; audit TalkBack, contrastes, ordre de focus, test 200 %. | L |
+| Grands écrans | Pas de layout tablette/paysage dédié ; la spec prévoit un tableau de bord élargi. | L |
+| Play Store | Livré ; restant : R8/mapping et symboles natifs (`libandroidx.graphics.path.so`). | S |
+| Mise à jour in-app | Livrée ; restant : vérification périodique en arrière-plan via WorkManager. | S |
 
 ---
 
-## 10. Critères d’acceptation transverses
+## 6. Documentation
+
+| Sujet | État |
+|---|---|
+| Politique de confidentialité, licences, manuel | Livrés |
+| CHANGELOG | Présent |
+| Spécification vs écarts assumés | À resynchroniser (absence réglable, icône debug, réglages avancés) |
+| Guide de récupération | À compléter : clé perdue, téléphone changé, sauvegarde corrompue |
+| Localisation | [`langue.md`](langue.md) |
+
+---
+
+## 7. Ordre recommandé
+
+1. **Robustesse** : coffre en arrière-plan, tests de fuseau, migrations, tests d’overlays.
+2. **Finitions** : jalons complets, tutoriel contextuel, notifications réseau, rappel quotidien.
+3. **Confort** : sélection multiple, meilleure alternative, recherche du coffre.
+4. **Combat/contenu** : télégraphe, animations, succès, serments hebdomadaires.
+5. **Industrialisation** : R8, Gradle, ktlint, perf, accessibilité, grands écrans.
+6. **Localisation** : suivre le découpage de `langue.md`.
+
+---
+
+## 8. Critères d’acceptation transverses
 
 - Aucun pas compté deux fois, même après changement de fuseau ou réimport.
 - Toute action destructive demande confirmation.
@@ -304,4 +142,5 @@ grands écrans, politique de confidentialité.
 - L’app reste utilisable hors ligne et sans clé Garmin.
 - Aucune notification si l’utilisateur les a désactivées.
 - Aucune régression des données lors d’une mise à jour d’APK.
-- Tests unitaires verts et CI verte avant chaque release.
+- Tests unitaires verts (91 aujourd’hui) et CI verte avant chaque release.
+- Le français reste pixel-identique tant que la localisation n’est pas validée.
