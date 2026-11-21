@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.engine.Buff
 import com.brunothesatellite.idlesteprpg.engine.FLOOR_METERS
@@ -962,6 +963,20 @@ private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Mo
                 fontSize = 7.sp,
                 color = GoldLight
             )
+        }
+        if (BuildConfig.DEBUG) {
+            Spacer(Modifier.width(5.dp))
+            Box(
+                Modifier
+                    .size(22.dp)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(Ink.copy(alpha = 0.80f))
+                    .border(1.dp, Gold.copy(alpha = 0.35f), RoundedCornerShape(3.dp))
+                    .semantics { contentDescription = "Build de développement" },
+                contentAlignment = Alignment.Center
+            ) {
+                AssetIcon("mon/worm.png", 16.dp)
+            }
         }
         Spacer(Modifier.width(6.dp))
         Text(
