@@ -1112,6 +1112,9 @@ fun rankLabel(floor: Int): String = when {
 
 fun milestoneBonus(floor: Int): Int = floor / 10
 
+/** Palier du feu de camp : un par biome, tous les 10 paliers. */
+fun fireTier(floor: Int): Int = ((floor - 1).coerceAtLeast(0) / 10).coerceIn(0, 7)
+
 fun equipped(state: GameState, slot: String): Item? = state.equipment.firstOrNull { it.slot == slot }
 
 fun statsOf(state: GameState): Stats {

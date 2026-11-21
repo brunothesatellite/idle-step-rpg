@@ -10,6 +10,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.brunothesatellite.idlesteprpg.App
+import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.steps.StepSourceType
 import java.util.concurrent.TimeUnit
 
@@ -28,6 +29,11 @@ class GarminSyncWorker(
         if (steps.current() != StepSourceType.GARMIN) return Result.success()
         if (!steps.canSync()) return Result.success()
         val result = steps.sync()
+        if (result.needsKey) {
+            GameNotifications.keyExpiry(app, result.message)
+        } else if (result.added > 0 || !result.ok) {
+            GameNotifications.syncDone(app, result.message, result.ok)
+        }
         return when {
             result.needsKey -> Result.success()
             result.ok -> Result.success()

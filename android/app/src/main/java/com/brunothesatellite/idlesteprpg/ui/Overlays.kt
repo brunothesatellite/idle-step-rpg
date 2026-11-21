@@ -32,13 +32,18 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,6 +86,7 @@ import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
 import com.brunothesatellite.idlesteprpg.engine.effectDescription
 import com.brunothesatellite.idlesteprpg.engine.effectLabel
 import com.brunothesatellite.idlesteprpg.engine.formatRemaining
+import com.brunothesatellite.idlesteprpg.engine.fireTier
 import com.brunothesatellite.idlesteprpg.engine.discoveredSetSlots
 import com.brunothesatellite.idlesteprpg.engine.setBonusDescription
 import com.brunothesatellite.idlesteprpg.engine.setLabel
@@ -1025,6 +1031,19 @@ fun ChestDialog(
     }
 }
 
+private val FIRE_PALETTES = listOf(
+    Triple(Color(0xFFFF9448), Color(0xFFFFD06B), Color(0xFFFFF3C4)),
+    Triple(Color(0xFF4FD08A), Color(0xFF9AF0B8), Color(0xFFE8FFF2)),
+    Triple(Color(0xFFE4572E), Color(0xFFFF9A3C), Color(0xFFFFE0A3)),
+    Triple(Color(0xFF3FA9E0), Color(0xFF8FD8FF), Color(0xFFEAF9FF)),
+    Triple(Color(0xFF7FC8E8), Color(0xFFCBEFFF), Color(0xFFFFFFFF)),
+    Triple(Color(0xFF7AC943), Color(0xFFC8F08A), Color(0xFFF6FFD9)),
+    Triple(Color(0xFFB44BE0), Color(0xFFE89AFF), Color(0xFFFFE6FF)),
+    Triple(Color(0xFFE8C27A), Color(0xFFFFE6A8), Color(0xFFFFFFFF))
+)
+
+private fun fireColors(floor: Int): Triple<Color, Color, Color> = FIRE_PALETTES[fireTier(floor)]
+
 @Composable
 fun CampOverlay(
     state: GameState,
@@ -1035,12 +1054,33 @@ fun CampOverlay(
     onOpenJournal: () -> Unit,
     onOpenInventory: () -> Unit,
     onOpenConsumables: () -> Unit,
-    onResume: () -> Unit
+    onResume: () -> Unit,
+    reducedMotion: Boolean = false
 ) {
     val stats = statsOf(state)
     var cardHeight by remember { mutableStateOf(0) }
     val density = LocalDensity.current
     val heroBottom = with(density) { cardHeight.toDp() } + 16.dp
+    var lastHp by remember { mutableStateOf(state.hp) }
+    var healTick by remember { mutableIntStateOf(0) }
+    var healReport by remember { mutableStateOf<String?>(null) }
+    var pendingAction by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(state.hp) {
+        val delta = state.hp - lastHp
+        if (delta > 0.5 && pendingAction != null) {
+            healReport = "${pendingAction} · +${delta.roundToInt()} PV"
+            healTick++
+            pendingAction = null
+        }
+        lastHp = state.hp
+    }
+    LaunchedEffect(healReport) {
+        if (healReport != null) {
+            delay(4000)
+            healReport = null
+        }
+    }
     Box(
         Modifier
             .fillMaxSize()
@@ -1112,9 +1152,14 @@ fun CampOverlay(
             // feu
             val fx = w * 0.57f
             val fy = ground - 2.dp.toPx()
+            val (fireOuter, fireMid, fireCore) = fireColors(state.floor)
             drawCircle(
                 Brush.radialGradient(
-                    listOf(Color(0x77FF9448), Color(0x22FF9448), Color.Transparent),
+                    listOf(
+                        fireOuter.copy(alpha = 0.47f),
+                        fireOuter.copy(alpha = 0.13f),
+                        Color.Transparent
+                    ),
                     center = Offset(fx, fy),
                     radius = 120.dp.toPx()
                 ),
@@ -1138,7 +1183,11 @@ fun CampOverlay(
                 quadraticBezierTo(fx - 13.dp.toPx(), fy - 6.dp.toPx(), fx, fy - 26.dp.toPx())
                 close()
             }
-            drawPath(flame, Brush.verticalGradient(listOf(GoldLight, Ember, Color(0xFF8F2D19))))
+            drawPath(flame, Brush.verticalGradient(listOf(fireCore, fireMid, fireOuter)))
+        }
+
+        if (!reducedMotion) {
+            HealBurst(healTick, cardHeight, Modifier.fillMaxSize())
         }
 
         Column(
@@ -1161,13 +1210,28 @@ fun CampOverlay(
                 .clip(RoundedCornerShape(50))
                 .background(Color.Black.copy(alpha = 0.45f))
         )
-        AssetImage(
-            "hero/human.png",
+        if (state.floor >= 100) {
+            AssetImage(
+                "env/statue_hero.png",
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 20.dp, bottom = heroBottom)
+                    .width(100.dp)
+                    .height(150.dp)
+            )
+        }
+        Box(
             Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 96.dp, bottom = heroBottom)
-                .size(88.dp)
-        )
+                .size(88.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (state.floor >= 100) {
+                GoldenAura(Modifier.size(170.dp), animate = !reducedMotion)
+            }
+            AssetImage("hero/human.png", Modifier.size(88.dp))
+        }
 
         CloseButton(
             onResume,
@@ -1188,6 +1252,21 @@ fun CampOverlay(
                 .border(1.dp, Line2, RoundedCornerShape(8.dp))
                 .padding(10.dp)
         ) {
+            healReport?.let { report ->
+                Text(
+                    report,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Green.copy(alpha = 0.12f))
+                        .border(1.dp, Green.copy(alpha = 0.45f), RoundedCornerShape(4.dp))
+                        .padding(vertical = 4.dp),
+                    textAlign = TextAlign.Center,
+                    fontSize = 7.sp,
+                    color = Green
+                )
+                Spacer(Modifier.height(5.dp))
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 CampSummary("PALIER", state.floor.toString().padStart(2, '0'))
                 CampSummary("DISTANCE", "${state.distance.toInt()} m")
@@ -1217,7 +1296,7 @@ fun CampOverlay(
                 "item/meat_ration.png",
                 state.rations.toString(),
                 enabled = state.rations > 0 && state.hp < stats.maxHp,
-                onClick = onRest
+                onClick = { pendingAction = "Se reposer"; onRest() }
             )
             Spacer(Modifier.height(4.dp))
             CampAction(
@@ -1226,7 +1305,7 @@ fun CampOverlay(
                 "item/misc_crystal.png",
                 state.shards.toString(),
                 enabled = state.shards > 0 && state.hp < stats.maxHp,
-                onClick = onShard
+                onClick = { pendingAction = "Se ressourcer"; onShard() }
             )
             Spacer(Modifier.height(4.dp))
             CampAction(
@@ -1235,7 +1314,7 @@ fun CampOverlay(
                 "fx/heart.png",
                 if (state.freeRestDay == state.day) "UTILISÉE" else "GRATUIT",
                 enabled = state.freeRestDay != state.day && state.hp < stats.maxHp,
-                onClick = onFreeRest
+                onClick = { pendingAction = "Veillée gratuite"; onFreeRest() }
             )
             if (state.stash.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
@@ -1264,6 +1343,39 @@ fun CampOverlay(
                 fontSize = 6.5.sp,
                 color = Muted2,
                 lineHeight = 9.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun HealBurst(trigger: Int, cardHeight: Int, modifier: Modifier = Modifier) {
+    val progress = remember { Animatable(0f) }
+    LaunchedEffect(trigger) {
+        if (trigger > 0) {
+            progress.snapTo(0f)
+            progress.animateTo(1f, tween(1100))
+        }
+    }
+    Canvas(modifier) {
+        val t = progress.value
+        if (t <= 0f || t >= 1f) return@Canvas
+        val panel = if (cardHeight > 0) cardHeight.toFloat() else size.height * 0.45f
+        val ground = (size.height - panel - 16.dp.toPx())
+            .coerceIn(size.height * 0.30f, size.height * 0.86f)
+        val fx = size.width * 0.57f
+        drawCircle(
+            color = Color(0xFFFFD24A).copy(alpha = 0.20f * (1f - t)),
+            radius = 90.dp.toPx() * (0.7f + t),
+            center = Offset(fx, ground)
+        )
+        for (i in 0 until 12) {
+            val spread = ((i * 53) % 70 - 35) * t
+            val rise = t * (70 + (i % 5) * 26)
+            drawCircle(
+                color = Color(0xFFFFC83C).copy(alpha = (1f - t) * 0.9f),
+                radius = 3.dp.toPx() * (1f - t * 0.6f),
+                center = Offset(fx + spread, ground - rise)
             )
         }
     }

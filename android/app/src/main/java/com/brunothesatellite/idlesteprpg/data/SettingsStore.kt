@@ -48,6 +48,10 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean("notify_key", true)
         set(value) = prefs.edit().putBoolean("notify_key", value).apply()
 
+    var notifySync: Boolean
+        get() = prefs.getBoolean("notify_sync", false)
+        set(value) = prefs.edit().putBoolean("notify_sync", value).apply()
+
     var notifySpecial: Boolean
         get() = prefs.getBoolean("notify_special", true)
         set(value) = prefs.edit().putBoolean("notify_special", value).apply()

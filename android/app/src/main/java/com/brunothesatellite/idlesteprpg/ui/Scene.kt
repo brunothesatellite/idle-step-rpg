@@ -1299,6 +1299,12 @@ private fun HeroUnit(
                     .align(Alignment.BottomCenter)
                     .offset(y = if (walking && animateDecor) bob.dp else 0.dp)
             ) {
+                if (state.floor >= 100) {
+                    GoldenAura(
+                        Modifier.align(Alignment.Center).size(176.dp),
+                        animate = !reducedMotion
+                    )
+                }
                 AssetImage("hero/human_m.png", Modifier.fillMaxSize())
                 bodyLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }
                 legsLayer?.let { AssetImage(it, Modifier.fillMaxSize()) }

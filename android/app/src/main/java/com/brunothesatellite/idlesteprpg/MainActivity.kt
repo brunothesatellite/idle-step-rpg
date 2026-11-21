@@ -311,7 +311,8 @@ private fun GameRoot(vm: GameViewModel) {
                         activeTab = "inventory"
                     },
                     onOpenConsumables = vm::openConsumables,
-                    onResume = vm::closeCamp
+                    onResume = vm::closeCamp,
+                    reducedMotion = ui.reducedMotion
                 )
             }
             if (ui.chestOpen && state.chest != null) {

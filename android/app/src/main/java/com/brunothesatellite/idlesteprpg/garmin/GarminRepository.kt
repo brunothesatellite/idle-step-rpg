@@ -179,10 +179,9 @@ class GarminRepository(
         }
         val retryAt = prefs.getLong(KEY_RETRY_AT, 0L)
         if (retryAt > System.currentTimeMillis()) {
-            val minutes = ((retryAt - System.currentTimeMillis()) / 60_000L).coerceAtLeast(1L)
             return@withContext SyncResult(
                 false,
-                "Limite Garmin atteinte. Réessayez dans $minutes min.",
+                "Limite Garmin atteinte. Nouvel essai à ${SimpleDateFormat("HH:mm", Locale.FRANCE).format(Date(retryAt))}.",
                 retryAt = retryAt
             )
         }
@@ -241,8 +240,7 @@ class GarminRepository(
                 0L
             }
             val message = if (e.code == 429) {
-                val minutes = ((retry - System.currentTimeMillis()) / 60_000L).coerceAtLeast(1L)
-                "Limite Garmin atteinte. Réessayez dans $minutes min."
+                "Limite Garmin atteinte. Nouvel essai à ${SimpleDateFormat("HH:mm", Locale.FRANCE).format(Date(retry))}."
             } else {
                 e.message
             }
@@ -281,4 +279,5 @@ class GarminRepository(
         private const val KEY_RETRY_AT = "retry_at"
     }
 }
+
 

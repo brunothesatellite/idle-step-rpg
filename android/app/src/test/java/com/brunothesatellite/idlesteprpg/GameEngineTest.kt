@@ -13,6 +13,7 @@ import com.brunothesatellite.idlesteprpg.engine.OfflineMode
 import com.brunothesatellite.idlesteprpg.engine.OfflinePolicy
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
+import com.brunothesatellite.idlesteprpg.engine.fireTier
 import com.brunothesatellite.idlesteprpg.engine.oathsFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import org.junit.Assert.assertEquals
@@ -650,6 +651,17 @@ class GameEngineTest {
             )
         }
         assertTrue(GameEngine.chestWarnings(tooEarly, now).isEmpty())
+    }
+
+    @Test
+    fun fireTierFollowsBiomes() {
+        assertEquals(0, fireTier(1))
+        assertEquals(0, fireTier(10))
+        assertEquals(1, fireTier(11))
+        assertEquals(1, fireTier(20))
+        assertEquals(6, fireTier(61))
+        assertEquals(7, fireTier(71))
+        assertEquals(7, fireTier(999))
     }
 
     @Test

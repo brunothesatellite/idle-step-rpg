@@ -12,6 +12,16 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 
 ---
 
+## Backlog explicite — sorti du plan
+
+| Sujet | Décision |
+|---|---|
+| Localisation anglaise | Étudiée dans [`langue.md`](langue.md), non implémentée. |
+| Rappel quotidien | Notification optionnelle à heure choisie (serments, pas du jour). |
+| Migration Room | JSON versionné conservé. |
+
+---
+
 ## 1. Déjà livré depuis l’ancien backlog
 
 Pour mémoire, ne plus planifier :
@@ -20,10 +30,13 @@ Pour mémoire, ne plus planifier :
   ferveur rattrapée hors ligne, deep links des notifications (`open_screen`), écran de
   permission notifications, import avec aperçu, contrôle **250 pas/min**, worker de clé
   Garmin et worker de maintenance des coffres (préavis porté à 3 h), garde-fou de fuseau
-  (retour en arrière ignoré), copie pré-migration, 7 tests UI instrumentés.
+  (retour en arrière ignoré), copie pré-migration, 7 tests UI instrumentés, **feu par palier
+  et aura/statue au palier 100**.
 - **P1** : simulation d’absence complète et son rapport, onboarding 4 pages + relecture depuis
   les réglages, facteur de profondeur (+12 %/+8 % après le palier 10), bandeau « nouveau jour »,
-  notifications par catégorie et heures calmes, camp avec journal/inventaire/potions.
+  notifications par catégorie et heures calmes, camp avec journal/inventaire/potions,
+  **notifications réseau** (action 401, heure de retry 429, fin de sync avec réglage) et
+  **campement soigné** (animation de flammes + bilan de veillée).
 - **P2** : objets non identifiés, 11 ensembles 2/4/6, effets, reroll, amélioration, démontage,
   fusion corrigée, tri/filtre (Score, Rareté, Niveau, Fusion), vente des communs, coffre de camp,
   rencontres spéciales (autel, source, marchand, statue, risque), Codex (bestiaire, ensembles,
@@ -48,11 +61,8 @@ Pour mémoire, ne plus planifier :
 
 | # | Sujet | Détail | Effort |
 |---|---|---|---|
-| P1-1 | Jalons complets | Livré : +5 % d’or par jalon, +5 éclats, entrée de légende, titre, rang. Restant : apparence du feu de camp par palier, héros/statue au palier 100, déblocage de la forge au premier gardien, compteur des 10 coffres, apparence « Âme ardente » à 50 000 pas. | L |
-| P1-2 | Tutoriel contextuel | L’onboarding initial existe, mais pas les aides des premiers 10 m, premier combat, premier coffre, premier gardien, premier camp. | M |
-| P1-3 | Notifications réseau | Action « Remplacer la clé » sur 401, backoff explicite sur 429 avec heure de nouvel essai, notification de fin de synchronisation de fond. | M |
-| P1-4 | Rappel quotidien | Notification optionnelle de rappel (serments, pas du jour) ; aujourd’hui seul le bandeau « nouveau jour » existe. | S |
-| P1-5 | Campement | Restant : animation de soin par flammes, bilan de veillée détaillé, apparence du feu par palier (lié à P1-1). | M |
+| P1-1 | Jalons complets | **Livré dans cette itération** : feu de camp par palier (8 palettes), aura dorée et statue au palier 100. Restant : compteur des 10 coffres et apparence permanente des 50 000 pas (nom à trancher pour éviter « Âme ardente »). | M |
+| P1-2 | Tutoriel contextuel | Backlog. L'onboarding initial existe, mais pas les aides des premiers 10 m, premier combat, premier coffre, premier gardien, premier camp. | M |
 
 ---
 

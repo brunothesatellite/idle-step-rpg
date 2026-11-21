@@ -36,6 +36,7 @@ object GameNotifications {
     private const val ID_KEY = 16
     private const val ID_SPECIAL = 17
     private const val ID_BOSS_WAIT = 18
+    private const val ID_SYNC = 19
 
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -147,7 +148,18 @@ object GameNotifications {
     fun keyExpiry(context: Context, message: String) {
         post(
             context, ID_KEY, "Compte Garmin", message,
-            account = true, category = "key", screen = "garmin", vibration = true
+            account = true, category = "key", screen = "garmin", vibration = true,
+            actionLabel = "Remplacer la clé"
+        )
+    }
+
+    fun syncDone(context: Context, message: String, ok: Boolean) {
+        post(
+            context, ID_SYNC,
+            if (ok) "Synchronisation terminée" else "Synchronisation en échec",
+            message,
+            category = "sync",
+            vibration = false
         )
     }
 
@@ -159,7 +171,8 @@ object GameNotifications {
         account: Boolean = false,
         category: String = "general",
         screen: String? = null,
-        vibration: Boolean = true
+        vibration: Boolean = true,
+        actionLabel: String? = null
     ) {
         if (!notificationsEnabled(context)) return
         if (!categoryEnabled(context, category)) return
@@ -194,6 +207,9 @@ object GameNotifications {
             .setContentIntent(pending)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .apply {
+                if (actionLabel != null) addAction(0, actionLabel, pending)
+            }
             .build()
         runCatching {
             NotificationManagerCompat.from(context).notify(id, notification)
@@ -222,6 +238,7 @@ object GameNotifications {
             "key" -> prefs.getBoolean("notify_key", true)
             "special" -> prefs.getBoolean("notify_special", true)
             "boss_waiting" -> prefs.getBoolean("notify_boss_waiting", true)
+            "sync" -> prefs.getBoolean("notify_sync", false)
             else -> true
         }
     }

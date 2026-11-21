@@ -65,6 +65,7 @@ data class UiState(
     val notifyOaths: Boolean = true,
     val notifyChest: Boolean = true,
     val notifyKey: Boolean = true,
+    val notifySync: Boolean = false,
     val notifySpecial: Boolean = true,
     val notifyBossWaiting: Boolean = true,
     val quietHours: Boolean = false,
@@ -126,6 +127,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 notifyOaths = container.settings.notifyOaths,
                 notifyChest = container.settings.notifyChest,
                 notifyKey = container.settings.notifyKey,
+                notifySync = container.settings.notifySync,
                 notifySpecial = container.settings.notifySpecial,
                 notifyBossWaiting = container.settings.notifyBossWaiting,
                 quietHours = container.settings.quietHours,
@@ -376,6 +378,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             val result = container.stepRepository.sync()
             refreshGarmin()
             _ui.update { it.copy(syncing = false, lastAdded = result.added) }
+            if (result.needsKey) {
+                GameNotifications.keyExpiry(container.context, result.message)
+            }
             if (!silent) _toasts.emit(result.message)
         }
     }
@@ -526,6 +531,11 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun setNotifyKey(value: Boolean) {
         container.settings.notifyKey = value
         _ui.update { it.copy(notifyKey = value) }
+    }
+
+    fun setNotifySync(value: Boolean) {
+        container.settings.notifySync = value
+        _ui.update { it.copy(notifySync = value) }
     }
 
     fun setNotifySpecial(value: Boolean) {

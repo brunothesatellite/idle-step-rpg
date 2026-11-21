@@ -192,6 +192,11 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     ToggleRow("Clé Garmin", "Expiration à 30/7/1 jour.", ui.notifyKey) {
                         vm.setNotifyKey(it)
                     }
+                    ToggleRow(
+                        "Synchro de fond",
+                        "Résultat des synchronisations automatiques (pas crédités ou erreur).",
+                        ui.notifySync
+                    ) { vm.setNotifySync(it) }
                     ToggleRow("Heures calmes", "22:00–08:00 : alertes sans vibration.", ui.quietHours) {
                         vm.setQuietHours(it)
                     }

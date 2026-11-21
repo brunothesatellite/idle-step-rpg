@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,12 +23,20 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
@@ -40,6 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
+import kotlin.math.cos
+import kotlin.math.sin
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -264,6 +275,57 @@ fun DividerLine(modifier: Modifier = Modifier) {
     )
 }
 
+/** Halo doré du héros au palier 100. */
+@Composable
+fun GoldenAura(modifier: Modifier = Modifier, animate: Boolean = true) {
+    val transition = rememberInfiniteTransition(label = "aura")
+    val pulse by transition.animateFloat(
+        initialValue = if (animate) 0.94f else 1f,
+        targetValue = if (animate) 1.06f else 1f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "auraPulse"
+    )
+    Canvas(modifier) {
+        val maxR = size.minDimension * 0.5f * pulse
+        val c = Offset(size.width / 2f, size.height * 0.44f)
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(Color(0x9AFFD24A), Color(0x5AFFB020), Color.Transparent),
+                center = c,
+                radius = maxR
+            ),
+            radius = maxR,
+            center = c
+        )
+        val spikes = 14
+        for (i in 0 until spikes) {
+            val a = (Math.PI * 2.0 / spikes * i - Math.PI / 2).toFloat()
+            val inner = maxR * 0.42f
+            val outer = maxR * (0.82f + 0.08f * (i % 3))
+            drawLine(
+                color = Color(0xCCFFE066),
+                start = Offset(c.x + cos(a) * inner, c.y + sin(a) * inner),
+                end = Offset(c.x + cos(a) * outer, c.y + sin(a) * outer),
+                strokeWidth = maxR * 0.07f
+            )
+        }
+        drawOval(
+            color = Color(0x88FFC83C),
+            topLeft = Offset(size.width / 2f - maxR * 0.8f, size.height * 0.84f),
+            size = Size(maxR * 1.6f, maxR * 0.24f)
+        )
+        for (i in 0 until 10) {
+            val px = c.x + cos(i * 2.1f) * maxR * (0.35f + 0.05f * (i % 4))
+            val py = c.y + sin(i * 1.7f) * maxR * 0.55f
+            drawRect(
+                color = Color(0xEEFFE680),
+                topLeft = Offset(px, py),
+                size = Size(maxR * 0.05f, maxR * 0.05f)
+            )
+        }
+    }
+}
+
 /**
  * Les fenêtres de dialogue vivent dans une fenêtre Android séparée : la densité
  * locale (donc le réglage « Taille du texte ») n'y est pas transmise. Ce
@@ -322,3 +384,4 @@ fun CloseButton(
 }
 
 fun Int.coerceAtLeastZero(): Int = if (this < 0) 0 else this
+
