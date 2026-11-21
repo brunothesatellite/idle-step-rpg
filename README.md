@@ -8,7 +8,7 @@
 - **Aucun serveur éditeur** — progression, clé et jeton restent sur le téléphone.
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 
-**Version :** 0.17.4 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.17.5 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel HTML](manuel/index.html) ·
@@ -63,7 +63,7 @@ Kaelen ne cherche pas la fin. Il sait qu'il n'y en a pas. Il cherche la prochain
 - **Lisibilité** : quatre tailles de texte (**Normal, Grand, Très grand, Maximal**), animations réduites, vibrations réglables.
 - Les **serments journaliers**, la **ferveur**, les **consommables**, la **forge**, les **ensembles** et les **rencontres spéciales** ajoutent de la profondeur.
 - Le **reset quotidien** se fait à **00:00 local**, en accord avec le `calendarDate` Garmin.
-- Le **résumé d'absence** fait avancer le jeu pendant la fermeture : **30 % des pas du jour** et **4 min simulées** au maximum, avec arrêt sur événement (rencontre spéciale, nouveau coffre, passage au camp) ; devant le gardien, la simulation ne s'arrête que s'il reste moins d'un palier de budget, sinon le combat est joué et le gardien peut être vaincu. Un écran **« Bon retour »** résume l'absence.
+- Le **résumé d'absence** fait avancer le jeu pendant la fermeture : **30 % des pas du jour** par défaut (réglable de 0 à 30 %, ou en nombre de pas, dans **Réglages avancés**) et **4 min simulées** au maximum, avec arrêt sur événement (rencontre spéciale, nouveau coffre, passage au camp) ; devant le gardien, la simulation ne s'arrête que s'il reste moins d'un palier de budget, sinon le combat est joué et le gardien peut être vaincu. Un écran **« Bon retour »** résume l'absence.
 
 ### Biomes et contenu
 
@@ -118,7 +118,7 @@ Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouv
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.17.4.apk
+adb install -r La-Marche-des-Ames-v0.17.5.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.

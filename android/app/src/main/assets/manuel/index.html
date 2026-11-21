@@ -321,7 +321,7 @@
   <h3>Reset à 00:00</h3>
   <p>À minuit local : le compteur du jour, la ferveur, les quotas de rations/éclats et les serments repartent à zéro. La distance déjà parcourue, l'or, l'équipement et les paliers sont conservés.</p>
   <div class="ok"><strong>Astuce :</strong> synchronisez après une marche plutôt que toutes les cinq minutes. La réserve s'écoule ensuite automatiquement en arrière-plan.</div>
-  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de 30 % des pas du jour et de 4 minutes simulées. La simulation s'arrête sur une rencontre spéciale, un nouveau coffre ou un passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un palier de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. Voir <a href="#absence">Résumé d'absence</a>.</div>
+  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de <strong>30 % des pas du jour</strong> (réglable dans <a href="#reglages">Réglages avancés</a>) et de 4 minutes simulées. La simulation s'arrête sur une rencontre spéciale, un nouveau coffre ou un passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un palier de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. Voir <a href="#absence">Résumé d'absence</a>.</div>
 </section>
 
 <section id="interface">
@@ -880,6 +880,20 @@
     <li><strong>Arrière-plan :</strong> la musique se met en pause quand l'application n'est plus visible, puis reprend.</li>
     <li>Les pistes sont générées pour le projet et publiées en <strong>CC0</strong>.</li>
   </ul>
+  <h3>Réglages avancés</h3>
+  <p>En bas de l'écran, la carte <strong>Réglages avancés</strong> est repliée par défaut : elle ne s'ouvre qu'à la demande. Elle règle le budget de progression hors ligne, c'est-à-dire les pas consommés quand l'application est fermée.</p>
+  <figure class="shot">
+    <img src="images/reglages_avances.jpg" alt="Carte Réglages avancés dépliée : absence hors ligne, mode Pourcentage, 30 %, estimation de durée, budget du jour et bouton Rétablir 30 %">
+    <figcaption>Réglages avancés : budget d'absence en pourcentage ou en pas maximum.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Pourcentage :</strong> de 0 à 30 % des pas du jour, <strong>30 % par défaut</strong>.</li>
+    <li><strong>Pas maximum :</strong> de 0 à 5 000 pas, avec les raccourcis 300, 1 000 et 3 000.</li>
+    <li><strong>Budget journalier :</strong> ce qui a déjà été consommé hors ligne aujourd'hui est déduit ; deux fermetures partagent la même enveloppe.</li>
+    <li><strong>Durée :</strong> elle découle des pas, environ 1 seconde pour 60 pas, jusqu'à deux fois plus si la réserve est presque vide. La simulation peut s'arrêter avant sur un événement.</li>
+    <li><strong>0</strong> désactive la progression hors ligne ; <strong>RÉTABLIR 30 %</strong> revient aux valeurs recommandées.</li>
+    <li>Ces réglages ne peuvent que réduire la progression hors ligne.</li>
+  </ul>
 </section>
 
 <section id="mises-a-jour">
@@ -939,14 +953,14 @@
   <p>Le résumé s'affiche dès 2 minutes d'absence, <strong>même si la réserve était vide</strong> : il indique alors que rien n'a avancé. La synchronisation des pas est téléchargée en parallèle mais <strong>appliquée seulement à la fermeture</strong> du résumé : le compteur de pas et la réserve ne bougent qu'après « REPRENDRE LA MARCHE », et le message « Garmin synchronisé · +N pas » ou « Santé Connect synchronisé · +N pas » arrive à ce moment-là.</p>
 <p>Le résumé liste aussi le <strong>butin</strong> : objets récupérés pendant l'absence, consommables, rations et éclats.</p>
   <h3>Consommation de la réserve</h3>
-  <p>La simulation utilise le <strong>rythme actif normal</strong> (30 ou 60 pas par seconde selon la taille de la réserve), avec trois limites :</p>
+  <p>La simulation utilise le <strong>rythme actif normal</strong> (30 ou 60 pas par seconde selon la taille de la réserve), avec un budget réglable dans <strong>Réglages avancés</strong> et trois garde-fous :</p>
   <div class="kpi">
-    <div><b>30 %</b><span>des pas du jour maximum par absence</span></div>
+    <div><b>30 %</b><span>des pas du jour par défaut (0–30 %, ou 0–5 000 pas)</span></div>
     <div><b>4 min</b><span>de temps simulé maximum</span></div>
     <div><b>100 %</b><span>du rythme actif</span></div>
     <div><b>7 jours</b><span>absence maximale comptée</span></div>
   </div>
-  <p>La première limite atteinte arrête la simulation. Elle s'arrête aussi sur un <strong>événement</strong> : rencontre spéciale, nouveau coffre ou passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un <strong>palier</strong> de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
+  <p>La première limite atteinte arrête la simulation. Le budget est <strong>journalier</strong> : deux absences dans la même journée partagent la même enveloppe. Elle s'arrête aussi sur un <strong>événement</strong> : rencontre spéciale, nouveau coffre ou passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un <strong>palier</strong> de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
   <h3>Contenu du résumé</h3>
   <ul>
     <li>durée de l'absence ;</li>
@@ -972,7 +986,7 @@
   <h2>20. Questions fréquentes</h2>
   <details>
     <summary>Pourquoi le jeu a-t-il avancé pendant que j'étais absent ?</summary>
-    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite de 30 % des pas du jour et de 4 minutes simulées. La réserve restante est conservée. Les gardiens peuvent être vaincus si le budget restant couvre un palier ; sinon la simulation s'arrête devant le portail. Voir <a href="#absence">Résumé d'absence</a>.</p>
+    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite du budget d'absence (30 % des pas du jour par défaut, réglable dans Réglages avancés) et de 4 minutes simulées. La réserve restante est conservée. Les gardiens peuvent être vaincus si le budget restant couvre un palier ; sinon la simulation s'arrête devant le portail. Voir <a href="#absence">Résumé d'absence</a>.</p>
   </details>
   <details>
     <summary>Le héros est bloqué et n'avance plus.</summary>
