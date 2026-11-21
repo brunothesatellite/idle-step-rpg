@@ -31,7 +31,10 @@ data class SaveSummary(
     val version: Int
 )
 
-class GameRepository(private val context: Context) {
+class GameRepository(
+    private val context: Context,
+    private val settings: SettingsStore = SettingsStore(context)
+) {
 
     private val file = File(context.filesDir, "game_state.json")
     private val backup = File(context.filesDir, "game_state.bak.json")
@@ -120,7 +123,7 @@ class GameRepository(private val context: Context) {
         mutex.withLock {
             val s = before.deepCopy()
             val existing = s.offlineReport?.takeIf { it.acknowledgedAt == 0L }
-            val sim = GameEngine.simulateAbsence(s, elapsedMs)
+            val sim = GameEngine.simulateAbsence(s, elapsedMs, policy = settings.offlinePolicy)
             s.lastActiveAt = System.currentTimeMillis()
             // Rapport systématique dès 2 min : même sans réserve, on explique
             // pourquoi rien n'a avancé.
@@ -206,7 +209,7 @@ class GameRepository(private val context: Context) {
                     s.offlineReport = report
                 } else {
                     val sim = if (simulate) {
-                        GameEngine.simulateOffline(s)
+                        GameEngine.simulateOffline(s, policy = settings.offlinePolicy)
                     } else {
                         OfflineSim(combats = 0, gold = 0, floors = 0, kills = 0)
                     }

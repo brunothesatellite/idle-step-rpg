@@ -184,11 +184,12 @@ object GameEngine {
     fun simulateOffline(
         state: GameState,
         maxIterations: Int = 900,
-        dtMs: Double = 500.0
+        dtMs: Double = 500.0,
+        policy: OfflinePolicy = OfflinePolicy.Default
     ): OfflineSim {
         // La synchro de fond partage le budget hors ligne de la reprise.
         val cap = min(maxIterations * dtMs.toLong(), OFFLINE_SIM_MAX_MS)
-        val sim = simulateAbsence(state, elapsedMs = cap, capMs = cap, dtMs = dtMs)
+        val sim = simulateAbsence(state, elapsedMs = cap, capMs = cap, dtMs = dtMs, policy = policy)
         return OfflineSim(
             combats = sim.combats,
             gold = sim.gold,
@@ -198,8 +199,8 @@ object GameEngine {
     }
 
     /** Nombre de pas encore autorisés à être consommés hors ligne aujourd'hui. */
-    fun offlineBudget(state: GameState): Int =
-        (state.stepsToday * OFFLINE_BANK_SHARE).toInt()
+    fun offlineBudget(state: GameState, policy: OfflinePolicy = OfflinePolicy.Default): Int =
+        policy.budgetFor(state.stepsToday)
             .minus(state.offlineStepsToday)
             .coerceAtLeast(0)
 
@@ -212,7 +213,8 @@ object GameEngine {
         state: GameState,
         elapsedMs: Long,
         capMs: Long = OFFLINE_SIM_MAX_MS,
-        dtMs: Double = 500.0
+        dtMs: Double = 500.0,
+        policy: OfflinePolicy = OfflinePolicy.Default
     ): AbsenceSim {
         val startBank = state.stepBank.toInt()
         val startGold = state.gold
@@ -228,7 +230,7 @@ object GameEngine {
         val rationsBefore = state.rations
         val shardsBefore = state.shards
 
-        val budget = min(offlineBudget(state), startBank)
+        val budget = min(offlineBudget(state, policy), startBank)
         if (elapsedMs <= 0L || startBank <= 0 || budget <= 0 ||
             state.mode == "camp" || state.mode == "special"
         ) {

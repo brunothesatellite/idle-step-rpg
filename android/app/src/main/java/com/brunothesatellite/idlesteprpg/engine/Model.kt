@@ -26,6 +26,39 @@ const val WALK_SLOW_THRESHOLD = 600.0
  */
 const val OFFLINE_BANK_SHARE = 0.30
 const val OFFLINE_SIM_MAX_MS = 4L * 60L * 1000L
+
+/** Bornes des réglages avancés d'absence. */
+const val OFFLINE_DEFAULT_PERCENT = 30
+const val OFFLINE_MAX_PERCENT = 30
+const val OFFLINE_DEFAULT_STEPS = 1_000
+const val OFFLINE_MAX_STEPS = 5_000
+
+enum class OfflineMode { PERCENT, STEPS }
+
+/**
+ * Budget de pas consommable hors ligne, réglé dans les réglages avancés.
+ * Le budget reste journalier : [GameEngine.offlineBudget] retire ce qui a déjà
+ * été consommé aujourd'hui.
+ */
+data class OfflinePolicy(
+    val mode: OfflineMode = OfflineMode.PERCENT,
+    val percent: Int = OFFLINE_DEFAULT_PERCENT,
+    val maxSteps: Int = OFFLINE_DEFAULT_STEPS
+) {
+    /** Budget du jour, borné par les pas réellement comptés aujourd'hui. */
+    fun budgetFor(stepsToday: Int): Int {
+        val raw = when (mode) {
+            OfflineMode.PERCENT ->
+                stepsToday * percent.coerceIn(0, OFFLINE_MAX_PERCENT) / 100
+            OfflineMode.STEPS -> maxSteps.coerceIn(0, OFFLINE_MAX_STEPS)
+        }
+        return minOf(raw, stepsToday).coerceAtLeast(0)
+    }
+
+    companion object {
+        val Default = OfflinePolicy()
+    }
+}
 const val DAY_RESET_HOUR = 0
 const val MAX_STEPS_PER_DAY = 60_000
 const val HISTORY_DAYS = 7

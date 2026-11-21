@@ -69,6 +69,9 @@ data class UiState(
     val notifyBossWaiting: Boolean = true,
     val quietHours: Boolean = false,
     val autoSellCommons: Boolean = false,
+    val offlineMode: String = "percent",
+    val offlinePercent: Int = 30,
+    val offlineMaxSteps: Int = 1_000,
     val onboardingDone: Boolean = true,
     val soundsEnabled: Boolean = true,
     val soundVolume: Float = 0.6f,
@@ -127,6 +130,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 notifyBossWaiting = container.settings.notifyBossWaiting,
                 quietHours = container.settings.quietHours,
                 autoSellCommons = container.settings.autoSellCommons,
+                offlineMode = container.settings.offlineMode,
+                offlinePercent = container.settings.offlinePercent,
+                offlineMaxSteps = container.settings.offlineMaxSteps,
                 onboardingDone = container.settings.onboardingDone,
                 soundsEnabled = container.settings.soundsEnabled,
                 soundVolume = container.settings.soundVolume,
@@ -540,6 +546,31 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun setAutoSellCommons(value: Boolean) {
         container.settings.autoSellCommons = value
         _ui.update { it.copy(autoSellCommons = value) }
+    }
+
+    fun setOfflineMode(value: String) {
+        val mode = if (value == "steps") "steps" else "percent"
+        container.settings.offlineMode = mode
+        _ui.update { it.copy(offlineMode = mode) }
+    }
+
+    fun setOfflinePercent(value: Int) {
+        val percent = value.coerceIn(0, 30)
+        container.settings.offlinePercent = percent
+        _ui.update { it.copy(offlinePercent = percent) }
+    }
+
+    fun setOfflineMaxSteps(value: Int) {
+        val steps = value.coerceIn(0, 5_000)
+        container.settings.offlineMaxSteps = steps
+        _ui.update { it.copy(offlineMaxSteps = steps) }
+    }
+
+    fun resetOfflinePolicy() {
+        container.settings.offlineMode = "percent"
+        container.settings.offlinePercent = 30
+        container.settings.offlineMaxSteps = 1_000
+        _ui.update { it.copy(offlineMode = "percent", offlinePercent = 30, offlineMaxSteps = 1_000) }
     }
 
     fun setSoundsEnabled(value: Boolean) {

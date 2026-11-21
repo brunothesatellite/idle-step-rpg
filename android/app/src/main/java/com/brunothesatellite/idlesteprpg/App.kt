@@ -29,7 +29,7 @@ class App : Application() {
 
 class AppContainer(val context: Context) {
     val settings = SettingsStore(context)
-    val gameRepository = GameRepository(context)
+    val gameRepository = GameRepository(context, settings)
     val secretStore = SecretStore(context)
     val garminClient = GarminClient()
     val garminRepository = GarminRepository(context, secretStore, garminClient, gameRepository)

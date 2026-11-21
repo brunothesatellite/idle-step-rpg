@@ -1,6 +1,12 @@
 package com.brunothesatellite.idlesteprpg.data
 
 import android.content.Context
+import com.brunothesatellite.idlesteprpg.engine.OFFLINE_DEFAULT_PERCENT
+import com.brunothesatellite.idlesteprpg.engine.OFFLINE_DEFAULT_STEPS
+import com.brunothesatellite.idlesteprpg.engine.OFFLINE_MAX_PERCENT
+import com.brunothesatellite.idlesteprpg.engine.OFFLINE_MAX_STEPS
+import com.brunothesatellite.idlesteprpg.engine.OfflineMode
+import com.brunothesatellite.idlesteprpg.engine.OfflinePolicy
 
 class SettingsStore(context: Context) {
 
@@ -111,4 +117,30 @@ class SettingsStore(context: Context) {
     var pendingSourceRebase: Boolean
         get() = prefs.getBoolean("pending_source_rebase", false)
         set(value) = prefs.edit().putBoolean("pending_source_rebase", value).apply()
+
+    /** Réglages avancés d'absence : mode "percent" ou "steps". */
+    var offlineMode: String
+        get() = prefs.getString("offline_mode", "percent").orEmpty().ifBlank { "percent" }
+        set(value) = prefs.edit().putString("offline_mode", value).apply()
+
+    var offlinePercent: Int
+        get() = prefs.getInt("offline_percent", OFFLINE_DEFAULT_PERCENT)
+            .coerceIn(0, OFFLINE_MAX_PERCENT)
+        set(value) = prefs.edit()
+            .putInt("offline_percent", value.coerceIn(0, OFFLINE_MAX_PERCENT))
+            .apply()
+
+    var offlineMaxSteps: Int
+        get() = prefs.getInt("offline_steps", OFFLINE_DEFAULT_STEPS)
+            .coerceIn(0, OFFLINE_MAX_STEPS)
+        set(value) = prefs.edit()
+            .putInt("offline_steps", value.coerceIn(0, OFFLINE_MAX_STEPS))
+            .apply()
+
+    val offlinePolicy: OfflinePolicy
+        get() = OfflinePolicy(
+            mode = if (offlineMode == "steps") OfflineMode.STEPS else OfflineMode.PERCENT,
+            percent = offlinePercent,
+            maxSteps = offlineMaxSteps
+        )
 }

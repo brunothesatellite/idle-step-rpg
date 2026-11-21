@@ -8,6 +8,8 @@ import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_STEPS_PER_DAY
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
+import com.brunothesatellite.idlesteprpg.engine.OfflineMode
+import com.brunothesatellite.idlesteprpg.engine.OfflinePolicy
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
 import com.brunothesatellite.idlesteprpg.engine.oathsFor
@@ -534,6 +536,59 @@ class GameEngineTest {
         assertEquals(false, GameEngine.canFuse(state, item))
         state.inventory = state.inventory + item.copy(id = "rare_4")
         assertTrue(GameEngine.canFuse(state, item))
+    }
+
+    @Test
+    fun offlinePolicyDefaultsToThirtyPercent() {
+        val state = GameState()
+        state.stepsToday = 1_000
+        assertEquals(300, GameEngine.offlineBudget(state))
+        assertEquals(300, OfflinePolicy.Default.budgetFor(1_000))
+    }
+
+    @Test
+    fun offlinePolicyAbsoluteIsClampedToTheDay() {
+        val policy = OfflinePolicy(mode = OfflineMode.STEPS, maxSteps = 1_000)
+        val state = GameState()
+        state.stepsToday = 5_000
+        assertEquals(1_000, GameEngine.offlineBudget(state, policy))
+        state.stepsToday = 300
+        assertEquals(300, GameEngine.offlineBudget(state, policy))
+    }
+
+    @Test
+    fun offlinePolicyZeroDisablesProgression() {
+        val state = GameState()
+        state.stepsToday = 2_000
+        state.stepBank = 2_000.0
+        val policy = OfflinePolicy(percent = 0)
+        assertEquals(0, GameEngine.offlineBudget(state, policy))
+        val sim = GameEngine.simulateAbsence(state, 60_000L, policy = policy)
+        assertEquals(0, sim.stepsConsumed)
+        assertEquals(2_000.0, state.stepBank, 0.001)
+    }
+
+    @Test
+    fun offlineBudgetStaysDaily() {
+        val state = GameState()
+        state.stepsToday = 1_000
+        state.offlineStepsToday = 250
+        assertEquals(50, GameEngine.offlineBudget(state))
+    }
+
+    @Test
+    fun offlineSimulationUsesTheConfiguredAbsoluteBudget() {
+        val state = GameState()
+        state.stepsToday = 5_000
+        state.stepBank = 5_000.0
+        state.mode = "walk"
+        val sim = GameEngine.simulateAbsence(
+            state,
+            elapsedMs = 60_000L,
+            policy = OfflinePolicy(mode = OfflineMode.STEPS, maxSteps = 200)
+        )
+        assertTrue(sim.stepsConsumed in 1..230)
+        assertEquals(sim.stepsConsumed, state.offlineStepsToday)
     }
 
     @Test

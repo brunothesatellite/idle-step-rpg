@@ -53,6 +53,8 @@ import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.OfflineMode
+import com.brunothesatellite.idlesteprpg.engine.OfflinePolicy
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -61,6 +63,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
     var confirmClear by remember { mutableStateOf(false) }
     var pendingSource by remember { mutableStateOf<String?>(null) }
     var diagnosticOpen by remember { mutableStateOf(false) }
+    var advancedOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val healthLauncher = rememberLauncherForActivityResult(
         androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
@@ -558,6 +561,145 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 }
             }
             Spacer(Modifier.height(10.dp))
+            PixelCard(Modifier.fillMaxWidth()) {
+                val offlineMode = if (ui.offlineMode == "steps") OfflineMode.STEPS else OfflineMode.PERCENT
+                val offlinePolicy = OfflinePolicy(
+                    mode = offlineMode,
+                    percent = ui.offlinePercent,
+                    maxSteps = ui.offlineMaxSteps
+                )
+                val dailyBudget = offlinePolicy.budgetFor(state.stepsToday)
+                val remainingBudget = (dailyBudget - state.offlineStepsToday).coerceAtLeast(0)
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { advancedOpen = !advancedOpen }
+                        .padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        Modifier
+                            .size(20.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(Panel2)
+                            .border(1.dp, Line2, RoundedCornerShape(3.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            if (advancedOpen) "-" else "+",
+                            fontFamily = Press,
+                            fontSize = 9.sp,
+                            color = GoldLight
+                        )
+                    }
+                    Spacer(Modifier.width(7.dp))
+                    Column(Modifier.weight(1f)) {
+                        SectionLabel("Réglages avancés")
+                        Text("Absence et équilibrage", fontSize = 6.5.sp, color = Muted2)
+                    }
+                }
+                if (advancedOpen) {
+                    Spacer(Modifier.height(6.dp))
+                    DividerLine()
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "ABSENCE HORS LIGNE",
+                        fontFamily = Press,
+                        fontSize = 6.5.sp,
+                        letterSpacing = 1.sp,
+                        color = GoldLight
+                    )
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        "La réserve s'écoule quand l'application est fermée, dans la limite du budget choisi. " +
+                            "La durée de simulation découle des pas.",
+                        fontSize = 6.6.sp,
+                        color = Muted,
+                        lineHeight = 10.sp
+                    )
+                    Spacer(Modifier.height(7.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        ChoiceChip("Pourcentage", offlineMode == OfflineMode.PERCENT) {
+                            vm.setOfflineMode("percent")
+                        }
+                        ChoiceChip("Pas maximum", offlineMode == OfflineMode.STEPS) {
+                            vm.setOfflineMode("steps")
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            if (offlineMode == OfflineMode.PERCENT) "% des pas du jour" else "Pas hors ligne",
+                            fontSize = 8.sp,
+                            color = Parchment
+                        )
+                        Text(
+                            if (offlineMode == OfflineMode.PERCENT) "${ui.offlinePercent} %"
+                            else "${ui.offlineMaxSteps} pas",
+                            fontFamily = Press,
+                            fontSize = 7.sp,
+                            color = Gold
+                        )
+                    }
+                    Slider(
+                        value = if (offlineMode == OfflineMode.PERCENT) ui.offlinePercent.toFloat()
+                        else ui.offlineMaxSteps.toFloat(),
+                        onValueChange = {
+                            if (offlineMode == OfflineMode.PERCENT) {
+                                vm.setOfflinePercent(it.roundToInt())
+                            } else {
+                                vm.setOfflineMaxSteps((it / 50f).roundToInt() * 50)
+                            }
+                        },
+                        valueRange = if (offlineMode == OfflineMode.PERCENT) 0f..30f else 0f..5_000f,
+                        steps = if (offlineMode == OfflineMode.PERCENT) 29 else 99,
+                        colors = SliderDefaults.colors(
+                            thumbColor = GoldLight,
+                            activeTrackColor = Gold,
+                            inactiveTrackColor = Line2
+                        )
+                    )
+                    if (offlineMode == OfflineMode.STEPS) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            listOf(300, 1_000, 3_000).forEach { preset ->
+                                ChoiceChip("$preset", ui.offlineMaxSteps == preset) {
+                                    vm.setOfflineMaxSteps(preset)
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(5.dp))
+                    }
+                    Text(
+                        if (dailyBudget <= 0) "Absence hors ligne désactivée."
+                        else "≈ ${offlineDurationLabel(dailyBudget / 60)} de simulation · jusqu'à " +
+                            "${offlineDurationLabel(dailyBudget / 30)} si la réserve est presque vide",
+                        fontSize = 6.4.sp,
+                        color = Muted
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        if (dailyBudget <= 0) "Aujourd'hui : aucun pas autorisé hors ligne."
+                        else "Aujourd'hui : $dailyBudget pas max · $remainingBudget encore disponibles " +
+                            "(${state.offlineStepsToday} consommés)",
+                        fontSize = 6.4.sp,
+                        color = Muted2
+                    )
+                    Spacer(Modifier.height(7.dp))
+                    OverlayAction("RÉTABLIR 30 %", Modifier.fillMaxWidth(), onClick = { vm.resetOfflinePolicy() })
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Ces réglages réduisent la progression hors ligne. 30 % est la valeur recommandée.",
+                        fontSize = 6.2.sp,
+                        color = Muted2,
+                        lineHeight = 9.sp
+                    )
+                }
+            }
+            Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth(), borderColor = Gold.copy(alpha = 0.3f)) {
                 SectionLabel("À propos")
                 Spacer(Modifier.height(4.dp))
@@ -775,4 +917,35 @@ private fun lastCheckLabel(timestamp: Long): String {
         .withZone(java.time.ZoneId.systemDefault())
     val value = formatter.format(java.time.Instant.ofEpochMilli(timestamp))
     return "Dernière vérification : $value"
+}
+
+@Composable
+private fun ChoiceChip(label: String, active: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(if (active) Gold.copy(alpha = 0.18f) else Panel2)
+            .border(1.dp, if (active) Gold.copy(alpha = 0.7f) else Line, RoundedCornerShape(4.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            label,
+            fontSize = 7.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (active) GoldLight else Muted,
+            maxLines = 1
+        )
+    }
+}
+
+/** Durée indicative à 60 pas/s, puis 30 pas/s quand la réserve est presque vide. */
+private fun offlineDurationLabel(seconds: Int): String {
+    val value = seconds.coerceAtLeast(0)
+    return when {
+        value < 60 -> "$value s"
+        value % 60 == 0 -> "${value / 60} min"
+        else -> "${value / 60} min ${value % 60} s"
+    }
 }
