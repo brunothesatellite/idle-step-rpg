@@ -321,7 +321,7 @@
   <h3>Reset à 00:00</h3>
   <p>À minuit local : le compteur du jour, la ferveur, les quotas de rations/éclats et les serments repartent à zéro. La distance déjà parcourue, l'or, l'équipement et les paliers sont conservés.</p>
   <div class="ok"><strong>Astuce :</strong> synchronisez après une marche plutôt que toutes les cinq minutes. La réserve s'écoule ensuite automatiquement en arrière-plan.</div>
-  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de 30 % des pas du jour et de 4 minutes simulées. La simulation s'arrête aussi sur un événement (rencontre, portail du gardien, coffre) pour vous laisser quelque chose à vivre. Voir <a href="#absence">Résumé d'absence</a>.</div>
+  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de 30 % des pas du jour et de 4 minutes simulées. La simulation s'arrête sur une rencontre spéciale, un nouveau coffre ou un passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un palier de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. Voir <a href="#absence">Résumé d'absence</a>.</div>
 </section>
 
 <section id="interface">
@@ -946,7 +946,7 @@
     <div><b>100 %</b><span>du rythme actif</span></div>
     <div><b>7 jours</b><span>absence maximale comptée</span></div>
   </div>
-  <p>La première limite atteinte arrête la simulation. Elle s'arrête aussi sur un <strong>événement</strong> : rencontre spéciale, portail du gardien, coffre ou défaite. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
+  <p>La première limite atteinte arrête la simulation. Elle s'arrête aussi sur un <strong>événement</strong> : rencontre spéciale, nouveau coffre ou passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un <strong>palier</strong> de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
   <h3>Contenu du résumé</h3>
   <ul>
     <li>durée de l'absence ;</li>
@@ -972,7 +972,7 @@
   <h2>20. Questions fréquentes</h2>
   <details>
     <summary>Pourquoi le jeu a-t-il avancé pendant que j'étais absent ?</summary>
-    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite de 30 % des pas du jour et de 4 minutes simulées. La réserve restante est conservée. Voir <a href="#absence">Résumé d'absence</a>.</p>
+    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite de 30 % des pas du jour et de 4 minutes simulées. La réserve restante est conservée. Les gardiens peuvent être vaincus si le budget restant couvre un palier ; sinon la simulation s'arrête devant le portail. Voir <a href="#absence">Résumé d'absence</a>.</p>
   </details>
   <details>
     <summary>Le héros est bloqué et n'avance plus.</summary>
