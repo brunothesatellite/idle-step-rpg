@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg
 
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.FightData
 import com.brunothesatellite.idlesteprpg.engine.ForgeOutcome
 import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
@@ -589,6 +590,84 @@ class GameEngineTest {
         )
         assertTrue(sim.stepsConsumed in 1..230)
         assertEquals(sim.stepsConsumed, state.offlineStepsToday)
+    }
+
+    @Test
+    fun dayChangeResetsDailyCountersOnce() {
+        val state = GameState()
+        state.day = "2026-11-20"
+        state.lastActiveDay = "2026-11-20"
+        state.stepsToday = 5_000
+        state.offlineStepsToday = 900
+        state.ferveur = 40
+        state.streak = 3
+
+        GameEngine.ensureDay(state, LocalDate.of(2026, 11, 21))
+
+        assertEquals("2026-11-21", state.day)
+        assertEquals(0, state.stepsToday)
+        assertEquals(0, state.offlineStepsToday)
+        assertEquals(0, state.ferveur)
+        assertEquals(4, state.streak)
+    }
+
+    @Test
+    fun backwardDateDoesNotResetTheDay() {
+        val state = GameState()
+        state.day = "2026-11-21"
+        state.lastActiveDay = "2026-11-21"
+        state.stepsToday = 5_000
+        state.offlineStepsToday = 900
+        state.ferveur = 40
+        state.streak = 4
+
+        GameEngine.ensureDay(state, LocalDate.of(2026, 11, 20))
+
+        assertEquals("2026-11-21", state.day)
+        assertEquals(5_000, state.stepsToday)
+        assertEquals(900, state.offlineStepsToday)
+        assertEquals(40, state.ferveur)
+        assertEquals(4, state.streak)
+    }
+
+    @Test
+    fun chestWarningUsesTheThreeHourWindow() {
+        val now = 1_000_000_000L
+        val inside = GameState().apply {
+            chest = ChestData(
+                "fer", 400,
+                goldMin = 10, goldMax = 20,
+                expiresAt = now + 2L * 60L * 60L * 1000L
+            )
+        }
+        assertTrue(GameEngine.chestWarnings(inside, now).isNotEmpty())
+
+        val tooEarly = GameState().apply {
+            chest = ChestData(
+                "fer", 400,
+                goldMin = 10, goldMax = 20,
+                expiresAt = now + 4L * 60L * 60L * 1000L
+            )
+        }
+        assertTrue(GameEngine.chestWarnings(tooEarly, now).isEmpty())
+    }
+
+    @Test
+    fun migrateKeepsPlayerDataAndStampsTheVersion() {
+        val state = GameState()
+        state.version = 1
+        state.gold = 1_234
+        state.stepBank = 500.0
+        state.inventory = listOf(
+            Item("old", "Ancienne", "weapon", "rare", "item/mace2.png", 3, atk = 10, value = 50)
+        )
+
+        GameEngine.migrate(state)
+
+        assertEquals(SAVE_VERSION, state.version)
+        assertEquals(1_234, state.gold)
+        assertEquals(500.0, state.stepBank, 0.001)
+        assertEquals(1, state.inventory.size)
     }
 
     @Test

@@ -64,7 +64,9 @@ const val MAX_STEPS_PER_DAY = 60_000
 const val HISTORY_DAYS = 7
 const val HISTORY_IMPORT_CAP = 100_000
 const val CHEST_LIFETIME_MS = 24L * 60L * 60L * 1000L
-const val CHEST_WARNING_MS = 60L * 60L * 1000L
+// Le worker de maintenance passe toutes les 2 h : un préavis de 3 h garantit
+// qu'au moins un passage tombe dans la fenêtre avant expiration.
+const val CHEST_WARNING_MS = 3L * 60L * 60L * 1000L
 const val MAX_PENDING_CHESTS = 2
 const val INVENTORY_CAP = 24
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L

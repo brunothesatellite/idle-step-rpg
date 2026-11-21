@@ -51,7 +51,18 @@ class GameRepository(
 
     private fun load(): GameState {
         val loaded = runCatching {
-            if (file.exists()) json.decodeFromString<GameState>(file.readText()) else GameState()
+            if (!file.exists()) return@runCatching GameState()
+            val text = file.readText()
+            val parsed = json.decodeFromString<GameState>(text)
+            // Conserve une copie brute avant toute migration : le .bak tournant
+            // est écrasé au bout de 10 min, pas cette copie.
+            if (parsed.version < SAVE_VERSION) {
+                runCatching {
+                    val pre = File(context.filesDir, "game_state.pre_migration_v${parsed.version}.json")
+                    if (!pre.exists()) pre.writeText(text)
+                }
+            }
+            parsed
         }.getOrElse {
             runCatching {
                 if (file.exists()) file.copyTo(File(context.filesDir, "game_state.corrupt.json"), overwrite = true)

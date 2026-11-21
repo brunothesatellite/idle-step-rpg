@@ -44,7 +44,7 @@ class OverlayUiTest {
             }
         }
         rule.onNodeWithText("ARRÊTER LE FORÇAGE").assertExists()
-        rule.onNodeWithText("CONTINUER LA MARCHE").assertExists()
+        rule.onNodeWithText("MASQUER · LE FORÇAGE CONTINUE").assertExists()
     }
 
     @Test
@@ -86,11 +86,15 @@ class OverlayUiTest {
         var finished = false
         rule.setContent {
             MarcheTheme {
-                OnboardingOverlay { finished = true }
+                OnboardingOverlay(
+                    onFinish = { finished = true },
+                    onConnect = {},
+                    onHealth = {}
+                )
             }
         }
         rule.onNodeWithText("SUIVANT").performClick()
-        rule.onNodeWithText("GARMIN PERSONAL API").assertExists()
+        rule.onNodeWithText("SOURCE DE PAS").assertExists()
         rule.onNodeWithText("PASSER").performClick()
     }
 
@@ -107,6 +111,56 @@ class OverlayUiTest {
         rule.onNodeWithText("RÉSULTAT").assertExists()
         rule.onNodeWithText("Pari perdu · −100 or").assertExists()
         rule.onNodeWithText("CONTINUER").assertExists()
+    }
+
+    @Test
+    fun fusionButtonIsActiveWithThreeEligibleItems() {
+        val items = (1..4).map {
+            Item("rare_$it", "Rare $it", "weapon", "rare", "item/mace2.png", 3, atk = 10 + it, value = 50)
+        }
+        rule.setContent {
+            MarcheTheme {
+                ItemDialog(
+                    item = items.first(),
+                    state = GameState(inventory = items),
+                    onDismiss = {},
+                    onEquip = {},
+                    onSell = {},
+                    onToggleLock = {},
+                    onFuse = {},
+                    onIdentify = {},
+                    onReroll = {},
+                    onUpgrade = {},
+                    onDismantle = {}
+                )
+            }
+        }
+        rule.onNodeWithText("FUSIONNER").assertExists()
+    }
+
+    @Test
+    fun fusionButtonShowsTheMissingCountWithTwoItems() {
+        val items = (1..2).map {
+            Item("rare_$it", "Rare $it", "weapon", "rare", "item/mace2.png", 3, atk = 10 + it, value = 50)
+        }
+        rule.setContent {
+            MarcheTheme {
+                ItemDialog(
+                    item = items.first(),
+                    state = GameState(inventory = items),
+                    onDismiss = {},
+                    onEquip = {},
+                    onSell = {},
+                    onToggleLock = {},
+                    onFuse = {},
+                    onIdentify = {},
+                    onReroll = {},
+                    onUpgrade = {},
+                    onDismantle = {}
+                )
+            }
+        }
+        rule.onNodeWithText("FUSIONNER 2/3").assertExists()
     }
 
     @Test

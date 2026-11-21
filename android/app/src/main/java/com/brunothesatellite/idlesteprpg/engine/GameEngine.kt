@@ -111,6 +111,11 @@ object GameEngine {
     fun ensureDay(state: GameState, date: LocalDate = LocalDate.now()) {
         val d = date.toString()
         migrateChests(state)
+        // Un retour en arrière (fuseau, horloge) ne doit pas rejouer le reset du
+        // jour : sinon les compteurs quotidiens, les serments et le budget hors
+        // ligne seraient recrédités une seconde fois.
+        val previous = runCatching { LocalDate.parse(state.day) }.getOrNull()
+        if (previous != null && date.isBefore(previous)) return
         resetWeekIfNeeded(state, date)
         if (state.day.isEmpty()) {
             state.day = d

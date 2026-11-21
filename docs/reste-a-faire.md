@@ -4,7 +4,8 @@
 > la majorité des P0/P1/P2 d’alors sont livrés. Ne restent que les écarts vérifiés ci-dessous.
 >
 > Rappels à jour : absence = **30 % des pas du jour par défaut** (réglable 0–30 % ou en pas,
-> 0–5 000) et **4 min simulées** ; tests unitaires = **91** ; Play Store livré en **0.17.5**.
+> 0–5 000) et **4 min simulées** ; tests = **95 unitaires + 7 instrumentés** ; Play Store
+> livré en **0.17.5**.
 > La localisation est étudiée dans [`langue.md`](langue.md) (document de décision, non implémenté).
 
 Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusieurs jours.
@@ -17,7 +18,9 @@ Pour mémoire, ne plus planifier :
 
 - **P0** : camp qui réinitialise le combat, veillée gratuite à **+15 %**, décroissance de la
   ferveur rattrapée hors ligne, deep links des notifications (`open_screen`), écran de
-  permission notifications, import avec aperçu, contrôle **250 pas/min**, worker de clé Garmin.
+  permission notifications, import avec aperçu, contrôle **250 pas/min**, worker de clé
+  Garmin et worker de maintenance des coffres (préavis porté à 3 h), garde-fou de fuseau
+  (retour en arrière ignoré), copie pré-migration, 7 tests UI instrumentés.
 - **P1** : simulation d’absence complète et son rapport, onboarding 4 pages + relecture depuis
   les réglages, facteur de profondeur (+12 %/+8 % après le palier 10), bandeau « nouveau jour »,
   notifications par catégorie et heures calmes, camp avec journal/inventaire/potions.
@@ -34,10 +37,10 @@ Pour mémoire, ne plus planifier :
 
 | # | Sujet | Détail | Effort |
 |---|---|---|---|
-| P0-1 | Expiration de coffre app fermée | `chestWarnings()` et les notifications ne tournent qu’à l’ouverture/import. Le `MaintenanceWorker` ne vérifie que la clé Garmin. Ajouter la vérification des coffres au worker existant (ou un worker dédié) pour notifier avant expiration sans lancer l’app. | M |
-| P0-2 | Changement de fuseau | Le ledger est indexé par date locale (`HealthConnectSource`), mais aucun test ne couvre le passage de fuseau ni le changement d’heure. Ajouter des tests et documenter le comportement (double comptage, perte). | M |
-| P0-3 | Migrations de sauvegarde | `SAVE_VERSION = 4` et le JSON versionné existent, l’import affiche un résumé. Il manque une **migration explicite** par version et un test d’ouverture d’une sauvegarde v1→v4. | M |
-| P0-4 | Tests d’overlays | `OverlayUiTest` existe mais reste minimal. Ajouter : dialogue objet, forge, absence, réglages, import, camp. | L |
+| P0-1 | Validation terrain du préavis de coffre | Fenêtre portée à **3 h** (worker toutes les 2 h) et couverte par un test unitaire. Reste à observer une notification réelle sur appareil. | S |
+| P0-2 | Validation du fuseau sur émulateur | `ensureDay` ignore désormais une date antérieure (test unitaire). Reste la vérification manuelle d’un changement de fuseau et du passage heure d’été/hiver. | S |
+| P0-3 | Migrations explicites par version | Copie `game_state.pre_migration_vN.json` et test de migration livrés. Les migrations par version ne sont à écrire que lors d’un vrai changement de schéma. | M |
+| P0-4 | Étendre les tests UI | 7 tests verts (coffre, onboarding, consommables, spécial, identification, 2 fusion). Ajouter camp, forge, absence, réglages, import. | M |
 
 ---
 
@@ -125,7 +128,7 @@ Pour mémoire, ne plus planifier :
 
 ## 7. Ordre recommandé
 
-1. **Robustesse** : coffre en arrière-plan, tests de fuseau, migrations, tests d’overlays.
+1. **Robustesse** : valider le préavis de coffre et le fuseau sur appareil/émulateur, étendre les tests UI ; migrations explicites seulement si le schéma change.
 2. **Finitions** : jalons complets, tutoriel contextuel, notifications réseau, rappel quotidien.
 3. **Confort** : sélection multiple, meilleure alternative, recherche du coffre.
 4. **Combat/contenu** : télégraphe, animations, succès, serments hebdomadaires.
@@ -142,5 +145,5 @@ Pour mémoire, ne plus planifier :
 - L’app reste utilisable hors ligne et sans clé Garmin.
 - Aucune notification si l’utilisateur les a désactivées.
 - Aucune régression des données lors d’une mise à jour d’APK.
-- Tests unitaires verts (91 aujourd’hui) et CI verte avant chaque release.
+- Tests verts (95 unitaires + 7 instrumentés) et CI verte avant chaque release.
 - Le français reste pixel-identique tant que la localisation n’est pas validée.
