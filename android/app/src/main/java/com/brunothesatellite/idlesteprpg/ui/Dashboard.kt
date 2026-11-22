@@ -168,10 +168,12 @@ private fun DashboardHeader(
                     .padding(horizontal = 3.dp, vertical = 1.dp)
             ) {
                 Text(
-                    state.level.toString().padStart(2, '0'),
+                    formatLevelShort(state.level),
                     fontFamily = Press,
                     fontSize = 5.sp,
-                    color = Ink
+                    color = Ink,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }
@@ -190,13 +192,20 @@ private fun DashboardHeader(
                     height = 3.dp
                 )
                 Spacer(Modifier.width(5.dp))
-                Text("${state.xp} / ${xpNext(state.level)}", fontSize = 6.sp, color = Muted)
+                Text(
+                    "${formatCompact(state.xp)} / ${formatCompact(xpNext(state.level))}",
+                    fontSize = 6.sp,
+                    color = Muted,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
         Spacer(Modifier.width(6.dp))
         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                CurrencyChip("item/01.png", formatInt(state.gold))
+                CurrencyChip("item/01.png", formatCompact(state.gold))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 CurrencyChip("item/meat_ration.png", state.rations.toString())
@@ -302,11 +311,23 @@ private fun StatsTab(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 SectionLabel("PUISSANCE")
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(formatInt(power), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = GoldLight)
-                    Spacer(Modifier.width(6.dp))
-                    Text("▲ ${state.level}", fontSize = 7.sp, color = Green)
-                }
+                Text(
+                    formatCompact(power),
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = GoldLight,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    "▲ Niv. ${formatCompact(state.level)}",
+                    fontSize = 7.sp,
+                    color = Green,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
             Box(
                 Modifier
@@ -325,8 +346,8 @@ private fun StatsTab(
     }
     Spacer(Modifier.height(5.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-        StatTile("item/long_sword3.png", "ATQ", stats.atk.toString(), Modifier.weight(1f))
-        StatTile("fx/heart.png", "PV", stats.maxHp.toString(), Modifier.weight(1f))
+        StatTile("item/long_sword3.png", "ATQ", formatCompact(stats.atk), Modifier.weight(1f))
+        StatTile("fx/heart.png", "PV", formatCompact(stats.maxHp), Modifier.weight(1f))
         StatTile(
             "item/boots4_green.png",
             "VIT",
@@ -362,9 +383,24 @@ private fun StatTile(icon: String, label: String, value: String, modifier: Modif
     ) {
         AssetIcon(icon, 18.dp)
         Spacer(Modifier.width(4.dp))
-        Column {
-            Text(label, fontSize = 5.5.sp, letterSpacing = 0.7.sp, color = Muted)
-            Text(value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Parchment, maxLines = 1)
+        Column(Modifier.weight(1f)) {
+            Text(
+                label,
+                fontSize = 5.5.sp,
+                letterSpacing = 0.7.sp,
+                color = Muted,
+                maxLines = 1,
+                softWrap = false
+            )
+            Text(
+                value,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Parchment,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -459,27 +495,60 @@ private fun CodexCard(state: GameState, onOpen: () -> Unit) {
 @Composable
 private fun ResourcesCard(state: GameState) {
     PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            ResourceStat("item/meat_ration.png", "RATIONS", "${state.rations} / 24")
-            ResourceStat("item/misc_crystal.png", "ÉCLATS", "${state.shards} / 12")
-            ResourceStat("item/01.png", "OR", formatInt(state.gold))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ResourceStat(
-                "item/cons_potion_red.png",
-                "CONSOMMABLES",
-                state.consumables.values.sum().toString()
+                "item/meat_ration.png", "RATIONS", "${state.rations} / 24",
+                Modifier.weight(1f)
+            )
+            ResourceStat(
+                "item/misc_crystal.png", "ÉCLATS", "${state.shards} / 12",
+                Modifier.weight(1f)
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ResourceStat(
+                "item/01.png", "OR", formatCompact(state.gold),
+                Modifier.weight(1f)
+            )
+            ResourceStat(
+                "item/cons_potion_red.png", "CONSOMMABLES",
+                state.consumables.values.sum().toString(),
+                Modifier.weight(1f)
             )
         }
     }
 }
 
 @Composable
-private fun ResourceStat(icon: String, label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+private fun ResourceStat(
+    icon: String,
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         AssetIcon(icon, 15.dp)
         Spacer(Modifier.width(4.dp))
-        Column {
-            Text(label, fontSize = 5.sp, letterSpacing = 0.5.sp, color = Muted2)
-            Text(value, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Parchment, maxLines = 1)
+        Column(Modifier.weight(1f)) {
+            Text(
+                label,
+                fontSize = 5.sp,
+                letterSpacing = 0.5.sp,
+                color = Muted2,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                value,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold,
+                color = Parchment,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -544,7 +613,7 @@ private fun OathsCard(state: GameState) {
         Spacer(Modifier.height(4.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("Série ${state.streak.coerceAtLeast(1)} jour(s)", fontSize = 5.8.sp, color = if (state.streak >= 7) Gold else Muted2)
-            Text("${formatInt(state.weeklySteps)} pas cette semaine", fontSize = 5.8.sp, color = Muted2)
+            Text("${formatCompact(state.weeklySteps)} pas cette semaine", fontSize = 5.8.sp, color = Muted2)
         }
         Spacer(Modifier.height(3.dp))
         OathRow(
@@ -1141,7 +1210,7 @@ private fun UpgradesTab(
             Text("Forger la marche", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Parchment)
         }
         Spacer(Modifier.weight(1f))
-        CurrencyChip("item/01.png", formatInt(state.gold))
+        CurrencyChip("item/01.png", formatCompact(state.gold))
     }
     Spacer(Modifier.height(6.dp))
     listOf("blade", "breath", "swift").forEach { key ->
@@ -1218,10 +1287,12 @@ private fun UpgradeCard(state: GameState, key: String, onBuy: (String) -> Unit) 
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    if (afford) formatInt(cost) else "MANQUE",
+                    if (afford) formatCompact(cost) else "MANQUE",
                     fontFamily = Press,
                     fontSize = 6.sp,
-                    color = if (afford) Ink else Muted2
+                    color = if (afford) Ink else Muted2,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }
@@ -1253,12 +1324,15 @@ private fun SyncBar(
                     )
                     Text(
                         if (ui.lastAdded > 0) {
-                            "+${formatInt(ui.lastAdded)} pas"
+                            "+${formatCompact(ui.lastAdded)} pas"
                         } else {
-                            "${formatInt(state.stepsToday)} pas aujourd'hui"
+                            "${formatCompact(state.stepsToday)} pas aujourd'hui"
                         },
                         fontSize = 6.sp,
-                        color = if (ui.lastAdded > 0) Gold else Muted2
+                        color = if (ui.lastAdded > 0) Gold else Muted2,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Spacer(Modifier.width(8.dp))
@@ -1279,9 +1353,12 @@ private fun SyncBar(
                 color = Muted2
             )
             Text(
-                if (ui.lastAdded > 0) "+${formatInt(ui.lastAdded)} pas" else "${formatInt(state.stepsToday)} pas aujourd'hui",
+                if (ui.lastAdded > 0) "+${formatCompact(ui.lastAdded)} pas" else "${formatCompact(state.stepsToday)} pas aujourd'hui",
                 fontSize = 6.sp,
-                color = if (ui.lastAdded > 0) Gold else Muted2
+                color = if (ui.lastAdded > 0) Gold else Muted2,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
             )
         }
         Spacer(Modifier.height(4.dp))
@@ -1301,8 +1378,8 @@ private fun SyncBar(
             )
             else -> GoldButton(
                 text = "SYNCHRONISER $sourceLabel",
-                subtitle = "$sourceDetail · ${formatInt(state.stepsToday)} pas aujourd'hui",
-                badge = if (ui.lastAdded > 0) "+${formatInt(ui.lastAdded)}" else null,
+                subtitle = "$sourceDetail · ${formatCompact(state.stepsToday)} pas aujourd'hui",
+                badge = if (ui.lastAdded > 0) "+${formatCompact(ui.lastAdded)}" else null,
                 onClick = onSync
             )
         }

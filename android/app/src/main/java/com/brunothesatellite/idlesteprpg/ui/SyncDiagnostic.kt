@@ -145,9 +145,9 @@ fun SyncDiagnosticDialog(
                 DiagnosticLine(
                     "Dernière synchro",
                     formatTime(ui.lastSync) +
-                        if (ui.lastAdded > 0) " · +${formatInt(ui.lastAdded)} pas" else ""
+                        if (ui.lastAdded > 0) " · +${formatCompact(ui.lastAdded)} pas" else ""
                 )
-                DiagnosticLine("Pas aujourd'hui", "${formatInt(state.stepsToday)} pas")
+                DiagnosticLine("Pas aujourd'hui", "${formatCompact(state.stepsToday)} pas")
                 if (ui.lastError.isNotBlank()) {
                     Spacer(Modifier.height(4.dp))
                     Text(ui.lastError, fontSize = 6.8.sp, color = Blood, lineHeight = 10.sp)
@@ -186,12 +186,12 @@ fun SyncDiagnosticDialog(
                 RuleLine("Fenêtre", "$HISTORY_DAYS jours", "au-delà, la journée est ignorée")
                 RuleLine(
                     "Plafond par jour",
-                    "${formatInt(MAX_STEPS_PER_DAY)} pas",
+                    "${formatCompact(MAX_STEPS_PER_DAY)} pas",
                     "une journée plus haute est ramenée au plafond"
                 )
                 RuleLine(
                     "Import d'un coup",
-                    "${formatInt(HISTORY_IMPORT_CAP)} pas",
+                    "${formatCompact(HISTORY_IMPORT_CAP)} pas",
                     "maximum crédité par synchronisation"
                 )
                 RuleLine(
@@ -250,7 +250,7 @@ private fun DayRow(info: DayInfo) {
             overflow = TextOverflow.Ellipsis
         )
         Text(
-            if (info.steps > 0) "${formatInt(info.steps)} pas" else "—",
+            if (info.steps > 0) "${formatCompact(info.steps)} pas" else "—",
             fontSize = 7.sp,
             color = if (info.steps > 0) Gold else Muted2,
             maxLines = 1

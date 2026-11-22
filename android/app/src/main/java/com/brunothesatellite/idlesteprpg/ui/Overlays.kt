@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg.ui
 
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.SystemClock
 import android.view.WindowManager
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -58,6 +60,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.layout.onSizeChanged
@@ -144,9 +147,9 @@ fun ItemDialog(
     val canUpgrade = item.identified && missingGold == 0 && missingShards == 0
     val upgradeHint = when {
         !item.identified -> "Objet non identifié."
-        canUpgrade -> "Forge · ${formatInt(upgradePrice)} or + 1 éclat"
+        canUpgrade -> "Forge · ${formatCompact(upgradePrice)} or + 1 éclat"
         else -> "Il manque " + buildList {
-            if (missingGold > 0) add("${formatInt(missingGold)} or")
+            if (missingGold > 0) add("${formatCompact(missingGold)} or")
             if (missingShards > 0) add(if (missingShards > 1) "$missingShards éclats" else "1 éclat")
         }.joinToString(" et ") + " pour améliorer"
     }
@@ -252,7 +255,7 @@ fun ItemDialog(
                     OverlayAction("IDENTIFIER · 1 ÉCLAT", Modifier.fillMaxWidth(), onIdentify, primary = true)
                     Spacer(Modifier.height(5.dp))
                     OverlayAction(
-                        if (item.locked) "VERROUILLÉ" else "VENDRE +${formatInt(item.value)} or",
+                        if (item.locked) "VERROUILLÉ" else "VENDRE +${formatCompact(item.value)} or",
                         Modifier.fillMaxWidth(),
                         onSell,
                         enabled = !item.locked
@@ -275,10 +278,13 @@ fun ItemDialog(
                             )
                         )
                         Text(
-                            "Héros · ATQ ${before.atk} → ${after.atk} · PV ${before.maxHp} → ${after.maxHp}",
+                            "Héros · ATQ ${formatCompact(before.atk)} → ${formatCompact(after.atk)} · PV ${formatCompact(before.maxHp)} → ${formatCompact(after.maxHp)}",
                             fontSize = 6.5.sp,
                             color = Blue,
-                            modifier = Modifier.padding(top = 4.dp)
+                            modifier = Modifier.padding(top = 4.dp),
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis
                         )
                     } else {
                         ItemCompareTable(
@@ -289,7 +295,7 @@ fun ItemDialog(
                         )
                     }
                     Spacer(Modifier.height(4.dp))
-                    StatRow("Valeur", "${formatInt(item.value)} or")
+                    StatRow("Valeur", "${formatCompact(item.value)} or")
                     if (item.identified && item.setName.isNotBlank()) {
                         Spacer(Modifier.height(5.dp))
                         val tier = when {
@@ -357,7 +363,7 @@ fun ItemDialog(
                                 enabled = item.identified && state.shards >= 2
                             )
                             OverlayAction(
-                                "AMÉLIORER · ${formatInt(upgradePrice)}",
+                                "AMÉLIORER · ${formatCompact(upgradePrice)}",
                                 Modifier.weight(1.2f),
                                 { lastUpgrade = null; forgeMode = ForgeMode.UPGRADE },
                                 enabled = canUpgrade
@@ -388,7 +394,7 @@ fun ItemDialog(
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         OverlayAction(
                             if (item.locked) "VERROUILLÉ"
-                            else "VENDRE +${formatInt(item.value)} or",
+                            else "VENDRE +${formatCompact(item.value)} or",
                             Modifier.weight(0.85f),
                             onSell,
                             enabled = !item.locked && !equippedHere
@@ -529,9 +535,12 @@ private fun UpgradePanel(
         val after = statsOf(afterState)
         Spacer(Modifier.height(4.dp))
         Text(
-            "Héros · ATQ ${before.atk} → ${after.atk} · PV ${before.maxHp} → ${after.maxHp}",
+            "Héros · ATQ ${formatCompact(before.atk)} → ${formatCompact(after.atk)} · PV ${formatCompact(before.maxHp)} → ${formatCompact(after.maxHp)}",
             fontSize = 6.5.sp,
-            color = Blue
+            color = Blue,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
         )
     } else {
         UpgradeTable(reference = equippedItem, current = item, next = next)
@@ -544,8 +553,8 @@ private fun UpgradePanel(
     }
 
     Spacer(Modifier.height(7.dp))
-    CostRow("Coût", "${formatInt(upgradePrice)} or · 1 éclat")
-    CostRow("Disponible", "${formatInt(state.gold)} or · ${state.shards} éclats")
+    CostRow("Coût", "${formatCompact(upgradePrice)} or · 1 éclat")
+    CostRow("Disponible", "${formatCompact(state.gold)} or · ${state.shards} éclats")
     if (!canUpgrade) {
         Text(upgradeHint, fontSize = 6.2.sp, color = Ember, lineHeight = 9.sp)
     }
@@ -803,7 +812,14 @@ private fun CostRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label, fontSize = 6.5.sp, color = Muted)
-        Text(value, fontSize = 6.7.sp, color = GoldLight)
+        Text(
+            value,
+            fontSize = 6.7.sp,
+            color = GoldLight,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -937,7 +953,15 @@ private fun StatRow(label: String, value: String) {
     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, fontSize = 8.sp, color = Muted, modifier = Modifier.weight(1f))
         Spacer(Modifier.width(6.dp))
-        Text(value, fontSize = 8.5.sp, color = Parchment, textAlign = TextAlign.End)
+        Text(
+            value,
+            fontSize = 8.5.sp,
+            color = Parchment,
+            textAlign = TextAlign.End,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -965,7 +989,15 @@ fun ChestDialog(
                     ChestArt(Modifier.size(78.dp))
                 Spacer(Modifier.height(4.dp))
                 Text(GameEngine.chestTypeLabel(chest.type), fontSize = 5.5.sp, letterSpacing = 1.sp, color = Gold)
-                Text("Serrure de ${formatInt(chest.quota)} pas", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Parchment)
+                Text(
+                    "Serrure de ${formatCompact(chest.quota)} pas",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Parchment,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     "Consacrer vos pas fige la marche jusqu'à l'ouverture. La progression de la serrure est conservée.",
@@ -982,7 +1014,13 @@ fun ChestDialog(
                     height = 7.dp
                 )
                 Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("${formatInt(chest.progress.toInt())} / ${formatInt(chest.quota)} pas", fontSize = 6.5.sp, color = GoldLight)
+                    Text(
+                        "${formatCompact(chest.progress.toInt())} / ${formatCompact(chest.quota)} pas",
+                        fontSize = 6.5.sp,
+                        color = GoldLight,
+                        maxLines = 1,
+                        softWrap = false
+                    )
                     Text(
                         when (chest.type) {
                             "bois" -> "40–80 or · objet inhabituel"
@@ -1068,6 +1106,8 @@ fun CampOverlay(
     val stats = statsOf(state)
     var cardHeight by remember { mutableStateOf(0) }
     val density = LocalDensity.current
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val constrainedCard = density.fontScale > 1.5f && landscape
     val heroBottom = with(density) { cardHeight.toDp() } + 16.dp
     var lastHp by remember { mutableStateOf(state.hp) }
     var healTick by remember { mutableIntStateOf(0) }
@@ -1253,12 +1293,14 @@ fun CampOverlay(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
+                .then(if (constrainedCard) Modifier.fillMaxHeight(0.86f) else Modifier)
                 .onSizeChanged { cardHeight = it.height }
                 .padding(14.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(Ink.copy(alpha = 0.94f))
                 .border(1.dp, Line2, RoundedCornerShape(8.dp))
                 .padding(10.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             healReport?.let { report ->
                 Text(
@@ -1275,18 +1317,28 @@ fun CampOverlay(
                 )
                 Spacer(Modifier.height(5.dp))
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                CampSummary("PALIER", state.floor.toString().padStart(2, '0'))
-                CampSummary("DISTANCE", "${state.distance.toInt()} m")
-                CampSummary("FERVEUR", state.ferveur.toString())
-                CampSummary("PV", "${state.hp.toInt()} / ${stats.maxHp}")
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                CampSummary("PALIER", state.floor.toString().padStart(2, '0'), Modifier.weight(0.7f))
+                CampSummary("DISTANCE", "${state.distance.toInt()} m", Modifier.weight(0.9f))
+                CampSummary("FERVEUR", state.ferveur.toString(), Modifier.weight(0.7f))
+                CampSummary(
+                    "PV",
+                    "${formatCompact(state.hp.toInt())} / ${formatCompact(stats.maxHp)}",
+                    Modifier.weight(1.7f)
+                )
             }
             Spacer(Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                CampSummary("PAS EN ATTENTE", formatInt(state.stepBank.toInt()))
-                CampSummary("OR", formatInt(state.gold))
-                CampSummary("SÉRIE", "${state.streak.coerceAtLeast(1)} j")
-                CampSummary("TOTAL", formatInt(state.totalSteps))
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                CampSummary("PAS EN ATTENTE", formatCompact(state.stepBank.toInt()), Modifier.weight(1.3f))
+                CampSummary("OR", formatCompact(state.gold), Modifier.weight(1.0f))
+                CampSummary("SÉRIE", "${state.streak.coerceAtLeast(1)} j", Modifier.weight(0.7f))
+                CampSummary("TOTAL", formatCompact(state.totalSteps), Modifier.weight(1.0f))
             }
             Spacer(Modifier.height(6.dp))
             Row(
@@ -1390,10 +1442,26 @@ private fun HealBurst(trigger: Int, cardHeight: Int, modifier: Modifier = Modifi
 }
 
 @Composable
-private fun CampSummary(label: String, value: String) {
-    Column {
-        Text(label, fontSize = 5.sp, letterSpacing = 0.7.sp, color = Muted2)
-        Text(value, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Parchment)
+private fun CampSummary(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text(
+            label,
+            fontSize = 5.sp,
+            letterSpacing = 0.7.sp,
+            color = Muted2,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            value,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            color = Parchment,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -1898,26 +1966,26 @@ fun OfflineOverlay(
                 if (absence) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         RecapTile(formatAbsence(report.minutes), "ABSENCE", Modifier.weight(1f))
-                        RecapTile(formatInt(report.stepsConsumed), "PAS CONSOMMÉS", Modifier.weight(1f))
-                        RecapTile(formatInt(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.stepsConsumed), "PAS CONSOMMÉS", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(6.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RecapTile(formatInt(report.combats), "COMBATS", Modifier.weight(1f))
-                        RecapTile(formatInt(report.gold), "OR", Modifier.weight(1f))
-                        RecapTile(formatInt(report.floors), "PALIERS", Modifier.weight(1f))
-                        RecapTile(formatInt(report.bosses), "GARDIENS", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.combats), "COMBATS", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.gold), "OR", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.floors), "PALIERS", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.bosses), "GARDIENS", Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(6.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RecapTile(formatInt(report.levels), "NIVEAUX", Modifier.weight(1f))
-                        RecapTile(formatInt(report.chests), "COFFRES", Modifier.weight(1f))
-                        RecapTile(formatInt(report.remainingSteps), "RÉSERVE", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.levels), "NIVEAUX", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.chests), "COFFRES", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.remainingSteps), "RÉSERVE", Modifier.weight(1f))
                     }
                     if (mixed) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Synchro : ${report.days} jour(s) · ${formatInt(report.steps)} pas importés",
+                            "Synchro : ${report.days} jour(s) · ${formatCompact(report.steps)} pas importés",
                             fontSize = 6.8.sp,
                             color = Gold,
                             textAlign = TextAlign.Center
@@ -1926,15 +1994,15 @@ fun OfflineOverlay(
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         RecapTile(report.days.toString(), "JOURS", Modifier.weight(1f))
-                        RecapTile(formatInt(report.steps), "PAS", Modifier.weight(1f))
-                        RecapTile(formatInt(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.steps), "PAS", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(6.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RecapTile(formatInt(report.combats), "COMBATS", Modifier.weight(1f))
-                        RecapTile(formatInt(report.gold), "OR", Modifier.weight(1f))
-                        RecapTile(formatInt(report.floors), "PALIERS", Modifier.weight(1f))
-                        RecapTile(formatInt(report.kills), "VICTIMES", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.combats), "COMBATS", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.gold), "OR", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.floors), "PALIERS", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.kills), "VICTIMES", Modifier.weight(1f))
                     }
                 }
                 Spacer(Modifier.height(10.dp))
@@ -2041,8 +2109,24 @@ private fun RecapTile(value: String, label: String, modifier: Modifier = Modifie
             .padding(vertical = 7.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(value, fontFamily = Press, fontSize = 8.sp, color = GoldLight, maxLines = 1)
-        Text(label, fontSize = 5.5.sp, letterSpacing = 0.7.sp, color = Muted)
+        Text(
+            value,
+            fontFamily = Press,
+            fontSize = 8.sp,
+            color = GoldLight,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            label,
+            fontSize = 5.5.sp,
+            letterSpacing = 0.7.sp,
+            color = Muted,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -2199,7 +2283,7 @@ fun ImportPreviewDialog(
                 Spacer(Modifier.height(8.dp))
                 ImportRow("Niveau", summary.level.toString())
                 ImportRow("Palier", summary.floor.toString())
-                ImportRow("Or", formatInt(summary.gold))
+                ImportRow("Or", formatCompact(summary.gold))
                 ImportRow("Jour", summary.day.ifBlank { "—" })
                 ImportRow("Objets", summary.items.toString())
                 ImportRow("Version", "v${summary.version}")
@@ -2226,7 +2310,14 @@ private fun ImportRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label, fontSize = 7.5.sp, color = Muted)
-        Text(value, fontSize = 8.sp, color = Parchment)
+        Text(
+            value,
+            fontSize = 8.sp,
+            color = Parchment,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -2285,7 +2376,7 @@ fun SpecialDialog(
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (special.goldCost > 0) {
-                        SpecialCost("${formatInt(special.goldCost)} or", state.gold >= special.goldCost)
+                        SpecialCost("${formatCompact(special.goldCost)} or", state.gold >= special.goldCost)
                     }
                     if (special.shardCost > 0) {
                         SpecialCost("${special.shardCost} éclat(s)", state.shards >= special.shardCost)
@@ -2325,7 +2416,13 @@ private fun SpecialCost(label: String, affordable: Boolean) {
             .border(1.dp, if (affordable) Line else Blood.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
             .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
-        Text(label, fontSize = 6.5.sp, color = if (affordable) Gold else Blood)
+        Text(
+            label,
+            fontSize = 6.5.sp,
+            color = if (affordable) Gold else Blood,
+            maxLines = 1,
+            softWrap = false
+        )
     }
 }
 

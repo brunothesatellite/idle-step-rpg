@@ -435,8 +435,8 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     )
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        MobStat("PV", formatInt(preview.hp), Modifier.weight(1f))
-                        MobStat("ATQ", formatInt(preview.atk), Modifier.weight(1f), Ember)
+                        MobStat("PV", formatCompact(preview.hp), Modifier.weight(1f))
+                        MobStat("ATQ", formatCompact(preview.atk), Modifier.weight(1f), Ember)
                         MobStat(
                             "CADENCE",
                             String.format(Locale.FRENCH, "%.2f s", preview.intervalMs / 1000.0),
@@ -446,9 +446,9 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     }
                     Spacer(Modifier.height(5.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        MobStat("OR", formatInt(preview.gold), Modifier.weight(1f))
-                        MobStat("XP", formatInt(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
-                        MobStat("VICTIMES", formatInt(kills), Modifier.weight(1f))
+                        MobStat("OR", formatCompact(preview.gold), Modifier.weight(1f))
+                        MobStat("XP", formatCompact(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
+                        MobStat("VICTIMES", formatCompact(kills), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Box(
@@ -621,8 +621,8 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     )
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        MobStat("PV", formatInt(preview.hp), Modifier.weight(1f))
-                        MobStat("ATQ", formatInt(preview.atk), Modifier.weight(1f), Blood)
+                        MobStat("PV", formatCompact(preview.hp), Modifier.weight(1f))
+                        MobStat("ATQ", formatCompact(preview.atk), Modifier.weight(1f), Blood)
                         MobStat(
                             "CADENCE",
                             String.format(Locale.FRENCH, "%.2f s", preview.intervalMs / 1000.0),
@@ -632,9 +632,9 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     }
                     Spacer(Modifier.height(5.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        MobStat("OR", formatInt(preview.gold), Modifier.weight(1f))
-                        MobStat("XP", formatInt(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
-                        MobStat("VICTIMES", formatInt(kills), Modifier.weight(1f))
+                        MobStat("OR", formatCompact(preview.gold), Modifier.weight(1f))
+                        MobStat("XP", formatCompact(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
+                        MobStat("VICTIMES", formatCompact(kills), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Box(

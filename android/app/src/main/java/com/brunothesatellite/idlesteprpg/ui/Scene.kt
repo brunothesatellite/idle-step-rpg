@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +53,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
@@ -63,6 +65,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -1002,7 +1005,7 @@ private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Mo
             }
         }
         Spacer(Modifier.width(6.dp))
-        CurrencyChip("item/01.png", formatInt(state.gold))
+        CurrencyChip("item/01.png", formatCompact(state.gold))
         Spacer(Modifier.width(5.dp))
         Box(
             Modifier
@@ -1085,7 +1088,13 @@ private fun UnitPlate(
                 modifier = Modifier.weight(1f)
             )
             Spacer(Modifier.width(3.dp))
-            Text("NIV.${level.toString().padStart(2, '0')}", fontSize = 5.5.sp, color = Muted)
+            Text(
+                formatLevelShort(level),
+                fontSize = 5.5.sp,
+                color = Muted,
+                maxLines = 1,
+                softWrap = false
+            )
         }
         if (subtitle != null) {
             Text(
@@ -1238,6 +1247,7 @@ private fun HeroUnit(
     val context = LocalContext.current
     val floats = remember { mutableStateListOf<FloatFx>() }
     var previousHp by remember { mutableStateOf(state.hp) }
+    var pendingHeal by remember { mutableFloatStateOf(0f) }
     var nextId by remember { mutableLongStateOf(0L) }
 
     LaunchedEffect(state.hp) {
@@ -1246,19 +1256,27 @@ private fun HeroUnit(
         if (reducedMotion) return@LaunchedEffect
         if (diff < -3.0) {
             SoundFx.play(context, "hurt", 0.8f)
-            floats += FloatFx(
-                id = nextId++,
-                text = "-${(-diff).roundToInt()}",
-                color = Color(0xFFFFB0A6),
-                drift = ((nextId % 5) - 2) * 6f
+            addFloat(
+                floats,
+                FloatFx(nextId++, (-diff).roundToInt(), "-", Color(0xFFFFB0A6), driftOf(nextId))
             )
         } else if (diff > 3.0) {
-            floats += FloatFx(
-                id = nextId++,
-                text = "+${diff.roundToInt()}",
-                color = Green,
-                drift = ((nextId % 5) - 2) * 6f
-            )
+            // Les soins sont cumulés : au plus 4 floats par seconde, plutôt
+            // qu'un float par tick (10/s) qui finissait par masquer le héros.
+            pendingHeal += diff.toFloat()
+        }
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(250)
+            if (pendingHeal >= 3f) {
+                val amount = pendingHeal.roundToInt()
+                pendingHeal = 0f
+                addFloat(
+                    floats,
+                    FloatFx(nextId++, amount, "+", Green, driftOf(nextId), durationMs = 360)
+                )
+            }
         }
     }
 
@@ -1315,8 +1333,8 @@ private fun HeroUnit(
             }
             floats.forEach { fx ->
                 key(fx.id) {
-                    Box(Modifier.align(Alignment.TopCenter)) {
-                        FloatingNumber(fx) { floats.remove(fx) }
+                    Box(Modifier.align(Alignment.Center)) {
+                        FloatingNumber(fx, maxWidth = 70.dp) { floats.remove(fx) }
                     }
                 }
             }
@@ -1350,11 +1368,15 @@ private fun EnemyUnit(
                 if (fight.lastCrit) 1f else 0.55f
             )
             if (!reducedMotion) {
-                floats += FloatFx(
-                    id = nextId++,
-                    text = "-${damage.roundToInt()}" + if (fight.lastCrit) " !" else "",
-                    color = if (fight.lastCrit) GoldLight else Color(0xFFFFC6B8),
-                    drift = ((nextId % 5) - 2) * 7f
+                addFloat(
+                    floats,
+                    FloatFx(
+                        nextId++,
+                        damage.roundToInt(),
+                        "-",
+                        if (fight.lastCrit) GoldLight else Color(0xFFFFC6B8),
+                        driftOf(nextId)
+                    )
                 )
             }
             coroutineScope {
@@ -1454,8 +1476,11 @@ private fun EnemyUnit(
             }
             floats.forEach { fx ->
                 key(fx.id) {
-                    Box(Modifier.align(Alignment.TopCenter)) {
-                        FloatingNumber(fx) { floats.remove(fx) }
+                    Box(Modifier.align(Alignment.Center)) {
+                        FloatingNumber(
+                            fx,
+                            maxWidth = if (fight.isBoss) 100.dp else 78.dp
+                        ) { floats.remove(fx) }
                     }
                 }
             }
@@ -1477,27 +1502,55 @@ private fun EnemyUnit(
 
 private data class FloatFx(
     val id: Long,
-    val text: String,
+    val amount: Int,
+    val sign: String,
     val color: Color,
-    val drift: Float
+    val drift: Float,
+    val durationMs: Int = 820
 )
 
+/** Plafond visuel : jamais plus de 4 nombres vivants par unité. */
+private fun addFloat(list: MutableList<FloatFx>, fx: FloatFx) {
+    while (list.size >= 4) list.removeAt(0)
+    list += fx
+}
+
+private fun driftOf(id: Long): Float = ((id % 5) - 2) * 1.5f
+
 @Composable
-private fun FloatingNumber(fx: FloatFx, onDone: () -> Unit) {
+private fun FloatingNumber(fx: FloatFx, maxWidth: Dp, onDone: () -> Unit) {
     val anim = remember { Animatable(0f) }
+    val fontScale = LocalDensity.current.fontScale
+    val text = fx.sign + formatFloatNumber(fx.amount)
+    // Press Start 2P est monospace : 1 caractère = 1 em. On réduit la taille
+    // juste assez pour que le nombre reste dans la boîte du sprite, même à
+    // l'échelle de texte maximale.
+    val fontSize = (maxWidth.value / (text.length.coerceAtLeast(1) * fontScale))
+        .coerceIn(6.5f, 10f)
     LaunchedEffect(Unit) {
-        anim.animateTo(1f, tween(820, easing = LinearEasing))
+        anim.animateTo(1f, tween(fx.durationMs, easing = LinearEasing))
         onDone()
     }
     Text(
-        fx.text,
+        text,
         modifier = Modifier
-            .offset(x = fx.drift.dp, y = (-8f - 34f * anim.value).dp)
+            .offset(x = fx.drift.dp, y = (12f - 40f * anim.value).dp)
             .alpha((1f - anim.value * 0.85f).coerceIn(0f, 1f)),
         fontFamily = Press,
-        fontSize = 10.sp,
+        fontSize = fontSize.sp,
         fontWeight = FontWeight.Bold,
-        color = fx.color
+        color = fx.color,
+        style = TextStyle(
+            shadow = Shadow(
+                color = Color.Black.copy(alpha = 0.85f),
+                offset = Offset(2f, 2f),
+                blurRadius = 4f
+            )
+        ),
+        maxLines = 1,
+        softWrap = false,
+        overflow = TextOverflow.Clip,
+        textAlign = TextAlign.Center
     )
 }
 
@@ -1946,10 +1999,13 @@ private fun BottomHud(state: GameState, modifier: Modifier = Modifier) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Réserve", fontSize = 6.5.sp, color = Muted)
                     Text(
-                        formatInt(state.stepBank.toInt()),
+                        formatCompact(state.stepBank.toInt()),
                         fontFamily = Press,
                         fontSize = 6.5.sp,
-                        color = GoldLight
+                        color = GoldLight,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 MiniBar(
@@ -1974,7 +2030,15 @@ private fun BottomHud(state: GameState, modifier: Modifier = Modifier) {
             AssetIcon("item/boots4_green.png", 12.dp)
             Spacer(Modifier.width(5.dp))
             Column {
-                Text(formatInt(state.stepsToday), fontFamily = Press, fontSize = 7.sp, color = Parchment, maxLines = 1)
+                Text(
+                    formatCompact(state.stepsToday),
+                    fontFamily = Press,
+                    fontSize = 7.sp,
+                    color = Parchment,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
                 Text("pas aujourd'hui", fontSize = 5.5.sp, color = Muted)
             }
         }

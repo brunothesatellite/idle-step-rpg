@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -68,6 +69,62 @@ private val fr = Locale.FRANCE
 fun formatInt(value: Int): String = NumberFormat.getIntegerInstance(fr).format(value)
 
 fun formatLong(value: Long): String = NumberFormat.getIntegerInstance(fr).format(value)
+
+private const val NNBSP = "\u202F"
+
+/**
+ * Nombre compact pour les interfaces denses : exact jusque 9 999, puis
+ * « 12,3 k », « 123 k », « 1,2 M », « 1,2 Md ».
+ */
+fun formatCompact(value: Int): String = formatCompact(value.toLong())
+
+fun formatCompact(value: Long): String = compactNumber(value, NNBSP)
+
+/**
+ * Variante des nombres flottants de combat : pas de séparateur de milliers,
+ * unité collée et pas de décimale, pour tenir dans une seule ligne au-dessus
+ * des sprites même à la taille de texte maximale.
+ */
+fun formatFloatNumber(value: Int): String {
+    val abs = kotlin.math.abs(value)
+    val sign = if (value < 0) "-" else ""
+    return when {
+        abs < 10_000 -> value.toString()
+        abs < 1_000_000 -> {
+            val k = (abs / 1_000.0).roundToInt()
+            if (k >= 1_000) sign + "1M" else sign + "${k}k"
+        }
+        abs < 1_000_000_000 -> sign + "${(abs / 1_000_000.0).roundToInt()}M"
+        else -> sign + "${(abs / 1_000_000_000.0).roundToInt()}Md"
+    }
+}
+
+/** Niveau très court pour les badges : 999, 1k, 12k, 1M, 1Md. */
+fun formatLevelShort(value: Int): String = when {
+    value < 1_000 -> value.toString()
+    value < 1_000_000 -> "${value / 1_000}k"
+    value < 1_000_000_000 -> "${value / 1_000_000}M"
+    else -> "${value / 1_000_000_000}Md"
+}
+
+private fun compactNumber(value: Long, unitSpace: String): String {
+    val abs = kotlin.math.abs(value)
+    if (abs < 10_000L) {
+        return if (unitSpace.isEmpty()) value.toString() else formatInt(value.toInt())
+    }
+    val sign = if (value < 0) "-" else ""
+    return when {
+        abs < 100_000L -> sign + oneDecimal(abs / 1_000.0) + unitSpace + "k"
+        abs < 1_000_000L -> sign + (abs / 1_000L) + unitSpace + "k"
+        abs < 100_000_000L -> sign + oneDecimal(abs / 1_000_000.0) + unitSpace + "M"
+        abs < 1_000_000_000L -> sign + (abs / 1_000_000L) + unitSpace + "M"
+        abs < 100_000_000_000L -> sign + oneDecimal(abs / 1_000_000_000.0) + unitSpace + "Md"
+        else -> sign + (abs / 1_000_000_000L) + unitSpace + "Md"
+    }
+}
+
+private fun oneDecimal(value: Double): String =
+    String.format(Locale.FRANCE, "%.1f", value).removeSuffix(",0")
 
 fun formatDate(date: LocalDate): String =
     date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", fr))
@@ -261,7 +318,15 @@ fun CurrencyChip(icon: String, value: String, modifier: Modifier = Modifier) {
     ) {
         AssetIcon(icon, 11.dp)
         Spacer(Modifier.width(3.dp))
-        Text(value, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Parchment, maxLines = 1)
+        Text(
+            value,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            color = Parchment,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
