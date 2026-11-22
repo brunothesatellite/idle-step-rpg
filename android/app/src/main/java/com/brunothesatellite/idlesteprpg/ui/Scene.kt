@@ -35,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -78,8 +79,10 @@ import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.engine.Buff
 import com.brunothesatellite.idlesteprpg.engine.FLOOR_METERS
+import com.brunothesatellite.idlesteprpg.engine.FightData
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.HitEvent
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.biomeFor
@@ -305,6 +308,36 @@ fun Scene(
         if (bossName != null) SoundFx.play(context, "boss", 0.9f)
     }
 
+    // Garde le dernier ennemi à l'écran quelques instants après sa mort :
+    // sinon le float de dégâts, qui vit dans EnemyUnit, disparaît avec lui et
+    // le joueur ne voit jamais le coup qui a tué le monstre (surtout en farm,
+    // où le héros one-shot). On distingue une victoire d'une défaite par le
+    // compteur de retraites : une défaite incrémente `retreats`.
+    var lastFight by remember { mutableStateOf<FightData?>(state.fight) }
+    var lastRetreats by remember { mutableIntStateOf(state.retreats) }
+    LaunchedEffect(state.fight, state.retreats) {
+        val current = state.fight
+        if (current != null) {
+            lastFight = current
+            lastRetreats = state.retreats
+        } else {
+            val dying = lastFight
+            val victory = state.retreats == lastRetreats
+            if (dying != null && victory) {
+                delay(900)
+                if (state.fight == null) lastFight = null
+            } else {
+                lastFight = null
+            }
+        }
+    }
+    val lingers = state.fight == null && lastFight != null && state.retreats == lastRetreats
+    val displayedFight = state.fight ?: lastFight?.takeIf { lingers }?.let { dying ->
+        // Le dernier état vu peut encore avoir ses PV pleins : la barre doit
+        // être vide pendant l'affichage du cadavre.
+        if (dying.enemyHp > 0.5) dying.copy(enemyHp = 0.0) else dying
+    }
+
     // Rien ne peut bouger (réserve vide, pas de combat) : au bout de 10 s on gèle
     // le décor animé pour ne plus redessiner 60 fois par seconde.
     val sceneIdle = paused || (!walking && state.fight == null && state.special == null &&
@@ -375,17 +408,18 @@ fun Scene(
             Modifier.align(Alignment.BottomStart).padding(start = 18.dp, bottom = 58.dp)
         )
 
-        state.fight?.let { fight ->
+        displayedFight?.let { fight ->
             key(fight.enemyName, fight.enemyLevel, fight.isBoss, fight.farm) {
                 EnemyUnit(
-                    fight,
-                    reducedMotion,
-                    Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 58.dp)
+                    fight = fight,
+                    reducedMotion = reducedMotion,
+                    hits = state.recentHits,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = 58.dp)
                 )
             }
         }
 
-        val waitingForSteps = state.stepBank <= 0.0 && state.fight == null
+        val waitingForSteps = state.stepBank <= 0.0 && displayedFight == null
         if (waitingForSteps && state.distance < 85) {
             WaitingMob(
                 state,
@@ -430,7 +464,12 @@ fun Scene(
             }
         }
         if (state.mode == "farmWait" || state.fight?.farm == true) {
-            SceneTag("ZONE DE REPLI · FARM", Blood, Modifier.align(Alignment.TopCenter).padding(top = 58.dp))
+            val step = (state.farmKills + 1).coerceIn(1, 3)
+            SceneTag(
+                "ZONE DE REPLI · FARM $step/3",
+                Blood,
+                Modifier.align(Alignment.TopCenter).padding(top = 58.dp)
+            )
         }
         if (state.mode == "chest") {
             SceneTag("FORÇAGE DU COFFRE", Gold, Modifier.align(Alignment.TopCenter).padding(top = 58.dp))
@@ -1249,21 +1288,37 @@ private fun HeroUnit(
     var previousHp by remember { mutableStateOf(state.hp) }
     var pendingHeal by remember { mutableFloatStateOf(0f) }
     var nextId by remember { mutableLongStateOf(0L) }
+    var lastRetreats by remember { mutableIntStateOf(state.retreats) }
+    var lastHitSeq by remember { mutableLongStateOf(state.recentHits.maxOfOrNull { it.seq } ?: 0L) }
 
-    LaunchedEffect(state.hp) {
+    LaunchedEffect(state.hp, state.retreats) {
         val diff = state.hp - previousHp
         previousHp = state.hp
+        val retreated = state.retreats > lastRetreats
+        lastRetreats = state.retreats
         if (reducedMotion) return@LaunchedEffect
-        if (diff < -3.0) {
-            SoundFx.play(context, "hurt", 0.8f)
-            addFloat(
-                floats,
-                FloatFx(nextId++, (-diff).roundToInt(), "-", Color(0xFFFFB0A6), driftOf(nextId))
-            )
-        } else if (diff > 3.0) {
+        // La remontée à 60 % après une défaite n'est pas un soin : on ne
+        // l'affiche pas comme un float vert.
+        if (diff > 3.0 && !retreated) {
             // Les soins sont cumulés : au plus 4 floats par seconde, plutôt
             // qu'un float par tick (10/s) qui finissait par masquer le héros.
             pendingHeal += diff.toFloat()
+        }
+    }
+    LaunchedEffect(state.recentHits) {
+        val newHits = state.recentHits.filter { it.seq > lastHitSeq && !it.onEnemy }
+        if (newHits.isEmpty()) return@LaunchedEffect
+        lastHitSeq = state.recentHits.maxOfOrNull { it.seq } ?: lastHitSeq
+        if (reducedMotion) return@LaunchedEffect
+        val now = System.currentTimeMillis()
+        newHits.forEach { hit ->
+            if (now - hit.at <= 1_500L) {
+                SoundFx.play(context, "hurt", 0.8f)
+                addFloat(
+                    floats,
+                    FloatFx(nextId++, hit.damage, "-", Color(0xFFFFB0A6), driftOf(nextId))
+                )
+            }
         }
     }
     LaunchedEffect(Unit) {
@@ -1344,8 +1399,9 @@ private fun HeroUnit(
 
 @Composable
 private fun EnemyUnit(
-    fight: com.brunothesatellite.idlesteprpg.engine.FightData,
+    fight: FightData,
     reducedMotion: Boolean,
+    hits: List<HitEvent>,
     modifier: Modifier = Modifier
 ) {
     val height = if (fight.isBoss) 148.dp else 108.dp
@@ -1357,28 +1413,39 @@ private fun EnemyUnit(
     val slash = remember { Animatable(0f) }
     var previousHp by remember { mutableStateOf(fight.enemyHp) }
     var nextId by remember { mutableLongStateOf(0L) }
+    var lastHitSeq by remember { mutableLongStateOf(hits.maxOfOrNull { it.seq } ?: 0L) }
+
+    LaunchedEffect(hits) {
+        val newHits = hits.filter { it.seq > lastHitSeq && it.onEnemy }
+        if (newHits.isEmpty()) return@LaunchedEffect
+        lastHitSeq = hits.maxOfOrNull { it.seq } ?: lastHitSeq
+        if (reducedMotion) return@LaunchedEffect
+        val now = System.currentTimeMillis()
+        newHits.forEach { hit ->
+            if (now - hit.at <= 1_500L) {
+                SoundFx.play(
+                    context,
+                    if (hit.crit) "crit" else "hit",
+                    if (hit.crit) 1f else 0.55f
+                )
+                addFloat(
+                    floats,
+                    FloatFx(
+                        nextId++,
+                        hit.damage,
+                        "-",
+                        if (hit.crit) GoldLight else Color(0xFFFFC6B8),
+                        driftOf(nextId)
+                    )
+                )
+            }
+        }
+    }
 
     LaunchedEffect(fight.enemyHp) {
         val damage = previousHp - fight.enemyHp
         previousHp = fight.enemyHp
         if (damage > 0.5) {
-            SoundFx.play(
-                context,
-                if (fight.lastCrit) "crit" else "hit",
-                if (fight.lastCrit) 1f else 0.55f
-            )
-            if (!reducedMotion) {
-                addFloat(
-                    floats,
-                    FloatFx(
-                        nextId++,
-                        damage.roundToInt(),
-                        "-",
-                        if (fight.lastCrit) GoldLight else Color(0xFFFFC6B8),
-                        driftOf(nextId)
-                    )
-                )
-            }
             coroutineScope {
                 launch {
                     flash.snapTo(0.55f)

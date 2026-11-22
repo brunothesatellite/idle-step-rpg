@@ -318,6 +318,8 @@ object GameEngine {
             .filterNot { it in namesBefore }
             .distinct()
             .take(12)
+        // Les coups simulés ne doivent pas produire de float à la reprise.
+        state.recentHits = emptyList()
         return AbsenceSim(
             elapsedMs = elapsedMs,
             simulatedMs = ((iterations + extraIterations) * dtMs).toLong(),
@@ -1144,6 +1146,24 @@ object GameEngine {
         return (1000.0 / (s.vit * (1.0 + 0.004 * state.ferveur))).coerceAtLeast(300.0)
     }
 
+    /** Conserve les derniers coups pour que l'interface puisse les afficher. */
+    private fun recordHit(
+        state: GameState,
+        damage: Int,
+        crit: Boolean,
+        onEnemy: Boolean
+    ) {
+        val seq = state.hitSeq + 1L
+        state.hitSeq = seq
+        state.recentHits = (state.recentHits + HitEvent(
+            seq = seq,
+            damage = damage,
+            crit = crit,
+            onEnemy = onEnemy,
+            at = System.currentTimeMillis()
+        )).takeLast(4)
+    }
+
     private fun heroAttack(state: GameState, f: FightData) {
         val s = statsOf(state)
         var atk = s.atk * if (f.isBoss && state.bossBlessing > 0) 1.25 else 1.0
@@ -1155,6 +1175,7 @@ object GameEngine {
         if (crit) dmg *= 1.6 + s.critDamage
         if (f.shieldMs > 0.0) dmg *= 0.35
         f.enemyHp -= dmg
+        recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit, onEnemy = true)
         if (s.lifesteal > 0.0) {
             state.hp = min(s.maxHp.toDouble(), state.hp + dmg * s.lifesteal)
         }
@@ -1166,6 +1187,7 @@ object GameEngine {
         var dmg = f.enemyAtk * (0.9 + rnd.nextDouble() * 0.1)
         dmg *= (1.0 - s.damageReduction) * (1.0 + s.damageTaken)
         state.hp -= dmg
+        recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit = false, onEnemy = false)
         if (f.isBoss && f.modifier == "VOLEUR") {
             val stolen = max(1, (dmg * 0.5).roundToInt())
             state.gold = max(0, state.gold - stolen)
@@ -1236,7 +1258,14 @@ object GameEngine {
         } else if (f.farm) {
             state.farmKills++
             val s = statsOf(state)
+            val beforeHeal = state.hp
             state.hp = min(s.maxHp.toDouble(), state.hp + s.maxHp * 0.08)
+            val healed = (state.hp - beforeHeal).roundToInt().coerceAtLeast(0)
+            state.journal = addJournal(
+                state,
+                "Farm · ${f.enemyName} vaincu · +$healed PV",
+                "good"
+            )
             if (state.farmKills >= 3) {
                 state.mode = "walk"
                 state.nextFight = ((state.distance / 10).toInt() + 1) * 10

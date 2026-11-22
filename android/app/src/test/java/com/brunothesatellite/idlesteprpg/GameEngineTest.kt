@@ -227,6 +227,99 @@ class GameEngineTest {
     }
 
     @Test
+    fun lethalHeroHitPublishesLastHit() {
+        val state = GameState().apply {
+            floor = 5
+            level = 10
+            stepsToday = 1_000
+            stepBank = 0.0
+            hp = 100.0
+            mode = "fight"
+            fight = FightData(
+                enemyName = "Cible",
+                enemyIcon = "x",
+                enemyLevel = 1,
+                enemyHp = 1.0,
+                enemyMaxHp = 1.0,
+                enemyAtk = 0.0,
+                enemyIntervalMs = 60_000L,
+                gold = 1,
+                xp = 1
+            )
+        }
+        GameEngine.tick(state, 500.0)
+        assertNull(state.fight)
+        val hit = state.recentHits.last()
+        assertNotNull(hit)
+        assertEquals(true, hit!!.onEnemy)
+        assertTrue(hit.damage >= 1)
+    }
+
+    @Test
+    fun enemyHitPublishesLastHit() {
+        val state = GameState().apply {
+            floor = 5
+            level = 10
+            stepsToday = 1_000
+            stepBank = 0.0
+            hp = 100.0
+            mode = "fight"
+            fight = FightData(
+                enemyName = "Cible",
+                enemyIcon = "x",
+                enemyLevel = 1,
+                enemyHp = 1_000_000.0,
+                enemyMaxHp = 1_000_000.0,
+                enemyAtk = 10.0,
+                enemyIntervalMs = 60_000L,
+                gold = 0,
+                xp = 0,
+                heroTimerMs = 999_999.0,
+                enemyTimerMs = 0.0
+            )
+        }
+        GameEngine.tick(state, 500.0)
+        val hit = state.recentHits.last()
+        assertNotNull(hit)
+        assertEquals(false, hit!!.onEnemy)
+        assertTrue(hit.damage >= 1)
+    }
+
+    @Test
+    fun farmVictoryLogsFarmKillAndHeal() {
+        val state = GameState().apply {
+            floor = 5
+            level = 10
+            stepsToday = 1_000
+            stepBank = 0.0
+            hp = 50.0
+            mode = "fight"
+            farmKills = 2
+            distance = 40.0
+            nextFight = 50
+            fight = FightData(
+                enemyName = "Cible de farm",
+                enemyIcon = "x",
+                enemyLevel = 1,
+                enemyHp = 1.0,
+                enemyMaxHp = 1.0,
+                enemyAtk = 0.0,
+                enemyIntervalMs = 60_000L,
+                gold = 1,
+                xp = 1,
+                farm = true
+            )
+        }
+        GameEngine.tick(state, 500.0)
+        assertEquals("walk", state.mode)
+        assertEquals(0, state.farmKills)
+        assertTrue(state.hp > 50.0)
+        assertEquals("Fin du repli — le sentier reprend", state.journal.first().text)
+        assertTrue(state.journal[1].text.startsWith("Farm · Cible de farm"))
+        assertTrue(state.journal[1].text.contains("PV"))
+    }
+
+    @Test
     fun bossKillsAreMigratedFromBestiary() {
         val state = GameState().apply {
             version = 2
@@ -1040,3 +1133,4 @@ class GameEngineTest {
         assertTrue(state.inventory.all { it.locked })
     }
 }
+

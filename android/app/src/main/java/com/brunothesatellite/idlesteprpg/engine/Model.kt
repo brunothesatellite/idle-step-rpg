@@ -322,6 +322,16 @@ data class ChestData(
     var expiryNotified: Boolean = false
 )
 
+/** Dernier coup porté, pour l'affichage (événement transitoire). */
+@Serializable
+data class HitEvent(
+    val seq: Long,
+    val damage: Int,
+    val crit: Boolean,
+    val onEnemy: Boolean,
+    val at: Long
+)
+
 @Serializable
 data class GameState(
     var version: Int = SAVE_VERSION,
@@ -399,7 +409,11 @@ data class GameState(
     var streak: Int = 0,
     var lastActiveDay: String = "",
     var consumables: Map<String, Int> = defaultConsumables(),
-    var buffs: List<Buff> = emptyList()
+    var buffs: List<Buff> = emptyList(),
+    /** Compteur monotone des coups, même après nettoyage de la liste (non sérialisé). */
+    @Transient var hitSeq: Long = 0L,
+    /** Derniers coups portés, pour l'affichage (non sérialisé). */
+    @Transient var recentHits: List<HitEvent> = emptyList()
 )
 
 data class Stats(
