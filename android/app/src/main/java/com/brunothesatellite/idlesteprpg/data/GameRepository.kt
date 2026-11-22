@@ -127,7 +127,7 @@ class GameRepository(
         }
     }
 
-    suspend fun simulateAbsence(elapsedMs: Long): OfflineReport? {
+    suspend fun simulateAbsence(elapsedMs: Long): OfflineReport? = withContext(Dispatchers.IO) {
         val before = _state.value
         var report: OfflineReport? = null
         var after: GameState = before
@@ -156,6 +156,7 @@ class GameRepository(
                     reason = "absence",
                     special = sim.stoppedOnSpecial,
                     defeated = sim.defeated,
+                    defeats = sim.defeats,
                     lootItems = sim.lootItems,
                     consumables = sim.consumables,
                     rations = sim.rations,
@@ -172,7 +173,7 @@ class GameRepository(
             saveLocked(s)
         }
         GameNotifications.diff(context, before, after)
-        return report
+        report
     }
 
     suspend fun ingestSteps(total: Int, date: LocalDate) {
@@ -200,8 +201,9 @@ class GameRepository(
         days: Map<String, Int>,
         today: LocalDate,
         simulate: Boolean = true,
-        sourceLabel: String = "Garmin"
-    ): OfflineReport? {
+        sourceLabel: String = "Garmin",
+        publishReport: Boolean = true
+    ): OfflineReport? = withContext(Dispatchers.IO) {
         val before = _state.value
         var report: OfflineReport? = null
         var after: GameState = before
@@ -209,9 +211,16 @@ class GameRepository(
         mutex.withLock {
             val s = before.deepCopy()
             val existing = s.offlineReport?.takeIf { it.acknowledgedAt == 0L }
+            val previousReport = s.offlineReport
             report = GameEngine.ingestHistory(s, days, today, sourceLabel)
             val rawReport = report
-            if (rawReport != null) {
+            if (!publishReport) {
+                // Import tardif (après le résumé déjà affiché) : on crédite les
+                // pas sans rouvrir un second écran ni modifier les chiffres
+                // sous les yeux du joueur.
+                s.offlineReport = previousReport
+                report = null
+            } else if (rawReport != null) {
                 if (existing != null) {
                     report = GameEngine.mergeOfflineReports(
                         existing,
@@ -229,6 +238,8 @@ class GameRepository(
                         gold = sim.gold,
                         floors = sim.floors,
                         kills = sim.kills,
+                        defeats = sim.defeats,
+                        defeated = sim.defeats > 0,
                         reason = "garmin",
                         remainingSteps = s.stepBank.toInt()
                     )
@@ -246,7 +257,7 @@ class GameRepository(
         }
         GameNotifications.diff(context, before, after)
         warnings.forEach { GameNotifications.chestWarning(context, it) }
-        return report
+        report
     }
 
     suspend fun debugAddSteps(steps: Int) {

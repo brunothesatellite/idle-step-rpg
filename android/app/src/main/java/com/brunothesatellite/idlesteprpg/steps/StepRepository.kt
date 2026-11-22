@@ -120,8 +120,8 @@ class StepRepository(
         StepSourceType.HEALTH -> health.fetch(HISTORY_DAYS)
     }
 
-    /** Applique des pas téléchargés (utilisé à la fermeture du résumé d'absence). */
-    suspend fun apply(fetch: StepFetch): SyncResult {
+    /** Applique des pas téléchargés (reprise, ou import tardif après un résumé). */
+    suspend fun apply(fetch: StepFetch, publishReport: Boolean = true): SyncResult {
         // Changement de source : on recale la base sans recréditer le jour.
         if (settings.pendingSourceRebase) {
             game.rebaseHistory(fetch.ledger, fetch.today)
@@ -135,13 +135,14 @@ class StepRepository(
             )
         }
         if (fetch.source == GARMIN) {
-            return garmin.applySteps(GarminFetch(fetch.ledger, fetch.today))
+            return garmin.applySteps(GarminFetch(fetch.ledger, fetch.today), publishReport)
         }
         val report = game.ingestHistory(
             fetch.ledger,
             fetch.today,
             simulate = false,
-            sourceLabel = StepSourceType.fromId(fetch.source).label
+            sourceLabel = StepSourceType.fromId(fetch.source).label,
+            publishReport = publishReport
         )
         val state = game.state.value
         val total = fetch.ledger[fetch.today.toString()] ?: state.stepsToday

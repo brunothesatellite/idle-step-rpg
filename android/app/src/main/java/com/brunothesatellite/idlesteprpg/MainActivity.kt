@@ -54,6 +54,7 @@ import com.brunothesatellite.idlesteprpg.ui.MarcheTheme
 import com.brunothesatellite.idlesteprpg.ui.OfflineOverlay
 import com.brunothesatellite.idlesteprpg.ui.OnboardingOverlay
 import com.brunothesatellite.idlesteprpg.ui.PostUpdateDialog
+import com.brunothesatellite.idlesteprpg.ui.ResumeOverlay
 import com.brunothesatellite.idlesteprpg.ui.Scene
 import com.brunothesatellite.idlesteprpg.ui.SettingsOverlay
 import com.brunothesatellite.idlesteprpg.ui.SpecialDialog
@@ -154,7 +155,7 @@ private fun GameRoot(vm: GameViewModel) {
     }
 
     BackHandler(
-        enabled = ui.campOpen || ui.settingsOpen || ui.prefsOpen ||
+        enabled = ui.resume != null || ui.campOpen || ui.settingsOpen || ui.prefsOpen ||
             ui.selectedItem != null || ui.chestOpen || ui.journalOpen ||
             state.offlineReport?.acknowledgedAt == 0L || state.special != null ||
             ui.pendingImport != null || !ui.onboardingDone || ui.specialOutcome != null ||
@@ -162,6 +163,7 @@ private fun GameRoot(vm: GameViewModel) {
             ui.codexOpen
     ) {
         when {
+            ui.resume != null -> Unit
             !ui.onboardingDone -> vm.completeOnboarding()
             ui.availableUpdate != null -> vm.dismissUpdate()
             ui.postUpdateTag != null -> vm.dismissPostUpdate()
@@ -368,15 +370,18 @@ private fun GameRoot(vm: GameViewModel) {
                     onDismiss = vm::dismissSpecialOutcome
                 )
             }
-            state.offlineReport?.takeIf { it.acknowledgedAt == 0L }?.let { report ->
-                OfflineOverlay(
-                    report = report,
-                    onDismiss = vm::dismissOfflineReport,
-                    onOpenJournal = {
-                        vm.dismissOfflineReport()
-                        vm.openJournal()
-                    }
-                )
+            if (ui.resume == null) {
+                state.offlineReport?.takeIf { it.acknowledgedAt == 0L }?.let { report ->
+                    OfflineOverlay(
+                        report = report,
+                        pendingSync = ui.resumePendingFetch,
+                        onDismiss = vm::dismissOfflineReport,
+                        onOpenJournal = {
+                            vm.dismissOfflineReport()
+                            vm.openJournal()
+                        }
+                    )
+                }
             }
             ui.pendingImport?.let { summary ->
                 ImportPreviewDialog(
@@ -418,6 +423,13 @@ private fun GameRoot(vm: GameViewModel) {
                         vm.setStepSource("health")
                         vm.openPreferences()
                     }
+                )
+            }
+            ui.resume?.let { resume ->
+                ResumeOverlay(
+                    resume = resume,
+                    reducedMotion = ui.reducedMotion,
+                    onSkip = vm::skipResumeWait
                 )
             }
         }

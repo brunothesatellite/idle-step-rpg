@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg.ui
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import android.view.WindowManager
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Canvas
@@ -28,6 +29,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -39,6 +41,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -63,12 +66,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
+import com.brunothesatellite.idlesteprpg.ResumePhase
+import com.brunothesatellite.idlesteprpg.ResumeUi
 import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.data.SaveSummary
 import com.brunothesatellite.idlesteprpg.engine.CONSUMABLES
@@ -1851,6 +1859,7 @@ private fun JournalRow(entry: JournalEntry) {
 @Composable
 fun OfflineOverlay(
     report: OfflineReport,
+    pendingSync: Boolean = false,
     onDismiss: () -> Unit,
     onOpenJournal: (() -> Unit)? = null
 ) {
@@ -1932,7 +1941,9 @@ fun OfflineOverlay(
                 Text(
                     when {
                         mixed -> "Votre réserve de pas et les pas synchronisés ont été traités dans le même calcul. Le reste de la réserve vous attend."
-                        report.stepsConsumed == 0 -> "La réserve de pas était vide à la fermeture : rien n'a avancé. Les pas de la synchronisation arrivent à la fermeture de cette fenêtre."
+                        report.stepsConsumed == 0 && report.remainingSteps > 0 ->
+                            "Aucun pas n'a été consommé : le quota hors ligne du jour est épuisé. Votre réserve vous attend."
+                        report.stepsConsumed == 0 -> "La réserve de pas était vide à la fermeture : rien n'a avancé."
                         absence -> "Votre réserve de pas a été consommée pendant votre absence. Le reste de la réserve vous attend."
                         else -> "Vos pas des derniers jours ont été récupérés et ajoutés à la marche, sans double comptage."
                     },
@@ -1982,9 +1993,18 @@ fun OfflineOverlay(
                 if (report.defeated) {
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "Le héros a été repoussé et a repris des forces.",
+                        defeatSummary(report),
                         fontSize = 7.sp,
                         color = Blood,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                if (pendingSync) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Pas en cours de récupération · ils seront ajoutés dès que la synchro aboutit.",
+                        fontSize = 6.5.sp,
+                        color = Muted,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -2003,6 +2023,14 @@ fun OfflineOverlay(
 private fun formatAbsence(minutes: Int): String =
     if (minutes >= 60) "${minutes / 60} h ${minutes % 60}" else "$minutes min"
 
+/** Phrase de défaite : nombre explicite et recul total (20 m par défaite). */
+private fun defeatSummary(report: OfflineReport): String {
+    val defeats = report.defeats
+    if (defeats <= 0) return "Le héros a été repoussé et a repris des forces."
+    val word = if (defeats == 1) "défaite simulée" else "défaites simulées"
+    return "$defeats $word · ${defeats * 20} m de recul"
+}
+
 @Composable
 private fun RecapTile(value: String, label: String, modifier: Modifier = Modifier) {
     Column(
@@ -2015,6 +2043,126 @@ private fun RecapTile(value: String, label: String, modifier: Modifier = Modifie
     ) {
         Text(value, fontFamily = Press, fontSize = 8.sp, color = GoldLight, maxLines = 1)
         Text(label, fontSize = 5.5.sp, letterSpacing = 0.7.sp, color = Muted)
+    }
+}
+
+/**
+ * Écran d'attente de la reprise : simulation d'absence puis récupération des
+ * pas. Il n'apparaît qu'après 350 ms pour ne pas clignoter sur un retour rapide.
+ */
+@Composable
+fun ResumeOverlay(
+    resume: ResumeUi,
+    reducedMotion: Boolean = false,
+    onSkip: () -> Unit
+) {
+    var shown by remember(resume.startedAt) { mutableStateOf(false) }
+    var elapsedMs by remember(resume.startedAt) { mutableLongStateOf(0L) }
+
+    LaunchedEffect(resume.startedAt) {
+        delay(350)
+        shown = true
+    }
+    LaunchedEffect(resume.startedAt) {
+        while (true) {
+            elapsedMs = SystemClock.elapsedRealtime() - resume.startedAt
+            delay(200)
+        }
+    }
+
+    if (!shown) return
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Ink.copy(alpha = 0.94f))
+            .clickable { }
+            .statusBarsPadding()
+            .navigationBarsPadding(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "REPRISE DE LA MARCHE",
+                fontFamily = Press,
+                fontSize = 10.sp,
+                color = GoldLight,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                when (resume.phase) {
+                    ResumePhase.SIMULATING -> "La veillée s'écoule…"
+                    ResumePhase.SYNCING -> "Lecture de ${resume.sourceLabel}…"
+                },
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                fontSize = 8.sp,
+                color = Parchment,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                if (resume.phase == ResumePhase.SIMULATING) {
+                    "Vos combats hors ligne sont simulés."
+                } else {
+                    "Vos pas sont récupérés pour un seul résumé."
+                },
+                fontSize = 6.5.sp,
+                color = Muted,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(16.dp))
+            if (reducedMotion) {
+                Box(
+                    Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Line)
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth(0.35f)
+                            .height(3.dp)
+                            .background(Gold)
+                    )
+                }
+            } else {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(0.7f),
+                    color = Gold,
+                    trackColor = Line
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            Text(
+                if (elapsedMs >= 1000L) "${elapsedMs / 1000} s" else " ",
+                fontSize = 6.5.sp,
+                color = Muted2
+            )
+            Spacer(Modifier.height(14.dp))
+            if (elapsedMs >= 800L) {
+                TextButton(onClick = onSkip) {
+                    Text(
+                        "CONTINUER SANS ATTENDRE",
+                        fontFamily = Pixel,
+                        fontSize = 6.5.sp,
+                        color = Muted
+                    )
+                }
+                Text(
+                    "La synchro continuera en arrière-plan.",
+                    fontSize = 6.sp,
+                    color = Muted2,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 

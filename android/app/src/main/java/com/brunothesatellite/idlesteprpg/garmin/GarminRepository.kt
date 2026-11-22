@@ -152,25 +152,31 @@ class GarminRepository(
         }.getOrNull()
     }
 
-    /** Applique des pas déjà téléchargés (utilisé à la fermeture du résumé d'absence). */
-    suspend fun applySteps(fetch: GarminFetch): SyncResult = withContext(Dispatchers.IO) {
-        val report = game.ingestHistory(fetch.ledger, fetch.today, simulate = false)
-        val state = game.state.value
-        val total = fetch.ledger[fetch.today.toString()] ?: state.stepsToday
-        val added = state.lastAdded
-        prefs.edit()
-            .putLong(KEY_LAST_SYNC, System.currentTimeMillis())
-            .putString(KEY_LAST_ERROR, "")
-            .remove(KEY_RETRY_AT)
-            .apply()
-        val message = when {
-            report != null -> "Rattrapage Garmin · ${report.days} jour(s), ${report.steps} pas"
-            added > 0 -> "Garmin synchronisé · +$added pas"
-            else -> "Garmin synchronisé · aucun nouveau pas"
+    /** Applique des pas déjà téléchargés (reprise, ou import tardif après un résumé). */
+    suspend fun applySteps(fetch: GarminFetch, publishReport: Boolean = true): SyncResult =
+        withContext(Dispatchers.IO) {
+            val report = game.ingestHistory(
+                fetch.ledger,
+                fetch.today,
+                simulate = false,
+                publishReport = publishReport
+            )
+            val state = game.state.value
+            val total = fetch.ledger[fetch.today.toString()] ?: state.stepsToday
+            val added = state.lastAdded
+            prefs.edit()
+                .putLong(KEY_LAST_SYNC, System.currentTimeMillis())
+                .putString(KEY_LAST_ERROR, "")
+                .remove(KEY_RETRY_AT)
+                .apply()
+            val message = when {
+                report != null -> "Rattrapage Garmin · ${report.days} jour(s), ${report.steps} pas"
+                added > 0 -> "Garmin synchronisé · +$added pas"
+                else -> "Garmin synchronisé · aucun nouveau pas"
+            }
+            logSync("OK · +$added pas · total $total")
+            SyncResult(true, message, total = total, added = added)
         }
-        logSync("OK · +$added pas · total $total")
-        SyncResult(true, message, total = total, added = added)
-    }
 
     suspend fun sync(simulateAbsence: Boolean = true): SyncResult = withContext(Dispatchers.IO) {
         val key = secrets.key()

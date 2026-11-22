@@ -15,7 +15,8 @@ data class OfflineSim(
     val combats: Int,
     val gold: Int,
     val floors: Int,
-    val kills: Int
+    val kills: Int,
+    val defeats: Int = 0
 )
 
 /**
@@ -52,7 +53,9 @@ data class AbsenceSim(
     val lootItems: List<String> = emptyList(),
     val consumables: Int = 0,
     val rations: Int = 0,
-    val shards: Int = 0
+    val shards: Int = 0,
+    /** Défaites subies pendant la simulation, prolongation de combat comprise. */
+    val defeats: Int = 0
 )
 
 data class SpecialOutcome(
@@ -199,7 +202,8 @@ object GameEngine {
             combats = sim.combats,
             gold = sim.gold,
             floors = sim.floors,
-            kills = sim.kills
+            kills = sim.kills,
+            defeats = sim.defeats
         )
     }
 
@@ -289,6 +293,24 @@ object GameEngine {
                 break
             }
         }
+        // La simulation peut s'arrêter sur le plafond de durée au milieu d'un
+        // combat. On termine alors ce combat sans consommer de pas : sinon
+        // l'interface rouvrirait un combat déjà entamé hors écran (monstre
+        // affiché sans attaque, puis repli immédiat).
+        var extraIterations = 0
+        if (state.mode == "fight" || state.mode == "boss") {
+            val extraMax = (FIGHT_RESOLVE_MAX_MS / dtMs.toLong()).toInt().coerceAtLeast(1)
+            while (state.fight != null && extraIterations < extraMax) {
+                tick(state, dtMs)
+                extraIterations++
+            }
+            // Combat anormalement long : on le clôt proprement en défaite plutôt
+            // que de laisser un état intermédiaire à l'écran.
+            state.fight?.let { defeat(state, it) }
+        }
+        if (state.fight == null && (state.mode == "fight" || state.mode == "boss")) {
+            state.mode = "walk"
+        }
         val consumed = (startBank - state.stepBank).toInt().coerceAtLeast(0)
         state.offlineStepsToday += consumed
         val loot = (state.inventory + state.stash)
@@ -298,7 +320,7 @@ object GameEngine {
             .take(12)
         return AbsenceSim(
             elapsedMs = elapsedMs,
-            simulatedMs = (iterations * dtMs).toLong(),
+            simulatedMs = ((iterations + extraIterations) * dtMs).toLong(),
             stepsConsumed = consumed,
             remainingBank = state.stepBank.toInt(),
             combats = (state.kills - startKills) + (state.bosses - startBosses),
@@ -316,7 +338,8 @@ object GameEngine {
             lootItems = loot,
             consumables = (state.consumables.values.sum() - consumablesBefore).coerceAtLeast(0),
             rations = (state.rations - rationsBefore).coerceAtLeast(0),
-            shards = (state.shards - shardsBefore).coerceAtLeast(0)
+            shards = (state.shards - shardsBefore).coerceAtLeast(0),
+            defeats = (state.retreats - startRetreats).coerceAtLeast(0)
         )
     }
 
@@ -347,7 +370,8 @@ object GameEngine {
                 else -> "mixed"
             },
             special = a.special || b.special,
-            defeated = a.defeated || b.defeated,
+            defeated = a.defeated || b.defeated || (a.defeats + b.defeats) > 0,
+            defeats = a.defeats + b.defeats,
             createdAt = minOf(a.createdAt, b.createdAt),
             acknowledgedAt = 0L
         )

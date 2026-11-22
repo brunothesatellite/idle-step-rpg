@@ -180,6 +180,53 @@ class GameEngineTest {
     }
 
     @Test
+    fun offlineReportsSumSimulatedDefeats() {
+        val first = OfflineReport(
+            days = 0, steps = 0, distanceMeters = 100,
+            defeats = 2, defeated = true, reason = "absence"
+        )
+        val second = OfflineReport(
+            days = 1, steps = 500, distanceMeters = 50, reason = "garmin"
+        )
+        val merged = GameEngine.mergeOfflineReports(first, second)!!
+        assertEquals(2, merged.defeats)
+        assertEquals(true, merged.defeated)
+        assertEquals(1, merged.days)
+        assertEquals("mixed", merged.reason)
+    }
+
+    @Test
+    fun absenceSimulationNeverLeavesAnActiveFight() {
+        val state = GameState().apply {
+            floor = 5
+            level = 10
+            stepsToday = 10_000
+            stepBank = 10_000.0
+            mode = "fight"
+            fight = FightData(
+                enemyName = "Colosse de test",
+                enemyIcon = "x",
+                enemyLevel = 10,
+                enemyHp = 1_000_000.0,
+                enemyMaxHp = 1_000_000.0,
+                enemyAtk = 0.0,
+                enemyIntervalMs = 60_000L,
+                gold = 0,
+                xp = 0
+            )
+        }
+        val retreatsBefore = state.retreats
+        // Le plafond tombe au milieu du combat : il doit être terminé hors écran.
+        val sim = GameEngine.simulateAbsence(state, 60_000L, capMs = 500L)
+        assertNull(state.fight)
+        assertTrue(state.mode != "fight" && state.mode != "boss")
+        assertEquals(1, sim.defeats)
+        assertEquals(1, state.retreats - retreatsBefore)
+        // La prolongation de combat ne consomme pas de pas.
+        assertEquals(0, sim.stepsConsumed)
+    }
+
+    @Test
     fun bossKillsAreMigratedFromBestiary() {
         val state = GameState().apply {
             version = 2

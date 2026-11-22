@@ -27,6 +27,13 @@ const val WALK_SLOW_THRESHOLD = 600.0
 const val OFFLINE_BANK_SHARE = 0.30
 const val OFFLINE_SIM_MAX_MS = 4L * 60L * 1000L
 
+/**
+ * Prolongation maximale d'une simulation qui se termine au milieu d'un combat :
+ * on résout ce combat (sans consommer de pas) pour que l'interface n'affiche
+ * jamais un combat dont les ticks ont déjà eu lieu hors écran.
+ */
+const val FIGHT_RESOLVE_MAX_MS = 2L * 60L * 1000L
+
 /** Bornes des réglages avancés d'absence. */
 const val OFFLINE_DEFAULT_PERCENT = 30
 const val OFFLINE_MAX_PERCENT = 30
@@ -278,6 +285,8 @@ data class OfflineReport(
     val reason: String = "",
     val special: Boolean = false,
     val defeated: Boolean = false,
+    /** Nombre de défaites subies pendant la simulation (recul de 20 m chacune). */
+    val defeats: Int = 0,
     /** Butin récupéré pendant la simulation : noms d'objets, consommables, rations, éclats. */
     val lootItems: List<String> = emptyList(),
     val consumables: Int = 0,

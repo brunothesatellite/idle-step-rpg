@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg
 
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import android.provider.Settings
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
@@ -16,11 +17,14 @@ import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.engine.Upgrades
 import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
+import com.brunothesatellite.idlesteprpg.steps.StepFetch
+import com.brunothesatellite.idlesteprpg.steps.StepSourceType
 import com.brunothesatellite.idlesteprpg.ui.formatInt
 import com.brunothesatellite.idlesteprpg.update.UpdateChecker
 import com.brunothesatellite.idlesteprpg.update.UpdateInfo
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,9 +36,28 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate
+
+/** Durée minimale d'absence avant de lancer la simulation de reprise. */
+private const val RESUME_SIM_MIN_MS = 2L * 60L * 1000L
+
+/** Budget d'attente de la synchro sur l'écran de reprise. */
+private const val RESUME_SYNC_BUDGET_MS = 3_000L
+
+/** Au-delà, un import tardif est abandonné plutôt que d'attendre indéfiniment. */
+private const val RESUME_LATE_SYNC_MAX_MS = 60_000L
+
+/** Étape affichée par l'écran de reprise. */
+enum class ResumePhase { SIMULATING, SYNCING }
+
+data class ResumeUi(
+    val startedAt: Long,
+    val phase: ResumePhase,
+    val sourceLabel: String
+)
 
 data class UiState(
     val campOpen: Boolean = false,
@@ -91,7 +114,11 @@ data class UiState(
     val postUpdateTag: String? = null,
     val postUpdateUrl: String? = null,
     val specialOutcome: SpecialOutcome? = null,
-    val consumablesOpen: Boolean = false
+    val consumablesOpen: Boolean = false,
+    /** Écran de reprise (simulation + synchro) ; null quand il est fermé. */
+    val resume: ResumeUi? = null,
+    /** Un import est encore attendu après la fermeture de l'écran de reprise. */
+    val resumePendingFetch: Boolean = false
 )
 
 class GameViewModel(private val container: AppContainer) : ViewModel() {
@@ -106,7 +133,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     @Volatile private var visible = false
     private var resuming = false
-    private var pendingSteps: com.brunothesatellite.idlesteprpg.steps.StepFetch? = null
+    private var resumeActive = false
+    @Volatile private var resumeSkipRequested = false
     private var pendingImportText: String? = null
     private var lastKnownDay: String = ""
     private var lastBiomeKey: String = ""
@@ -243,58 +271,146 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             0L
         }
 
+        visible = true
+        val state = game.value
+        val reportOpen = state.offlineReport?.let { it.acknowledgedAt == 0L } == true
+        // Un résumé ou une étape déjà ouverte fige la partie : on ne simule pas
+        // par-dessus, et on ne rouvre pas un second écran.
+        if (reportOpen || state.mode == "camp" || state.mode == "special") {
+            viewModelScope.launch { container.gameRepository.markActive() }
+            return
+        }
+        if (resumeActive) return
+
+        val canSimulate = elapsed >= RESUME_SIM_MIN_MS && !_ui.value.paused
+        val canSync = _ui.value.onboardingDone && shouldSyncOnResume()
+
+        resumeActive = true
+        resumeSkipRequested = false
+        resuming = true
         viewModelScope.launch {
-            visible = true
-            // Synchro en parallèle : elle télécharge, mais n'écrit dans la partie
-            // qu'à la fermeture du résumé (les pas importés ne nourrissent pas la
-            // simulation d'absence).
-            val fetch = if (shouldSyncOnResume()) {
-                async { container.stepRepository.fetch() }
-            } else {
-                null
-            }
-
-            // La simulation travaille sur la réserve héritée de la fermeture.
-            val state = game.value
-            val canSimulate = elapsed >= 2L * 60L * 1000L &&
-                !_ui.value.paused &&
-                state.mode != "camp" &&
-                state.mode != "special"
-            if (canSimulate) {
-                resuming = true
-                try {
-                    container.gameRepository.simulateAbsence(elapsed)
-                } finally {
-                    resuming = false
-                }
-            }
-            pendingSteps = fetch?.await()
-            container.gameRepository.markActive()
-            visible = true
-
-            // Aucun résumé à l'écran : on applique tout de suite les pas.
-            val report = game.value.offlineReport
-            if (report == null || report.acknowledgedAt != 0L) {
-                applyPendingSteps()
+            try {
+                resumeSession(elapsed, canSimulate, canSync)
+            } finally {
+                _ui.update { it.copy(resume = null, syncing = false) }
+                resuming = false
+                resumeActive = false
+                container.gameRepository.markActive()
+                refreshGarmin()
             }
         }
     }
 
-    /** Applique les pas téléchargés pendant le résumé, puis prévient le joueur. */
-    private fun applyPendingSteps() {
-        val fetch = pendingSteps ?: return
-        pendingSteps = null
-        viewModelScope.launch {
-            val result = container.stepRepository.apply(fetch)
-            refreshGarmin()
+    /**
+     * Reprise unique : simulation d'absence et import de pas dans le même écran.
+     * L'import est attendu au maximum [RESUME_SYNC_BUDGET_MS] ; au-delà (ou si
+     * le joueur passe), il est appliqué en arrière-plan sans rouvrir de résumé.
+     */
+    private suspend fun resumeSession(elapsed: Long, canSimulate: Boolean, canSync: Boolean) {
+        val startedAt = SystemClock.elapsedRealtime()
+        val sourceLabel = if (container.stepRepository.current() == StepSourceType.HEALTH) {
+            "Santé Connect"
+        } else {
+            "Garmin"
+        }
+
+        if (canSimulate || canSync) {
+            _ui.update {
+                it.copy(
+                    resume = ResumeUi(
+                        startedAt = startedAt,
+                        phase = if (canSimulate) ResumePhase.SIMULATING else ResumePhase.SYNCING,
+                        sourceLabel = sourceLabel
+                    ),
+                    resumePendingFetch = false
+                )
+            }
+        }
+
+        // Le téléchargement démarre en parallèle de la simulation. Il ne nourrit
+        // pas la simulation : l'absence travaille sur la réserve héritée.
+        val fetched = CompletableDeferred<StepFetch?>()
+        var fetchJob: Job? = null
+        if (canSync) {
+            _ui.update { it.copy(syncing = true) }
+            fetchJob = viewModelScope.launch {
+                val value = runCatching { container.stepRepository.fetch() }.getOrNull()
+                fetched.complete(value)
+            }
+        } else {
+            fetched.complete(null)
+        }
+
+        if (canSimulate) {
+            // La simulation écrit l'état et le résumé d'absence, mais l'écran
+            // de reprise reste au-dessus : un seul résumé sera montré.
+            container.gameRepository.simulateAbsence(elapsed)
+            if (canSync) {
+                _ui.update { it.copy(resume = it.resume?.copy(phase = ResumePhase.SYNCING)) }
+            }
+        }
+
+        if (!canSync) return
+
+        // Budget global : 3 s à partir de l'ouverture. Sortie manuelle possible.
+        val deadline = startedAt + RESUME_SYNC_BUDGET_MS
+        while (!fetched.isCompleted && !resumeSkipRequested &&
+            SystemClock.elapsedRealtime() < deadline
+        ) {
+            delay(50)
+        }
+
+        val result = if (fetched.isCompleted) fetched.await() else null
+        val abandoned = result == null && !fetched.isCompleted
+        if (abandoned) {
+            _ui.update { it.copy(resumePendingFetch = true) }
+            applyLateFetch(fetched, fetchJob)
+        } else if (result != null) {
+            val sync = container.stepRepository.apply(result)
             _ui.update {
                 it.copy(
                     syncing = false,
-                    lastAdded = if (result.ok) result.added else it.lastAdded
+                    lastAdded = if (sync.ok) sync.added else it.lastAdded
                 )
             }
-            if (result.ok) _toasts.tryEmit(result.message)
+            // Sans résumé à afficher, un toast évite que les pas importés
+            // passent inaperçus (comportement d'avant la fusion des écrans).
+            if (sync.ok && sync.added > 0 && game.value.offlineReport == null) {
+                _toasts.tryEmit(sync.message)
+            }
         }
+    }
+
+    /**
+     * Import arrivé après la fermeture de l'écran de reprise : il crédite les
+     * pas sans rouvrir de résumé, et se contente d'un toast.
+     */
+    private fun applyLateFetch(fetched: CompletableDeferred<StepFetch?>, fetchJob: Job?) {
+        viewModelScope.launch {
+            val result = withTimeoutOrNull(RESUME_LATE_SYNC_MAX_MS) { fetched.await() }
+            if (result == null) {
+                fetchJob?.cancel()
+                _ui.update { it.copy(resumePendingFetch = false, syncing = false) }
+                return@launch
+            }
+            val sync = container.stepRepository.apply(result, publishReport = false)
+            _ui.update {
+                it.copy(
+                    resumePendingFetch = false,
+                    syncing = false,
+                    lastAdded = if (sync.ok) sync.added else it.lastAdded
+                )
+            }
+            if (sync.ok && sync.added > 0) {
+                _toasts.tryEmit("+${formatInt(sync.added)} pas récupérés")
+            }
+            refreshGarmin()
+        }
+    }
+
+    /** Sortie manuelle de l'écran de reprise ; l'import continue en fond. */
+    fun skipResumeWait() {
+        if (resumeActive) resumeSkipRequested = true
     }
 
     private fun shouldSyncOnResume(): Boolean {
@@ -336,13 +452,12 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun setStepSource(id: String) {
-        val type = com.brunothesatellite.idlesteprpg.steps.StepSourceType.fromId(id)
+        val type = StepSourceType.fromId(id)
         if (type.id == container.stepRepository.current().id) return
-        pendingSteps = null
         container.stepRepository.changeSource(type)
         com.brunothesatellite.idlesteprpg.sync.SyncScheduler.schedule(
             container.context,
-            requireNetwork = type == com.brunothesatellite.idlesteprpg.steps.StepSourceType.GARMIN
+            requireNetwork = type == StepSourceType.GARMIN
         )
         refreshGarmin()
         _toasts.tryEmit(
@@ -628,8 +743,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun dismissOfflineReport() {
         viewModelScope.launch {
+            // Fermer le résumé ne déclenche plus d'import : celui-ci a déjà été
+            // appliqué (ou continue en fond sans rouvrir d'écran).
             container.gameRepository.mutate { it.offlineReport = null }
-            applyPendingSteps()
         }
     }
 
