@@ -1172,7 +1172,7 @@ fun itemScore(item: Item): Int {
         "precision" -> 30
         else -> 0
     }
-    return (item.atk * 2 + item.hp * 0.25 + item.vitPct * 3 +
+    return (item.atk * 2 + item.hp * 0.6 + item.vitPct * 3 +
         item.critPct * 4 + item.regen * 20 + effectBonus).roundToInt()
 }
 

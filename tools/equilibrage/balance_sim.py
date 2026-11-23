@@ -132,6 +132,7 @@ class Tuning:
     shield_reduction: float = 0.40
     shield_duration: float = 3.0
     shield_period: float = 8.0
+    target_mob_atk_div: float = 7.0
     target_boss_atk_div: float = 16.0
     enrage_after: float = 15.0
     enrage_step: float = 5.0
@@ -206,7 +207,7 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
             ref_dps = ref_atk * 1.18 / ref_interval
             ref_ehp = (ref_hp * 1.35) / 0.94
             hp = ref_dps * 5.0 * (1.8 if elite else 1.0)
-            atk = (ref_ehp / 7.0) * (1.15 if elite else 1.0)
+            atk = (ref_ehp / tuning.target_mob_atk_div) * (1.15 if elite else 1.0)
             interval = 1.10 if elite else 1.25
             mult = 1.0 + 0.15 * (floor - 1)
             gold = (6 + 3 * level) * (1.6 if elite else 1.0) * mult * 0.5
@@ -587,6 +588,7 @@ def main() -> None:
     parser.add_argument("--shield-reduction", type=float, default=0.40)
     parser.add_argument("--shield-duration", type=float, default=3.0)
     parser.add_argument("--shield-period", type=float, default=8.0)
+    parser.add_argument("--target-mob-atk-div", type=float, default=7.0)
     parser.add_argument("--target-boss-atk-div", type=float, default=16.0)
     parser.add_argument("--enrage-after", type=float, default=15.0)
     parser.add_argument("--enrage-step", type=float, default=5.0)
@@ -612,6 +614,7 @@ def main() -> None:
         shield_reduction=args.shield_reduction,
         shield_duration=args.shield_duration,
         shield_period=args.shield_period,
+        target_mob_atk_div=args.target_mob_atk_div,
         target_boss_atk_div=args.target_boss_atk_div,
         enrage_after=args.enrage_after,
         enrage_step=args.enrage_step,
