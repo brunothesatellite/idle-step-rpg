@@ -1,5 +1,10 @@
 # Journal des versions
 
+## v0.19.1
+- **Atelier** : vendre, démonter et reforger demandent désormais une **confirmation** (FR/EN). « Reforger encore » reste direct dans le panneau de résultat ; « Vendre les communs » est inchangé.
+- **Tests** : **117 / 117**, lint OK.
+- **Build** : `versionCode 46`, `versionName 0.19.1`.
+
 ## v0.19.0
 - **Internationalisation FR/EN** : interface, journal, Codex, notifications, widget, dialogues de mise à jour et contenus dynamiques. En anglais, « Santé Connect » devient « Health Connect ».
 - **Formats localisés** : séparateur de milliers (`7 464` / `7,464`), nombres compacts, dates (`jj/mm/aaaa` / `mm/dd/yyyy`), heures (24 h / 12 h), journal de synchronisation.

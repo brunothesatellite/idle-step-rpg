@@ -1,6 +1,6 @@
 # Internationalisation — état final
 
-> État vérifié : **v0.19.0**, branche **`main`**, sauvegarde **v7**, 23/11/2026.
+> État vérifié : **v0.19.1**, branche **`main`**, sauvegarde **v7**, 23/11/2026.
 > Périmètre livré : application Android, manuel embarqué et web, kit Play Store, README.
 > Hors périmètre : démo web racine, vidéo promo, nouveaux alphabets.
 
