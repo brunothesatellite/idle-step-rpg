@@ -17,6 +17,10 @@ python tools/equilibrage/balance_sim.py --curve current --build player36,referen
 python tools/equilibrage/balance_sim.py --curve proposed --build player36,reference,reference_high \
   --floors 36,50,75,100 --runs 300
 
+# Courbe cible : TTK constant (monstre ~5 s, gardien ~18 s)
+python tools/equilibrage/balance_sim.py --curve target --build reference,reference_high \
+  --floors 36,50,75,100 --runs 300
+
 # Courbes d’XP et de pas
 python tools/equilibrage/balance_sim.py --xp
 ```
@@ -59,6 +63,8 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 
 - Attaques du héros : intervalle `1 / (VIT × (1 + 0,004 × ferveur))`, minimum 0,3 s.
 - Dégâts : `ATQ × U(0,9–1,0)`, critique `1,6 + critDamage`, bonus gardien, bouclier.
+- Nombre de coups portés / encaissés (pour vérifier qu’un gardien ne tombe pas en 2-3 coups).
+- Potions simulées : `--potion atk` (+40 % ATQ), `--potion crit` (+50 pts crit), `--potion mixed` (+25 % ATQ, +25 crit).
 - Attaques ennemies : intervalle, `ATQ × U(0,9–1,0)`, réduction de dégâts.
 - Ration automatique sous 25 % des PV, une fois par combat.
 - Régénération, vol de vie.
@@ -87,9 +93,20 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 ### Courbe proposée (`3× PV`, `1,3× ATQ`, bouclier 40 % / 3 s / 8 s)
 
 - `player36` gagne le **palier 36** : monstre 4,2 s, gardien 6,4 s, sans ration.
-- `reference_high` gagne 75 et 100 (gardiens 13-18 s, 83-100 % de victoires).
+- `reference_high` gagne 75 et 100. Au 100 : **18,2 s**, **62 coups portés**, 14 coups encaissés, **83 %** de victoires.
+- Avec une potion d’ATQ, le gardien 100 passe à **12,5 s / 43 coups / 100 %** pour le build avancé : la potion accélère, mais le gardien reste très loin d’un combat en 2-3 coups.
 - `reference` (stuff moyen) perd encore les gardiens 75 et 100 : il faut du stuff avancé ou du farm.
-- Conclusion : la proposition **débloque le palier 36**, mais les gardiens de fin de partie restent à calibrer. C’est exactement le rôle du plan de validation.
+- Conclusion : la proposition **débloque le palier 36** et atteint la cible « gardien ~18 s, beaucoup de coups » pour le build avancé au 100 ; les gardiens 75/100 restent à calibrer pour le stuff moyen. C’est exactement le rôle du plan de validation.
+
+### Courbe `target` (TTK constant)
+
+La courbe `target` dérive les PV/ATQ ennemis du build de référence pour viser **monstre ~5 s** et **gardien ~18 s** à tous les paliers :
+
+- `reference_high` : gardiens 36/50/75/100 en **14-16 s**, **48-59 coups portés**, 100 % de victoires.
+- `reference` (stuff moyen) : **99 % au 36**, **34 % au 50**, puis **~1 % aux 75/100** : il faut du stuff ou du farm pour la seconde moitié.
+- `player36` (glass cannon) : perd, car ses PV sont trop bas pour la cible.
+
+Aucun gardien ne tombe en 2-3 coups : le combat dure 14-20 s et demande 48-68 coups. La courbe `target` est la meilleure base pour la Phase A/B ; il reste à ajuster l’ATQ des gardiens de 5-10 % pour viser 50-70 % de victoires avec le stuff moyen à 75-100.
 
 ## Prochaines étapes
 

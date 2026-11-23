@@ -74,6 +74,8 @@ class Result:
     avg_hp_left: float
     avg_rations: float
     avg_damage_taken: float
+    avg_hero_hits: float
+    avg_enemy_hits: float
     ttk: float | None
     ttd: float | None
 
@@ -126,6 +128,7 @@ class Tuning:
     shield_reduction: float = 0.40
     shield_duration: float = 3.0
     shield_period: float = 8.0
+    target_boss_atk_div: float = 15.0
 
 
 def rule_for(floor: int, biome: str) -> Rule:
@@ -187,12 +190,26 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
         gold = (6 + 3 * level) * (1.6 if elite else 1.0) * reward
         xp = (12 + 5 * level) * (1.8 if elite else 1.0) * reward
     else:
-        hp = (55 + 34 * (level - 1)) * (1.8 if elite else 1.0) * _mob_depth_proposed(floor, tuning)
-        atk = (6 + 2.2 * (level - 1)) * (1.15 if elite else 1.0) * _atk_depth_proposed(floor, tuning)
-        interval = 1.10 if elite else 1.25
-        mult = 1.0 + 0.15 * (floor - 1)
-        gold = (6 + 3 * level) * (1.6 if elite else 1.0) * mult * 0.5
-        xp = (12 + 5 * level) * (1.8 if elite else 1.0) * mult
+        if curve == "target":
+            ref_atk = 650 + 24 * floor
+            ref_hp = 2600 + 110 * floor
+            ref_vit = 1.8 + 0.02 * floor
+            ref_interval = max(0.30, 1.0 / (ref_vit * 1.4))
+            ref_dps = ref_atk * 1.18 / ref_interval
+            ref_ehp = (ref_hp * 1.35) / 0.94
+            hp = ref_dps * 5.0 * (1.8 if elite else 1.0)
+            atk = (ref_ehp / 7.0) * (1.15 if elite else 1.0)
+            interval = 1.10 if elite else 1.25
+            mult = 1.0 + 0.15 * (floor - 1)
+            gold = (6 + 3 * level) * (1.6 if elite else 1.0) * mult * 0.5
+            xp = (12 + 5 * level) * (1.8 if elite else 1.0) * mult
+        else:
+            hp = (55 + 34 * (level - 1)) * (1.8 if elite else 1.0) * _mob_depth_proposed(floor, tuning)
+            atk = (6 + 2.2 * (level - 1)) * (1.15 if elite else 1.0) * _atk_depth_proposed(floor, tuning)
+            interval = 1.10 if elite else 1.25
+            mult = 1.0 + 0.15 * (floor - 1)
+            gold = (6 + 3 * level) * (1.6 if elite else 1.0) * mult * 0.5
+            xp = (12 + 5 * level) * (1.8 if elite else 1.0) * mult
     return Enemy(
         name="élite" if elite else "monstre",
         hp=hp * rule.enemy_hp,
@@ -218,9 +235,18 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shiel
         xp = 10 * (12 + 5 * level) * reward
     else:
         level = floor + 1
-        depth = _boss_depth_proposed(floor, tuning)
-        hp = tuning.boss_hp_mult * (55 + 34 * (level - 1)) * depth
-        atk = tuning.boss_atk_mult * (6 + 2.2 * (level - 1)) * _atk_depth_proposed(floor, tuning)
+        if curve == "target":
+            ref_atk = 650 + 24 * floor
+            ref_hp = 2600 + 110 * floor
+            ref_vit = 1.8 + 0.02 * floor
+            ref_interval = max(0.30, 1.0 / (ref_vit * 1.4))
+            ref_dps = ref_atk * 1.18 / ref_interval
+            ref_ehp = (ref_hp * 1.35) / 0.94
+            hp = ref_dps * 18.0 * 0.85
+            atk = ref_ehp / tuning.target_boss_atk_div
+        else:
+            hp = tuning.boss_hp_mult * (55 + 34 * (level - 1)) * _boss_depth_proposed(floor, tuning)
+            atk = tuning.boss_atk_mult * (6 + 2.2 * (level - 1)) * _atk_depth_proposed(floor, tuning)
         shield_reduction = tuning.shield_reduction
         shield_duration = tuning.shield_duration
         shield_period = tuning.shield_period
@@ -300,13 +326,23 @@ def build_preset(name: str, floor: int) -> Build:
 
 
 def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 180.0,
-             seed: int = 42) -> Result:
+             seed: int = 42, potion: str = "") -> Result:
+    if potion == "atk":
+        build = replace(build, atk=build.atk * 1.40)
+    elif potion == "crit":
+        build = replace(build, crit=min(100.0, build.crit + 50.0),
+                        crit_damage=build.crit_damage + 0.20)
+    elif potion == "mixed":
+        build = replace(build, atk=build.atk * 1.25,
+                        crit=min(100.0, build.crit + 25.0))
     rng = random.Random(seed)
     wins = 0
     times: list[float] = []
     hp_left: list[float] = []
     rations: list[int] = []
     damage_taken: list[float] = []
+    hero_hits: list[int] = []
+    enemy_hits: list[int] = []
     win_times: list[float] = []
     loss_times: list[float] = []
     attack_interval = max(0.30, 1.0 / (build.vit * (1.0 + 0.004 * build.ferveur)))
@@ -321,6 +357,8 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
         shield_timer = 0.0
         ration_used = False
         taken = 0.0
+        hero_swings = 0
+        enemy_swings = 0
 
         while t < max_seconds:
             dt = 0.01
@@ -336,6 +374,7 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
                 ability_timer = enemy.shield_period
 
             if hero_timer <= 0:
+                hero_swings += 1
                 dmg = build.atk * (0.9 + rng.random() * 0.1)
                 if rng.random() < min(1.0, build.crit / 100.0):
                     dmg *= 1.6 + build.crit_damage
@@ -354,9 +393,12 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
                     hp_left.append(hp)
                     rations.append(1 if ration_used else 0)
                     damage_taken.append(taken)
+                    hero_hits.append(hero_swings)
+                    enemy_hits.append(enemy_swings)
                     break
 
             if enemy_timer <= 0:
+                enemy_swings += 1
                 dmg = enemy.atk * (0.9 + rng.random() * 0.1) * (1.0 - build.damage_reduction)
                 hp -= dmg
                 taken += dmg
@@ -367,12 +409,15 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
                     hp_left.append(0.0)
                     rations.append(1 if ration_used else 0)
                     damage_taken.append(taken)
+                    hero_hits.append(hero_swings)
+                    enemy_hits.append(enemy_swings)
                     break
                 if not ration_used and build.rations > 0 and hp < build.hp * 0.25:
                     ration_used = True
                     hp = min(build.hp, hp + build.hp * 0.35)
 
             if enemy.ability == "slam" and ability_timer <= 0:
+                enemy_swings += 1
                 dmg = enemy.atk * enemy.ability_mult * (1.0 - build.damage_reduction)
                 hp -= dmg
                 taken += dmg
@@ -383,6 +428,8 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
                     hp_left.append(0.0)
                     rations.append(1 if ration_used else 0)
                     damage_taken.append(taken)
+                    hero_hits.append(hero_swings)
+                    enemy_hits.append(enemy_swings)
                     break
 
             hp = min(build.hp, hp + build.regen * dt)
@@ -394,6 +441,8 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
             hp_left.append(hp)
             rations.append(1 if ration_used else 0)
             damage_taken.append(taken)
+            hero_hits.append(hero_swings)
+            enemy_hits.append(enemy_swings)
 
     return Result(
         runs=runs,
@@ -402,6 +451,8 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
         avg_hp_left=sum(hp_left) / len(hp_left) if hp_left else 0.0,
         avg_rations=sum(rations) / len(rations) if rations else 0.0,
         avg_damage_taken=sum(damage_taken) / len(damage_taken) if damage_taken else 0.0,
+        avg_hero_hits=sum(hero_hits) / len(hero_hits) if hero_hits else 0.0,
+        avg_enemy_hits=sum(enemy_hits) / len(enemy_hits) if enemy_hits else 0.0,
         ttk=sum(win_times) / len(win_times) if win_times else None,
         ttd=sum(loss_times) / len(loss_times) if loss_times else None,
     )
@@ -467,23 +518,27 @@ def fmt(value: float | None, digits: int = 1) -> str:
 
 
 def combat_table(curve: str, builds: Iterable[str], floors: Iterable[int], runs: int,
-                 biome: str, ability: str, tuning: Tuning = Tuning()) -> str:
+                 biome: str, ability: str, tuning: Tuning = Tuning(),
+                 potion: str = "") -> str:
     lines = [
-        f"### Courbe `{curve}` — biome `{biome}` — {runs} simulations",
+        f"### Courbe `{curve}` — biome `{biome}` — {runs} simulations"
+        + (f" — potion `{potion}`" if potion else ""),
         "",
-        "| Palier | Ennemi | Build | Victoires | TTK | TTD | PV restants | Rations | Dégâts subis |",
-        "|---:|---|---|---:|---:|---:|---:|---:|---:|",
+        "| Palier | Ennemi | Build | Victoires | TTK | TTD | Coups héros | Coups ennemis | PV restants | Rations | Dégâts subis |",
+        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for floor in floors:
         for build_name in builds:
             build = build_preset(build_name, floor)
+            label = build.name + (f"+{potion}" if potion else "")
             enemies = [make_mob(floor, curve, biome, tuning=tuning)]
             enemies.append(make_boss(floor, curve, biome, ability, tuning=tuning))
             for enemy in enemies:
-                result = simulate(build, enemy, runs=runs)
+                result = simulate(build, enemy, runs=runs, potion=potion)
                 lines.append(
-                    f"| {floor} | {enemy.name} | {build.name} | {result.win_rate:.0f} % | "
-                    f"{fmt(result.ttk)} | {fmt(result.ttd)} | {fmt(result.avg_hp_left, 0)} | "
+                    f"| {floor} | {enemy.name} | {label} | {result.win_rate:.0f} % | "
+                    f"{fmt(result.ttk)} | {fmt(result.ttd)} | {result.avg_hero_hits:.0f} | "
+                    f"{result.avg_enemy_hits:.0f} | {fmt(result.avg_hp_left, 0)} | "
                     f"{result.avg_rations:.2f} | {fmt(result.avg_damage_taken, 0)} |"
                 )
     return "\n".join(lines)
@@ -491,7 +546,7 @@ def combat_table(curve: str, builds: Iterable[str], floors: Iterable[int], runs:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Simulateur d'équilibrage")
-    parser.add_argument("--curve", choices=["current", "proposed", "both"], default="both")
+    parser.add_argument("--curve", choices=["current", "proposed", "target", "both"], default="both")
     parser.add_argument("--build", default="player36,reference",
                         help="preset ou liste : player36,reference,reference_low,reference_high,"
                              "under,tank,crit,lifesteal,endgame")
@@ -499,6 +554,8 @@ def main() -> None:
     parser.add_argument("--runs", type=int, default=200)
     parser.add_argument("--biome", default="auto")
     parser.add_argument("--ability", default="shield", choices=["shield", "slam", ""])
+    parser.add_argument("--potion", default="", choices=["", "atk", "crit", "mixed"],
+                        help="simule une potion (atk +40%%, crit +50 pts, ou mixte)")
     parser.add_argument("--hp-exp", type=float, default=1.11)
     parser.add_argument("--hp-cap", type=float, default=30.0)
     parser.add_argument("--atk-exp", type=float, default=1.04)
@@ -510,6 +567,7 @@ def main() -> None:
     parser.add_argument("--shield-reduction", type=float, default=0.40)
     parser.add_argument("--shield-duration", type=float, default=3.0)
     parser.add_argument("--shield-period", type=float, default=8.0)
+    parser.add_argument("--target-boss-atk-div", type=float, default=15.0)
     parser.add_argument("--xp", action="store_true", help="affiche les courbes d'XP et de pas")
     parser.add_argument("--economy", action="store_true", help="affiche le résumé XP/pas")
     args = parser.parse_args()
@@ -530,6 +588,7 @@ def main() -> None:
         shield_reduction=args.shield_reduction,
         shield_duration=args.shield_duration,
         shield_period=args.shield_period,
+        target_boss_atk_div=args.target_boss_atk_div,
     )
     floors = [int(x) for x in args.floors.split(",") if x.strip()]
     builds = [x.strip() for x in args.build.split(",") if x.strip()]
@@ -538,7 +597,8 @@ def main() -> None:
                   "under", "tank", "crit", "lifesteal", "endgame"]
     curves = ["current", "proposed"] if args.curve == "both" else [args.curve]
     for curve in curves:
-        print(combat_table(curve, builds, floors, args.runs, args.biome, args.ability, tuning))
+        print(combat_table(curve, builds, floors, args.runs, args.biome, args.ability,
+                           tuning, args.potion))
         print()
 
 

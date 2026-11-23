@@ -54,15 +54,20 @@ python tools/equilibrage/balance_sim.py --curve proposed \
   --build reference_low,reference,reference_high,tank,crit,lifesteal,endgame \
   --floors 50,60,70,75,80,90,100 --runs 300
 
+python tools/equilibrage/balance_sim.py --curve target --build reference,reference_high \
+  --floors 36,50,75,100 --runs 300
+
 # XP et pas
 python tools/equilibrage/balance_sim.py --xp
 ```
+
+La courbe `target` vise un TTK constant (monstre ~5 s, gardien ~18 s) au lieu d’un multiplicateur de profondeur. Elle sert de référence pour la Phase B.
 
 ## 4. Matrice de tests
 
 | Axe | Valeurs |
 |---|---|
-| Courbe | `current` (calibration), `proposed` |
+| Courbe | `current` (calibration), `proposed`, `target` |
 | Builds | `player36`, `reference_low`, `reference`, `reference_high`, `tank`, `crit`, `lifesteal`, `endgame` |
 | Paliers | 10, 20, 30, 34, **36**, 40, 50, 60, 70, 75, 80, 90, **100** |
 | Ennemis | monstre, élite, gardien |
@@ -80,8 +85,10 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 |---|---|
 | Monstre normal, build `reference` | ≥ 95 % de victoires, TTK 4-7 s, ≤ 0,2 ration |
 | Élite, build `reference` | ≥ 80 % de victoires, TTK 8-12 s |
-| Gardien, build `reference` | 50-80 % de victoires, TTK 20-30 s, 1 ration |
-| Gardien, build `reference_high` | ≥ 80 % de victoires |
+| Gardien, build `reference` | 40-70 % de victoires, TTK 15-22 s, ≥ 30 coups portés, 1 ration |
+| Gardien, build `reference_high` au 100 | 80-95 % de victoires, TTK 15-22 s, ≥ 30 coups portés |
+| Gardien + potion, build `reference_high` | TTK réduit de 20-40 %, jamais < 10 s ni < 25 coups |
+| Gardien avec enrage après 15 s | `reference_high` n’est plus à 100 % ; les potions permettent de finir avant |
 | Build `under` | perd les gardiens, gagne encore des monstres |
 | Palier 36, build `player36` | ≥ 80 % de victoires sur monstre et gardien après patch |
 | Écart entre builds | aucun build > 2× plus rapide qu’un autre |
@@ -127,9 +134,11 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 
 **Sortie** : simulateur de confiance, tableau de calibration.
 
+**Écart connu à corriger** : sur la courbe `target` actuelle, `reference` est à ~1 % et `reference_high` à 100 % au palier 100. La cible est 40-70 % pour le stuff moyen et 80-95 % pour le stuff haut : il faut relever le stuff moyen ou baisser l’ATQ des gardiens de 5-10 %, puis rejouer la matrice. Pour casser le 100 % du meilleur stuff, ajouter l’**enrage douce** (6.6) et vérifier qu’elle ne rend pas le stuff moyen impossible.
+
 ### Phase A — Débloquer le palier 36
 
-1. Simuler : ATQ séparée, gardien 3× PV / 1,3× ATQ, bouclier réduit, éclats/rations doublés, farm du palier précédent, pitié.
+1. Simuler : courbe cible 6.1bis (gardien ~18 s, ≥ 30 coups), bouclier réduit, éclats/rations doublés, farm du palier précédent, pitié.
 2. Implémenter **uniquement** ces changements.
 3. Playtest 7 jours sur la sauvegarde actuelle :
    - noter paliers gagnés, défaites, éclats/rations, or, niveau ;
@@ -137,6 +146,8 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 4. Critère : **+5 paliers en 7 jours** pour le build actuel, ou blocage expliqué par un choix de farm.
 
 **Sortie** : décision go/no-go pour la Phase B.
+
+**Garde-fou** : aucun gardien ne doit être gagné en moins de 10 s ou en moins de 20 coups portés, même avec le meilleur stuff. Les potions peuvent réduire le TTK de 20-40 %, mais pas transformer le combat en exécution automatique.
 
 ### Phase B — Niveau 100
 
@@ -161,6 +172,7 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 ### Dans le simulateur
 
 - Taux de victoire, TTK, TTD, rations, dégâts subis.
+- Coups portés par le héros et coups encaissés (pour détecter les gardiens tombés en 2-3 coups).
 - XP/kill, XP total, kills estimés.
 - Pas et jours.
 

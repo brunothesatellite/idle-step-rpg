@@ -156,7 +156,7 @@ La courbe 1,2^ niveau est incompatible avec un objectif niveau 100. En plus, les
 3. **Combats** :
    - monstre normal : **4 à 7 s** de combat, 5 à 8 coups encaissés ;
    - élite : 8 à 12 s ;
-   - gardien : **20 à 30 s**, 8 à 12 coups encaissés avec 1 ration.
+   - gardien : **15 à 22 s** (cible ~18 s), **au moins 30 coups portés**, 8 à 12 coups encaissés avec 1 ration. Un gardien ne doit **jamais** tomber en 2-3 coups.
 4. **Progression** : 1 à 3 tentatives par palier normal, 3 à 6 par gardien ; au-delà de 5 défaites, mécanisme de pitié.
 5. **Économie** : 5 à 10 éclats/jour, 1 à 3 niveaux d’objet/jour ; rations suffisantes pour 3 à 5 combats difficiles/jour.
 6. **Butin** : un objet de palier 100 doit être nettement meilleur qu’un objet de palier 36, à rareté égale.
@@ -192,7 +192,45 @@ Exemple de courbe proposée :
 
 Au palier 36, avec le stuff actuel : monstre tué en ~3,6 s en encaissant ~620 dégâts ; gardien tué en ~10 s (bouclier inclus) en encaissant ~2 300. Le combat redevient gagnable sans être trivial.
 
-### 6.2 Courbe d’XP
+### 6.1bis Deuxième itération : viser un TTK constant
+
+La première séparation (6.1) débloque le palier 36, mais le simulateur révèle un défaut : le gardien 36 tombe en **~6 s** alors que le gardien 100 dure **18 s**. La courbe de PV des gardiens est trop raide tôt et trop plate tard.
+
+Cible : **monstre ~5 s**, **gardien ~18 s**, **≥ 30 coups portés**, à tous les paliers, pour le build de référence (`ATQ = 650 + 24×palier`, `PV = 2 600 + 110×palier`, `VIT = 1,8 + 0,02×palier`).
+
+| Palier | PV monstre | ATQ monstre | PV gardien | ATQ gardien |
+|---:|---:|---:|---:|---:|
+| 36 | 30,6 k | 1 247 | 87,7 k | 628 |
+| 50 | 39,2 k | 1 684 | 112,3 k | 776 |
+| 75 | 53,5 k | 2 308 | 153,7 k | 1 039 |
+| 100 | 63,7 k | 2 809 | 184,8 k | 1 302 |
+
+Formules linéaires proposées (à ajuster par simulation) :
+
+```kotlin
+mobHpMult  = 26.0 - 0.08  * (floor - 10)
+mobAtkMult = 16.6 - 0.045 * (floor - 10)
+bossHpMult = 72.0 - 0.20  * (floor - 10)
+bossAtkMult = 7.7 - 0.02  * (floor - 10)
+
+PV  = basePV(level)  * mult * règleBiome
+ATQ = baseATQ(level) * mult * règleBiome
+```
+
+- Bouclier : 40 % / 3 s / 8 s.
+- Élites : 1,8× PV, 1,15× ATQ.
+- Les multiplicateurs **baissent** avec le palier parce que les PV/ATQ de base montent déjà linéairement et que le DPS de référence monte plus vite (ATQ × VIT). Ce n’est pas une erreur.
+
+Simulation de cette cible (ATQ gardien = EHP de référence / 15) :
+
+| Build | Gardien 36 | Gardien 50 | Gardien 75 | Gardien 100 |
+|---|---|---|---|---|
+| `reference_high` | 15,9 s · 54 coups · 100 % | 14,1 s · 48 coups · 100 % | 15,8 s · 54 coups · 100 % | 15,8 s · 54 coups · 100 % |
+| `reference` (mid) | 20,0 s · 68 coups · 99 % | 17,9 s · 61 coups · 34 % | ~18,6 s · 63 coups · 1 % | ~18,6 s · 63 coups · 1 % |
+
+Le build haut est au-dessus de la cible ; le build moyen franchit 36-50, puis bute sur 75-100. Il faut soit relever le stuff moyen d’environ 10-15 %, soit baisser l’ATQ des gardiens de 5-10 %. L’important est acquis : **aucun gardien ne tombe en 2-3 coups**, le combat dure 14-20 s, et le stuff moyen ne gagne pas automatiquement.
+
+### 6.2 Courbe d'XP
 
 Remplacer `1,2^niveau` par une courbe plus douce :
 
@@ -279,8 +317,10 @@ Les améliorations plates sont trop faibles face à l’exponentiel :
 ### 6.6 Gardiens et pitié
 
 - Bouclier : **−40 % pendant 3 s toutes les 8 s** (au lieu de −65 % / 4,5 s / 6,5 s), ou absorption d’un montant fixe (ex. 15 % des PV max).
+- La proposition initiale (`3× PV`, `1,3× ATQ`) ne suffit pas : le gardien 36 tombe en ~6 s. Utiliser la **courbe cible 6.1bis** pour viser ~18 s et ≥ 30 coups à tous les paliers.
 - Capacités : réduire les multiplicateurs (slam 2,4→1,8 ; souffle 2,0→1,6 ; drain 1,5→1,2 ; etc.).
 - Pitié : chaque défaite sur un gardien donne **+25 % de dégâts** au prochain essai, cumulable jusqu’à **+75 %**, remis à zéro à la victoire. Alternative : −5 % PV/ATQ du gardien par défaite, plafonné à −25 %.
+- **Enrage douce** : à partir de 15 s, +25 % ATQ toutes les 5 s (plafond +75 %). Le meilleur stuff ne gagne plus 100 % automatiquement ; les potions permettent de finir avant l’enrage. C’est le levier recommandé pour respecter « pas de combat automatiquement gagné » sans pénaliser le stuff moyen, qui meurt souvent avant 15 s.
 - Afficher les PV/ATQ réels et un indicateur « dangereux » basé sur le ratio ATQ ennemi / PV héros.
 
 ### 6.7 Farm et récupération
@@ -298,6 +338,31 @@ Le score actuel `ATQ×2 + PV/4 + VIT×20 + crit + regen×10` survalorise l’ATQ
 - Journaliser : tentatives par palier, défaites, éclats/rations par jour, temps par niveau, niveaux d’objets.
 - Seuils d’alerte : >5 tentatives par palier normal, >10 par gardien, >30 % de joueurs bloqués au même palier.
 
+### 6.9 Première validation par simulation
+
+Le simulateur `tools/equilibrage/balance_sim.py` reproduit d’abord le blocage actuel :
+
+- `player36` (build réel) : **0 %** de victoires au palier 36, monstre comme gardien.
+- Le gardien tue en ~7,5 s ; le monstre en ~3,8 s.
+
+Avec la courbe proposée (`3× PV`, `1,3× ATQ`, bouclier 40 % / 3 s / 8 s) :
+
+| Scénario | Victoires | TTK | Coups portés | Coups encaissés |
+|---|---:|---:|---:|---:|
+| `player36`, monstre 36 | 100 % | 4,2 s | — | — |
+| `player36`, gardien 36 | 100 % | 6,4 s | — | — |
+| `reference_high`, gardien 50 | 100 % | 13,3 s | 45 | 11 |
+| `reference_high`, gardien 75 | 100 % | 17,2 s | 58 | 13 |
+| **`reference_high`, gardien 100** | **83 %** | **18,2 s** | **62** | **14** |
+| `reference` (stuff moyen), gardien 100 | 0 % | — | 46 | 11 |
+
+Avec une potion d’ATQ (+40 %) :
+
+- `reference_high` au gardien 100 : **100 %**, TTK **12,5 s**, **43 coups portés**.
+- Le gardien reste très loin d’un combat en 2-3 coups, et le stuff moyen ne gagne toujours pas.
+
+Conclusion : la cible « gardien ~18 s, beaucoup de coups, pas de one-shot » est atteinte pour le build avancé au palier 100. Les gardiens 75 et 100 restent à calibrer pour le stuff moyen, et la potion doit rester un accélérateur, pas une garantie de victoire à bas stuff.
+
 ## 7. Plan de tuning conseillé
 
 ### Phase A — débloquer le palier 36 (priorité)
@@ -308,7 +373,7 @@ Le score actuel `ATQ×2 + PV/4 + VIT×20 + crit + regen×10` survalorise l’ATQ
 4. Farm du palier précédent.
 5. Pitié gardien (+25 %/défaite, cap +75 %).
 
-**Critère** : le build actuel (1 349 ATQ / 3 699 PV) doit gagner un monstre normal en 4-6 s et le gardien en 20-30 s avec 1 ration.
+**Critère** : le build actuel (1 349 ATQ / 3 699 PV) doit gagner un monstre normal en 4-6 s et le gardien en 15-22 s avec 1 ration, en portant au moins 30 coups.
 
 ### Phase B — rendre le niveau 100 atteignable
 
@@ -340,7 +405,7 @@ Le score actuel `ATQ×2 + PV/4 + VIT×20 + crit + regen×10` survalorise l’ATQ
 |---|---:|---:|---|
 | Monstre normal | 4-7 s | 5-8 | sans ration |
 | Élite | 8-12 s | 4-6 | 6 % de chance |
-| Gardien | 20-30 s | 8-12 | 1 ration, bouclier |
+| Gardien | 15-22 s | 8-12 | 1 ration, bouclier, ≥ 30 coups portés |
 
 ### 9.2 Cibles de progression
 
