@@ -6,9 +6,9 @@
 
 ## 1. Résumé exécutif
 
-- L’application est **intégralement en français dans le code** : une seule chaîne ressource
-  (`app_name`), **734 littéraux accentués**, environ **750 à 950 chaînes** visibles, plus le
-  contenu de jeu (objets, créatures, biomes, journal).
+- L’application est **principalement en français dans le code** : **656 littéraux accentués**
+  restants, environ **750 à 950 chaînes** visibles, plus le contenu de jeu (objets, créatures,
+  biomes, journal). Les écrans Réglages et Onboarding sont déjà extraits en ressources FR/EN.
 - Le Codex compte désormais **110 créatures et 35 gardiens**, avec de nouveaux libellés
   (`NON DÉCOUVERT`, `GARDIEN`, `GARDIENS DE JALON`, `Première rencontre`, tiers de spawn).
 - Le manuel représente **≈ 7 400 mots** et **36 captures** dont l’interface est en français.
@@ -64,13 +64,13 @@
 | Élément | Mesure |
 |---|---|
 | Fichiers de ressources | **1** (`res/values/strings.xml`) avec `app_name` seulement |
-| Littéraux contenant des accents | **734** dans 31 fichiers Kotlin |
-| Appels `Text(` | **401** |
+| Littéraux contenant des accents | **656** dans 31 fichiers Kotlin |
+| Appels `Text(` | **403** |
 | Littéraux texte | ~3 400, dont une part de clés, chemins, identifiants |
 | Chaînes réellement traduisibles | **750 à 950** (estimation) |
 | `engine/Model.kt` | 154 littéraux accentués : objets, créatures, biomes, effets, ensembles, renommages |
 | `engine/GameEngine.kt` | 94 : journal, événements, messages système |
-| `ui/Overlays.kt` / `Settings.kt` | 140 / 61 : UI |
+| `ui/Overlays.kt` / `Settings.kt` | 140 / 0 : UI (Réglages extrait en ressources) |
 | `ui/Codex.kt` / `Dashboard.kt` | 56 / 52 : Codex, cartes, fiches |
 | `GameViewModel.kt` | 40 : toasts, états |
 | Notifications / widget / pas | 7 + textes widget + statuts de synchronisation |
