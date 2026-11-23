@@ -63,6 +63,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -78,6 +79,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
+import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.ResumePhase
 import com.brunothesatellite.idlesteprpg.ResumeUi
 import com.brunothesatellite.idlesteprpg.UiState
@@ -1765,12 +1767,12 @@ fun JournalOverlay(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("JOURNAL DE LA MARCHE", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                    Text(stringResource(R.string.journal_title), fontFamily = Press, fontSize = 9.sp, color = GoldLight)
                     Text(
                         when (tab) {
-                            "legend" -> "${legend.size} entrée(s) de légende"
-                            "bestiary" -> "${bestiary.size} créature(s) connue(s)"
-                            else -> "${journal.size} événements conservés"
+                            "legend" -> stringResource(R.string.journal_legend_count, legend.size)
+                            "bestiary" -> stringResource(R.string.journal_bestiary_count, bestiary.size)
+                            else -> stringResource(R.string.journal_event_count, journal.size)
                         },
                         fontSize = 7.sp,
                         color = Muted
@@ -1783,9 +1785,9 @@ fun JournalOverlay(
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 listOf(
-                    "journal" to "Journal",
-                    "legend" to "Légende",
-                    "bestiary" to "Bestiaire"
+                    "journal" to stringResource(R.string.journal_tab_journal),
+                    "legend" to stringResource(R.string.journal_tab_legend),
+                    "bestiary" to stringResource(R.string.journal_tab_bestiary)
                 ).forEach { (key, label) ->
                     val active = tab == key
                     Box(
@@ -1809,10 +1811,10 @@ fun JournalOverlay(
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     listOf(
-                        "all" to "Tous",
-                        "good" to "Favorables",
-                        "bad" to "Alertes",
-                        "neutral" to "Neutres"
+                        "all" to stringResource(R.string.journal_filter_all),
+                        "good" to stringResource(R.string.journal_filter_good),
+                        "bad" to stringResource(R.string.journal_filter_bad),
+                        "neutral" to stringResource(R.string.journal_filter_neutral)
                     ).forEach { (key, label) ->
                         val active = filter == key
                         Box(
@@ -1841,13 +1843,13 @@ fun JournalOverlay(
                 when (tab) {
                     "legend" -> {
                         if (legend.isEmpty()) {
-                            EmptyJournal("Aucun jalon pour l'instant. Franchi un palier multiple de 10.")
+                            EmptyJournal(stringResource(R.string.journal_empty_legend))
                         }
                         legend.forEach { entry -> JournalRow(entry) }
                     }
                     "bestiary" -> {
                         if (bestiary.isEmpty()) {
-                            EmptyJournal("Aucune créature vaincue pour l'instant.")
+                            EmptyJournal(stringResource(R.string.journal_empty_bestiary))
                         }
                         bestiary.entries.sortedByDescending { it.value }.forEach { (id, kills) ->
                             val name = allMobTemplates().firstOrNull { it.id == id }?.name ?: id
@@ -1865,7 +1867,7 @@ fun JournalOverlay(
                     }
                     else -> {
                         if (filtered.isEmpty()) {
-                            EmptyJournal("Aucun événement dans ce filtre.")
+                            EmptyJournal(stringResource(R.string.journal_empty_filter))
                         }
                         filtered.forEach { entry -> JournalRow(entry) }
                     }
@@ -1911,9 +1913,9 @@ private fun JournalRow(entry: JournalEntry) {
             )
             Text(
                 when (entry.type) {
-                    "good" -> "FAVORABLE"
-                    "bad" -> "ALERTE"
-                    else -> "NOTE"
+                    "good" -> stringResource(R.string.journal_type_good)
+                    "bad" -> stringResource(R.string.journal_type_bad)
+                    else -> stringResource(R.string.journal_type_neutral)
                 },
                 fontSize = 5.5.sp,
                 color = color.copy(alpha = 0.8f),

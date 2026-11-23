@@ -37,7 +37,7 @@ class ManualActivity : ComponentActivity() {
             setBackgroundColor(Color.rgb(11, 8, 16))
         }
         val title = TextView(this).apply {
-            text = "MANUEL DU JEU"
+            text = getString(R.string.manual_title)
             setTextColor(Color.rgb(246, 221, 166))
             textSize = 16f
             setTypeface(typeface, android.graphics.Typeface.BOLD)

@@ -145,4 +145,22 @@
     <string name="settings_change">CHANGER</string>
     <string name="settings_last_check_never">Dernière vérification : jamais</string>
     <string name="settings_last_check">Dernière vérification : %1$s</string>
+    <string name="manual_title">MANUEL DU JEU</string>
+    <string name="journal_title">JOURNAL DE LA MARCHE</string>
+    <string name="journal_legend_count">%1$d entrée(s) de légende</string>
+    <string name="journal_bestiary_count">%1$d créature(s) connue(s)</string>
+    <string name="journal_event_count">%1$d événements conservés</string>
+    <string name="journal_tab_journal">Journal</string>
+    <string name="journal_tab_legend">Légende</string>
+    <string name="journal_tab_bestiary">Bestiaire</string>
+    <string name="journal_filter_all">Tous</string>
+    <string name="journal_filter_good">Favorables</string>
+    <string name="journal_filter_bad">Alertes</string>
+    <string name="journal_filter_neutral">Neutres</string>
+    <string name="journal_empty_legend">Aucun jalon pour l\'instant. Franchi un palier multiple de 10.</string>
+    <string name="journal_empty_bestiary">Aucune créature vaincue pour l\'instant.</string>
+    <string name="journal_empty_filter">Aucun événement dans ce filtre.</string>
+    <string name="journal_type_good">FAVORABLE</string>
+    <string name="journal_type_bad">ALERTE</string>
+    <string name="journal_type_neutral">NOTE</string>
 </resources>

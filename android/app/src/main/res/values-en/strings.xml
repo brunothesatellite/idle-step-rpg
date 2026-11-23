@@ -143,4 +143,22 @@
     <string name="settings_change">CHANGE</string>
     <string name="settings_last_check_never">Last check: never</string>
     <string name="settings_last_check">Last check: %1$s</string>
+    <string name="manual_title">GAME MANUAL</string>
+    <string name="journal_title">WALK JOURNAL</string>
+    <string name="journal_legend_count">%1$d legend entries</string>
+    <string name="journal_bestiary_count">%1$d known creatures</string>
+    <string name="journal_event_count">%1$d saved events</string>
+    <string name="journal_tab_journal">Journal</string>
+    <string name="journal_tab_legend">Legend</string>
+    <string name="journal_tab_bestiary">Bestiary</string>
+    <string name="journal_filter_all">All</string>
+    <string name="journal_filter_good">Favorable</string>
+    <string name="journal_filter_bad">Alerts</string>
+    <string name="journal_filter_neutral">Neutral</string>
+    <string name="journal_empty_legend">No milestone yet. Clear a floor that is a multiple of 10.</string>
+    <string name="journal_empty_bestiary">No creature defeated yet.</string>
+    <string name="journal_empty_filter">No events in this filter.</string>
+    <string name="journal_type_good">FAVORABLE</string>
+    <string name="journal_type_bad">ALERT</string>
+    <string name="journal_type_neutral">NOTE</string>
 </resources>
