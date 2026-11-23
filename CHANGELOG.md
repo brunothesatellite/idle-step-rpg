@@ -1,5 +1,15 @@
 # Journal des versions
 
+## v0.20.0
+- **Équilibrage Phase A** : courbe cible des monstres et gardiens (combat ~18 s, ≥ 30 coups portés), interpolation entre l’ancienne courbe (≤ palier 20) et la cible (≥ palier 35).
+- **Gardiens** : bouclier 40 % / 3 s, **enrage** après 15 s (+25 % ATQ toutes les 5 s, cap +75 %), bénédiction de défaite cumulative (+25 % par échec, cap +75 %).
+- **Élites** : 6 % de chance, 1,8× PV, 1,15× ATQ.
+- **Éclats** : plafond **24**, gardien +3, jalon +8, coffre +2, démontage 2/3/6/10, reforge **1** éclat, élite 20 % +1.
+- **Rations** : gardien +2, coffre +2, monstre 10 % +1, auto-ration à 30 %, veillée gratuite 25 %.
+- **Score d’objet** : PV pondérés ×0,6 pour que « Équiper le meilleur » ne privilégie plus un build glass cannon.
+- **Tests** : **117 / 117**, lint OK.
+- **Build** : `versionCode 47`, `versionName 0.20.0`.
+
 ## v0.19.1
 - **Atelier** : vendre, démonter et reforger demandent désormais une **confirmation** (FR/EN). « Reforger encore » reste direct dans le panneau de résultat ; « Vendre les communs » est inchangé.
 - **Tests** : **117 / 117**, lint OK.
