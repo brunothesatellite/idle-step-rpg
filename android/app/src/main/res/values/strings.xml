@@ -163,4 +163,32 @@
     <string name="journal_type_good">FAVORABLE</string>
     <string name="journal_type_bad">ALERTE</string>
     <string name="journal_type_neutral">NOTE</string>
+    <string name="dashboard_settings_desc">Réglages</string>
+    <string name="dashboard_source_desc">Configurer la source de pas</string>
+    <string name="dashboard_tab_stats">Stats</string>
+    <string name="dashboard_tab_inventory">Inventaire</string>
+    <string name="dashboard_tab_upgrades">Améliorations</string>
+    <string name="dashboard_power">PUISSANCE</string>
+    <string name="dashboard_level_short">▲ Niv. %1$s</string>
+    <string name="dashboard_rank">RANG</string>
+    <string name="dashboard_atk">ATQ</string>
+    <string name="dashboard_hp">PV</string>
+    <string name="dashboard_vit">VIT</string>
+    <string name="dashboard_biome">BIOME · %1$s</string>
+    <string name="dashboard_floor">PALIER
+%1$s</string>
+    <string name="dashboard_farm_active">FARM ACTIF · PALIER VERROUILLÉ</string>
+    <string name="dashboard_farm_inactive">FARM INACTIF</string>
+    <string name="dashboard_farm_active_desc">Le gardien revient sans faire avancer le palier. Les jalons sont désactivés.</string>
+    <string name="dashboard_farm_inactive_desc">Verrouille ce palier pour farmer sans passer au biome suivant.</string>
+    <string name="dashboard_deactivate">DÉSACTIVER</string>
+    <string name="dashboard_activate">ACTIVER</string>
+    <string name="dashboard_codex">CODEX</string>
+    <string name="dashboard_open_codex">OUVRIR LE CODEX</string>
+    <string name="dashboard_rations">RATIONS</string>
+    <string name="dashboard_shards">ÉCLATS</string>
+    <string name="dashboard_gold">OR</string>
+    <string name="dashboard_consumables">CONSOMMABLES</string>
+    <string name="dashboard_codex_mobs">Bestiaire %1$d / %2$d · Gardiens %3$d / %4$d</string>
+    <string name="dashboard_codex_sets">Ensembles %1$d / %2$d · Biomes %3$d / %4$d</string>
 </resources>

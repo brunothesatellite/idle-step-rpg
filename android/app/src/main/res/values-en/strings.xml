@@ -161,4 +161,32 @@
     <string name="journal_type_good">FAVORABLE</string>
     <string name="journal_type_bad">ALERT</string>
     <string name="journal_type_neutral">NOTE</string>
+    <string name="dashboard_settings_desc">Settings</string>
+    <string name="dashboard_source_desc">Configure step source</string>
+    <string name="dashboard_tab_stats">Stats</string>
+    <string name="dashboard_tab_inventory">Inventory</string>
+    <string name="dashboard_tab_upgrades">Upgrades</string>
+    <string name="dashboard_power">POWER</string>
+    <string name="dashboard_level_short">▲ Lv. %1$s</string>
+    <string name="dashboard_rank">RANK</string>
+    <string name="dashboard_atk">ATK</string>
+    <string name="dashboard_hp">HP</string>
+    <string name="dashboard_vit">SPD</string>
+    <string name="dashboard_biome">BIOME · %1$s</string>
+    <string name="dashboard_floor">FLOOR
+%1$s</string>
+    <string name="dashboard_farm_active">FARM ACTIVE · FLOOR LOCKED</string>
+    <string name="dashboard_farm_inactive">FARM INACTIVE</string>
+    <string name="dashboard_farm_active_desc">The guardian returns without advancing the floor. Milestones are disabled.</string>
+    <string name="dashboard_farm_inactive_desc">Locks this floor for farming without moving to the next biome.</string>
+    <string name="dashboard_deactivate">DISABLE</string>
+    <string name="dashboard_activate">ENABLE</string>
+    <string name="dashboard_codex">CODEX</string>
+    <string name="dashboard_open_codex">OPEN CODEX</string>
+    <string name="dashboard_rations">RATIONS</string>
+    <string name="dashboard_shards">SHARDS</string>
+    <string name="dashboard_gold">GOLD</string>
+    <string name="dashboard_consumables">CONSUMABLES</string>
+    <string name="dashboard_codex_mobs">Bestiary %1$d / %2$d · Guardians %3$d / %4$d</string>
+    <string name="dashboard_codex_sets">Sets %1$d / %2$d · Biomes %3$d / %4$d</string>
 </resources>

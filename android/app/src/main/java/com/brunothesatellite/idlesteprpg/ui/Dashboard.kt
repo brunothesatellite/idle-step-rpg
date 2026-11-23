@@ -40,11 +40,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.brunothesatellite.idlesteprpg.GameViewModel
 import com.brunothesatellite.idlesteprpg.UiState
+import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
@@ -145,6 +147,8 @@ private fun DashboardHeader(
     onOpenPreferences: () -> Unit
 ) {
     val stats = statsOf(state)
+    val sourceDescription = stringResource(R.string.dashboard_source_desc)
+    val settingsDescription = stringResource(R.string.dashboard_settings_desc)
     Row(
         Modifier
             .fillMaxWidth()
@@ -225,7 +229,7 @@ private fun DashboardHeader(
                             .background(Panel2)
                             .border(1.dp, Ember.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
                             .clickable(onClick = onOpenSettings)
-                            .semantics { contentDescription = "Configurer la source de pas" },
+                            .semantics { contentDescription = sourceDescription },
                         contentAlignment = Alignment.Center
                     ) {
                         Text("!", fontFamily = Press, fontSize = 8.sp, color = Ember)
@@ -238,7 +242,7 @@ private fun DashboardHeader(
                         .background(Panel2)
                         .border(1.dp, Line2, RoundedCornerShape(4.dp))
                         .clickable(onClick = onOpenPreferences)
-                        .semantics { contentDescription = "Réglages" },
+                        .semantics { contentDescription = settingsDescription },
                     contentAlignment = Alignment.Center
                 ) {
                     Text("⚙", fontSize = 11.sp, color = Gold)
@@ -265,7 +269,11 @@ private fun Tabs(active: String, onTab: (String) -> Unit) {
                 fontScale = minOf(density.fontScale, 1.35f)
             )
         ) {
-            listOf("stats" to "Stats", "inventory" to "Inventaire", "upgrades" to "Améliorations").forEach { (key, label) ->
+            listOf(
+                "stats" to stringResource(R.string.dashboard_tab_stats),
+                "inventory" to stringResource(R.string.dashboard_tab_inventory),
+                "upgrades" to stringResource(R.string.dashboard_tab_upgrades)
+            ).forEach { (key, label) ->
                 Column(
                     Modifier
                         .weight(1f)
@@ -310,7 +318,7 @@ private fun StatsTab(
     PixelCard(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                SectionLabel("PUISSANCE")
+                SectionLabel(stringResource(R.string.dashboard_power))
                 Text(
                     formatCompact(power),
                     fontSize = 22.sp,
@@ -321,7 +329,7 @@ private fun StatsTab(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    "▲ Niv. ${formatCompact(state.level)}",
+                    stringResource(R.string.dashboard_level_short, formatCompact(state.level)),
                     fontSize = 7.sp,
                     color = Green,
                     maxLines = 1,
@@ -339,18 +347,33 @@ private fun StatsTab(
                 Modifier.padding(start = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("RANG", fontSize = 5.sp, letterSpacing = 1.sp, color = Muted)
+                Text(
+                    stringResource(R.string.dashboard_rank),
+                    fontSize = 5.sp,
+                    letterSpacing = 1.sp,
+                    color = Muted
+                )
                 Text(rankLabel(state.floor), fontFamily = Press, fontSize = 14.sp, color = Gold)
             }
         }
     }
     Spacer(Modifier.height(5.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-        StatTile("item/long_sword3.png", "ATQ", formatCompact(stats.atk), Modifier.weight(1f))
-        StatTile("fx/heart.png", "PV", formatCompact(stats.maxHp), Modifier.weight(1f))
+        StatTile(
+            "item/long_sword3.png",
+            stringResource(R.string.dashboard_atk),
+            formatCompact(stats.atk),
+            Modifier.weight(1f)
+        )
+        StatTile(
+            "fx/heart.png",
+            stringResource(R.string.dashboard_hp),
+            formatCompact(stats.maxHp),
+            Modifier.weight(1f)
+        )
         StatTile(
             "item/boots4_green.png",
-            "VIT",
+            stringResource(R.string.dashboard_vit),
             "%.2f".format(stats.vit * (1.0 + 0.004 * state.ferveur)).replace('.', ','),
             Modifier.weight(1f)
         )
@@ -415,13 +438,16 @@ private fun BiomeCard(state: GameState, onToggleFarm: (Boolean) -> Unit) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                SectionLabel("BIOME · ${biomeFor(state.floor)}")
+                SectionLabel(stringResource(R.string.dashboard_biome, biomeFor(state.floor)))
                 Text(rule.label, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Green)
                 Text(rule.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
             }
             Spacer(Modifier.width(8.dp))
             Text(
-                "PALIER\n${state.floor.toString().padStart(2, '0')}",
+                stringResource(
+                    R.string.dashboard_floor,
+                    state.floor.toString().padStart(2, '0')
+                ),
                 fontSize = 6.sp,
                 color = Muted2,
                 textAlign = TextAlign.End
@@ -431,17 +457,19 @@ private fun BiomeCard(state: GameState, onToggleFarm: (Boolean) -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    if (state.holdFloor) "FARM ACTIF · PALIER VERROUILLÉ" else "FARM INACTIF",
+                    stringResource(
+                        if (state.holdFloor) R.string.dashboard_farm_active
+                        else R.string.dashboard_farm_inactive
+                    ),
                     fontSize = 6.5.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (state.holdFloor) Ember else Muted
                 )
                 Text(
-                    if (state.holdFloor) {
-                        "Le gardien revient sans faire avancer le palier. Les jalons sont désactivés."
-                    } else {
-                        "Verrouille ce palier pour farmer sans passer au biome suivant."
-                    },
+                    stringResource(
+                        if (state.holdFloor) R.string.dashboard_farm_active_desc
+                        else R.string.dashboard_farm_inactive_desc
+                    ),
                     fontSize = 5.9.sp,
                     color = Muted,
                     lineHeight = 8.sp
@@ -449,7 +477,10 @@ private fun BiomeCard(state: GameState, onToggleFarm: (Boolean) -> Unit) {
             }
             Spacer(Modifier.width(8.dp))
             SmallAction(
-                if (state.holdFloor) "DÉSACTIVER" else "ACTIVER",
+                stringResource(
+                    if (state.holdFloor) R.string.dashboard_deactivate
+                    else R.string.dashboard_activate
+                ),
                 Modifier.width(104.dp),
                 onClick = { onToggleFarm(!state.holdFloor) },
                 primary = !state.holdFloor
@@ -473,22 +504,39 @@ private fun CodexCard(state: GameState, onOpen: () -> Unit) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                SectionLabel("CODEX")
+                SectionLabel(stringResource(R.string.dashboard_codex))
                 Text(
-                    "Bestiaire $discoveredMobs / ${mobs.size} · Gardiens $discoveredBosses / ${bosses.size}",
+                    stringResource(
+                        R.string.dashboard_codex_mobs,
+                        discoveredMobs,
+                        mobs.size,
+                        discoveredBosses,
+                        bosses.size
+                    ),
                     fontSize = 6.8.sp,
                     fontWeight = FontWeight.Bold,
                     color = GoldLight
                 )
                 Text(
-                    "Ensembles $sets / ${ITEM_SETS.size} · Biomes $biomes / ${BIOMES.size}",
+                    stringResource(
+                        R.string.dashboard_codex_sets,
+                        sets,
+                        ITEM_SETS.size,
+                        biomes,
+                        BIOMES.size
+                    ),
                     fontSize = 6.2.sp,
                     color = Muted
                 )
             }
         }
         Spacer(Modifier.height(5.dp))
-        OverlayAction("OUVRIR LE CODEX", Modifier.fillMaxWidth(), onOpen, primary = true)
+        OverlayAction(
+            stringResource(R.string.dashboard_open_codex),
+            Modifier.fillMaxWidth(),
+            onOpen,
+            primary = true
+        )
     }
 }
 
@@ -497,22 +545,27 @@ private fun ResourcesCard(state: GameState) {
     PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ResourceStat(
-                "item/meat_ration.png", "RATIONS", "${state.rations} / 24",
+                "item/meat_ration.png",
+                stringResource(R.string.dashboard_rations),
+                "${state.rations} / 24",
                 Modifier.weight(1f)
             )
             ResourceStat(
-                "item/misc_crystal.png", "ÉCLATS", "${state.shards} / 12",
+                "item/misc_crystal.png",
+                stringResource(R.string.dashboard_shards),
+                "${state.shards} / 12",
                 Modifier.weight(1f)
             )
         }
         Spacer(Modifier.height(4.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ResourceStat(
-                "item/01.png", "OR", formatCompact(state.gold),
+                "item/01.png", stringResource(R.string.dashboard_gold), formatCompact(state.gold),
                 Modifier.weight(1f)
             )
             ResourceStat(
-                "item/cons_potion_red.png", "CONSOMMABLES",
+                "item/cons_potion_red.png",
+                stringResource(R.string.dashboard_consumables),
                 state.consumables.values.sum().toString(),
                 Modifier.weight(1f)
             )

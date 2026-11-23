@@ -6,10 +6,10 @@
 
 ## 1. Résumé exécutif
 
-- L’application est **principalement en français dans le code** : **650 littéraux accentués**
+- L’application est **principalement en français dans le code** : **640 littéraux accentués**
   restants, environ **750 à 950 chaînes** visibles, plus le contenu de jeu (objets, créatures,
-  biomes, journal). Les écrans Réglages, Onboarding et le Journal sont déjà extraits en
-  ressources FR/EN.
+  biomes, journal). Les écrans Réglages, Onboarding, Journal et le haut du Dashboard sont déjà
+  extraits en ressources FR/EN.
 - Le Codex compte désormais **110 créatures et 35 gardiens**, avec de nouveaux libellés
   (`NON DÉCOUVERT`, `GARDIEN`, `GARDIENS DE JALON`, `Première rencontre`, tiers de spawn).
 - Le manuel représente **≈ 7 400 mots** et **36 captures** dont l’interface est en français.
@@ -34,6 +34,8 @@
   Sauvegarde, Source de pas, Diagnostic, Réglages avancés, À propos, dialogues).
 - Onboarding entièrement extrait et traduit (4 pages + boutons + étape).
 - **Journal extrait** : titre, compteurs, onglets, filtres, messages vides et types d’entrée.
+- **Dashboard, première partie** : en-tête, onglets, Puissance/Rang, ATQ/PV/VIT, ressources,
+  carte Biome/Farm et carte Codex.
 - **ManualActivity** : titre extrait.
 - Migration **v7** : `bestiary`, `bossKills`, `firstSeen` et `bossFirstSeen` utilisent des
   identifiants stables (`bat_neiges`, `cerebov`). Les anciennes clés inconnues sont conservées.
@@ -42,7 +44,8 @@
 **Reste**
 - Réglages : chaînes dynamiques restantes (statuts de source, journal de synchronisation,
   libellés de `StepSourceType`).
-- Dashboard, Codex, autres overlays (absence, camp, forge…), Scène.
+- Dashboard : Ferveur, Serments, Exploits, Journal, Inventaire, Améliorations, bouton de synchro.
+- Codex, autres overlays (absence, camp, forge…), Scène.
 - Chaînes dynamiques (dates, pluriels, volumes, statuts de synchronisation).
 - Manuel EN et captures anglaises.
 - Traduction des noms de créatures (possible maintenant que la v7 est faite).
@@ -67,14 +70,14 @@
 | Élément | Mesure |
 |---|---|
 | Fichiers de ressources | **1** (`res/values/strings.xml`) avec `app_name` seulement |
-| Littéraux contenant des accents | **650** dans 31 fichiers Kotlin |
+| Littéraux contenant des accents | **640** dans 31 fichiers Kotlin |
 | Appels `Text(` | **403** |
 | Littéraux texte | ~3 400, dont une part de clés, chemins, identifiants |
 | Chaînes réellement traduisibles | **750 à 950** (estimation) |
 | `engine/Model.kt` | 154 littéraux accentués : objets, créatures, biomes, effets, ensembles, renommages |
 | `engine/GameEngine.kt` | 94 : journal, événements, messages système |
 | `ui/Overlays.kt` / `Settings.kt` | 134 / 0 : UI (Réglages et Journal extraits) |
-| `ui/Codex.kt` / `Dashboard.kt` | 56 / 52 : Codex, cartes, fiches |
+| `ui/Codex.kt` / `Dashboard.kt` | 56 / 42 : Codex, cartes, fiches (haut du Dashboard extrait) |
 | `GameViewModel.kt` | 40 : toasts, états |
 | Notifications / widget / pas | 7 + textes widget + statuts de synchronisation |
 | Manuel | **≈ 7 400 mots**, **36 images**, 77 Ko HTML, généré depuis un template |
