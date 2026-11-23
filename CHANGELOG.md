@@ -1,5 +1,17 @@
 # Journal des versions
 
+## v0.19.0
+- **Internationalisation FR/EN** : interface, journal, Codex, notifications, widget, dialogues de mise à jour et contenus dynamiques. En anglais, « Santé Connect » devient « Health Connect ».
+- **Formats localisés** : séparateur de milliers (`7 464` / `7,464`), nombres compacts, dates (`jj/mm/aaaa` / `mm/dd/yyyy`), heures (24 h / 12 h), journal de synchronisation.
+- **Manuel bilingue** : 36 captures anglaises, sélecteur FR/EN, génération Gradle des deux versions ; README unique FR puis EN.
+- **Kit Play Store EN** : 5 captures, descriptions, mots-clés, notes de version et feature graphic.
+- **Promo EN** : pitch et captures anglaises.
+- **Widget** : héros avec l'équipement actuel, réserve de pas en gros chiffre, pas du jour, invite à synchroniser quand la réserve est vide. Il suit la langue de l'app et se rafraîchit en arrière-plan.
+- **Correctifs** : ouverture des Réglages en anglais (format `%1$s`), textes du widget résolus par le lanceur, captures EN contaminées.
+- **Sauvegarde** : v7 inchangée, aucune migration ajoutée.
+- **Tests** : **117 / 117**, lint OK.
+- **Build** : `versionCode 45`, `versionName 0.19.0`.
+
 ## v0.18.1
 - **Correctif Codex** : les gardiens des biomes non découverts ne sont plus affichés comme découverts. La migration v6 effaçait les compteurs des monstres mais pas ceux des gardiens ; `bossKills`, `bossFirstSeen` et les entrées de bestiaire des gardiens sont maintenant nettoyés pour les biomes verrouillés.
 - Les gardiens de jalon restent visibles uniquement à partir de leur palier fixe (Mère des Abysses au 25, L'Âme Première au 100).
