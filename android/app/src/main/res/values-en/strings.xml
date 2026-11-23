@@ -703,6 +703,13 @@
     <string name="overlay_lock">LOCK</string>
     <string name="overlay_fuse">FUSE</string>
     <string name="overlay_salvage">SALVAGE</string>
+    <string name="overlay_confirm_sell_title">Sell this item?</string>
+    <string name="overlay_confirm_sell_text">Sell %1$s for %2$s gold? The item will be permanently lost.</string>
+    <string name="overlay_confirm_sell">SELL</string>
+    <string name="overlay_confirm_salvage_title">Salvage this item?</string>
+    <string name="overlay_confirm_salvage_text">Salvage %1$s? You will gain %2$d shard(s). The item will be permanently lost.</string>
+    <string name="overlay_confirm_reforge_title">Reforge this item?</string>
+    <string name="overlay_confirm_reforge_text">Reforge %1$s? Cost: 2 shards. Level, stats and set do not change; only the effect can change.</string>
     <string name="overlay_equipped">EQUIPPED</string>
     <string name="overlay_equip">EQUIP</string>
     <string name="overlay_forge_locked">The forge unlocks after your first guardian is defeated.</string>

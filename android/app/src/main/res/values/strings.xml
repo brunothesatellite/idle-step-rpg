@@ -705,6 +705,13 @@
     <string name="overlay_lock">VERROUILLER</string>
     <string name="overlay_fuse">FUSIONNER</string>
     <string name="overlay_salvage">DÉMONTER</string>
+    <string name="overlay_confirm_sell_title">Vendre cet objet ?</string>
+    <string name="overlay_confirm_sell_text">Vendre %1$s pour %2$s or ? L’objet sera définitivement perdu.</string>
+    <string name="overlay_confirm_sell">VENDRE</string>
+    <string name="overlay_confirm_salvage_title">Démonter cet objet ?</string>
+    <string name="overlay_confirm_salvage_text">Démonter %1$s ? Vous gagnerez %2$d éclat(s). L’objet sera définitivement perdu.</string>
+    <string name="overlay_confirm_reforge_title">Reforger cet objet ?</string>
+    <string name="overlay_confirm_reforge_text">Reforger %1$s ? Coût : 2 éclats. Le niveau, les statistiques et l’ensemble ne changent pas ; seul l’effet peut changer.</string>
     <string name="overlay_equipped">ÉQUIPÉ</string>
     <string name="overlay_equip">ÉQUIPER</string>
     <string name="overlay_forge_locked">La forge se débloque après le premier gardien vaincu.</string>

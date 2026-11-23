@@ -118,6 +118,8 @@ import java.time.temporal.ChronoUnit
 
 private enum class ForgeMode { UPGRADE, REFORGE }
 
+private enum class ItemConfirm { SELL, SALVAGE, REFORGE }
+
 private data class UpgradeSnapshot(
     val fromLevel: Int,
     val fromAtk: Int,
@@ -166,6 +168,15 @@ fun ItemDialog(
     var forgeMode by remember(item.id) { mutableStateOf<ForgeMode?>(null) }
     var lastUpgrade by remember(item.id) { mutableStateOf<UpgradeSnapshot?>(null) }
     var lastReforgeOld by remember(item.id) { mutableStateOf<String?>(null) }
+    var confirmAction by remember(item.id) { mutableStateOf<ItemConfirm?>(null) }
+    val salvageBase = when (item.rarity) {
+        "uncommon" -> 2
+        "rare" -> 3
+        "epic" -> 5
+        "legendary" -> 8
+        else -> 1
+    }
+    val salvageGain = (state.shards + salvageBase).coerceAtMost(12) - state.shards
     AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(
@@ -254,8 +265,12 @@ fun ItemDialog(
                             onUpgrade()
                         },
                         onConfirmReforge = {
-                            lastReforgeOld = currentEffectLabel
-                            onReroll()
+                            if (lastReforgeOld == null) {
+                                confirmAction = ItemConfirm.REFORGE
+                            } else {
+                                lastReforgeOld = currentEffectLabel
+                                onReroll()
+                            }
                         },
                         onClose = onDismiss
                     )
@@ -273,7 +288,7 @@ fun ItemDialog(
                     OverlayAction(
                         if (item.locked) stringResource(R.string.overlay_locked) else stringResource(R.string.overlay_sell, formatCompact(item.value)),
                         Modifier.fillMaxWidth(),
-                        onSell,
+                        { confirmAction = ItemConfirm.SELL },
                         enabled = !item.locked
                     )
                 } else {
@@ -401,7 +416,7 @@ fun ItemDialog(
                             OverlayAction(
                                 stringResource(R.string.overlay_salvage),
                                 Modifier.weight(0.9f),
-                                onDismantle,
+                                { confirmAction = ItemConfirm.SALVAGE },
                                 danger = true,
                                 enabled = !item.locked && !equippedHere
                             )
@@ -426,7 +441,7 @@ fun ItemDialog(
                             if (item.locked) stringResource(R.string.overlay_locked)
                             else stringResource(R.string.overlay_sell, formatCompact(item.value)),
                             Modifier.weight(0.85f),
-                            onSell,
+                            { confirmAction = ItemConfirm.SELL },
                             enabled = !item.locked && !equippedHere
                         )
                         OverlayAction(
@@ -441,6 +456,85 @@ fun ItemDialog(
                 }
             }
         }
+    }
+
+    val pending = confirmAction
+    if (pending != null) {
+        val itemName = localizedItem(item)
+        AlertDialog(
+            onDismissRequest = { confirmAction = null },
+            title = {
+                WithAppFontScale {
+                    Text(
+                        stringResource(
+                            when (pending) {
+                                ItemConfirm.SELL -> R.string.overlay_confirm_sell_title
+                                ItemConfirm.SALVAGE -> R.string.overlay_confirm_salvage_title
+                                ItemConfirm.REFORGE -> R.string.overlay_confirm_reforge_title
+                            }
+                        ),
+                        fontSize = 15.sp
+                    )
+                }
+            },
+            text = {
+                WithAppFontScale {
+                    Text(
+                        when (pending) {
+                            ItemConfirm.SELL -> stringResource(
+                                R.string.overlay_confirm_sell_text,
+                                itemName,
+                                formatCompact(item.value)
+                            )
+                            ItemConfirm.SALVAGE -> stringResource(
+                                R.string.overlay_confirm_salvage_text,
+                                itemName,
+                                salvageGain
+                            )
+                            ItemConfirm.REFORGE -> stringResource(
+                                R.string.overlay_confirm_reforge_text,
+                                itemName
+                            )
+                        },
+                        fontSize = 9.sp
+                    )
+                }
+            },
+            confirmButton = {
+                WithAppFontScale {
+                    TextButton(onClick = {
+                        confirmAction = null
+                        when (pending) {
+                            ItemConfirm.SELL -> onSell()
+                            ItemConfirm.SALVAGE -> onDismantle()
+                            ItemConfirm.REFORGE -> {
+                                lastReforgeOld = currentEffectLabel
+                                onReroll()
+                            }
+                        }
+                    }) {
+                        Text(
+                            stringResource(
+                                when (pending) {
+                                    ItemConfirm.SELL -> R.string.overlay_confirm_sell
+                                    ItemConfirm.SALVAGE -> R.string.overlay_salvage
+                                    ItemConfirm.REFORGE -> R.string.overlay_reforge
+                                }
+                            ),
+                            color = if (pending == ItemConfirm.REFORGE) Gold else Blood
+                        )
+                    }
+                }
+            },
+            dismissButton = {
+                WithAppFontScale {
+                    TextButton(onClick = { confirmAction = null }) {
+                        Text(stringResource(R.string.overlay_cancel), color = Muted)
+                    }
+                }
+            },
+            containerColor = Panel2
+        )
     }
 }
 
