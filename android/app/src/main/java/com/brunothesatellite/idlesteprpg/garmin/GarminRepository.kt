@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg.garmin
 import android.content.Context
 import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.data.GameRepository
+import com.brunothesatellite.idlesteprpg.ui.AppLocale
 import com.brunothesatellite.idlesteprpg.engine.HISTORY_DAYS
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import kotlinx.coroutines.Dispatchers
@@ -68,7 +69,8 @@ class GarminRepository(
         .take(20)
 
     private fun logSync(text: String) {
-        val stamp = SimpleDateFormat("dd/MM HH:mm", Locale.FRANCE).format(Date())
+        val pattern = if (AppLocale.current.language == "fr") "dd/MM HH:mm" else "MM/dd h:mm a"
+        val stamp = SimpleDateFormat(pattern, AppLocale.current).format(Date())
         val updated = (listOf("$stamp · $text") + syncLog()).take(20)
         prefs.edit().putString(KEY_SYNC_LOG, updated.joinToString("\n")).apply()
     }
@@ -192,7 +194,10 @@ class GarminRepository(
                 false,
                 appContext.getString(
                     R.string.msg_garmin_rate,
-                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(retryAt))
+                    SimpleDateFormat(
+                        if (AppLocale.current.language == "fr") "HH:mm" else "h:mm a",
+                        AppLocale.current
+                    ).format(Date(retryAt))
                 ),
                 retryAt = retryAt
             )
@@ -254,7 +259,10 @@ class GarminRepository(
             val message = if (e.code == 429) {
                 appContext.getString(
                     R.string.msg_garmin_rate,
-                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(retry))
+                    SimpleDateFormat(
+                        if (AppLocale.current.language == "fr") "HH:mm" else "h:mm a",
+                        AppLocale.current
+                    ).format(Date(retry))
                 )
             } else {
                 e.message

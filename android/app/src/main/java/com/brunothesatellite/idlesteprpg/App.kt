@@ -19,6 +19,9 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        com.brunothesatellite.idlesteprpg.ui.AppLocale.updateFrom(
+            resources.configuration.locales[0]
+        )
         container = AppContainer(this)
         GameNotifications.ensureChannels(this)
         SoundFx.init(this)

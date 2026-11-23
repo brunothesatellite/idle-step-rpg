@@ -320,7 +320,10 @@ private fun buildDayInfos(
     stepsToday: Int
 ): List<DayInfo> {
     val locale = res.configuration.locales[0]
-    val dayFormat = DateTimeFormatter.ofPattern("EEE dd/MM", locale)
+    val dayFormat = DateTimeFormatter.ofPattern(
+        if (locale.language == "fr") "EEE dd/MM" else "EEE MM/dd",
+        locale
+    )
     val rows = ArrayList<DayInfo>(HISTORY_DAYS)
     for (offset in (HISTORY_DAYS - 1) downTo 0) {
         val date = today.minusDays(offset.toLong())

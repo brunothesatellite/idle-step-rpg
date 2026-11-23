@@ -18,11 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.update.UpdateInfo
 import kotlin.math.roundToInt
 
@@ -50,14 +52,13 @@ fun UpdateDialog(
                     .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
                     .padding(18.dp)
             ) {
-                Text("MISE À JOUR DISPONIBLE", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                Text(stringResource(R.string.update_available_title), fontFamily = Press, fontSize = 9.sp, color = GoldLight)
                 Spacer(Modifier.height(8.dp))
-                RowLine("Nouvelle version", info.tag)
-                RowLine("Version installée", "v$currentVersion")
+                RowLine(stringResource(R.string.update_new_version), info.tag)
+                RowLine(stringResource(R.string.update_installed_version), "v$currentVersion")
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "L'APK signé sera téléchargé depuis GitHub, puis Android vous demandera " +
-                        "de confirmer l'installation. Vos données et la clé Garmin sont conservées.",
+                    stringResource(R.string.update_apk_note),
                     fontSize = 7.sp,
                     color = Muted,
                     lineHeight = 10.sp
@@ -72,7 +73,10 @@ fun UpdateDialog(
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Téléchargement ${(progress.coerceIn(0f, 1f) * 100).roundToInt()} %",
+                        stringResource(
+                            R.string.update_download_percent,
+                            (progress.coerceIn(0f, 1f) * 100).roundToInt()
+                        ),
                         fontSize = 7.sp,
                         color = GoldLight
                     )
@@ -83,25 +87,25 @@ fun UpdateDialog(
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Si Android ou Play Protect bloque l'installation, vous pouvez installer " +
-                        "l'APK depuis la page GitHub de la release.",
+                    stringResource(R.string.update_play_protect_note),
                     fontSize = 6.5.sp,
                     color = Muted2,
                     lineHeight = 9.sp
                 )
                 Spacer(Modifier.height(12.dp))
                 OverlayAction(
-                    if (downloading) "TÉLÉCHARGEMENT…" else "INSTALLER LA MISE À JOUR",
+                    if (downloading) stringResource(R.string.update_installing_button)
+                    else stringResource(R.string.update_install_button),
                     Modifier.fillMaxWidth(),
                     onInstall,
                     primary = true,
                     enabled = !downloading
                 )
                 Spacer(Modifier.height(5.dp))
-                OverlayAction("VOIR LA RELEASE SUR GITHUB", Modifier.fillMaxWidth(), onRelease)
+                OverlayAction(stringResource(R.string.update_view_release), Modifier.fillMaxWidth(), onRelease)
                 Spacer(Modifier.height(5.dp))
                 OverlayAction(
-                    "PLUS TARD",
+                    stringResource(R.string.update_later),
                     Modifier.fillMaxWidth(),
                     onLater,
                     enabled = !downloading
@@ -130,24 +134,23 @@ fun PostUpdateDialog(
                     .border(1.dp, Green.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
                     .padding(18.dp)
             ) {
-                Text("MISE À JOUR INSTALLÉE", fontFamily = Press, fontSize = 9.sp, color = Green)
+                Text(stringResource(R.string.update_installed_title), fontFamily = Press, fontSize = 9.sp, color = Green)
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "La Marche des Âmes est maintenant en $tag. Vos données et la clé Garmin " +
-                        "ont été conservées.",
+                    stringResource(R.string.update_installed_body, tag),
                     fontSize = 7.5.sp,
                     color = Parchment,
                     lineHeight = 11.sp
                 )
                 Spacer(Modifier.height(12.dp))
                 OverlayAction(
-                    "VOIR LES CHANGEMENTS",
+                    stringResource(R.string.update_view_changes),
                     Modifier.fillMaxWidth(),
                     onOpenRelease,
                     primary = true
                 )
                 Spacer(Modifier.height(5.dp))
-                OverlayAction("PLUS TARD", Modifier.fillMaxWidth(), onDismiss)
+                OverlayAction(stringResource(R.string.update_later), Modifier.fillMaxWidth(), onDismiss)
             }
         }
     }

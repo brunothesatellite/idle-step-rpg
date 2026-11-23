@@ -7,6 +7,7 @@ import com.brunothesatellite.idlesteprpg.data.SettingsStore
 import com.brunothesatellite.idlesteprpg.garmin.GarminFetch
 import com.brunothesatellite.idlesteprpg.garmin.GarminRepository
 import com.brunothesatellite.idlesteprpg.garmin.SyncResult
+import com.brunothesatellite.idlesteprpg.ui.AppLocale
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -193,7 +194,8 @@ class StepRepository(
 
     private fun record(source: String, added: Int, error: String) {
         val now = System.currentTimeMillis()
-        val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM HH:mm"))
+        val pattern = if (AppLocale.current.language == "fr") "dd/MM HH:mm" else "MM/dd h:mm a"
+        val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern(pattern, AppLocale.current))
 
         val line = if (error.isBlank()) {
             context.getString(R.string.sync_log_ok, stamp, added)

@@ -614,9 +614,10 @@ fun localizedBiomeName(raw: String): String =
 
 @Composable
 fun localizedBiomeText(raw: String): String {
+    val res = LocalContext.current.resources
     var out = raw
     for ((fr, key) in FRENCH_BIOMES) {
-        out = out.replace(fr, LocalContext.current.resources.getString(key))
+        out = out.replace(fr, res.getString(key))
     }
     return out
 }

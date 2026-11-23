@@ -68,8 +68,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        com.brunothesatellite.idlesteprpg.ui.AppLocale.current =
+        com.brunothesatellite.idlesteprpg.ui.AppLocale.updateFrom(
             resources.configuration.locales[0]
+        )
+        com.brunothesatellite.idlesteprpg.notify.GameNotifications.ensureChannels(this)
+        com.brunothesatellite.idlesteprpg.widget.MarcheWidgetProvider.updateAll(this)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)

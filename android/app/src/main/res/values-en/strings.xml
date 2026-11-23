@@ -5,7 +5,7 @@
     <string name="settings_subtitle">Comfort, data and account</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_page1_title">LA MARCHE DES ÂMES</string>
+    <string name="onboarding_page1_title">THE MARCH OF SOULS</string>
     <string name="onboarding_page1_text">Your steps become the distance travelled in an endless dungeon, whether they come from Garmin or Health Connect. 10 steps = 1 metre. Fights, guardians and chests progress without you having to play continuously.</string>
     <string name="onboarding_page1_note">The game is played by walking, not by staying on the screen.</string>
     <string name="onboarding_page2_title">STEP SOURCE</string>
@@ -129,7 +129,7 @@
     <string name="settings_reset_30" formatted="false">RESET 30%</string>
     <string name="settings_offline_note" formatted="false">These settings reduce offline progress. 30% is the recommended value.</string>
     <string name="settings_about">About</string>
-    <string name="settings_about_version">La Marche des Âmes · v%1$s</string>
+    <string name="settings_about_version">The March of Souls — v%1$s</string>
     <string name="settings_about_text">A personal walking game. No game server: steps come from Garmin (Personal API) or Health Connect, and Garmin 2FA stays in the browser.</string>
     <string name="settings_licenses">LICENSES</string>
     <string name="settings_privacy">PRIVACY</string>
@@ -1170,4 +1170,18 @@
     <string name="msg_garmin_unavailable">Garmin is temporarily unavailable.</string>
     <string name="msg_garmin_error_code">Garmin error (%1$d).</string>
     <string name="common_never">never</string>
+    <string name="update_available_title">UPDATE AVAILABLE</string>
+    <string name="update_new_version">New version</string>
+    <string name="update_installed_version">Installed version</string>
+    <string name="update_apk_note">The signed APK will be downloaded from GitHub, then Android will ask you to confirm the installation. Your data and Garmin key are kept.</string>
+    <string name="update_downloading">Downloading…</string>
+    <string name="update_download_percent">Downloading %1$d%%</string>
+    <string name="update_play_protect_note">If Android or Play Protect blocks the installation, you can install the APK from the GitHub release page.</string>
+    <string name="update_installing_button">DOWNLOADING…</string>
+    <string name="update_install_button">INSTALL UPDATE</string>
+    <string name="update_view_release">VIEW RELEASE ON GITHUB</string>
+    <string name="update_later">LATER</string>
+    <string name="update_installed_title">UPDATE INSTALLED</string>
+    <string name="update_installed_body">The March of Souls is now on %1$s. Your data and Garmin key have been kept.</string>
+    <string name="update_view_changes">VIEW CHANGES</string>
 </resources>

@@ -1172,4 +1172,18 @@
     <string name="msg_garmin_unavailable">Garmin est momentanément indisponible.</string>
     <string name="msg_garmin_error_code">Erreur Garmin (%1$d).</string>
     <string name="common_never">jamais</string>
+    <string name="update_available_title">MISE À JOUR DISPONIBLE</string>
+    <string name="update_new_version">Nouvelle version</string>
+    <string name="update_installed_version">Version installée</string>
+    <string name="update_apk_note">L\'APK signé sera téléchargé depuis GitHub, puis Android vous demandera de confirmer l\'installation. Vos données et la clé Garmin sont conservées.</string>
+    <string name="update_downloading">Téléchargement…</string>
+    <string name="update_download_percent">Téléchargement %1$d %%</string>
+    <string name="update_play_protect_note">Si Android ou Play Protect bloque l\'installation, vous pouvez installer l\'APK depuis la page GitHub de la release.</string>
+    <string name="update_installing_button">TÉLÉCHARGEMENT…</string>
+    <string name="update_install_button">INSTALLER LA MISE À JOUR</string>
+    <string name="update_view_release">VOIR LA RELEASE SUR GITHUB</string>
+    <string name="update_later">PLUS TARD</string>
+    <string name="update_installed_title">MISE À JOUR INSTALLÉE</string>
+    <string name="update_installed_body">La Marche des Âmes est maintenant en %1$s. Vos données et la clé Garmin ont été conservées.</string>
+    <string name="update_view_changes">VOIR LES CHANGEMENTS</string>
 </resources>

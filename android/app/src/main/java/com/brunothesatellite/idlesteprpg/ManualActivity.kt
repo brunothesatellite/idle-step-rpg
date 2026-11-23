@@ -72,8 +72,10 @@ class ManualActivity : ComponentActivity() {
             isNestedScrollingEnabled = false
             webViewClient = WebViewClient()
             val language = resources.configuration.locales[0].language
-            val manualPath = if (language == "en") {
-                "file:///android_asset/manuel/en/index.html"
+            val enAsset = "manuel/en/index.html"
+            val hasEnglishManual = runCatching { assets.open(enAsset).close() }.isSuccess
+            val manualPath = if (language == "en" && hasEnglishManual) {
+                "file:///android_asset/$enAsset"
             } else {
                 "file:///android_asset/manuel/index.html"
             }

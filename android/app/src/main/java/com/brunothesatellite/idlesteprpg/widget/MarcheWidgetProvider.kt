@@ -9,6 +9,7 @@ import android.content.Intent
 import android.widget.RemoteViews
 import com.brunothesatellite.idlesteprpg.MainActivity
 import com.brunothesatellite.idlesteprpg.R
+import com.brunothesatellite.idlesteprpg.ui.AppLocale
 import java.text.NumberFormat
 
 class MarcheWidgetProvider : AppWidgetProvider() {
@@ -41,8 +42,7 @@ class MarcheWidgetProvider : AppWidgetProvider() {
             val floor = prefs.getInt("floor", 1)
             val gold = prefs.getInt("gold", 0)
             val views = RemoteViews(context.packageName, R.layout.widget_marche)
-            val locale = context.resources.configuration.locales[0]
-            val format = NumberFormat.getIntegerInstance(locale)
+            val format = NumberFormat.getIntegerInstance(AppLocale.current)
             views.setTextViewText(
                 R.id.widget_steps,
                 context.getString(R.string.widget_steps, format.format(steps))

@@ -72,11 +72,16 @@ private val fr = Locale.FRANCE
 object AppLocale {
     @Volatile
     var current: Locale = Locale.FRANCE
+
+    /** L'anglais du jeu suit les conventions américaines (dates, heures, séparateurs). */
+    fun updateFrom(locale: Locale) {
+        current = if (locale.language == "en") Locale.US else Locale.FRANCE
+    }
 }
 
-fun formatInt(value: Int): String = NumberFormat.getIntegerInstance(fr).format(value)
+fun formatInt(value: Int): String = NumberFormat.getIntegerInstance(AppLocale.current).format(value)
 
-fun formatLong(value: Long): String = NumberFormat.getIntegerInstance(fr).format(value)
+fun formatLong(value: Long): String = NumberFormat.getIntegerInstance(AppLocale.current).format(value)
 
 private const val NNBSP = "\u202F"
 
@@ -86,7 +91,10 @@ private const val NNBSP = "\u202F"
  */
 fun formatCompact(value: Int): String = formatCompact(value.toLong())
 
-fun formatCompact(value: Long): String = compactNumber(value, NNBSP)
+fun formatCompact(value: Long): String = compactNumber(value, compactUnitSpace())
+
+private fun compactUnitSpace(): String =
+    if (AppLocale.current.language == "fr") NNBSP else ""
 
 /**
  * Variante des nombres flottants de combat : pas de séparateur de milliers,
@@ -118,7 +126,7 @@ fun formatLevelShort(value: Int): String = when {
 private fun compactNumber(value: Long, unitSpace: String): String {
     val abs = kotlin.math.abs(value)
     if (abs < 10_000L) {
-        return if (unitSpace.isEmpty()) value.toString() else formatInt(value.toInt())
+        return formatInt(value.toInt())
     }
     val sign = if (value < 0) "-" else ""
     return when {
@@ -136,14 +144,17 @@ private fun oneDecimal(value: Double): String =
         .removeSuffix(",0")
         .removeSuffix(".0")
 
-fun formatDate(date: LocalDate): String =
-    date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", fr))
+fun formatDate(date: LocalDate): String {
+    val pattern = if (AppLocale.current.language == "fr") "dd/MM/yyyy" else "MM/dd/yyyy"
+    return date.format(DateTimeFormatter.ofPattern(pattern, AppLocale.current))
+}
 
 fun formatTime(epochMillis: Long): String {
     if (epochMillis <= 0) return "jamais"
+    val pattern = if (AppLocale.current.language == "fr") "HH:mm" else "h:mm a"
     return Instant.ofEpochMilli(epochMillis)
         .atZone(ZoneId.systemDefault())
-        .format(DateTimeFormatter.ofPattern("HH:mm", fr))
+        .format(DateTimeFormatter.ofPattern(pattern, AppLocale.current))
 }
 
 @Composable
@@ -152,7 +163,9 @@ fun formatTimeLocalized(epochMillis: Long): String =
 
 fun formatTokenTime(instant: Instant?): String {
     if (instant == null) return "—"
-    return instant.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("HH:mm", fr))
+    val pattern = if (AppLocale.current.language == "fr") "HH:mm" else "h:mm a"
+    return instant.atZone(ZoneId.systemDefault())
+        .format(DateTimeFormatter.ofPattern(pattern, AppLocale.current))
 }
 
 fun Context.findActivity(): Activity? {
