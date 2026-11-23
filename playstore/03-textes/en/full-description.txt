@@ -1,0 +1,28 @@
+DungeonStep - March of Souls
+
+Your real steps are the only resource in the game.
+
+Every step you take during the day becomes the distance travelled by Kaelen, a pilgrim descending the dungeons to free the souls held there. Ten steps make one metre. One hundred metres make one floor. And every floor is sealed by a guardian.
+
+You do not control Kaelen: he walks, fights and falls on his own. You choose what matters - the gear to keep, the upgrades to pay for, when to rest at camp, which step source to connect.
+
+WHAT AWAITS YOU
+ 8 pixel-art biomes, from the Crypts of Vael to the Throne of Souls.
+ A guardian on every floor, with its attacks and weaknesses.
+ Automatic combat, fervour that rises with your steps, chests to force open.
+ Gear to compare, sets to complete, items to fuse.
+ A camp to rest, gear up and set out again.
+ A Codex with permanent collections, the monsters, guardians and sets you meet.
+ A journal and a legend that tell the walk.
+
+YOUR STEPS, YOUR PACE
+ 10 steps = 1 metre, 1,000 steps = 1 floor.
+ Sources: Garmin (Personal API) or Health Connect, one at a time.
+ First connection: only the day's steps are credited. After that, the game catches up to 7 days, never before the first-connection date.
+ Cap of 60,000 steps per day, 100,000 steps per sync, 250 steps/minute beyond which steps are ignored.
+ No GPS, no game account: progress stays on your phone.
+
+THE PROMISE
+No ads, no in-app purchases, no leaderboard. Just your steps, a pilgrim, and souls waiting.
+
+DungeonStep is a personal walking game. It needs a step source: without Garmin or Health Connect, Kaelen stands still.

@@ -18,14 +18,29 @@ Cocher au fur et à mesure. Les points marqués ⚠️ demandent une décision o
 
 ## 2. Fiche Play Store
 
+### Français
+
 - [ ] Nom : `DungeonStep — Marche des Âmes` (29 caractères).
-- [ ] Description courte : `Vos pas ouvrent les donjons. Libérez les âmes maudites, un palier à la fois.` (76 caractères).
+- [ ] Description courte : `Vos pas ouvrent les donjons. Libérez les âmes maudites, un palier à la fois.` (76 caractères) — `03-textes/description-courte.txt`.
 - [ ] Description complète : `03-textes/description-complete.txt`.
-- [ ] Icône : `01-icone/icon-512.png`.
+- [ ] Notes de version : `03-textes/notes-version.txt`.
 - [ ] Feature graphic : `04-feature-graphic/feature-graphic-1024x500.png`.
-- [ ] Captures téléphone : les 5 fichiers de `02-captures/` (2 à 8 exigées).
+- [ ] Captures téléphone : les 5 fichiers de `02-captures/` (2 à 8 exigées). À rafraîchir : elles datent d'une version antérieure.
+
+### English
+
+- [ ] Name: `DungeonStep - March of Souls` (28 characters) — `03-textes/en/title.txt`.
+- [ ] Short description: `Your steps open the dungeons. Free cursed souls, one floor at a time.` (69 characters) — `03-textes/en/short-description.txt`.
+- [ ] Full description: `03-textes/en/full-description.txt` (uses **Health Connect**, not "Santé Connect").
+- [ ] Release notes: `03-textes/en/release-notes.txt`.
+- [ ] Feature graphic: `04-feature-graphic/en/feature-graphic-1024x500.png`.
+- [ ] Phone screenshots: the 5 files in `02-captures/en/` (2 to 8 required).
+
+### Commun
+
+- [ ] Icône : `01-icone/icon-512.png`.
 - [ ] Catégorie : Jeux → Jeu de rôle.
-- [ ] Tags : RPG, idle, pixel art, podomètre.
+- [ ] Tags : RPG, idle, pixel art, podomètre / step counter.
 - [ ] Coordonnées développeur et e-mail de support.
 - [ ] Site web (facultatif) : dépôt GitHub ou page du manuel.
 
@@ -50,6 +65,7 @@ Cocher au fur et à mesure. Les points marqués ⚠️ demandent une décision o
 - [ ] Compte personnel créé après le 13/11/2023 : **test fermé avec 12 testeurs pendant 14 jours consécutifs** avant la production.
 - [ ] Piste de test interne pour la première validation (AAB).
 - [ ] Vérifier la fiche sur un appareil vierge : installation, autorisation Santé Connect, première synchronisation (pas du jour uniquement).
+- [ ] Vérifier la fiche **dans les deux langues** : la mention « Santé Connect » doit devenir « Health Connect » en anglais.
 - [ ] Vérifier la mise à jour depuis la version précédente : données conservées, même signature.
 - [ ] Demander la production après les 14 jours, répondre aux questions de préparation.
 

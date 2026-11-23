@@ -1,0 +1,16 @@
+# Keywords (ASO reference, not a Play Console field)
+
+The title and the short description are the only fields indexed by Play search. These words guide the copy and the campaigns, without keyword stuffing.
+
+- walking game
+- step counter RPG
+- idle RPG
+- step role-playing game
+- pixel dungeon
+- dark fantasy
+- Garmin
+- Health Connect
+- game without ads
+- auto-battler RPG
+
+Avoid: "best RPG", "#1", "millions of players", "free" if a paid step source is required, and any promise of money or real-world rewards.
