@@ -359,7 +359,7 @@
     <li><strong>Puissance</strong> — indicateur global de la force du héros (équipement, niveau, améliorations).</li>
     <li><strong>Rang</strong> — palier de rang atteint (I, II, III…), calculé d'après la profondeur.</li>
     <li><strong>Statistiques</strong> — ATQ (dégâts par attaque), PV maximum, VIT (vitesse d'attaque).</li>
-    <li><strong>Ressources</strong> — rations (plafond 24), éclats d'âme (plafond 12), or et consommables.</li>
+    <li><strong>Ressources</strong> — rations (plafond 24), éclats d'âme (plafond 24), or et consommables.</li>
     <li><strong>Biome et farm</strong> — règle du biome et bouton <strong>FARM</strong> pour verrouiller le palier courant.</li>
     <li><strong>Codex</strong> — bestiaire, ensembles et biomes découverts, avec accès direct.</li>
     <li><strong>Réserve de pas</strong> — pas disponibles que le héros consomme (marche, combats, coffres). La barre est pleine à 4 000 pas.</li>
@@ -473,7 +473,7 @@
     <li><strong>Rations :</strong> soin au camp, soin automatique d'urgence en combat, pain de route.</li>
     <li><strong>Éclats :</strong> soin complet, identification, forge, autels.</li>
     <li><strong>Or :</strong> améliorations, marchand, statue, forge, pari.</li>
-    <li><strong>Butin :</strong> les gardiens donnent 2 éclats et 1 ration ; les coffres donnent 1 de chaque.</li>
+    <li><strong>Butin :</strong> les gardiens donnent 3 éclats et 2 rations ; les coffres donnent 2 de chaque.</li>
   </ul>
 </section>
 
@@ -560,7 +560,7 @@
     <li><strong>Verrouiller :</strong> protège un objet de la vente et de la fusion.</li>
     <li><strong>Fusionner :</strong> l'objet ouvert et les <strong>deux meilleurs</strong> objets identifiés et non verrouillés du même emplacement et de la même rareté donnent un objet de rareté supérieure. Trois légendaires donnent un légendaire fusionné. Le bouton affiche <strong>FUSIONNER</strong> quand les trois sont réunis, sinon <strong>FUSIONNER 2/3</strong> et reste grisé.</li>
     <li><strong>Identifier :</strong> 1 éclat révèle les statistiques d'un objet mystérieux.</li>
-    <li><strong>Reforger :</strong> 2 éclats retirent ou remplacent l'effet (tirage aléatoire).</li>
+    <li><strong>Reforger :</strong> 1 éclat retire ou remplace l'effet (tirage aléatoire).</li>
     <li><strong>Améliorer :</strong> or + 1 éclat augmentent le niveau, l'ATQ et les PV.</li>
     <li><strong>Démonter :</strong> détruit l'objet contre des éclats.</li>
   </ul>
@@ -569,7 +569,7 @@
   <h3>Atelier : comparer, améliorer, reforger</h3>
   <p>La fiche d'objet commence par un tableau <strong>Statistique / Équipé / Cet objet</strong> : la valeur de l'objet est verte si elle dépasse l'équipement, rouge sinon, avec le gain en petit. Pour un objet équipé, le tableau devient <strong>Actuel / Après +1 niv.</strong> et une ligne <strong>Héros</strong> indique l'impact sur l'ATQ et les PV totaux. La valeur de vente reste sous le tableau.</p>
   <p><strong>AMÉLIORER</strong> ouvre l'atelier : niveau actuel → suivant, tableau des statistiques (Équipé, Objet, Après), coût en or et éclats, puis bouton de validation. Après une amélioration, la feuille reste ouverte : un bandeau rappelle le gain appliqué, l'aperçu passe au niveau suivant et <strong>CONTINUER À AMÉLIORER</strong> enchaîne sans revenir à l'inventaire. La flèche ← revient à la fiche, FERMER quitte.</p>
-  <p><strong>REFORGER</strong> ouvre l'atelier des effets pour 2 éclats. Le tirage est aléatoire : <strong>25 %</strong> aucun effet, <strong>12,5 %</strong> pour chacun des six effets. Le niveau, les statistiques et l'ensemble ne changent pas ; l'effet peut rester identique ou disparaître. Le résultat affiche <strong>ancien → nouveau</strong>, puis <strong>REFORGER ENCORE</strong> relance un tirage.</p>
+  <p><strong>REFORGER</strong> ouvre l'atelier des effets pour 1 éclat. Le tirage est aléatoire : <strong>25 %</strong> aucun effet, <strong>12,5 %</strong> pour chacun des six effets. Le niveau, les statistiques et l'ensemble ne changent pas ; l'effet peut rester identique ou disparaître. Le résultat affiche <strong>ancien → nouveau</strong>, puis <strong>REFORGER ENCORE</strong> relance un tirage.</p>
   <h3>Ensembles et forge</h3>
   <ul>
     <li>Onze ensembles : <strong>Veilleur</strong>, <strong>Braise</strong>, <strong>Givre</strong>, <strong>Ossature</strong>, <strong>Toile</strong>, <strong>Cendre</strong>, <strong>Forge</strong>, <strong>Serment</strong>, <strong>Bois</strong>, <strong>Abîme</strong> et <strong>Trône</strong>.</li>
@@ -683,7 +683,7 @@
   </ul>
   <h3>Jalons</h3>
   <ul>
-    <li>Tous les 10 paliers : +5 % d'or, 5 éclats, nouveau titre, entrée dans la légende.</li>
+    <li>Tous les 10 paliers : +5 % d'or, 8 éclats, nouveau titre, entrée dans la légende.</li>
     <li>Paliers 10, 25, 50 et 100 : gardiens uniques.</li>
     <li>Après le palier 10, un facteur de profondeur augmente les PV et l'ATQ ennemis.</li>
   </ul>
@@ -723,7 +723,7 @@
     <li><strong>ACTIVER :</strong> verrouille le palier actuel. Le gardien vaincu ne fait plus passer au palier suivant et revient à 100 m.</li>
     <li><strong>DÉSACTIVER :</strong> le prochain gardien vaincu fait avancer normalement.</li>
     <li>Un badge <strong>FARM</strong> s'affiche dans le HUD tant que le mode est actif.</li>
-    <li>Pendant le farm, les <strong>jalons sont désactivés</strong> : pas de +5 éclats ni d'entrée de légende répétée. Le butin, l'or et l'XP du gardien restent.</li>
+    <li>Pendant le farm, les <strong>jalons sont désactivés</strong> : pas de +8 éclats ni d'entrée de légende répétée. Le butin, l'or et l'XP du gardien restent.</li>
     <li>Le réglage est conservé dans la sauvegarde et survit au redémarrage.</li>
   </ul>
   <h3>Durée de vie estimée</h3>

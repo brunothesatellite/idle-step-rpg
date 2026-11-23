@@ -144,7 +144,7 @@ La courbe 1,2^ niveau est incompatible avec un objectif niveau 100. En plus, les
 | Butin non scalable avec le palier (stats de base fixes) | un objet de palier 36 vaut presque un objet de palier 5 | **élevée** |
 | Camp : +3 ATQ / +30 PV pour 7 420 or | 181 k d’or inutiles | **élevée** |
 | Gardien : 6× PV + bouclier 65 % + capacités | combat 4-10× plus long que normal | **élevée** |
-| Farm verrouillé sur le palier courant | impossible de farmer un palier plus sûr | **élevée** |
+| Farm déjà sûr mais peu visible | le farm courant utilise des monstres faciles, sans multiplicateur de profondeur : il permet déjà de récupérer, mais l’interface ne l’explique pas | moyenne |
 | Élites 2,2× PV / 1,3× ATQ à 10 % | gauntlet imprévisible | moyenne |
 | Cap 40 sur la profondeur | plateau de difficulté en fin de jeu | moyenne |
 | Score de puissance (ATQ×2 + PV/4 + …) | ne reflète pas la survie | moyenne |
@@ -326,8 +326,9 @@ Les améliorations plates sont trop faibles face à l’exponentiel :
 
 ### 6.7 Farm et récupération
 
-- Autoriser le farm du **palier précédent** (ou d’un palier choisi), pas seulement du palier courant. Utiliser le niveau et la profondeur du palier farmé.
-- Farm : PV ×0,5, ATQ ×0,5, récompenses ×0,4 ; 3 kills puis reprise.
+- Le farm courant est déjà un **filet de sécurité** : pool facile, niveau `palier − 2`, PV ×0,65, ATQ ×0,6, **sans multiplicateur de profondeur**. Il est donc beaucoup plus sûr que le sentier normal et permet de récupérer éclats/rations/butin. Aucun changement de courbe n’est nécessaire.
+- Améliorer l’UI pour expliquer ce rôle (« farmer ce palier pour récupérer ») et, plus tard, permettre de choisir un palier.
+- Farm : conserver 3 kills puis reprise.
 - Après une défaite, proposer **« Reculer d’un palier »** en plus du repli de 20 m.
 - Conserver le repli de 20 m et les 60 % de PV ; ajouter un petit gain d’XP/or de consolation.
 
@@ -364,6 +365,19 @@ Avec une potion d’ATQ (+40 %) :
 
 Conclusion : la cible « gardien ~18 s, beaucoup de coups, pas de one-shot » est atteinte pour le build avancé au palier 100. Les gardiens 75 et 100 restent à calibrer pour le stuff moyen, et la potion doit rester un accélérateur, pas une garantie de victoire à bas stuff.
 
+### 6.10 État d’implémentation (Phase A)
+
+Implémenté dans le code (version de développement, pas encore publiée) :
+
+- **Courbe cible** : interpolation entre l’ancienne courbe (≤ palier 20) et la courbe cible (≥ palier 35), avec les multiplicateurs de 6.1bis. Le niveau du gardien reste `palier + 2` (au lieu de +1 dans la table cible), donc il est ~3 % plus fort que la simulation.
+- **Gardiens** : bouclier 40 % / 3 s, **enrage** après 15 s (+25 % toutes les 5 s, cap +75 %), bénédiction de défaite cumulative (+25 % par échec, cap +75 %).
+- **Élites** : 6 % de chance, 1,8× PV, 1,15× ATQ.
+- **Éclats** : plafond **24**, gardien +3, jalon +8, coffre +2, démontage 2/3/6/10, reforge **1** éclat, élite 20 % +1.
+- **Rations** : gardien +2, coffre +2, monstre 10 % +1, seuil d’auto-ration 30 %, veillée gratuite 25 %.
+- **Farm** : inchangé, car déjà sûr (sans profondeur) ; seule la compréhension UI reste à améliorer.
+
+Non inclus dans cette phase : courbe d’XP, scaling du butin, camp/sets en pourcentage (Phase B).
+
 ## 7. Plan de tuning conseillé
 
 ### Phase A — débloquer le palier 36 (priorité)
@@ -371,7 +385,7 @@ Conclusion : la cible « gardien ~18 s, beaucoup de coups, pas de one-shot » es
 1. Séparer `hpDepth` / `atkDepth` (ATQ cap 6×).
 2. Gardien : 3× PV, 1,3× ATQ, niveau +1, bouclier réduit.
 3. Éclats/rations : revenus doublés, plafonds relevés.
-4. Farm du palier précédent.
+4. Vérifier et clarifier le farm existant (déjà sûr, sans profondeur) ; pas de changement de courbe.
 5. Pitié gardien (+25 %/défaite, cap +75 %).
 
 **Critère** : le build actuel (1 349 ATQ / 3 699 PV) doit gagner un monstre normal en 4-6 s et le gardien en 15-22 s avec 1 ration, en portant au moins 30 coups.

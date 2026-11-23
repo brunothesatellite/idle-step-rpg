@@ -359,7 +359,7 @@
     <li><strong>Power</strong> — overall indicator of the hero's strength (equipment, level, upgrades).</li>
     <li><strong>Rank</strong> — rank tier reached (I, II, III…), computed from depth.</li>
     <li><strong>Stats</strong> — ATK (damage per attack), maximum HP, SPD (attack speed).</li>
-    <li><strong>Resources</strong> — rations (cap 24), soul shards (cap 12), gold and consumables.</li>
+    <li><strong>Resources</strong> — rations (cap 24), soul shards (cap 24), gold and consumables.</li>
     <li><strong>Biome and farm</strong> — biome rule and <strong>FARM</strong> button to lock the current floor.</li>
     <li><strong>Codex</strong> — bestiary, sets and discovered biomes, with direct access.</li>
     <li><strong>Step reserve</strong> — available steps the hero spends (walking, fights, chests). The bar is full at 4,000 steps.</li>
@@ -473,7 +473,7 @@
     <li><strong>Rations:</strong> camp healing, automatic emergency healing in combat, waybread.</li>
     <li><strong>Shards:</strong> full heal, identification, forge, altars.</li>
     <li><strong>Gold:</strong> upgrades, merchant, statue, forge, wager.</li>
-    <li><strong>Loot:</strong> guardians give 2 shards and 1 ration; chests give 1 of each.</li>
+    <li><strong>Loot:</strong> guardians give 3 shards and 2 rations; chests give 2 of each.</li>
   </ul>
 </section>
 
@@ -560,7 +560,7 @@
     <li><strong>Lock:</strong> protects an item from selling and fusion.</li>
     <li><strong>Fuse:</strong> the open item and the <strong>two best</strong> identified, unlocked items of the same slot and rarity give an item of higher rarity. Three legendaries give a fused legendary. The button shows <strong>FUSE</strong> when all three are gathered, otherwise <strong>FUSE 2/3</strong> and stays greyed out.</li>
     <li><strong>Identify:</strong> 1 shard reveals the stats of a mysterious item.</li>
-    <li><strong>Reforge:</strong> 2 shards remove or replace the effect (random roll).</li>
+    <li><strong>Reforge:</strong> 1 shard remove or replace the effect (random roll).</li>
     <li><strong>Upgrade:</strong> gold + 1 shard increase level, ATK and HP.</li>
     <li><strong>Salvage:</strong> destroys the item for shards.</li>
   </ul>
@@ -569,7 +569,7 @@
   <h3>Workshop: compare, upgrade, reforge</h3>
   <p>The item sheet starts with a <strong>Stat / Equipped / This item</strong> table: the item value is green if it beats the equipped gear, red otherwise, with the gain in small text. For an equipped item, the table becomes <strong>Current / After +1 lv.</strong> and a <strong>Hero</strong> line shows the impact on total ATK and HP. The sale value stays under the table.</p>
   <p><strong>UPGRADE</strong> opens the workshop: current level → next, stat table (Equipped, Item, After), gold and shard cost, then a confirm button. After an upgrade the sheet stays open: a banner recalls the gain applied, the preview moves to the next level and <strong>KEEP UPGRADING</strong> chains without returning to the inventory. The ← arrow returns to the item sheet, CLOSE exits.</p>
-  <p><strong>REFORGE</strong> opens the effect workshop for 2 shards. The roll is random: <strong>25%</strong> no effect, <strong>12.5%</strong> for each of the six effects. Level, stats and set do not change; the effect may stay identical or vanish. The result shows <strong>old → new</strong>, then <strong>REFORGE AGAIN</strong> rolls again.</p>
+  <p><strong>REFORGE</strong> opens the effect workshop for 1 shard. The roll is random: <strong>25%</strong> no effect, <strong>12.5%</strong> for each of the six effects. Level, stats and set do not change; the effect may stay identical or vanish. The result shows <strong>old → new</strong>, then <strong>REFORGE AGAIN</strong> rolls again.</p>
   <h3>Sets and forge</h3>
   <ul>
     <li>Eleven sets: <strong>Watcher</strong>, <strong>Ember</strong>, <strong>Frost</strong>, <strong>Frame</strong>, <strong>Web</strong>, <strong>Ash</strong>, <strong>Forge</strong>, <strong>Oath</strong>, <strong>Wood</strong>, <strong>Abyss</strong> and <strong>Throne</strong>.</li>
@@ -683,7 +683,7 @@
   </ul>
   <h3>Milestones</h3>
   <ul>
-    <li>Every 10 floors: +5% gold, 5 shards, a new title, a legend entry.</li>
+    <li>Every 10 floors: +5% gold, 8 shards, a new title, a legend entry.</li>
     <li>Floors 10, 25, 50 and 100: unique guardians.</li>
     <li>After floor 10, a depth factor increases enemy HP and ATK.</li>
   </ul>
@@ -723,7 +723,7 @@
     <li><strong>ENABLE:</strong> locks the current floor. A defeated guardian no longer advances to the next floor and returns to 100 m.</li>
     <li><strong>DISABLE:</strong> the next defeated guardian advances normally.</li>
     <li>A <strong>FARM</strong> badge shows in the HUD while the mode is active.</li>
-    <li>During farming, <strong>milestones are disabled</strong>: no +5 shards and no repeated legend entry. The guardian's loot, gold and XP remain.</li>
+    <li>During farming, <strong>milestones are disabled</strong>: no +8 shards and no repeated legend entry. The guardian's loot, gold and XP remain.</li>
     <li>The setting is kept in the save and survives a restart.</li>
   </ul>
   <h3>Estimated play time</h3>

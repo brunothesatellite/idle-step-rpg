@@ -139,8 +139,10 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 
 ### Phase A — Débloquer le palier 36
 
-1. Simuler : courbe cible 6.1bis (gardien ~18 s, ≥ 30 coups), bouclier réduit, éclats/rations doublés, farm du palier précédent, pitié.
-2. Implémenter **uniquement** ces changements.
+**Statut : implémentée dans la version de développement, playtest à faire.**
+
+1. Courbe cible 6.1bis (gardien ~18 s, ≥ 30 coups), bouclier réduit, enrage après 15 s, éclats/rations revus, pitié cumulative, farm existant clarifié.
+2. Implémenté : voir 6.10 du rapport.
 3. Playtest 7 jours sur la sauvegarde actuelle :
    - noter paliers gagnés, défaites, éclats/rations, or, niveau ;
    - vérifier qu’aucun joueur ne reste bloqué sans option.
