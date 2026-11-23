@@ -1,6 +1,7 @@
 package com.brunothesatellite.idlesteprpg.garmin
 
 import android.content.Context
+import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.data.GameRepository
 import com.brunothesatellite.idlesteprpg.engine.HISTORY_DAYS
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
@@ -86,9 +87,9 @@ class GarminRepository(
         if (!notices.add(threshold.toString())) return
         prefs.edit().putStringSet(KEY_NOTICES, notices).apply()
         val message = if (threshold == 0) {
-            "Votre clé Garmin est expirée. Remplacez-la dans Compte Garmin."
+            appContext.getString(R.string.msg_garmin_key_expired)
         } else {
-            "Votre clé Garmin expire dans $days jour(s)."
+            appContext.getString(R.string.msg_garmin_key_expires, days)
         }
         GameNotifications.keyExpiry(appContext, message)
     }
@@ -98,7 +99,9 @@ class GarminRepository(
     suspend fun saveKey(rawKey: String, expiry: LocalDate): Result<Unit> = withContext(Dispatchers.IO) {
         val key = rawKey.trim()
         if (key.isEmpty()) {
-            return@withContext Result.failure(IllegalArgumentException("Collez la clé personnelle Garmin."))
+            return@withContext Result.failure(
+                IllegalArgumentException(appContext.getString(R.string.msg_garmin_paste_key))
+            )
         }
         try {
             val token = client.obtainToken(key)
@@ -170,24 +173,27 @@ class GarminRepository(
                 .remove(KEY_RETRY_AT)
                 .apply()
             val message = when {
-                report != null -> "Rattrapage Garmin · ${report.days} jour(s), ${report.steps} pas"
-                added > 0 -> "Garmin synchronisé · +$added pas"
-                else -> "Garmin synchronisé · aucun nouveau pas"
+                report != null -> appContext.getString(R.string.msg_garmin_catchup, report.days, report.steps)
+                added > 0 -> appContext.getString(R.string.msg_garmin_synced, added)
+                else -> appContext.getString(R.string.msg_garmin_none_new)
             }
-            logSync("OK · +$added pas · total $total")
+            logSync(appContext.getString(R.string.sync_log_garmin_ok, added, total))
             SyncResult(true, message, total = total, added = added)
         }
 
     suspend fun sync(simulateAbsence: Boolean = true): SyncResult = withContext(Dispatchers.IO) {
         val key = secrets.key()
         if (key == null) {
-            return@withContext SyncResult(false, "Aucune clé Garmin enregistrée.", needsKey = true)
+            return@withContext SyncResult(false, appContext.getString(R.string.msg_garmin_no_key), needsKey = true)
         }
         val retryAt = prefs.getLong(KEY_RETRY_AT, 0L)
         if (retryAt > System.currentTimeMillis()) {
             return@withContext SyncResult(
                 false,
-                "Limite Garmin atteinte. Nouvel essai à ${SimpleDateFormat("HH:mm", Locale.FRANCE).format(Date(retryAt))}.",
+                appContext.getString(
+                    R.string.msg_garmin_rate,
+                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(retryAt))
+                ),
                 retryAt = retryAt
             )
         }
@@ -230,11 +236,11 @@ class GarminRepository(
                 .remove(KEY_RETRY_AT)
                 .apply()
             val message = when {
-                report != null -> "Rattrapage Garmin · ${report.days} jour(s), ${report.steps} pas"
-                added > 0 -> "Garmin synchronisé · +$added pas"
-                else -> "Garmin synchronisé · aucun nouveau pas"
+                report != null -> appContext.getString(R.string.msg_garmin_catchup, report.days, report.steps)
+                added > 0 -> appContext.getString(R.string.msg_garmin_synced, added)
+                else -> appContext.getString(R.string.msg_garmin_none_new)
             }
-            logSync("OK · +$added pas · total $total")
+            logSync(appContext.getString(R.string.sync_log_garmin_ok, added, total))
             SyncResult(true, message, total = total, added = added)
         } catch (e: GarminException) {
             val retry = if (e.code == 429) {
@@ -246,20 +252,26 @@ class GarminRepository(
                 0L
             }
             val message = if (e.code == 429) {
-                "Limite Garmin atteinte. Nouvel essai à ${SimpleDateFormat("HH:mm", Locale.FRANCE).format(Date(retry))}."
+                appContext.getString(
+                    R.string.msg_garmin_rate,
+                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(retry))
+                )
             } else {
                 e.message
             }
-            logSync("ERREUR ${e.code} · $message")
+            logSync(appContext.getString(R.string.sync_log_garmin_error, e.code, message))
             prefs.edit().putString(KEY_LAST_ERROR, message).apply()
             SyncResult(false, message, needsKey = e.code == 401, retryAt = retry)
         } catch (e: Exception) {
             val message = if (e is IOException) {
-                "Réseau indisponible. Dernière synchronisation conservée."
+                appContext.getString(R.string.msg_garmin_network)
             } else {
-                "Synchronisation impossible : ${e.message ?: "erreur inconnue"}"
+                appContext.getString(
+                    R.string.msg_sync_impossible,
+                    e.message ?: appContext.getString(R.string.msg_unknown_error)
+                )
             }
-            logSync("ERREUR · $message")
+            logSync(appContext.getString(R.string.sync_log_garmin_error_generic, message))
             prefs.edit().putString(KEY_LAST_ERROR, message).apply()
             SyncResult(false, message)
         }

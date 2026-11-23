@@ -22,6 +22,7 @@ import com.brunothesatellite.idlesteprpg.steps.StepFetch
 import com.brunothesatellite.idlesteprpg.steps.StepSourceType
 import com.brunothesatellite.idlesteprpg.ui.formatInt
 import com.brunothesatellite.idlesteprpg.ui.itemName
+import com.brunothesatellite.idlesteprpg.ui.sourceLabel
 import com.brunothesatellite.idlesteprpg.ui.translateText
 import com.brunothesatellite.idlesteprpg.update.UpdateChecker
 import com.brunothesatellite.idlesteprpg.update.UpdateInfo
@@ -464,7 +465,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         )
         refreshGarmin()
         _toasts.tryEmit(
-            tr(R.string.toast_source_changed, type.label)
+            tr(R.string.toast_source_changed, sourceLabel(container.context.resources, type.id))
         )
         if (container.stepRepository.canSync()) syncNow(silent = true)
     }

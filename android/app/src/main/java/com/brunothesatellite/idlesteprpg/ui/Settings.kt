@@ -570,10 +570,11 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     Text(stringResource(R.string.settings_sync_log_empty), fontSize = 7.sp, color = Muted2)
                 } else {
                     ui.syncLog.forEach { line ->
+                        val shown = localizedText(line)
                         Text(
-                            line,
+                            shown,
                             fontSize = 6.8.sp,
-                            color = if (line.contains("ERREUR")) Blood else Muted,
+                            color = if (shown.contains("ERROR") || shown.contains("ERREUR")) Blood else Muted,
                             modifier = Modifier.padding(vertical = 1.5.dp)
                         )
                     }
@@ -821,7 +822,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     Text(
                         stringResource(
                             R.string.settings_change_source_text,
-                            target.label
+                            sourceLabelRes(target.id)
                         ),
                         fontSize = 9.sp
                     )

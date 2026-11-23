@@ -13,6 +13,7 @@ import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import com.brunothesatellite.idlesteprpg.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -52,11 +53,11 @@ class HealthConnectSource(private val context: Context) {
     suspend fun fetch(days: Int = 7): StepFetch? = withContext(Dispatchers.IO) {
         failure = ""
         if (!isAvailable()) {
-            failure = "service indisponible"
+            failure = context.getString(R.string.hc_failure_unavailable)
             return@withContext null
         }
         if (!hasPermission()) {
-            failure = "autorisation manquante"
+            failure = context.getString(R.string.hc_failure_permission)
             return@withContext null
         }
         try {
@@ -105,7 +106,7 @@ class HealthConnectSource(private val context: Context) {
         } catch (e: Exception) {
             failure = e.javaClass.simpleName +
                 (e.message?.let { message -> ": ${message.take(90)}" } ?: "")
-            Log.w(TAG, "Lecture des pas impossible", e)
+            Log.w(TAG, context.getString(R.string.hc_log_read_fail), e)
             null
         }
     }

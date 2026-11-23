@@ -1,6 +1,7 @@
 package com.brunothesatellite.idlesteprpg.steps
 
 import android.content.Context
+import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.data.GameRepository
 import com.brunothesatellite.idlesteprpg.data.SettingsStore
 import com.brunothesatellite.idlesteprpg.garmin.GarminFetch
@@ -65,11 +66,12 @@ class StepRepository(
 
     fun statusLine(): String = when (current()) {
         StepSourceType.GARMIN ->
-            if (garmin.hasKey()) "Connecté · Personal API" else "Aucune clé enregistrée"
+            if (garmin.hasKey()) context.getString(R.string.status_garmin_connected)
+            else context.getString(R.string.overlay_garmin_no_key)
         StepSourceType.HEALTH -> when {
-            !health.isAvailable() -> "Indisponible sur cet appareil"
-            !health.hasPermission() -> "Autorisation de lecture requise"
-            else -> "Autorisé · lecture des pas"
+            !health.isAvailable() -> context.getString(R.string.status_health_unavailable)
+            !health.hasPermission() -> context.getString(R.string.status_health_permission)
+            else -> context.getString(R.string.status_health_ok)
         }
     }
 
@@ -129,7 +131,7 @@ class StepRepository(
             record(fetch.source, added = 0, error = "")
             return SyncResult(
                 ok = true,
-                message = "Source de pas changée · base recalée, aucun pas recrédité",
+                message = context.getString(R.string.sync_source_changed),
                 total = game.state.value.stepsToday,
                 added = 0
             )
@@ -149,10 +151,10 @@ class StepRepository(
         val added = state.lastAdded
         record(HEALTH, added, "")
         val message = when {
-            report != null -> "Rattrapage Santé Connect · ${report.days} jour(s), ${report.steps} pas"
-            added > 0 -> "Santé Connect synchronisé · +$added pas"
-            fetch.ledger.isEmpty() -> "Santé Connect · aucun pas (aucune app fournisseur ?)"
-            else -> "Santé Connect synchronisé · aucun nouveau pas"
+            report != null -> context.getString(R.string.sync_health_catchup, report.days, report.steps)
+            added > 0 -> context.getString(R.string.sync_health_synced, added)
+            fetch.ledger.isEmpty() -> context.getString(R.string.sync_health_empty)
+            else -> context.getString(R.string.sync_health_none_new)
         }
         return SyncResult(true, message, total = total, added = added)
     }
@@ -163,7 +165,7 @@ class StepRepository(
                 // Changement de source : on passe par apply() pour recaler la base.
                 val fetch = garmin.fetchSteps()
                 if (fetch == null) {
-                    SyncResult(false, "Garmin : téléchargement impossible.", needsKey = !garmin.hasKey())
+                    SyncResult(false, context.getString(R.string.sync_garmin_download_fail), needsKey = !garmin.hasKey())
                 } else {
                     apply(StepFetch(fetch.ledger, fetch.today, GARMIN))
                 }
@@ -176,9 +178,9 @@ class StepRepository(
             if (fetch == null) {
                 val reason = health.lastFailure().takeIf { it.isNotBlank() }
                 val message = when {
-                    !health.isAvailable() -> "Santé Connect indisponible sur cet appareil."
-                    !health.hasPermission() -> "Autorisation Santé Connect refusée."
-                    else -> "Santé Connect : lecture impossible" +
+                    !health.isAvailable() -> context.getString(R.string.sync_health_unavailable)
+                    !health.hasPermission() -> context.getString(R.string.sync_health_denied)
+                    else -> context.getString(R.string.sync_health_read_fail) +
                         (reason?.let { " ($it)" } ?: "")
                 }
                 record(HEALTH, 0, message)
@@ -192,10 +194,11 @@ class StepRepository(
     private fun record(source: String, added: Int, error: String) {
         val now = System.currentTimeMillis()
         val stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM HH:mm"))
+
         val line = if (error.isBlank()) {
-            "$stamp · OK · +$added pas"
+            context.getString(R.string.sync_log_ok, stamp, added)
         } else {
-            "$stamp · ERREUR · $error"
+            context.getString(R.string.sync_log_error, stamp, error)
         }
         val existing = prefs.getString(keyLog(source), "").orEmpty().lines()
             .filter { it.isNotBlank() }

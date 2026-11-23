@@ -1346,7 +1346,7 @@ private fun UpgradesTab(
     }
     Spacer(Modifier.height(4.dp))
     Text(
-        if (ui.lastError.isNotBlank()) ui.lastError else stringResource(R.string.dashboard_camp_bonus_note),
+        if (ui.lastError.isNotBlank()) localizedText(ui.lastError) else stringResource(R.string.dashboard_camp_bonus_note),
         modifier = Modifier.fillMaxWidth(),
         textAlign = TextAlign.Center,
         fontSize = 6.sp,

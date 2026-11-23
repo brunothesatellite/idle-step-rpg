@@ -6,11 +6,11 @@
 
 ## 1. Résumé exécutif
 
-- L’application est **principalement en français dans le code** : **528 littéraux accentués**
+- L’application est **principalement en français dans le code** : **491 littéraux accentués**
   restants, dont **≈ 143 clés de correspondance** français → ressource (catalogue de contenu et
   traducteur de journal), environ **750 à 950 chaînes** visibles, plus le contenu de jeu.
-  Les écrans Réglages, Onboarding, Journal, Dashboard, Codex, Overlays, Scène, les notifications
-  et les contenus dynamiques (objets, créatures, effets, journal) sont déjà extraits.
+  Les écrans, overlays, notifications, toasts, widget et contenus dynamiques sont extraits.
+  En anglais, **« Santé Connect » devient « Health Connect »**.
 - Le Codex compte désormais **110 créatures et 35 gardiens**, avec de nouveaux libellés
   (`NON DÉCOUVERT`, `GARDIEN`, `GARDIENS DE JALON`, `Première rencontre`, tiers de spawn).
 - Le manuel représente **≈ 7 400 mots** et **36 captures** dont l’interface est en français.
@@ -57,6 +57,11 @@
   coffre, clé Garmin, synchronisation, action « Remplacer la clé ».
 - **Toasts extraits** : pause, source, santé, clé Garmin, farm, export/import, mises à jour,
   équipement, vente, fusion, coffre, objets, forge, repos, soins.
+- **Réglages dynamiques extraits** : statuts de source, libellés Garmin/Health Connect,
+  messages de synchronisation, journal de synchronisation (y compris entrées déjà stockées),
+  erreurs Garmin, écran Diagnostic complet.
+- **Widget extrait** : titre, pas, palier/niveau/or et invite, formatés selon la langue.
+- **Justification Health Connect extraite** : titre, lecture des pas, corps et bouton.
 - **Journal et résultats traduits** : 45 formats de messages (combat, jalons, équipement,
   forge, serments, consommables, rencontres). Les anciennes entrées déjà en sauvegarde sont
   traduites à l’affichage ; le français est renvoyé tel quel.
@@ -65,10 +70,8 @@
 - 117 tests, lint OK, debug migré et vérifié sur appareil.
 
 **Reste**
-- Réglages : chaînes dynamiques restantes (statuts de source, journal de synchronisation,
-  libellés de `StepSourceType`).
-- Widget et textes de pas système.
 - Manuel EN et captures anglaises.
+- Validation visuelle du widget sur un écran d’accueil (chaînes compilées et résolues).
 
 ## 2. Périmètre
 
@@ -90,7 +93,7 @@
 | Élément | Mesure |
 |---|---|
 | Fichiers de ressources | `res/values/strings.xml` + `res/values-en/strings.xml` |
-| Littéraux contenant des accents | **528** dans 34 fichiers Kotlin, dont ≈ 143 clés de correspondance |
+| Littéraux contenant des accents | **491** dans 34 fichiers Kotlin, dont ≈ 143 clés de correspondance |
 | Appels `Text(` | **403** |
 | Littéraux texte | ~3 400, dont une part de clés, chemins, identifiants |
 | Chaînes réellement traduisibles | **750 à 950** (estimation) |
@@ -100,7 +103,7 @@
 | `ui/Codex.kt` / `Dashboard.kt` | 11 / 7 : Codex, cartes, fiches (Dashboard extrait) |
 | `ui/Scene.kt` / `GameViewModel.kt` | 4 / 1 : HUD et toasts extraits (restent des correspondances de noms d’objets) |
 | `ui/ContentCatalog.kt` / `ContentText.kt` | 105 clés : catalogue FR→ressource, traducteur de journal |
-| Notifications / widget / pas | canaux, alertes et actions extraits ; widget et statuts de pas à suivre |
+| Notifications / widget / pas | canaux, alertes, actions, widget et statuts de source extraits |
 | Manuel | **≈ 7 400 mots**, **36 images**, 77 Ko HTML, généré depuis un template |
 | Journal | `JournalEntry.text` = chaîne figée en base, traduite à l’affichage |
 | Objets | `Item.name` = chaîne figée en base, traduite à l’affichage via son nom de base |

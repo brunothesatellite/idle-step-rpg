@@ -1626,7 +1626,7 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 }
                 if (ui.lastError.isNotBlank()) {
                     Spacer(Modifier.height(4.dp))
-                    Text(ui.lastError, fontSize = 7.sp, color = Blood, lineHeight = 10.sp)
+                    Text(localizedText(ui.lastError), fontSize = 7.sp, color = Blood, lineHeight = 10.sp)
                 }
             }
             Spacer(Modifier.height(10.dp))

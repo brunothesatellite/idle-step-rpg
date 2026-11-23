@@ -11,7 +11,7 @@
         android:id="@+id/widget_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="LA MARCHE DES ÂMES"
+        android:text="@string/widget_title"
         android:textColor="#E8C27A"
         android:textSize="9sp"
         android:textStyle="bold" />
@@ -20,7 +20,7 @@
         android:id="@+id/widget_steps"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="0 pas"
+        android:text="@string/widget_steps_default"
         android:textColor="#F0E2C4"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -29,7 +29,7 @@
         android:id="@+id/widget_meta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Palier 1 · Niv. 1"
+        android:text="@string/widget_meta_default"
         android:textColor="#9587A8"
         android:textSize="9sp" />
 
@@ -38,7 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Touchez pour ouvrir et synchroniser"
+        android:text="@string/widget_hint"
         android:textColor="#6E617F"
         android:textSize="8sp" />
 </LinearLayout>

@@ -10,7 +10,6 @@ import android.widget.RemoteViews
 import com.brunothesatellite.idlesteprpg.MainActivity
 import com.brunothesatellite.idlesteprpg.R
 import java.text.NumberFormat
-import java.util.Locale
 
 class MarcheWidgetProvider : AppWidgetProvider() {
 
@@ -42,11 +41,20 @@ class MarcheWidgetProvider : AppWidgetProvider() {
             val floor = prefs.getInt("floor", 1)
             val gold = prefs.getInt("gold", 0)
             val views = RemoteViews(context.packageName, R.layout.widget_marche)
-            val format = NumberFormat.getIntegerInstance(Locale.FRANCE)
-            views.setTextViewText(R.id.widget_steps, "${format.format(steps)} pas")
+            val locale = context.resources.configuration.locales[0]
+            val format = NumberFormat.getIntegerInstance(locale)
+            views.setTextViewText(
+                R.id.widget_steps,
+                context.getString(R.string.widget_steps, format.format(steps))
+            )
             views.setTextViewText(
                 R.id.widget_meta,
-                "Palier $floor · Niv. $level · ${format.format(gold)} or"
+                context.getString(
+                    R.string.widget_meta,
+                    floor,
+                    level,
+                    format.format(gold)
+                )
             )
             val intent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP

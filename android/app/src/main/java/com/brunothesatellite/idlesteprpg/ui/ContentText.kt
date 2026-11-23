@@ -102,6 +102,21 @@ private val FIXED = mapOf(
     "Votre clé Garmin est expirée. Remplacez-la dans Compte Garmin." to R.string.msg_garmin_key_expired,
     "Réseau indisponible. Dernière synchronisation conservée." to R.string.msg_garmin_network,
     "erreur inconnue" to R.string.msg_unknown_error,
+    "Source de pas changée · base recalée, aucun pas recrédité" to R.string.sync_source_changed,
+    "Garmin : téléchargement impossible." to R.string.sync_garmin_download_fail,
+    "Aucune clé Garmin enregistrée." to R.string.msg_garmin_no_key,
+    "Garmin synchronisé · aucun nouveau pas" to R.string.msg_garmin_none_new,
+    "Santé Connect indisponible sur cet appareil." to R.string.sync_health_unavailable,
+    "Autorisation Santé Connect refusée." to R.string.sync_health_denied,
+    "Santé Connect · aucun pas (aucune app fournisseur ?)" to R.string.sync_health_empty,
+    "Garmin n'a pas renvoyé de jeton." to R.string.msg_garmin_no_token,
+    "Réponse Garmin illisible." to R.string.msg_garmin_unreadable,
+    "Clé Garmin invalide, expirée ou révoquée." to R.string.msg_garmin_invalid_key,
+    "Accès Garmin refusé." to R.string.msg_garmin_forbidden,
+    "Ressource Garmin introuvable." to R.string.msg_garmin_not_found,
+    "Limite Garmin atteinte. Réessayez dans un instant." to R.string.msg_garmin_rate_soon,
+    "Garmin est momentanément indisponible." to R.string.msg_garmin_unavailable,
+    "Jeton Garmin absent." to R.string.msg_garmin_no_token,
 )
 
 private fun consumableIdFor(name: String): String? =
@@ -116,6 +131,12 @@ fun biomeNameRes(res: Resources, raw: String): String {
     val key = FRENCH_BIOMES[raw] ?: return raw
     return res.getString(key)
 }
+
+fun sourceNameRes(res: Resources, raw: String): String =
+    if (raw == "Santé Connect") res.getString(R.string.source_health) else raw
+
+fun sourceLabel(res: Resources, id: String): String =
+    res.getString(if (id == "health") R.string.source_health else R.string.source_garmin)
 
 fun creatureDisplay(res: Resources, raw: String): String {
     if (isFrench(res)) return raw
@@ -260,7 +281,7 @@ private val RULES: List<Rule> = listOf(
     Rule(Regex("""^Rattrapage (.+) · (\d+) jour\(s\) · (\d+) pas$""")) { r, m ->
         r.getString(
             R.string.journal_catchup,
-            m.groupValues[1],
+            sourceNameRes(r, m.groupValues[1]),
             m.groupValues[2].toInt(),
             m.groupValues[3].toInt()
         )
@@ -269,7 +290,7 @@ private val RULES: List<Rule> = listOf(
         r.getString(
             R.string.journal_steps_added,
             m.groupValues[1].toInt(),
-            m.groupValues[2],
+            sourceNameRes(r, m.groupValues[2]),
             m.groupValues[3].toInt()
         )
     },
@@ -489,6 +510,48 @@ private val RULES: List<Rule> = listOf(
         val chest = FRENCH_CHESTS[m.groupValues[1]] ?: "runique"
         r.getString(R.string.msg_chest_expires, chestType(r, chest), m.groupValues[2])
     },
+    Rule(Regex("""^(\d{2}/\d{2} \d{2}:\d{2}) · OK · \+(\d+) pas$""")) { r, m ->
+        r.getString(R.string.sync_log_ok, m.groupValues[1], m.groupValues[2].toInt())
+    },
+    Rule(Regex("""^(\d{2}/\d{2} \d{2}:\d{2}) · OK · \+(\d+) pas · total (\d+)$""")) { r, m ->
+        m.groupValues[1] + " · " + r.getString(
+            R.string.sync_log_garmin_ok,
+            m.groupValues[2].toInt(),
+            m.groupValues[3].toInt()
+        )
+    },
+    Rule(Regex("""^(\d{2}/\d{2} \d{2}:\d{2}) · ERREUR · (.+)$""")) { r, m ->
+        r.getString(R.string.sync_log_error, m.groupValues[1], translateText(r, m.groupValues[2]))
+    },
+    Rule(Regex("""^OK · \+(\d+) pas · total (\d+)$""")) { r, m ->
+        r.getString(R.string.sync_log_garmin_ok, m.groupValues[1].toInt(), m.groupValues[2].toInt())
+    },
+    Rule(Regex("""^ERREUR (\d+) · (.+)$""")) { r, m ->
+        r.getString(R.string.sync_log_garmin_error, m.groupValues[1].toInt(), translateText(r, m.groupValues[2]))
+    },
+    Rule(Regex("""^ERREUR · (.+)$""")) { r, m ->
+        r.getString(R.string.sync_log_garmin_error_generic, translateText(r, m.groupValues[1]))
+    },
+    Rule(Regex("""^Santé Connect synchronisé · aucun nouveau pas$""")) { r, _ ->
+        r.getString(R.string.sync_health_none_new)
+    },
+    Rule(Regex("""^Santé Connect synchronisé · \+(\d+) pas$""")) { r, m ->
+        r.getString(R.string.sync_health_synced, m.groupValues[1].toInt())
+    },
+    Rule(Regex("""^Rattrapage Santé Connect · (\d+) jour\(s\), (\d+) pas$""")) { r, m ->
+        r.getString(
+            R.string.sync_health_catchup,
+            m.groupValues[1].toInt(),
+            m.groupValues[2].toInt()
+        )
+    },
+    Rule(Regex("""^Santé Connect : lecture impossible(?: \((.+)\))?$""")) { r, m ->
+        r.getString(R.string.sync_health_read_fail) +
+            m.groupValues[1].takeIf { it.isNotBlank() }?.let { " ($it)" }.orEmpty()
+    },
+    Rule(Regex("""^Erreur Garmin \((\d+)\)\.$""")) { r, m ->
+        r.getString(R.string.msg_garmin_error_code, m.groupValues[1].toInt())
+    },
     // Dernière règle : nom de créature suivi d'une capacité de gardien.
     Rule(Regex("""^(.+) · (.+)$""")) { r, m ->
         val ability = FRENCH_ABILITIES[m.groupValues[2]]
@@ -534,6 +597,9 @@ fun localizedTier(raw: String): String = tierRes(LocalContext.current.resources,
 
 @Composable
 fun localizedZoneName(raw: String): String = zoneRes(LocalContext.current.resources, raw)
+
+@Composable
+fun sourceLabelRes(id: String): String = sourceLabel(LocalContext.current.resources, id)
 
 @Composable
 fun localizedSetBonus(text: String): String =
