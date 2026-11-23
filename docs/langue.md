@@ -114,7 +114,7 @@ Un contenu inconnu du catalogue **retombe en français** : aucun crash, aucune p
 |---|---|
 | Changement de langue | recréation d’activité, `GameViewModel` conservé ; testé FR↔EN sans redémarrage |
 | Canaux de notification | `ensureChannels` est appelé à chaque démarrage : les noms/descriptions sont réappliqués. Une notification déjà affichée garde sa langue d’émission (normal). |
-| Widget | rafraîchi via `updateAll` et lit `AppLocale` ; rendu à valider visuellement sur l’écran d’accueil. |
+| Widget | Le lanceur résout les `@string` du layout avec la **locale système**, pas celle de l’app : le titre et l’invite sont donc reposés par le provider avec les ressources de l’app. Validé sur écran d’accueil en EN (`THE MARCH OF SOULS`, `Tap to open and sync`). |
 | Manuel EN absent | repli explicite FR, pas d’écran vide. |
 | Regex du journal | compilées une fois, motifs simples ; coût mesuré acceptable sur 80 entrées. |
 | Traductions imbriquées | récursion bornée (journal, butin, logs) ; aucun cycle. |
@@ -144,6 +144,7 @@ Un contenu inconnu du catalogue **retombe en français** : aucun crash, aucune p
 - Passe sur appareil FR puis EN : Dashboard, inventaire, fiche d’objet, atelier, camp,
   journal, Codex, réglages (haut et bas), diagnostic, mise à jour, manuel.
 - Vérification visuelle des captures : nombres `7,464`, `2,441`, `18k`, dates et heures.
+- Widget vérifié sur l’écran d’accueil en EN et en FR (titre, invite, pas, palier, or).
 - Sauvegarde v7 conservée (bestiaire 18/146, 1 gardien, 16 `firstSeen`, 21 objets, palier 11).
 - Contrôle automatique : aucune capture noire.
 
@@ -151,7 +152,6 @@ Un contenu inconnu du catalogue **retombe en français** : aucun crash, aucune p
 
 - Un contenu sans entrée de catalogue s’affiche en français (fallback assumé, sans perte).
 - Les notifications déjà émises ne sont pas retraduites.
-- Le widget n’a pas été validé sur un écran d’accueil réel.
 - Les captures FR du kit Play et du manuel datent d’une version antérieure.
 - Le format de date EN est américain (`mm/dd/yyyy`) ; un public britannique pourrait préférer
   `jj/mm/aaaa`, à trancher plus tard.

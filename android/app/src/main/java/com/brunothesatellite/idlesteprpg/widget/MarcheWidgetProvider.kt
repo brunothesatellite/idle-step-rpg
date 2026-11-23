@@ -43,6 +43,10 @@ class MarcheWidgetProvider : AppWidgetProvider() {
             val gold = prefs.getInt("gold", 0)
             val views = RemoteViews(context.packageName, R.layout.widget_marche)
             val format = NumberFormat.getIntegerInstance(AppLocale.current)
+            // Les textes du layout sont résolus par le lanceur (locale système) :
+            // on les repose ici avec les ressources de l'app pour suivre sa langue.
+            views.setTextViewText(R.id.widget_title, context.getString(R.string.widget_title))
+            views.setTextViewText(R.id.widget_hint, context.getString(R.string.widget_hint))
             views.setTextViewText(
                 R.id.widget_steps,
                 context.getString(R.string.widget_steps, format.format(steps))
