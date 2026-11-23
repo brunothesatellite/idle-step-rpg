@@ -10,9 +10,9 @@ import com.brunothesatellite.idlesteprpg.ui.heroLookLayers
 import java.io.File
 
 /**
- * Rend le paper doll du héros (équipement actuel) dans un PNG que le widget
- * peut afficher. Le widget n'a pas accès à l'état du jeu : le rendu est fait
- * côté application, puis relu par le provider.
+ * Rend le paper doll du héros (équipement actuel) pour le widget.
+ * Le rendu est aussi possible directement depuis les couches stockées en
+ * préférences, pour ne pas dépendre d'un fichier PNG intermédiaire.
  */
 object WidgetHero {
     private const val SIZE = 192
@@ -24,27 +24,36 @@ object WidgetHero {
             .sortedBy { it.slot }
             .joinToString("|") { "${it.slot}:${it.icon}:${it.name}" }
 
-    fun render(context: Context, state: GameState): Boolean = runCatching {
+    fun renderLayers(context: Context, layers: List<String>): Bitmap? = runCatching {
         val out = Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
         val paint = Paint().apply {
             isFilterBitmap = false
             isAntiAlias = false
         }
-        for (path in heroLookLayers(state)) {
-            val sprite = context.assets.open(path).use { BitmapFactory.decodeStream(it) }
-                ?: continue
+        val paths = layers.ifEmpty { listOf("hero/human_m.png") }
+        for (path in paths) {
+            val sprite = runCatching {
+                context.assets.open(path).use { BitmapFactory.decodeStream(it) }
+            }.getOrNull() ?: continue
             val scaled = Bitmap.createScaledBitmap(sprite, SIZE, SIZE, false)
             canvas.drawBitmap(scaled, 0f, 0f, paint)
         }
-        val file = File(context.filesDir, FILE_NAME)
-        val tmp = File(context.filesDir, "$FILE_NAME.tmp")
-        java.io.FileOutputStream(tmp).use { stream ->
-            out.compress(Bitmap.CompressFormat.PNG, 100, stream)
-            stream.flush()
-        }
-        tmp.renameTo(file) || tmp.copyTo(file, overwrite = true).let { tmp.delete(); true }
-    }.getOrDefault(false)
+        out
+    }.getOrNull()
+
+    fun render(context: Context, state: GameState): Boolean {
+        val out = renderLayers(context, heroLookLayers(state)) ?: return false
+        return runCatching {
+            val file = File(context.filesDir, FILE_NAME)
+            val tmp = File(context.filesDir, "$FILE_NAME.tmp")
+            java.io.FileOutputStream(tmp).use { stream ->
+                out.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                stream.flush()
+            }
+            tmp.renameTo(file) || tmp.copyTo(file, overwrite = true).let { tmp.delete(); true }
+        }.getOrDefault(false)
+    }
 
     fun load(context: Context): Bitmap? = runCatching {
         BitmapFactory.decodeFile(File(context.filesDir, FILE_NAME).absolutePath)

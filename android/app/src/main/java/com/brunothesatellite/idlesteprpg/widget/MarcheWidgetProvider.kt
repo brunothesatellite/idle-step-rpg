@@ -44,7 +44,13 @@ class MarcheWidgetProvider : AppWidgetProvider() {
             val gold = prefs.getInt("gold", 0)
             val views = RemoteViews(context.packageName, R.layout.widget_marche)
             val format = NumberFormat.getIntegerInstance(AppLocale.current)
-            val hero = WidgetHero.load(context)
+            val hero = WidgetHero.load(context) ?: WidgetHero.renderLayers(
+                context,
+                prefs.getString("hero_layers", "")
+                    .orEmpty()
+                    .split("|")
+                    .filter { it.isNotBlank() }
+            )
             if (hero != null) {
                 views.setImageViewBitmap(R.id.widget_hero, hero)
             } else {

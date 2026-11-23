@@ -11,6 +11,7 @@ import com.brunothesatellite.idlesteprpg.engine.deepCopy
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.widget.MarcheWidgetProvider
 import com.brunothesatellite.idlesteprpg.widget.WidgetHero
+import com.brunothesatellite.idlesteprpg.ui.heroLookLayers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -416,6 +417,7 @@ class GameRepository(
             .putInt("level", snapshot.level)
             .putInt("floor", snapshot.floor)
             .putInt("gold", snapshot.gold)
+            .putString("hero_layers", heroLookLayers(snapshot).joinToString("|"))
             .apply()
         if (heroChanged && WidgetHero.render(context, snapshot)) {
             prefs.edit().putString("hero_sig", signature).apply()
