@@ -120,16 +120,16 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
             LanguageCard(context)
             Spacer(Modifier.height(8.dp))
             PixelCard(Modifier.fillMaxWidth()) {
-                SectionLabel("Affichage")
+                SectionLabel(stringResource(R.string.settings_display))
                 Spacer(Modifier.height(6.dp))
-                Text("Taille du texte", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
+                Text(stringResource(R.string.settings_text_size), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
                 Spacer(Modifier.height(5.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     listOf(
-                        "Normal" to 1.0f,
-                        "Grand" to 1.35f,
-                        "Très grand" to 1.6f,
-                        "Maximal" to 2.0f
+                        stringResource(R.string.settings_text_normal) to 1.0f,
+                        stringResource(R.string.settings_text_large) to 1.35f,
+                        stringResource(R.string.settings_text_xlarge) to 1.6f,
+                        stringResource(R.string.settings_text_max) to 2.0f
                     ).chunked(2).forEach { half ->
                         Row(
                             Modifier.fillMaxWidth(),
@@ -168,8 +168,8 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 }
                 Spacer(Modifier.height(9.dp))
                 ToggleRow(
-                    "Notifications",
-                    "Rencontre, gardien, niveau, serments, coffre et clé Garmin.",
+                    stringResource(R.string.settings_notifications),
+                    stringResource(R.string.settings_notifications_desc),
                     ui.notificationsEnabled
                 ) { enabled ->
                     vm.setNotificationsEnabled(enabled)
@@ -183,37 +183,37 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     }
                 }
                 if (ui.notificationsEnabled) {
-                    ToggleRow("Gardien", "Quand un gardien de palier apparaît.", ui.notifyBoss) {
+                    ToggleRow(stringResource(R.string.settings_notify_boss), stringResource(R.string.settings_notify_boss_desc), ui.notifyBoss) {
                         vm.setNotifyBoss(it)
                     }
                     ToggleRow(
-                        "Rencontre en attente",
-                        "Une rencontre spéciale attend votre retour après une absence.",
+                        stringResource(R.string.settings_notify_special),
+                        stringResource(R.string.settings_notify_special_desc),
                         ui.notifySpecial
                     ) { vm.setNotifySpecial(it) }
                     ToggleRow(
-                        "Gardien en attente",
-                        "Le portail est atteint mais il ne reste plus de pas.",
+                        stringResource(R.string.settings_notify_boss_waiting),
+                        stringResource(R.string.settings_notify_boss_waiting_desc),
                         ui.notifyBossWaiting
                     ) { vm.setNotifyBossWaiting(it) }
-                    ToggleRow("Niveau", "Chaque montée de niveau.", ui.notifyLevel) {
+                    ToggleRow(stringResource(R.string.settings_notify_level), stringResource(R.string.settings_notify_level_desc), ui.notifyLevel) {
                         vm.setNotifyLevel(it)
                     }
-                    ToggleRow("Serments", "Quand un serment est accompli.", ui.notifyOaths) {
+                    ToggleRow(stringResource(R.string.settings_notify_oaths), stringResource(R.string.settings_notify_oaths_desc), ui.notifyOaths) {
                         vm.setNotifyOaths(it)
                     }
-                    ToggleRow("Coffres", "Un coffre va bientôt expirer.", ui.notifyChest) {
+                    ToggleRow(stringResource(R.string.settings_notify_chest), stringResource(R.string.settings_notify_chest_desc), ui.notifyChest) {
                         vm.setNotifyChest(it)
                     }
-                    ToggleRow("Clé Garmin", "Expiration à 30/7/1 jour.", ui.notifyKey) {
+                    ToggleRow(stringResource(R.string.settings_notify_key), stringResource(R.string.settings_notify_key_desc), ui.notifyKey) {
                         vm.setNotifyKey(it)
                     }
                     ToggleRow(
-                        "Synchro de fond",
-                        "Résultat des synchronisations automatiques (pas crédités ou erreur).",
+                        stringResource(R.string.settings_notify_sync),
+                        stringResource(R.string.settings_notify_sync_desc),
                         ui.notifySync
                     ) { vm.setNotifySync(it) }
-                    ToggleRow("Heures calmes", "22:00–08:00 : alertes sans vibration.", ui.quietHours) {
+                    ToggleRow(stringResource(R.string.settings_quiet_hours), stringResource(R.string.settings_quiet_hours_desc), ui.quietHours) {
                         vm.setQuietHours(it)
                     }
                     val granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
@@ -223,14 +223,14 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         ) == PackageManager.PERMISSION_GRANTED
                     if (!granted) {
                         Text(
-                            "La permission Android est refusée : ouvrez les réglages système pour l'autoriser.",
+                            stringResource(R.string.settings_notifications_denied),
                             fontSize = 6.5.sp,
                             color = Blood,
                             lineHeight = 9.sp
                         )
                         Spacer(Modifier.height(4.dp))
                         OverlayAction(
-                            "OUVRIR LES RÉGLAGES SYSTÈME",
+                            stringResource(R.string.settings_open_system_settings),
                             Modifier.fillMaxWidth(),
                             onClick = {
                                 runCatching {
@@ -245,29 +245,29 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     }
                 }
                 ToggleRow(
-                    "Animations réduites",
-                    "Supprime le balancement, les auras et les nombres flottants.",
+                    stringResource(R.string.settings_reduced_motion),
+                    stringResource(R.string.settings_reduced_motion_desc),
                     ui.reducedMotion
                 ) { vm.setReducedMotion(it) }
                 ToggleRow(
-                    "Vibrations",
-                    "Vibre pour les notifications d'alerte.",
+                    stringResource(R.string.settings_vibrations),
+                    stringResource(R.string.settings_vibrations_desc),
                     ui.vibrations
                 ) { vm.setVibrations(it) }
                 Spacer(Modifier.height(4.dp))
                 OverlayAction(
-                    "REVOIR L'ONBOARDING",
+                    stringResource(R.string.settings_replay_onboarding),
                     Modifier.fillMaxWidth(),
                     onClick = { vm.restartOnboarding() }
                 )
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
-                SectionLabel("Son")
+                SectionLabel(stringResource(R.string.settings_sound))
                 Spacer(Modifier.height(5.dp))
                 ToggleRow(
-                    "Sons 8 bits",
-                    "Combat, niveau, coffre, forge et rencontres.",
+                    stringResource(R.string.settings_sound_8bit),
+                    stringResource(R.string.settings_sound_8bit_desc),
                     ui.soundsEnabled
                 ) { vm.setSoundsEnabled(it) }
                 if (ui.soundsEnabled) {
@@ -276,7 +276,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Volume", fontSize = 8.sp, color = Parchment)
+                        Text(stringResource(R.string.settings_volume), fontSize = 8.sp, color = Parchment)
                         Text(
                             "${(ui.soundVolume * 100).roundToInt()} %",
                             fontFamily = Press,
@@ -296,7 +296,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         )
                     )
                     OverlayAction(
-                        "TESTER LE SON",
+                        stringResource(R.string.settings_test_sound),
                         Modifier.fillMaxWidth(),
                         onClick = { vm.previewSound() }
                     )
@@ -305,8 +305,8 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 DividerLine()
                 Spacer(Modifier.height(7.dp))
                 ToggleRow(
-                    "Musique d'ambiance",
-                    "Deux pistes par biome, reprise à une position aléatoire.",
+                    stringResource(R.string.settings_music),
+                    stringResource(R.string.settings_music_desc),
                     ui.musicEnabled
                 ) { vm.setMusicEnabled(it) }
                 if (ui.musicEnabled) {
@@ -315,7 +315,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Volume musique", fontSize = 8.sp, color = Parchment)
+                        Text(stringResource(R.string.settings_music_volume), fontSize = 8.sp, color = Parchment)
                         Text(
                             "${(ui.musicVolume * 100).roundToInt()} %",
                             fontFamily = Press,
@@ -334,7 +334,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         )
                     )
                     Text(
-                        "Volume indépendant des effets sonores. La musique se met en pause quand l'application passe en arrière-plan.",
+                        stringResource(R.string.settings_music_note),
                         fontSize = 6.2.sp,
                         color = Muted2,
                         lineHeight = 9.sp
@@ -344,11 +344,11 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
             Spacer(Modifier.height(10.dp))
             if (!BuildConfig.PLAY_DISTRIBUTION) {
             PixelCard(Modifier.fillMaxWidth()) {
-                SectionLabel("Mises à jour")
+                SectionLabel(stringResource(R.string.settings_updates))
                 Spacer(Modifier.height(5.dp))
                 ToggleRow(
-                    "Vérification automatique",
-                    "Une fois par jour au lancement. L'installation reste toujours confirmée par vous.",
+                    stringResource(R.string.settings_auto_update),
+                    stringResource(R.string.settings_auto_update_desc),
                     ui.autoUpdateCheck
                 ) { vm.setAutoUpdateCheck(it) }
                 Spacer(Modifier.height(4.dp))
@@ -359,7 +359,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 )
                 Spacer(Modifier.height(6.dp))
                 OverlayAction(
-                    if (ui.updateChecking) "VÉRIFICATION…" else "VÉRIFIER MAINTENANT",
+                    if (ui.updateChecking) stringResource(R.string.settings_checking) else stringResource(R.string.settings_check_now),
                     Modifier.fillMaxWidth(),
                     onClick = { vm.checkForUpdate(manual = true) },
                     enabled = !ui.updateChecking
@@ -367,28 +367,27 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 ui.availableUpdate?.let { info ->
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "Version ${info.tag} disponible.",
+                        stringResource(R.string.settings_update_available, info.tag),
                         fontSize = 7.sp,
                         color = GoldLight
                     )
                     Spacer(Modifier.height(4.dp))
                     OverlayAction(
-                        "INSTALLER ${info.tag}",
+                        stringResource(R.string.settings_update_install, info.tag),
                         Modifier.fillMaxWidth(),
                         onClick = vm::installUpdate,
                         primary = true
                     )
                     Spacer(Modifier.height(4.dp))
                     OverlayAction(
-                        "VOIR LA RELEASE",
+                        stringResource(R.string.settings_view_release),
                         Modifier.fillMaxWidth(),
                         onClick = { vm.openRelease(info.releaseUrl) }
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "L'APK est téléchargé depuis les releases GitHub et vérifié par SHA-256 " +
-                        "quand l'empreinte est publiée.",
+                    stringResource(R.string.settings_update_note),
                     fontSize = 6.5.sp,
                     color = Muted2,
                     lineHeight = 9.sp
@@ -397,10 +396,10 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
-                SectionLabel("Aide")
+                SectionLabel(stringResource(R.string.settings_help))
                 Spacer(Modifier.height(5.dp))
                 OverlayAction(
-                    "OUVRIR LE MANUEL DU JEU",
+                    stringResource(R.string.settings_open_manual),
                     Modifier.fillMaxWidth(),
                     onClick = {
                         context.startActivity(
@@ -411,20 +410,20 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
-                SectionLabel("Inventaire")
+                SectionLabel(stringResource(R.string.settings_inventory))
                 Spacer(Modifier.height(5.dp))
                 ToggleRow(
-                    "Vendre les communs automatiquement",
-                    "Les objets communs non verrouillés sont convertis en or au ramassage.",
+                    stringResource(R.string.settings_auto_sell),
+                    stringResource(R.string.settings_auto_sell_desc),
                     ui.autoSellCommons
                 ) { vm.setAutoSellCommons(it) }
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
-                SectionLabel("Sauvegarde")
+                SectionLabel(stringResource(R.string.settings_save))
                 Spacer(Modifier.height(5.dp))
                 Text(
-                    "La progression est aussi sauvegardée automatiquement. Exportez-la avant de changer de téléphone.",
+                    stringResource(R.string.settings_save_note),
                     fontSize = 6.8.sp,
                     color = Muted,
                     lineHeight = 10.sp
@@ -432,19 +431,19 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 Spacer(Modifier.height(7.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                     OverlayAction(
-                        "EXPORTER",
+                        stringResource(R.string.settings_export),
                         Modifier.weight(1f),
                         onClick = { exportLauncher.launch("marche-ames-sauvegarde.json") }
                     )
                     OverlayAction(
-                        "IMPORTER",
+                        stringResource(R.string.settings_import),
                         Modifier.weight(1f),
                         onClick = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) }
                     )
                 }
                 Spacer(Modifier.height(5.dp))
                 OverlayAction(
-                    "EFFACER LA PROGRESSION",
+                    stringResource(R.string.settings_clear_progress),
                     Modifier.fillMaxWidth(),
                     { confirmClear = true },
                     danger = true
@@ -455,7 +454,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 Modifier.fillMaxWidth(),
                 borderColor = if (ui.connected) Green.copy(alpha = 0.3f) else Ember.copy(alpha = 0.35f)
             ) {
-                SectionLabel("Source de pas")
+                SectionLabel(stringResource(R.string.settings_step_source))
                 Text(
                     ui.stepStatus,
                     fontSize = 7.5.sp,
@@ -463,16 +462,16 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 )
                 Spacer(Modifier.height(6.dp))
                 SourceRow(
-                    title = "Garmin",
-                    subtitle = "Personal API · clé personnelle",
+                    title = stringResource(R.string.settings_garmin),
+                    subtitle = stringResource(R.string.settings_garmin_desc),
                     selected = ui.stepSource == "garmin",
                     onClick = { if (ui.stepSource != "garmin") pendingSource = "garmin" }
                 )
                 Spacer(Modifier.height(4.dp))
                 SourceRow(
-                    title = "Santé Connect",
-                    subtitle = if (ui.healthAvailable) "Google Fit, Samsung Health, montre…"
-                    else "Indisponible sur cet appareil",
+                    title = stringResource(R.string.settings_health),
+                    subtitle = if (ui.healthAvailable) stringResource(R.string.settings_health_desc)
+                    else stringResource(R.string.settings_health_unavailable),
                     selected = ui.stepSource == "health",
                     enabled = ui.healthAvailable,
                     onClick = { if (ui.stepSource != "health") pendingSource = "health" }
@@ -482,8 +481,8 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     val keyDays = ui.keyExpiry?.let { ChronoUnit.DAYS.between(LocalDate.now(), it) }
                     if (keyDays != null && keyDays < 30) {
                         Text(
-                            if (keyDays < 0) "Clé Garmin expirée — remplacez-la."
-                            else "Clé Garmin expire dans $keyDays jour(s).",
+                            if (keyDays < 0) stringResource(R.string.settings_key_expired)
+                            else stringResource(R.string.settings_key_expires, keyDays),
                             fontSize = 6.8.sp,
                             color = Blood
                         )
@@ -492,23 +491,23 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     if (ui.connected) {
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             OverlayAction(
-                                "SYNCHRONISER",
+                                stringResource(R.string.settings_sync),
                                 Modifier.weight(1f),
                                 { vm.syncNow() },
                                 enabled = !ui.syncing
                             )
-                            OverlayAction("GÉRER LA CLÉ", Modifier.weight(1f), { vm.openSettings() })
+                            OverlayAction(stringResource(R.string.settings_manage_key), Modifier.weight(1f), { vm.openSettings() })
                         }
                     } else {
                         Text(
-                            "Sans clé Garmin, la marche ne peut pas démarrer avec cette source.",
+                            stringResource(R.string.settings_garmin_missing),
                             fontSize = 7.sp,
                             color = Muted,
                             lineHeight = 10.sp
                         )
                         Spacer(Modifier.height(5.dp))
                         OverlayAction(
-                            "CONNECTER GARMIN",
+                            stringResource(R.string.settings_connect_garmin),
                             Modifier.fillMaxWidth(),
                             { vm.openSettings() },
                             primary = true
@@ -516,8 +515,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     }
                 } else {
                     Text(
-                        "Les pas sont lus dans Santé Connect. Aucune application ne fournit de pas ? " +
-                            "Installez Google Fit ou synchronisez une montre.",
+                        stringResource(R.string.settings_health_note),
                         fontSize = 7.sp,
                         color = Muted,
                         lineHeight = 10.sp
@@ -525,7 +523,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     Spacer(Modifier.height(5.dp))
                     if (!ui.healthPermission) {
                         OverlayAction(
-                            "AUTORISER SANTÉ CONNECT",
+                            stringResource(R.string.settings_authorize_health),
                             Modifier.fillMaxWidth(),
                             { healthLauncher.launch(setOf(vm.healthPermissionName())) },
                             primary = true
@@ -533,13 +531,13 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     } else {
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             OverlayAction(
-                                "SYNCHRONISER",
+                                stringResource(R.string.settings_sync),
                                 Modifier.weight(1f),
                                 { vm.syncNow() },
                                 enabled = !ui.syncing
                             )
                             OverlayAction(
-                                "AUTORISATION",
+                                stringResource(R.string.settings_authorization),
                                 Modifier.weight(1f),
                                 { healthLauncher.launch(setOf(vm.healthPermissionName())) }
                             )
@@ -549,27 +547,27 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
-                SectionLabel("Diagnostic")
+                SectionLabel(stringResource(R.string.settings_diagnostic))
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Fenêtre d'import, jours crédités et garde-fous appliqués par la synchronisation.",
+                    stringResource(R.string.settings_diagnostic_desc),
                     fontSize = 6.8.sp,
                     color = Muted,
                     lineHeight = 10.sp
                 )
                 Spacer(Modifier.height(6.dp))
                 OverlayAction(
-                    "OUVRIR LE DIAGNOSTIC",
+                    stringResource(R.string.settings_open_diagnostic),
                     Modifier.fillMaxWidth(),
                     onClick = { diagnosticOpen = true }
                 )
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {
-                SectionLabel("Journal de synchronisation")
+                SectionLabel(stringResource(R.string.settings_sync_log))
                 Spacer(Modifier.height(4.dp))
                 if (ui.syncLog.isEmpty()) {
-                    Text("Aucune synchronisation enregistrée.", fontSize = 7.sp, color = Muted2)
+                    Text(stringResource(R.string.settings_sync_log_empty), fontSize = 7.sp, color = Muted2)
                 } else {
                     ui.syncLog.forEach { line ->
                         Text(
@@ -616,8 +614,8 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     }
                     Spacer(Modifier.width(7.dp))
                     Column(Modifier.weight(1f)) {
-                        SectionLabel("Réglages avancés")
-                        Text("Absence et équilibrage", fontSize = 6.5.sp, color = Muted2)
+                        SectionLabel(stringResource(R.string.settings_advanced))
+                        Text(stringResource(R.string.settings_advanced_subtitle), fontSize = 6.5.sp, color = Muted2)
                     }
                 }
                 if (advancedOpen) {
@@ -625,7 +623,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     DividerLine()
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "ABSENCE HORS LIGNE",
+                        stringResource(R.string.settings_offline_title),
                         fontFamily = Press,
                         fontSize = 6.5.sp,
                         letterSpacing = 1.sp,
@@ -633,18 +631,17 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     )
                     Spacer(Modifier.height(3.dp))
                     Text(
-                        "La réserve s'écoule quand l'application est fermée, dans la limite du budget choisi. " +
-                            "La durée de simulation découle des pas.",
+                        stringResource(R.string.settings_offline_desc),
                         fontSize = 6.6.sp,
                         color = Muted,
                         lineHeight = 10.sp
                     )
                     Spacer(Modifier.height(7.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        ChoiceChip("Pourcentage", offlineMode == OfflineMode.PERCENT) {
+                        ChoiceChip(stringResource(R.string.settings_percent), offlineMode == OfflineMode.PERCENT) {
                             vm.setOfflineMode("percent")
                         }
-                        ChoiceChip("Pas maximum", offlineMode == OfflineMode.STEPS) {
+                        ChoiceChip(stringResource(R.string.settings_max_steps), offlineMode == OfflineMode.STEPS) {
                             vm.setOfflineMode("steps")
                         }
                     }
@@ -654,13 +651,13 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            if (offlineMode == OfflineMode.PERCENT) "% des pas du jour" else "Pas hors ligne",
+                            if (offlineMode == OfflineMode.PERCENT) stringResource(R.string.settings_percent_of_steps) else stringResource(R.string.settings_offline_steps),
                             fontSize = 8.sp,
                             color = Parchment
                         )
                         Text(
                             if (offlineMode == OfflineMode.PERCENT) "${ui.offlinePercent} %"
-                            else "${ui.offlineMaxSteps} pas",
+                            else stringResource(R.string.settings_steps_unit, ui.offlineMaxSteps),
                             fontFamily = Press,
                             fontSize = 7.sp,
                             color = Gold
@@ -695,25 +692,32 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         Spacer(Modifier.height(5.dp))
                     }
                     Text(
-                        if (dailyBudget <= 0) "Absence hors ligne désactivée."
-                        else "≈ ${offlineDurationLabel(dailyBudget / 60)} de simulation · jusqu'à " +
-                            "${offlineDurationLabel(dailyBudget / 30)} si la réserve est presque vide",
+                        if (dailyBudget <= 0) stringResource(R.string.settings_offline_disabled)
+                        else stringResource(
+                            R.string.settings_offline_simulation,
+                            offlineDurationLabel(dailyBudget / 60),
+                            offlineDurationLabel(dailyBudget / 30)
+                        ),
                         fontSize = 6.4.sp,
                         color = Muted
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        if (dailyBudget <= 0) "Aujourd'hui : aucun pas autorisé hors ligne."
-                        else "Aujourd'hui : $dailyBudget pas max · $remainingBudget encore disponibles " +
-                            "(${state.offlineStepsToday} consommés)",
+                        if (dailyBudget <= 0) stringResource(R.string.settings_today_none)
+                        else stringResource(
+                            R.string.settings_today_offline,
+                            dailyBudget,
+                            remainingBudget,
+                            state.offlineStepsToday
+                        ),
                         fontSize = 6.4.sp,
                         color = Muted2
                     )
                     Spacer(Modifier.height(7.dp))
-                    OverlayAction("RÉTABLIR 30 %", Modifier.fillMaxWidth(), onClick = { vm.resetOfflinePolicy() })
+                    OverlayAction(stringResource(R.string.settings_reset_30), Modifier.fillMaxWidth(), onClick = { vm.resetOfflinePolicy() })
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Ces réglages réduisent la progression hors ligne. 30 % est la valeur recommandée.",
+                        stringResource(R.string.settings_offline_note),
                         fontSize = 6.2.sp,
                         color = Muted2,
                         lineHeight = 9.sp
@@ -722,13 +726,16 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth(), borderColor = Gold.copy(alpha = 0.3f)) {
-                SectionLabel("À propos")
+                SectionLabel(stringResource(R.string.settings_about))
                 Spacer(Modifier.height(4.dp))
-                Text("La Marche des Âmes · v${BuildConfig.VERSION_NAME}", fontSize = 8.sp, color = Parchment)
+                Text(
+                    stringResource(R.string.settings_about_version, BuildConfig.VERSION_NAME),
+                    fontSize = 8.sp,
+                    color = Parchment
+                )
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    "Jeu de marche personnel. Aucun serveur de jeu : les pas viennent de Garmin " +
-                        "(Personal API) ou de Santé Connect, et la 2FA Garmin reste dans le navigateur.",
+                    stringResource(R.string.settings_about_text),
                     fontSize = 6.8.sp,
                     color = Muted,
                     lineHeight = 10.sp
@@ -736,7 +743,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 Spacer(Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                     OverlayAction(
-                        "LICENCES",
+                        stringResource(R.string.settings_licenses),
                         Modifier.weight(1f),
                         onClick = {
                             runCatching {
@@ -750,7 +757,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         }
                     )
                     OverlayAction(
-                        "CONFIDENTIALITÉ",
+                        stringResource(R.string.settings_privacy),
                         Modifier.weight(1.3f),
                         onClick = {
                             runCatching {
@@ -766,7 +773,7 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Code sous licence MIT · ressources CC0/OFL",
+                    stringResource(R.string.settings_license_note),
                     fontSize = 6.5.sp,
                     color = Muted2
                 )
@@ -778,12 +785,11 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
     if (confirmClear) {
         AlertDialog(
             onDismissRequest = { confirmClear = false },
-            title = { WithAppFontScale { Text("Effacer la progression ?", fontSize = 15.sp) } },
+            title = { WithAppFontScale { Text(stringResource(R.string.settings_clear_title), fontSize = 15.sp) } },
             text = {
                 WithAppFontScale {
                     Text(
-                        "Or, objets, paliers, serments et journal seront remis à zéro. " +
-                            "La clé Garmin et tes préférences seront conservées.",
+                        stringResource(R.string.settings_clear_text),
                         fontSize = 9.sp
                     )
                 }
@@ -793,12 +799,12 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     TextButton(onClick = {
                         confirmClear = false
                         vm.clearProgress()
-                    }) { Text("EFFACER", color = Blood) }
+                    }) { Text(stringResource(R.string.settings_delete), color = Blood) }
                 }
             },
             dismissButton = {
                 WithAppFontScale {
-                    TextButton(onClick = { confirmClear = false }) { Text("ANNULER", color = Muted) }
+                    TextButton(onClick = { confirmClear = false }) { Text(stringResource(R.string.settings_cancel), color = Muted) }
                 }
             },
             containerColor = Panel2
@@ -809,13 +815,14 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
     if (target != null) {
         AlertDialog(
             onDismissRequest = { pendingSource = null },
-            title = { WithAppFontScale { Text("Changer de source de pas ?", fontSize = 15.sp) } },
+            title = { WithAppFontScale { Text(stringResource(R.string.settings_change_source_title), fontSize = 15.sp) } },
             text = {
                 WithAppFontScale {
                     Text(
-                        "La source active devient ${target.label}. Les pas déjà comptés aujourd'hui sont " +
-                            "conservés : le premier import de la nouvelle source sert de base et ne " +
-                            "recrédite rien. Les jours suivants comptent normalement.",
+                        stringResource(
+                            R.string.settings_change_source_text,
+                            target.label
+                        ),
                         fontSize = 9.sp
                     )
                 }
@@ -826,12 +833,12 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         val id = pendingSource
                         pendingSource = null
                         if (id != null) vm.setStepSource(id)
-                    }) { Text("CHANGER", color = Gold) }
+                    }) { Text(stringResource(R.string.settings_change), color = Gold) }
                 }
             },
             dismissButton = {
                 WithAppFontScale {
-                    TextButton(onClick = { pendingSource = null }) { Text("ANNULER", color = Muted) }
+                    TextButton(onClick = { pendingSource = null }) { Text(stringResource(R.string.settings_cancel), color = Muted) }
                 }
             },
             containerColor = Panel2
@@ -887,7 +894,7 @@ private fun SourceRow(
             )
             Text(subtitle, fontSize = 6.4.sp, color = Muted)
         }
-        if (selected) Text("ACTIVE", fontFamily = Press, fontSize = 5.5.sp, color = Gold)
+        if (selected) Text(stringResource(R.string.settings_active), fontFamily = Press, fontSize = 5.5.sp, color = Gold)
     }
 }
 
@@ -931,13 +938,14 @@ private fun ToggleRow(
     }
 }
 
+@Composable
 private fun lastCheckLabel(timestamp: Long): String {
-    if (timestamp <= 0L) return "Dernière vérification : jamais"
+    if (timestamp <= 0L) return stringResource(R.string.settings_last_check_never)
     val formatter = java.time.format.DateTimeFormatter
         .ofPattern("dd/MM/yyyy HH:mm")
         .withZone(java.time.ZoneId.systemDefault())
     val value = formatter.format(java.time.Instant.ofEpochMilli(timestamp))
-    return "Dernière vérification : $value"
+    return stringResource(R.string.settings_last_check, value)
 }
 
 @Composable

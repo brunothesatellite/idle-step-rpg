@@ -29,14 +29,16 @@
 - `values-en/`, `locales_config.xml`, `android:localeConfig`.
 - Sélecteur **Système / Français / English** dans Réglages (`LocaleManager`).
 - En-tête des Réglages et carte Langue extraits en ressources.
+- **Écran Réglages extrait** (Affichage, Notifications, Son, Mises à jour, Aide, Inventaire,
+  Sauvegarde, Source de pas, Diagnostic, Réglages avancés, À propos, dialogues).
 - Onboarding entièrement extrait et traduit (4 pages + boutons + étape).
 - Migration **v7** : `bestiary`, `bossKills`, `firstSeen` et `bossFirstSeen` utilisent des
   identifiants stables (`bat_neiges`, `cerebov`). Les anciennes clés inconnues sont conservées.
 - 117 tests, lint OK, debug migré et vérifié sur appareil.
 
 **Reste**
-- Finir les cartes des Réglages (Notifications, Son, Mises à jour, Aide, Inventaire, Sauvegarde,
-  Source de pas, Diagnostic, Réglages avancés, À propos, dialogues).
+- Réglages : chaînes dynamiques restantes (statuts de source, journal de synchronisation,
+  libellés de `StepSourceType`).
 - Dashboard, Codex, Overlays, Scène, ManualActivity.
 - Chaînes dynamiques (dates, pluriels, volumes, statuts de synchronisation).
 - Manuel EN et captures anglaises.
