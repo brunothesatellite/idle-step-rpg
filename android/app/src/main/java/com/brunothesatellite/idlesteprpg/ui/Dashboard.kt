@@ -50,6 +50,7 @@ import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Item
+import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
 import com.brunothesatellite.idlesteprpg.engine.ITEM_SETS
 import com.brunothesatellite.idlesteprpg.engine.BIOMES
 import com.brunothesatellite.idlesteprpg.engine.allBossTemplates
@@ -545,7 +546,7 @@ private fun ResourcesCard(state: GameState) {
             ResourceStat(
                 "item/misc_crystal.png",
                 stringResource(R.string.dashboard_shards),
-                "${state.shards} / 12",
+                "${state.shards} / $MAX_SHARDS",
                 Modifier.weight(1f)
             )
         }

@@ -459,7 +459,7 @@ fun Scene(
             }
             if (state.bossBlessing > 0) {
                 SceneTag(
-                    stringResource(R.string.scene_blessing),
+                    stringResource(R.string.scene_blessing, (state.bossBlessing * 100).roundToInt()),
                     Green,
                     Modifier.align(Alignment.TopCenter).padding(top = 96.dp)
                 )

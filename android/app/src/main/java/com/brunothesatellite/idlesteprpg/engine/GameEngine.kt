@@ -761,7 +761,7 @@ object GameEngine {
                     state.gold -= special.goldCost
                     state.ferveur = min(100, state.ferveur + 15)
                     state.lastStepAt = System.currentTimeMillis()
-                    state.shards = min(12, state.shards + 1)
+                    state.shards = min(MAX_SHARDS, state.shards + 1)
                     SpecialOutcome("Ferveur +15 · +1 éclat.", true)
                 } else {
                     SpecialOutcome("100 or requis.", false)
@@ -1048,7 +1048,7 @@ object GameEngine {
                 state.genRations = nr
             }
             if (ns > state.genShards) {
-                state.shards = min(12, state.shards + (ns - state.genShards))
+                state.shards = min(MAX_SHARDS, state.shards + (ns - state.genShards))
                 state.genShards = ns
             }
             state.journal = addJournal(
@@ -1071,7 +1071,7 @@ object GameEngine {
             state.totalSteps += importedHistory
             state.weeklySteps += importedHistory
             state.rations = min(24, state.rations + min(12, importedHistory / 800))
-            state.shards = min(12, state.shards + min(6, importedHistory / 2000))
+            state.shards = min(MAX_SHARDS, state.shards + min(6, importedHistory / 2000))
             state.journal = addJournal(
                 state,
                 "Rattrapage $sourceLabel · $recoveredDays jour(s) · $importedHistory pas",
@@ -1116,7 +1116,7 @@ object GameEngine {
             o.stepsClaimed = true
             state.gold += 150
             state.goldEarned += 150
-            state.shards = min(12, state.shards + 1)
+            state.shards = min(MAX_SHARDS, state.shards + 1)
             gainXp(state, 80)
             state.journal = addJournal(state, "Serment de marche accompli · +150 or, +1 éclat", "good")
         }
@@ -1124,7 +1124,7 @@ object GameEngine {
             o.bossesClaimed = true
             state.gold += 250
             state.goldEarned += 250
-            state.shards = min(12, state.shards + 2)
+            state.shards = min(MAX_SHARDS, state.shards + 2)
             gainXp(state, 120)
             state.journal = addJournal(state, "Serment de chasse accompli · +250 or, +2 éclats", "good")
         }
@@ -1162,6 +1162,33 @@ object GameEngine {
         return min(raw, 40.0)
     }
 
+    /** Transition douce entre l'ancienne courbe (≤ 20) et la courbe cible (≥ 35). */
+    private fun targetWeight(floor: Int): Double =
+        ((floor - 20) / 15.0).coerceIn(0.0, 1.0)
+
+    private fun lerp(from: Double, to: Double, t: Double): Double =
+        from + (to - from) * t
+
+    private fun mobHpScale(floor: Int): Double {
+        val target = max(1.0, 26.0 - 0.08 * (floor - 10))
+        return lerp(depthMultiplier(floor), target, targetWeight(floor))
+    }
+
+    private fun mobAtkScale(floor: Int): Double {
+        val target = max(1.0, 16.6 - 0.045 * (floor - 10))
+        return lerp(depthMultiplier(floor), target, targetWeight(floor))
+    }
+
+    private fun bossHpScale(floor: Int): Double {
+        val target = max(1.0, 72.0 - 0.20 * (floor - 10))
+        return lerp(6.0 * depthMultiplier(floor, boss = true), target, targetWeight(floor))
+    }
+
+    private fun bossAtkScale(floor: Int): Double {
+        val target = max(1.0, 7.2 - 0.024 * (floor - 10))
+        return lerp(1.6 * depthMultiplier(floor, boss = true), target, targetWeight(floor))
+    }
+
     private fun makeMob(state: GameState): FightData {
         val pos = state.distance
         val biomePool = mobPoolFor(state.floor)
@@ -1176,7 +1203,7 @@ object GameEngine {
             else -> biomePool.easy
         }
         val t = pool[rnd.nextInt(pool.size)]
-        val elite = rnd.nextDouble() < 0.10
+        val elite = rnd.nextDouble() < 0.06
         val rule = biomeRuleFor(state.floor)
         var level = state.floor + when {
             pos < 30 -> -1
@@ -1185,10 +1212,11 @@ object GameEngine {
         }
         if (elite) level += 2
         level = max(1, level)
-        val depth = depthMultiplier(state.floor)
-        val hp = (55 + 34 * (level - 1)) * (if (elite) 2.2 else 1.0)
-        val atk = (6 + 2.2 * (level - 1)) * (if (elite) 1.3 else 1.0)
-        val reward = min(6.0, sqrt(depth))
+        val hpScale = mobHpScale(state.floor)
+        val atkScale = mobAtkScale(state.floor)
+        val hp = (55 + 34 * (level - 1)) * (if (elite) 1.8 else 1.0)
+        val atk = (6 + 2.2 * (level - 1)) * (if (elite) 1.15 else 1.0)
+        val reward = min(6.0, sqrt(depthMultiplier(state.floor)))
         val gold = ((6 + 3 * level) * (if (elite) 1.6 else 1.0) * reward).roundToInt()
         val xp = ((12 + 5 * level) * (if (elite) 1.8 else 1.0) * reward).roundToInt()
         return FightData(
@@ -1196,9 +1224,9 @@ object GameEngine {
             enemyIcon = t.icon,
             enemyId = t.id,
             enemyLevel = level,
-            enemyHp = hp * depth * rule.enemyHpMult,
-            enemyMaxHp = hp * depth * rule.enemyHpMult,
-            enemyAtk = atk * depth * rule.enemyAtkMult,
+            enemyHp = hp * hpScale * rule.enemyHpMult,
+            enemyMaxHp = hp * hpScale * rule.enemyHpMult,
+            enemyAtk = atk * atkScale * rule.enemyAtkMult,
             enemyIntervalMs = ((if (elite) 1100 else 1250) * rule.enemyIntervalMult).roundToLong(),
             gold = gold,
             xp = xp,
@@ -1212,9 +1240,10 @@ object GameEngine {
         val ability = bossAbilityFor(t.name, state.floor)
         val rule = biomeRuleFor(state.floor)
         val level = state.floor + 2
-        val depth = depthMultiplier(state.floor, boss = true)
-        var hp = 6.0 * (55 + 34 * (level - 1)) * depth
-        var atk = 1.6 * (6 + 2.2 * (level - 1)) * depth
+        val hpScale = bossHpScale(state.floor)
+        val atkScale = bossAtkScale(state.floor)
+        var hp = (55 + 34 * (level - 1)) * hpScale
+        var atk = (6 + 2.2 * (level - 1)) * atkScale
         var interval = 1250L
         val modifier = listOf("", "", "rapide", "blinde", "berserk", "regenerant", "voleur").random(rnd)
         when (modifier) {
@@ -1232,7 +1261,7 @@ object GameEngine {
             "voleur" -> " · VOLEUR"
             else -> ""
         }
-        val reward = min(10.0, sqrt(depth))
+        val reward = min(10.0, sqrt(depthMultiplier(state.floor, boss = true)))
         return FightData(
             enemyName = t.name + suffix,
             enemyIcon = t.icon,
@@ -1316,10 +1345,18 @@ object GameEngine {
         }
     }
 
+    private fun bossEnrage(f: FightData): Double {
+        if (!f.isBoss) return 1.0
+        val after = 15_000.0
+        if (f.elapsedMs < after) return 1.0
+        val steps = ((f.elapsedMs - after) / 5_000.0).toInt() + 1
+        return 1.0 + min(0.75, steps * 0.25)
+    }
+
     private fun triggerBossAbility(state: GameState, f: FightData) {
         val s = statsOf(state)
         fun damage(multiplier: Double): Double {
-            val raw = f.enemyAtk * multiplier * (0.9 + rnd.nextDouble() * 0.1)
+            val raw = f.enemyAtk * multiplier * bossEnrage(f) * (0.9 + rnd.nextDouble() * 0.1)
             val dmg = raw * (1.0 - s.damageReduction) * (1.0 + s.damageTaken)
             state.hp -= dmg
             return dmg
@@ -1331,7 +1368,7 @@ object GameEngine {
                 f.enemyHp = min(f.enemyMaxHp, f.enemyHp + dmg * 0.8)
             }
             "regen" -> f.enemyHp = min(f.enemyMaxHp, f.enemyHp + f.enemyMaxHp * 0.07)
-            "shield" -> f.shieldMs = 4500.0
+            "shield" -> f.shieldMs = 3000.0
             "breath" -> {
                 damage(2.0)
                 addBuff(state, "vulnerable", 0.15, 6_000, "GIVRE")
@@ -1380,14 +1417,18 @@ object GameEngine {
 
     private fun heroAttack(state: GameState, f: FightData) {
         val s = statsOf(state)
-        var atk = s.atk * if (f.isBoss && state.bossBlessing > 0) 1.25 else 1.0
+        var atk = s.atk * if (f.isBoss && state.bossBlessing > 0) {
+            1.0 + state.bossBlessing
+        } else {
+            1.0
+        }
         var dmg = atk * (0.9 + rnd.nextDouble() * 0.2)
         if (f.isBoss) dmg *= 1.0 + s.bossDamage
         val critChance = (s.crit + state.ferveur * 0.02) / 100.0
         val crit = rnd.nextDouble() < critChance
         f.lastCrit = crit
         if (crit) dmg *= 1.6 + s.critDamage
-        if (f.shieldMs > 0.0) dmg *= 0.35
+        if (f.shieldMs > 0.0) dmg *= 0.60
         f.enemyHp -= dmg
         recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit, onEnemy = true)
         if (s.lifesteal > 0.0) {
@@ -1398,7 +1439,7 @@ object GameEngine {
 
     private fun enemyAttack(state: GameState, f: FightData) {
         val s = statsOf(state)
-        var dmg = f.enemyAtk * (0.9 + rnd.nextDouble() * 0.1)
+        var dmg = f.enemyAtk * bossEnrage(f) * (0.9 + rnd.nextDouble() * 0.1)
         dmg *= (1.0 - s.damageReduction) * (1.0 + s.damageTaken)
         state.hp -= dmg
         recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit = false, onEnemy = false)
@@ -1414,7 +1455,7 @@ object GameEngine {
                 return
             }
         }
-        if (!f.usedRation && !f.farm && state.hp < s.maxHp * 0.25 && state.rations > 0) {
+        if (!f.usedRation && !f.farm && state.hp < s.maxHp * 0.30 && state.rations > 0) {
             f.usedRation = true
             state.rations--
             val heal = s.maxHp * 0.35
@@ -1482,18 +1523,18 @@ object GameEngine {
                     "good"
                 )
             } else {
-                state.shards += 2
-                state.rations += 1
+                state.shards = min(MAX_SHARDS, state.shards + 3)
+                state.rations = min(24, state.rations + 2)
                 state.floor++
                 addLoot(state, lootItem(state.floor, "rare"))
                 dropConsumables(state, "boss")
                 state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
                 if (clearedFloor % 10 == 0) {
-                    state.shards += 5
+                    state.shards = min(MAX_SHARDS, state.shards + 8)
                     addLegend(state, "Jalon · palier $clearedFloor — ${titleFor(state.floor)}")
                     state.journal = addJournal(
                         state,
-                        "Jalon · palier $clearedFloor franchi — ${titleFor(state.floor)} · +5 éclats",
+                        "Jalon · palier $clearedFloor franchi — ${titleFor(state.floor)} · +8 éclats",
                         "good"
                     )
                 }
@@ -1524,6 +1565,12 @@ object GameEngine {
             state.nextFight += 10
             state.journal = addJournal(state, "${f.enemyName} vaincu · +$earned or", "good")
             dropConsumables(state, "mob")
+            if (rnd.nextDouble() < 0.10) {
+                state.rations = min(24, state.rations + 1)
+            }
+            if (f.elite && rnd.nextDouble() < 0.20) {
+                state.shards = min(MAX_SHARDS, state.shards + 1)
+            }
             if (rnd.nextDouble() < 0.18) spawnChest(state)
         }
     }
@@ -1537,7 +1584,7 @@ object GameEngine {
         state.mode = "farmWait"
         state.farmKills = 0
         state.farmWaitMs = 800.0
-        if (f.isBoss) state.bossBlessing = 0.25
+        if (f.isBoss) state.bossBlessing = min(0.75, state.bossBlessing + 0.25)
         state.journal = addJournal(state, "Défaite — repli de 20 m dans la zone de farm", "bad")
     }
 
@@ -1579,8 +1626,8 @@ object GameEngine {
         state.gold += gold
         state.goldEarned += gold
         state.chestFlashGold = gold
-        state.rations = min(24, state.rations + 1)
-        state.shards = min(12, state.shards + 1)
+        state.rations = min(24, state.rations + 2)
+        state.shards = min(MAX_SHARDS, state.shards + 2)
         state.chestsToday++
         state.chestsOpened++
         addLoot(state, lootItem(state.floor, c.rarity))
@@ -1757,7 +1804,7 @@ object GameEngine {
     fun rerollEffectDetailed(state: GameState, itemId: String): ForgeOutcome {
         val item = findItem(state, itemId) ?: return ForgeOutcome.NotFound
         if (!item.identified) return ForgeOutcome.NotIdentified
-        val missingShards = (2 - state.shards).coerceAtLeast(0)
+        val missingShards = (1 - state.shards).coerceAtLeast(0)
         if (missingShards > 0) return ForgeOutcome.Missing(0, missingShards)
         val effect = if (rnd.nextDouble() < 0.25) "" else ITEM_EFFECTS.random(rnd)
         val baseName = item.name.substringBefore(" · ")
@@ -1767,7 +1814,7 @@ object GameEngine {
                 effect = effect
             )
         } ?: return ForgeOutcome.NotFound
-        state.shards -= 2
+        state.shards -= 1
         state.journal = addJournal(
             state,
             "Forge · ${item.name} → ${if (effect.isEmpty()) "aucun effet" else effectLabel(effect)}",
@@ -1853,12 +1900,12 @@ object GameEngine {
         val shards = when (item.rarity) {
             "uncommon" -> 2
             "rare" -> 3
-            "epic" -> 5
-            "legendary" -> 8
+            "epic" -> 6
+            "legendary" -> 10
             else -> 1
         }
         state.inventory = state.inventory.filter { it.id != itemId }
-        state.shards = min(12, state.shards + shards)
+        state.shards = min(MAX_SHARDS, state.shards + shards)
         state.journal = addJournal(state, "${item.name} démonté · +$shards éclat(s)", "neutral")
         return shards
     }
@@ -1963,7 +2010,7 @@ object GameEngine {
         val s = statsOf(state)
         if (state.hp >= s.maxHp) return false
         state.freeRestDay = state.day
-        val heal = s.maxHp * 0.15
+        val heal = s.maxHp * 0.25
         state.hp = min(s.maxHp.toDouble(), state.hp + heal)
         state.journal = addJournal(state, "Veillée gratuite (+${heal.roundToInt()} PV)", "good")
         return true

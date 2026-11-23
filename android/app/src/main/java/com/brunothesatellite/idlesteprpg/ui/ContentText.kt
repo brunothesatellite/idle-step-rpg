@@ -317,7 +317,7 @@ private val RULES: List<Rule> = listOf(
             m.groupValues[2].toInt()
         )
     },
-    Rule(Regex("""^Jalon · palier (\d+) franchi — (.+) · \+5 éclats$""")) { r, m ->
+    Rule(Regex("""^Jalon · palier (\d+) franchi — (.+) · \+[58] éclats$""")) { r, m ->
         r.getString(
             R.string.journal_milestone_floor,
             m.groupValues[1].toInt(),

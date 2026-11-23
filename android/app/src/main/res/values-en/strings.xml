@@ -658,7 +658,7 @@
     <string name="journal_legend">Milestone · floor %1$d — %2$s</string>
     <string name="msg_no_encounter">No encounter.</string>
     <string name="msg_offering">Offering accepted · +180 XP</string>
-    <string name="msg_two_shards">2 shards required.</string>
+    <string name="msg_two_shards">1 shard required.</string>
     <string name="msg_hp_restored">HP fully restored.</string>
     <string name="msg_one_ration">1 ration required.</string>
     <string name="msg_bought">%1$s bought.</string>
@@ -867,7 +867,7 @@
     <string name="overlay_this_item">This item</string>
     <string name="overlay_gold_value">%1$s gold</string>
     <string name="overlay_fuse_count">FUSE %1$d/3</string>
-    <string name="overlay_reforge_cost">REFORGE · 2</string>
+    <string name="overlay_reforge_cost">REFORGE · 1</string>
     <string name="overlay_upgrade_cost">UPGRADE · %1$s</string>
     <string name="overlay_level_arrow">Lv. %1$d → %2$d</string>
     <string name="overlay_upgrade_applied">Upgrade applied · Lv. %1$d → %2$d</string>
@@ -975,7 +975,7 @@
     <string name="codex_guardians">GUARDIANS</string>
     <string name="codex_ability_line">ABILITY · %1$s</string>
     <string name="scene_phase2">PHASE 2 · ABLAZE</string>
-    <string name="scene_blessing" formatted="false">BLESSING +25%</string>
+    <string name="scene_blessing">BLESSING +%1$d%%</string>
     <string name="scene_chest_force">FORCING CHEST</string>
     <string name="scene_elite">ELITE</string>
     <string name="scene_level_note">Kaelen grows stronger</string>

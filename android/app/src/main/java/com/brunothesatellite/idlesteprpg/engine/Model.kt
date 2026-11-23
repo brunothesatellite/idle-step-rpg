@@ -76,6 +76,7 @@ const val CHEST_LIFETIME_MS = 24L * 60L * 60L * 1000L
 const val CHEST_WARNING_MS = 3L * 60L * 60L * 1000L
 const val MAX_PENDING_CHESTS = 2
 const val INVENTORY_CAP = 24
+const val MAX_SHARDS = 24
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250

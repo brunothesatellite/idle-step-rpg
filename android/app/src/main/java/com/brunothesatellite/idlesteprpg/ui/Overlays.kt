@@ -89,6 +89,7 @@ import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.ITEM_EFFECTS
+import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.JournalEntry
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
@@ -176,7 +177,7 @@ fun ItemDialog(
         "legendary" -> 8
         else -> 1
     }
-    val salvageGain = (state.shards + salvageBase).coerceAtMost(12) - state.shards
+    val salvageGain = (state.shards + salvageBase).coerceAtMost(MAX_SHARDS) - state.shards
     AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(
@@ -405,7 +406,7 @@ fun ItemDialog(
                                 stringResource(R.string.overlay_reforge_cost),
                                 Modifier.weight(1f),
                                 { lastReforgeOld = null; forgeMode = ForgeMode.REFORGE },
-                                enabled = item.identified && state.shards >= 2
+                                enabled = item.identified && state.shards >= 1
                             )
                             OverlayAction(
                                 stringResource(R.string.overlay_upgrade_cost, formatCompact(upgradePrice)),
@@ -987,7 +988,7 @@ private fun ReforgePanel(
         Spacer(Modifier.height(7.dp))
         ReforgePool(currentEffect = item.effect)
         Spacer(Modifier.height(7.dp))
-        CostRow(stringResource(R.string.overlay_cost), stringResource(R.string.overlay_shards_count, 2))
+        CostRow(stringResource(R.string.overlay_cost), stringResource(R.string.overlay_shards_count, 1))
         CostRow(stringResource(R.string.overlay_available), stringResource(R.string.overlay_shards_count, state.shards))
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -996,11 +997,11 @@ private fun ReforgePanel(
                 Modifier.weight(1.35f),
                 onConfirm,
                 primary = true,
-                enabled = state.shards >= 2
+                enabled = state.shards >= 1
             )
             OverlayAction(stringResource(R.string.overlay_cancel), Modifier.weight(0.65f), onBack)
         }
-        if (state.shards < 2) {
+        if (state.shards < 1) {
             Text(stringResource(R.string.msg_two_shards), fontSize = 6.2.sp, color = Ember, modifier = Modifier.padding(top = 5.dp))
         }
     } else {
@@ -1041,7 +1042,7 @@ private fun ReforgePanel(
                 Modifier.weight(1.35f),
                 onConfirm,
                 primary = true,
-                enabled = state.shards >= 2
+                enabled = state.shards >= 1
             )
             OverlayAction(stringResource(R.string.overlay_close), Modifier.weight(0.65f), onClose)
         }

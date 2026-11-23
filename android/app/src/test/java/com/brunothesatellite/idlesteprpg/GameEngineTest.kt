@@ -82,7 +82,7 @@ class GameEngineTest {
         )
         GameEngine.victory(state, fight)
         assertEquals(11, state.floor)
-        assertEquals(7, state.shards)
+        assertEquals(11, state.shards)
         assertEquals(1, state.bossKills["lich"])
     }
 

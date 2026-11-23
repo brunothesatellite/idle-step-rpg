@@ -660,7 +660,7 @@
     <string name="journal_legend">Jalon · palier %1$d — %2$s</string>
     <string name="msg_no_encounter">Aucune rencontre.</string>
     <string name="msg_offering">Offrande acceptée · +180 XP</string>
-    <string name="msg_two_shards">2 éclats requis.</string>
+    <string name="msg_two_shards">1 éclat requis.</string>
     <string name="msg_hp_restored">PV entièrement restaurés.</string>
     <string name="msg_one_ration">1 ration requise.</string>
     <string name="msg_bought">%1$s acheté.</string>
@@ -869,7 +869,7 @@
     <string name="overlay_this_item">Cet objet</string>
     <string name="overlay_gold_value">%1$s or</string>
     <string name="overlay_fuse_count">FUSIONNER %1$d/3</string>
-    <string name="overlay_reforge_cost">REFORGER · 2</string>
+    <string name="overlay_reforge_cost">REFORGER · 1</string>
     <string name="overlay_upgrade_cost">AMÉLIORER · %1$s</string>
     <string name="overlay_level_arrow">Niv. %1$d → %2$d</string>
     <string name="overlay_upgrade_applied">Amélioration appliquée · Niv. %1$d → %2$d</string>
@@ -977,7 +977,7 @@
     <string name="codex_guardians">GARDIENS</string>
     <string name="codex_ability_line">CAPACITÉ · %1$s</string>
     <string name="scene_phase2">PHASE 2 · EMBRASÉ</string>
-    <string name="scene_blessing" formatted="false">BÉNÉDICTION +25 %</string>
+    <string name="scene_blessing">BÉNÉDICTION +%1$d %%</string>
     <string name="scene_chest_force">FORÇAGE DU COFFRE</string>
     <string name="scene_elite">ÉLITE</string>
     <string name="scene_level_note">Kaelen se renforce</string>
