@@ -157,8 +157,8 @@ private fun BestiaryCodex(state: GameState) {
     var selectedBoss by remember { mutableStateOf<BossTemplate?>(null) }
     val mobs = allMobTemplates()
     val bosses = allBossTemplates()
-    val discoveredMobs = mobs.count { (state.bestiary[it.name] ?: 0) > 0 }
-    val discoveredBosses = bosses.count { (state.bossKills[it.name] ?: 0) > 0 }
+    val discoveredMobs = mobs.count { (state.bestiary[it.id] ?: 0) > 0 }
+    val discoveredBosses = bosses.count { (state.bossKills[it.id] ?: 0) > 0 }
     PixelCard(Modifier.fillMaxWidth(), borderColor = Gold.copy(alpha = 0.3f)) {
         SectionLabel("BESTIAIRE")
         Text(
@@ -181,8 +181,8 @@ private fun BestiaryCodex(state: GameState) {
         val unlocked = state.floor >= biome.fromFloor
         val biomeMobs = (pool.easy + pool.mid + pool.hard).distinctBy { it.name }
         val biomeBosses = pool.bosses.distinctBy { it.name }
-        val foundMobs = biomeMobs.count { (state.bestiary[it.name] ?: 0) > 0 }
-        val foundBosses = biomeBosses.count { (state.bossKills[it.name] ?: 0) > 0 }
+        val foundMobs = biomeMobs.count { (state.bestiary[it.id] ?: 0) > 0 }
+        val foundBosses = biomeBosses.count { (state.bossKills[it.id] ?: 0) > 0 }
         PixelCard(
             Modifier.fillMaxWidth(),
             borderColor = if (unlocked) Line else Line2,
@@ -267,7 +267,7 @@ private fun MobEntry(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    val kills = state.bestiary[mob.name] ?: 0
+    val kills = state.bestiary[mob.id] ?: 0
     val known = kills > 0
     Row(
         modifier
@@ -333,7 +333,7 @@ private fun buildMobPreview(state: GameState, mob: MobTemplate): MobPreview {
         pool.mid.any { it.name == mob.name } -> "mid"
         else -> "hard"
     }
-    val seen = state.firstSeen[mob.name]
+    val seen = state.firstSeen[mob.id]
     val key = seen?.biomeKey ?: entry?.key ?: biomeKeyFor(state.floor)
     val biome = BIOMES.firstOrNull { it.key == key }
     val floor = seen?.floor ?: (if (key == biomeKeyFor(state.floor)) state.floor else (biome?.fromFloor ?: state.floor))
@@ -400,9 +400,9 @@ private fun MobStat(
 
 @Composable
 private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () -> Unit) {
-    val kills = state.bestiary[mob.name] ?: 0
+    val kills = state.bestiary[mob.id] ?: 0
     val known = kills > 0
-    val preview = remember(mob.name, state.floor, kills) { buildMobPreview(state, mob) }
+    val preview = remember(mob.id, state.floor, kills) { buildMobPreview(state, mob) }
     AppDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -516,7 +516,7 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     }
                     Spacer(Modifier.height(7.dp))
                     Text(
-                        if (state.firstSeen.containsKey(mob.name)) {
+                        if (state.firstSeen.containsKey(mob.id)) {
                             "Statistiques telles qu'à la première rencontre (palier ${preview.floor}), " +
                                 "règle de biome incluse. 10 % de chance d'élite : Niv. +2, PV ×2,2, ATQ ×1,3."
                         } else {
@@ -554,7 +554,7 @@ private fun buildBossPreview(state: GameState, boss: BossTemplate): BossPreview 
     val entry = BIOME_POOLS.entries.firstOrNull { (_, pool) ->
         pool.bosses.any { it.name == boss.name }
     }
-    val seen = state.bossFirstSeen[boss.name]
+    val seen = state.bossFirstSeen[boss.id]
     val special = specialBossFloor(boss.name)
     val referenceFloor = seen?.floor ?: special ?: entry?.let { (key, _) ->
         BIOMES.firstOrNull { it.key == key }?.fromFloor
@@ -596,9 +596,9 @@ private fun bossAbilityDescription(id: String): String = when (id) {
 
 @Composable
 private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: () -> Unit) {
-    val kills = state.bossKills[boss.name] ?: 0
+    val kills = state.bossKills[boss.id] ?: 0
     val known = kills > 0
-    val preview = remember(boss.name, state.floor, kills) { buildBossPreview(state, boss) }
+    val preview = remember(boss.id, state.floor, kills) { buildBossPreview(state, boss) }
     AppDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -740,7 +740,7 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     }
                     Spacer(Modifier.height(7.dp))
                     Text(
-                        (if (state.bossFirstSeen.containsKey(boss.name)) {
+                        (if (state.bossFirstSeen.containsKey(boss.id)) {
                             "Statistiques telles qu'à la première rencontre (palier ${preview.floor}), "
                         } else {
                             "Statistiques de base au palier ${preview.floor}, "
@@ -767,7 +767,7 @@ private fun BossEntry(
     floor: Int,
     onClick: () -> Unit = {}
 ) {
-    val kills = state.bossKills[boss.name] ?: 0
+    val kills = state.bossKills[boss.id] ?: 0
     val known = kills > 0
     Row(
         Modifier
@@ -1013,8 +1013,8 @@ private fun BiomesCodex(state: GameState) {
         val mobs = pool?.let { (it.easy + it.mid + it.hard).distinctBy { mob -> mob.name } } ?: emptyList()
         val bosses = pool?.bosses?.distinctBy { it.name } ?: emptyList()
         val items = lootTemplatesFor(biome.fromFloor).distinctBy { it.name }
-        val foundMobs = mobs.count { (state.bestiary[it.name] ?: 0) > 0 }
-        val foundBosses = bosses.count { (state.bossKills[it.name] ?: 0) > 0 }
+        val foundMobs = mobs.count { (state.bestiary[it.id] ?: 0) > 0 }
+        val foundBosses = bosses.count { (state.bossKills[it.id] ?: 0) > 0 }
         val foundItems = items.count { it.name in discoveredItemNames(state) }
         val rule = biomeRuleFor(biome.fromFloor)
         PixelCard(

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings -->
+    <string name="settings_title">SETTINGS</string>
+    <string name="settings_subtitle">Comfort, data and account</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_page1_title">LA MARCHE DES ÂMES</string>
+    <string name="onboarding_page1_text">Your steps become the distance travelled in an endless dungeon, whether they come from Garmin or Health Connect. 10 steps = 1 metre. Fights, guardians and chests progress without you having to play continuously.</string>
+    <string name="onboarding_page1_note">The game is played by walking, not by staying on the screen.</string>
+    <string name="onboarding_page2_title">STEP SOURCE</string>
+    <string name="onboarding_page2_text">Garmin uses a personal key and a 24-hour token. Health Connect reads steps recorded by Google Fit, Samsung Health or a watch. You can change source at any time in Settings.</string>
+    <string name="onboarding_page2_note">Only one source is active at a time: no double counting.</string>
+    <string name="onboarding_page3_title">SETTINGS AND ALERTS</string>
+    <string name="onboarding_page3_text">You can adjust the text size, turn off notifications, reduce animations and export your save from the Settings screen.</string>
+    <string name="onboarding_page3_note">Notifications can be disabled at any time.</string>
+    <string name="onboarding_page4_title">THE CAMPFIRE</string>
+    <string name="onboarding_page4_text">The camp pauses the walk, heals the hero and lets you manage equipment. Steps continue to be banked during the pause.</string>
+    <string name="onboarding_page4_note">Resume the expedition when you are ready.</string>
+    <string name="onboarding_use_garmin">USE GARMIN</string>
+    <string name="onboarding_use_health">USE HEALTH CONNECT</string>
+    <string name="onboarding_next">NEXT</string>
+    <string name="onboarding_skip">SKIP</string>
+    <string name="onboarding_start">START THE WALK</string>
+    <string name="onboarding_step">Step %1$d / %2$d</string>
+
+    <!-- Settings · Language -->
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_system">System</string>
+    <string name="settings_language_french">Français</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_hint">Interface language.</string>
+    <string name="settings_language_partial">Part of the interface will be translated progressively. The manual remains in French for now.</string>
+</resources>

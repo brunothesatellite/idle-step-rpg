@@ -150,9 +150,11 @@ object GameEngine {
             }
         }
         // v5 → v6 : les anciens noms partagés deviennent des variantes uniques.
-        // La copie ne s'exécute qu'une fois ; le nettoyage des biomes non
-        // découverts reste actif à chaque chargement.
+        // v6 → v7 : les noms affichés deviennent des identifiants stables.
+        // Les deux migrations ne s'exécutent qu'une fois ; le nettoyage des
+        // biomes non découverts reste actif à chaque chargement.
         if (state.version < 6) migrateMobRenames(state)
+        if (state.version < 7) migrateMobIds(state)
         cleanupUndiscoveredMobs(state)
         if (state.version < SAVE_VERSION) state.version = SAVE_VERSION
         // Collection permanente : recale les pièces déjà possédées (anciennes
@@ -202,36 +204,74 @@ object GameEngine {
     }
 
     /**
-     * Efface les compteurs et premières rencontres des monstres dont le biome
-     * n'a pas encore été atteint, et retire les clés orphelines. Idempotent :
-     * tourne à chaque chargement pour nettoyer les anciennes fuites de noms
-     * partagés.
+     * v6 → v7 : remplace les clés de bestiaire par les identifiants stables
+     * des créatures (nom d'asset sans extension). Les clés inconnues sont
+     * conservées telles quelles pour ne perdre aucune donnée ; le Codex les
+     * ignore simplement.
+     */
+    private fun migrateMobIds(state: GameState) {
+        val mobs = allMobTemplates()
+        val bosses = allBossTemplates()
+        val mobNames = mobs.associate { it.name to it.id }
+        val bossNames = bosses.associate { it.name to it.id }
+
+        fun convertCounts(
+            source: Map<String, Int>,
+            names: Map<String, String>
+        ): Map<String, Int> {
+            val out = mutableMapOf<String, Int>()
+            source.forEach { (key, count) ->
+                val id = names[key] ?: key
+                out[id] = (out[id] ?: 0) + count
+            }
+            return out
+        }
+
+        fun convertSeen(
+            source: Map<String, FirstSeen>,
+            names: Map<String, String>
+        ): Map<String, FirstSeen> {
+            val out = mutableMapOf<String, FirstSeen>()
+            source.forEach { (key, seen) ->
+                val id = names[key] ?: key
+                val current = out[id]
+                if (current == null || seen.floor < current.floor) out[id] = seen
+            }
+            return out
+        }
+
+        state.bestiary = convertCounts(state.bestiary, mobNames)
+        state.bossKills = convertCounts(state.bossKills, bossNames)
+        state.firstSeen = convertSeen(state.firstSeen, mobNames)
+        state.bossFirstSeen = convertSeen(state.bossFirstSeen, bossNames)
+    }
+
+    /**
+     * Efface les compteurs et premières rencontres des créatures dont le biome
+     * n'a pas encore été atteint. Idempotent : tourne à chaque chargement.
+     * Les clés inconnues ne sont pas supprimées.
      */
     private fun cleanupUndiscoveredMobs(state: GameState) {
         val bestiary = state.bestiary.toMutableMap()
         val firstSeen = state.firstSeen.toMutableMap()
         val bossKills = state.bossKills.toMutableMap()
         val bossSeen = state.bossFirstSeen.toMutableMap()
-        val mobNames = mutableSetOf<String>()
 
         BIOME_POOLS.forEach { (key, pool) ->
             val fromFloor = BIOMES.firstOrNull { it.key == key }?.fromFloor ?: Int.MAX_VALUE
             val discovered = state.floor >= fromFloor
-            (pool.easy + pool.mid + pool.hard).forEach { mob ->
-                mobNames.add(mob.name)
-                if (!discovered) {
-                    bestiary.remove(mob.name)
-                    firstSeen.remove(mob.name)
-                }
-            }
             if (!discovered) {
+                (pool.easy + pool.mid + pool.hard).forEach { mob ->
+                    bestiary.remove(mob.id)
+                    firstSeen.remove(mob.id)
+                }
                 // Un gardien de biome ne peut pas être vaincu avant d'avoir
                 // atteint ce biome : on efface les compteurs hérités de la
                 // migration du bestiaire, qui ne connaissait pas le biome.
                 pool.bosses.forEach { boss ->
-                    bestiary.remove(boss.name)
-                    bossKills.remove(boss.name)
-                    bossSeen.remove(boss.name)
+                    bestiary.remove(boss.id)
+                    bossKills.remove(boss.id)
+                    bossSeen.remove(boss.id)
                 }
             }
         }
@@ -241,16 +281,11 @@ object GameEngine {
         SPECIAL_BOSSES.forEach { boss ->
             val floor = specialBossFloor(boss.name) ?: return@forEach
             if (state.floor < floor) {
-                bestiary.remove(boss.name)
-                bossKills.remove(boss.name)
-                bossSeen.remove(boss.name)
+                bestiary.remove(boss.id)
+                bossKills.remove(boss.id)
+                bossSeen.remove(boss.id)
             }
         }
-
-        val bossNames = allBossTemplates().map { it.name }.toSet()
-        bestiary.keys.removeAll { it !in mobNames && it !in bossNames }
-        firstSeen.keys.removeAll { it !in mobNames }
-        bossSeen.keys.removeAll { it !in bossNames }
 
         state.bestiary = bestiary
         state.firstSeen = firstSeen
@@ -353,9 +388,9 @@ object GameEngine {
         state.legend = (listOf(JournalEntry(text, nowTime(), type)) + state.legend).take(120)
     }
 
-    private fun recordKill(state: GameState, name: String) {
+    private fun recordKill(state: GameState, id: String) {
         state.kills++
-        state.bestiary = state.bestiary + (name to ((state.bestiary[name] ?: 0) + 1))
+        state.bestiary = state.bestiary + (id to ((state.bestiary[id] ?: 0) + 1))
     }
 
     fun simulateOffline(
@@ -1159,6 +1194,7 @@ object GameEngine {
         return FightData(
             enemyName = t.name,
             enemyIcon = t.icon,
+            enemyId = t.id,
             enemyLevel = level,
             enemyHp = hp * depth * rule.enemyHpMult,
             enemyMaxHp = hp * depth * rule.enemyHpMult,
@@ -1200,6 +1236,7 @@ object GameEngine {
         return FightData(
             enemyName = t.name + suffix,
             enemyIcon = t.icon,
+            enemyId = t.id,
             enemyLevel = level,
             enemyHp = hp * rule.enemyHpMult,
             enemyMaxHp = hp * rule.enemyHpMult,
@@ -1232,6 +1269,7 @@ object GameEngine {
         return FightData(
             enemyName = t.name,
             enemyIcon = t.icon,
+            enemyId = t.id,
             enemyLevel = level,
             enemyHp = hp,
             enemyMaxHp = hp,
@@ -1392,13 +1430,20 @@ object GameEngine {
         gainXp(state, f.xp)
         state.fight = null
         val clearedFloor = state.floor
-        val killedName = if (f.isBoss) bossFor(clearedFloor).name else f.enemyName
-        recordKill(state, killedName)
+        val killedId = if (f.isBoss) {
+            bossFor(clearedFloor).id
+        } else {
+            f.enemyId.ifBlank {
+                allMobTemplates().firstOrNull { it.name == f.enemyName }?.id
+                    ?: f.enemyIcon.substringAfterLast('/').substringBeforeLast('.')
+            }
+        }
+        recordKill(state, killedId)
         val baseLevel = (f.enemyLevel - if (f.elite) 2 else 0).coerceAtLeast(1)
         if (f.isBoss) {
-            if (state.bossFirstSeen[killedName] == null) {
+            if (state.bossFirstSeen[killedId] == null) {
                 state.bossFirstSeen = state.bossFirstSeen + (
-                    killedName to FirstSeen(
+                    killedId to FirstSeen(
                         biomeKey = biomeKeyFor(clearedFloor),
                         floor = clearedFloor,
                         tier = "boss",
@@ -1406,9 +1451,9 @@ object GameEngine {
                     )
                     )
             }
-        } else if (state.firstSeen[killedName] == null) {
+        } else if (state.firstSeen[killedId] == null) {
             state.firstSeen = state.firstSeen + (
-                killedName to FirstSeen(
+                killedId to FirstSeen(
                     biomeKey = biomeKeyFor(clearedFloor),
                     floor = clearedFloor,
                     tier = f.tier,
@@ -1420,7 +1465,7 @@ object GameEngine {
         if (f.isBoss) {
             state.bosses++
             state.bossesToday++
-            val baseBoss = killedName
+            val baseBoss = killedId
             state.bossKills = state.bossKills + (
                 baseBoss to ((state.bossKills[baseBoss] ?: 0) + 1)
                 )

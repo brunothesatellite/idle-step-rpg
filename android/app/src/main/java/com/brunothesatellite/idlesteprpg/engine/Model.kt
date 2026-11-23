@@ -79,7 +79,7 @@ const val INVENTORY_CAP = 24
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250
-const val SAVE_VERSION = 6
+const val SAVE_VERSION = 7
 
 @Serializable
 data class Upgrades(
@@ -141,7 +141,9 @@ data class FightData(
     var abilityFlashMs: Double = 0.0,
     var shieldMs: Double = 0.0,
     /** Pool d'apparition : easy, mid, hard ou farm. */
-    var tier: String = "easy"
+    var tier: String = "easy",
+    /** Identifiant stable de la créature, indépendant du nom affiché. */
+    var enemyId: String = ""
 )
 
 /** Première victoire sur une créature ou un gardien, pour la fiche du Codex. */
@@ -448,9 +450,15 @@ data class Stats(
         get() = (atk * 2 + maxHp / 4.0 + vit * 20 + crit + regen * 10).roundToInt()
 }
 
-data class MobTemplate(val name: String, val icon: String)
+data class MobTemplate(val name: String, val icon: String) {
+    /** Identifiant stable, indépendant de la langue et du nom affiché. */
+    val id: String get() = icon.substringAfterLast('/').substringBeforeLast('.')
+}
 
-data class BossTemplate(val name: String, val icon: String)
+data class BossTemplate(val name: String, val icon: String) {
+    /** Identifiant stable, indépendant de la langue et du nom affiché. */
+    val id: String get() = icon.substringAfterLast('/').substringBeforeLast('.')
+}
 
 data class MobPool(
     val easy: List<MobTemplate>,

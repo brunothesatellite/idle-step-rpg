@@ -56,7 +56,7 @@ class GameEngineTest {
         assertEquals(0, state.shards)
         assertEquals(0.0, state.distance, 0.001)
         assertEquals(10, state.nextFight)
-        assertEquals(1, state.bossKills["Roi des Cryptes"])
+        assertEquals(1, state.bossKills["lich"])
         assertEquals("walk", state.mode)
     }
 
@@ -83,7 +83,7 @@ class GameEngineTest {
         GameEngine.victory(state, fight)
         assertEquals(11, state.floor)
         assertEquals(7, state.shards)
-        assertEquals(1, state.bossKills["Roi des Cryptes"])
+        assertEquals(1, state.bossKills["lich"])
     }
 
     @Test
@@ -328,8 +328,8 @@ class GameEngineTest {
             bestiary = mapOf("Roi des Cryptes · RAPIDE" to 2, "Hydre de Lerne" to 1)
         }
         GameEngine.migrate(state)
-        assertEquals(2, state.bossKills["Roi des Cryptes"])
-        assertEquals(1, state.bossKills["Hydre de Lerne"])
+        assertEquals(2, state.bossKills["lich"])
+        assertEquals(1, state.bossKills["lernaean_hydra01"])
         assertEquals(SAVE_VERSION, state.version)
     }
 
@@ -349,7 +349,7 @@ class GameEngineTest {
             tier = "mid"
         )
         GameEngine.victory(state, fight)
-        assertEquals(FirstSeen("catacombs", 12, "mid", 12), state.firstSeen["Gobelin"])
+        assertEquals(FirstSeen("catacombs", 12, "mid", 12), state.firstSeen["goblin"])
     }
 
     @Test
@@ -370,10 +370,10 @@ class GameEngineTest {
             tier = "boss"
         )
         GameEngine.victory(state, fight)
-        assertEquals(1, state.bestiary["Balrug"])
+        assertEquals(1, state.bestiary["balrug"])
         assertTrue(state.bestiary.keys.none { it.contains(" · ") })
-        assertEquals(1, state.bossKills["Balrug"])
-        assertEquals(FirstSeen("ash", 30, "boss", 32), state.bossFirstSeen["Balrug"])
+        assertEquals(1, state.bossKills["balrug"])
+        assertEquals(FirstSeen("ash", 30, "boss", 32), state.bossFirstSeen["balrug"])
     }
 
     @Test
@@ -398,22 +398,22 @@ class GameEngineTest {
         }
         GameEngine.migrate(state)
         assertEquals(SAVE_VERSION, state.version)
-        assertEquals(30, state.bestiary["Chauve-souris"])
-        assertEquals(30, state.bestiary["Chauve-souris des galeries"])
-        assertNull(state.bestiary["Chauve-souris des neiges"])
-        assertEquals(12, state.bestiary["Kobold"])
-        assertNull(state.bestiary["Kobold mineur"])
-        assertEquals(4, state.bestiary["Balrug"])
-        assertNull(state.bestiary["Balrug déchu"])
-        assertNull(state.bestiary["Manticore"])
-        assertEquals(6, state.bestiary["Manticore de cendre"])
-        assertNull(state.bestiary["Golem de fer"])
-        assertNull(state.bestiary["Golem d'atelier"])
-        assertNull(state.bestiary["Bête de glace"])
-        assertEquals("crypts", state.firstSeen["Chauve-souris"]?.biomeKey)
-        assertNull(state.firstSeen["Chauve-souris des galeries"])
-        assertEquals("ash", state.firstSeen["Manticore de cendre"]?.biomeKey)
-        assertNull(state.firstSeen["Golem d'atelier"])
+        assertEquals(30, state.bestiary["bat"])
+        assertEquals(30, state.bestiary["bat_galeries"])
+        assertNull(state.bestiary["bat_neiges"])
+        assertEquals(12, state.bestiary["kobold"])
+        assertNull(state.bestiary["kobold_mineur"])
+        assertEquals(4, state.bestiary["balrug"])
+        assertNull(state.bestiary["balrug_fallen"])
+        assertNull(state.bestiary["manticore"])
+        assertEquals(6, state.bestiary["manticore_ember"])
+        assertNull(state.bestiary["iron_golem"])
+        assertNull(state.bestiary["iron_golem_workshop"])
+        assertNull(state.bestiary["ice_beast"])
+        assertEquals("crypts", state.firstSeen["bat"]?.biomeKey)
+        assertNull(state.firstSeen["bat_galeries"])
+        assertEquals("ash", state.firstSeen["manticore_ember"]?.biomeKey)
+        assertNull(state.firstSeen["iron_golem_workshop"])
     }
 
     @Test
@@ -428,14 +428,14 @@ class GameEngineTest {
             )
         }
         GameEngine.migrate(state)
-        assertEquals(5, state.bestiary["Golem de fer"])
-        assertEquals(5, state.bestiary["Golem d'atelier"])
-        assertEquals("forge", state.firstSeen["Golem d'atelier"]?.biomeKey)
-        assertNull(state.firstSeen["Golem de fer"])
-        assertEquals(9, state.bestiary["Loup des neiges"])
-        assertNull(state.bestiary["Loup noir"])
-        assertEquals(4, state.bestiary["Troll de fer"])
-        assertEquals(4, state.bestiary["Troll de fonte"])
+        assertEquals(5, state.bestiary["iron_golem"])
+        assertEquals(5, state.bestiary["iron_golem_workshop"])
+        assertEquals("forge", state.firstSeen["iron_golem_workshop"]?.biomeKey)
+        assertNull(state.firstSeen["iron_golem"])
+        assertEquals(9, state.bestiary["wolf_snow"])
+        assertNull(state.bestiary["wolf"])
+        assertEquals(4, state.bestiary["iron_troll"])
+        assertEquals(4, state.bestiary["iron_troll_molten"])
     }
 
     @Test
@@ -453,10 +453,10 @@ class GameEngineTest {
             )
         }
         GameEngine.migrate(state)
-        assertNull(state.bestiary["Bête de glace"])
-        assertNull(state.bestiary["Chauve-souris des neiges"])
-        assertEquals(5, state.bestiary["Chauve-souris"])
-        assertNull(state.firstSeen["Bête de glace"])
+        assertNull(state.bestiary["ice_beast"])
+        assertNull(state.bestiary["bat_neiges"])
+        assertEquals(5, state.bestiary["bat"])
+        assertNull(state.firstSeen["ice_beast"])
     }
 
     @Test
@@ -478,14 +478,14 @@ class GameEngineTest {
             bestiary = mapOf("Dragon d'orage" to 4, "Seigneur de la Forge" to 2)
         }
         GameEngine.migrate(state)
-        assertEquals(2, state.bossKills["Seigneur de la Forge"])
-        assertNull(state.bossKills["Dragon de givre"])
-        assertNull(state.bossKills["Dragon d'orage"])
-        assertEquals(1, state.bossKills["Mère des Abysses"])
-        assertNull(state.bossKills["L'Âme Première"])
-        assertNotNull(state.bossFirstSeen["Seigneur de la Forge"])
-        assertNull(state.bossFirstSeen["Dragon de givre"])
-        assertNull(state.bestiary["Dragon d'orage"])
+        assertEquals(2, state.bossKills["iron_giant"])
+        assertNull(state.bossKills["ice_dragon"])
+        assertNull(state.bossKills["storm_dragon"])
+        assertEquals(1, state.bossKills["jormungandr"])
+        assertNull(state.bossKills["cerebov"])
+        assertNotNull(state.bossFirstSeen["iron_giant"])
+        assertNull(state.bossFirstSeen["ice_dragon"])
+        assertNull(state.bestiary["storm_dragon"])
     }
 
     @Test
@@ -499,9 +499,9 @@ class GameEngineTest {
             )
         }
         GameEngine.migrate(state)
-        assertEquals(2, state.bossKills["Dragon de givre"])
-        assertEquals(1, state.bossKills["Dragon d'orage"])
-        assertNotNull(state.bossFirstSeen["Dragon de givre"])
+        assertEquals(2, state.bossKills["ice_dragon"])
+        assertEquals(1, state.bossKills["storm_dragon"])
+        assertNotNull(state.bossFirstSeen["ice_dragon"])
     }
 
     @Test
@@ -514,8 +514,61 @@ class GameEngineTest {
         GameEngine.migrate(state)
         assertEquals(2, state.bestiary["Roi des Cryptes"])
         assertTrue(state.bestiary.keys.none { it.contains(" · ") })
-        assertEquals(FirstSeen("crypts", 1, "boss", 3), state.bossFirstSeen["Roi des Cryptes"])
-        assertEquals(FirstSeen("catacombs", 11, "easy", 10), state.firstSeen["Gobelin"])
+        assertEquals(FirstSeen("crypts", 1, "boss", 3), state.bossFirstSeen["lich"])
+        assertEquals(FirstSeen("catacombs", 11, "easy", 10), state.firstSeen["goblin"])
+    }
+
+    @Test
+    fun migrateV7ConvertsNamesToStableIds() {
+        val state = GameState().apply {
+            version = 6
+            floor = 45
+            bestiary = mapOf(
+                "Chauve-souris" to 7,
+                "Golem de fer" to 5,
+                "Bête de glace" to 2,
+                "Balrug" to 3
+            )
+            bossKills = mapOf("Balrug" to 4, "Dragon de givre" to 2)
+            firstSeen = mapOf(
+                "Chauve-souris" to FirstSeen("crypts", 3, "easy", 2),
+                "Golem de fer" to FirstSeen("forge", 31, "mid", 31)
+            )
+            bossFirstSeen = mapOf(
+                "Balrug" to FirstSeen("ash", 21, "boss", 23)
+            )
+        }
+        GameEngine.migrate(state)
+        assertEquals(SAVE_VERSION, state.version)
+        assertEquals(7, state.bestiary["bat"])
+        assertEquals(5, state.bestiary["iron_golem"])
+        assertEquals(2, state.bestiary["ice_beast"])
+        assertEquals(3, state.bestiary["balrug"])
+        assertEquals(4, state.bossKills["balrug"])
+        assertEquals(2, state.bossKills["ice_dragon"])
+        assertEquals(FirstSeen("crypts", 3, "easy", 2), state.firstSeen["bat"])
+        assertEquals(FirstSeen("forge", 31, "mid", 31), state.firstSeen["iron_golem"])
+        assertEquals(FirstSeen("ash", 21, "boss", 23), state.bossFirstSeen["balrug"])
+        assertTrue(state.bestiary.keys.none { it == "Chauve-souris" || it == "Golem de fer" })
+    }
+
+    @Test
+    fun migrateV5ToV7KeepsSplitCounts() {
+        val state = GameState().apply {
+            version = 5
+            floor = 45
+            bestiary = mapOf("Chauve-souris" to 30, "Golem de fer" to 6)
+            bossKills = mapOf("Golem de fer" to 1)
+            firstSeen = mapOf(
+                "Chauve-souris" to FirstSeen("crypts", 1, "easy", 1)
+            )
+        }
+        GameEngine.migrate(state)
+        assertEquals(30, state.bestiary["bat"])
+        assertEquals(30, state.bestiary["bat_galeries"])
+        assertEquals(30, state.bestiary["bat_neiges"])
+        assertEquals(5, state.bestiary["iron_golem"])
+        assertEquals(5, state.bestiary["iron_golem_workshop"])
     }
 
     @Test

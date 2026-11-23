@@ -462,8 +462,8 @@ private fun BiomeCard(state: GameState, onToggleFarm: (Boolean) -> Unit) {
 private fun CodexCard(state: GameState, onOpen: () -> Unit) {
     val mobs = allMobTemplates()
     val bosses = allBossTemplates()
-    val discoveredMobs = mobs.count { (state.bestiary[it.name] ?: 0) > 0 }
-    val discoveredBosses = bosses.count { (state.bossKills[it.name] ?: 0) > 0 }
+    val discoveredMobs = mobs.count { (state.bestiary[it.id] ?: 0) > 0 }
+    val discoveredBosses = bosses.count { (state.bossKills[it.id] ?: 0) > 0 }
     val sets = ITEM_SETS.count { discoveredSetSlots(state, it).size >= 6 }
     val biomes = BIOMES.count { state.floor >= it.fromFloor }
     PixelCard(

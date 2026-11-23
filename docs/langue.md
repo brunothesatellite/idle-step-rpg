@@ -1,6 +1,6 @@
 # Internationalisation — étude
 
-> État analysé : **v0.18.1**, 23/11/2026. Document de décision, aucun code écrit.
+> État analysé : **v0.18.1**, branche **`evol-langue`**, sauvegarde **v7**, 23/11/2026.
 > Périmètre : application Android + manuel (embarqué et web). Hors périmètre : démo web
 > racine, fiche Play, captures Play, vidéo promo, README et docs internes.
 
@@ -15,13 +15,32 @@
   Il est maintenant **généré depuis `manuel/index.template.html`** (compteurs et version injectés
   au build), et non plus maintenu en double à la main.
 - Objectif réaliste : **FR + EN**, avec une architecture prête pour d’autres langues.
-- Effort estimé de mon côté : **66 à 95 h** pour l’ensemble (app + manuel + captures +
-  identifiants de créatures), dont **42 à 59 h** pour un build anglais utilisable sans le manuel.
+- Effort estimé de mon côté : **62 à 89 h** pour l’ensemble (app + manuel + captures),
+  dont **38 à 53 h** pour un build anglais utilisable sans le manuel.
 - Le levier de non-régression : **garder `values/` en français comme défaut**, ajouter
   `values-en/`, et verrouiller le français par des captures dorées et des tests de ressources.
 - Le risque principal n’est pas la traduction mais **les débordements de texte** dans une UI
   pixel art à tailles fixes, **les clés de bestiaire figées en français**, et **les 36 captures**
   du manuel à refaire.
+
+### État de la branche `evol-langue`
+
+**Fait**
+- `values-en/`, `locales_config.xml`, `android:localeConfig`.
+- Sélecteur **Système / Français / English** dans Réglages (`LocaleManager`).
+- En-tête des Réglages et carte Langue extraits en ressources.
+- Onboarding entièrement extrait et traduit (4 pages + boutons + étape).
+- Migration **v7** : `bestiary`, `bossKills`, `firstSeen` et `bossFirstSeen` utilisent des
+  identifiants stables (`bat_neiges`, `cerebov`). Les anciennes clés inconnues sont conservées.
+- 117 tests, lint OK, debug migré et vérifié sur appareil.
+
+**Reste**
+- Finir les cartes des Réglages (Notifications, Son, Mises à jour, Aide, Inventaire, Sauvegarde,
+  Source de pas, Diagnostic, Réglages avancés, À propos, dialogues).
+- Dashboard, Codex, Overlays, Scène, ManualActivity.
+- Chaînes dynamiques (dates, pluriels, volumes, statuts de synchronisation).
+- Manuel EN et captures anglaises.
+- Traduction des noms de créatures (possible maintenant que la v7 est faite).
 
 ## 2. Périmètre
 
@@ -56,7 +75,7 @@
 | Manuel | **≈ 7 400 mots**, **36 images**, 77 Ko HTML, généré depuis un template |
 | Journal | `JournalEntry.text` = **chaîne figée en base** |
 | Objets | `Item.name` = **chaîne figée en base** |
-| Bestiaire / gardiens | `bestiary`, `bossKills`, `firstSeen`, `bossFirstSeen` = **clés en noms français** |
+| Bestiaire / gardiens | **clés stables depuis la v7** (`bat_neiges`, `cerebov`) ; anciennes clés legacy conservées |
 | Locale | aucun `localeConfig`, aucun sélecteur, aucune ressource `values-*` |
 | minSdk | **34** → langue par application disponible (API 33+) |
 
@@ -64,16 +83,15 @@
 
 1. **Le journal et les noms d’objets déjà en sauvegarde ne se traduiront pas** sans migration.
    Un objet « Lame ancienne » restera français dans un inventaire anglais.
-2. **Le bestiaire et les gardiens sont keyés par leur nom français** (`bestiary`, `bossKills`,
-   `firstSeen`, `bossFirstSeen`). Traduire « Chauve-souris des neiges » en anglais ne mettra pas
-   à jour les compteurs : il faut des identifiants stables (`bat_neiges`) ou une table de
-   correspondance. Les 110 créatures et 35 gardiens sont concernés.
+2. Le bestiaire et les gardiens utilisent des **identifiants stables** depuis la v7
+   (`bestiary`, `bossKills`, `firstSeen`, `bossFirstSeen`). Traduire les noms affichés ne touche
+   plus les compteurs ; il reste à extraire ces noms dans un catalogue localisé.
 3. Le manuel n’est plus maintenu en double : il est généré depuis `manuel/index.template.html`.
    Toute traduction doit passer par un template EN (ou un générateur bilingue), pas par une
    édition manuelle des fichiers générés.
 4. Les captures du manuel montrent l’UI française : elles ne sont pas traduisibles.
-5. La sauvegarde est en **v6** : la migration des anciens noms de monstres/gardiens est déjà
-   jouée une fois. Une traduction qui change les clés de bestiaire demandera une **v7**.
+5. La sauvegarde est en **v7** : la migration des anciens noms vers les identifiants est faite
+   et testée. Les clés inconnues sont conservées pour éviter toute perte de données.
 
 ## 4. Stratégie de non-régression
 
@@ -87,7 +105,7 @@ Principe : **le français reste le comportement par défaut**, l’anglais est a
 | `lint` : `MissingTranslation` en erreur | empêche une release avec une clé manquante |
 | Test unitaire de couverture des clés | toutes les langues ont les mêmes clés |
 | Pseudo-locale `en-XA` | détecte les débordements avant la traduction réelle |
-| Aucune migration supplémentaire pour la traduction | la migration v6 existante reste jouable en FR et en EN |
+| Aucune migration supplémentaire pour la traduction | les migrations v6 et v7 existantes restent jouables en FR et en EN |
 | Manuel : template FR inchangé, template EN + génération | l'URL française ne bouge pas |
 
 Option à trancher plus tard : basculer le défaut en anglais. Cela change le fallback des
@@ -133,17 +151,15 @@ Le moteur ne doit pas dépendre d’`android.content.Context`. Trois options :
 | Nouveaux événements de journal | clé + paramètres, rendus dans la langue active |
 | `Item.name` existant | conservé (pas de renommage rétroactif) |
 | Nouveaux objets | nom localisé à la création, avec identifiant stable |
-| `bestiary` / `bossKills` existants | clés en noms français : à migrer vers un **identifiant de créature** stable (`bat_neiges`, `cerebov`) |
+| `bestiary` / `bossKills` existants | **migrés en v7** vers un identifiant stable (`bat_neiges`, `cerebov`) ; clés legacy inconnues conservées |
 | `firstSeen` / `bossFirstSeen` | même identifiant que le bestiaire ; `biomeKey` et `tier` sont déjà stables |
-| `MOB_RENAMES` | table de migration v5 → v6 à garder ; ne remplace pas un système d’identifiants |
+| `MOB_RENAMES` | table de migration v5 → v6 conservée pour les anciennes sauvegardes |
 | Noms propres (Kaelen, Vael) | inchangés |
-| Noms descriptifs (biomes, créatures, objets) | traduits |
+| Noms descriptifs (biomes, créatures, objets) | traduits, avec un catalogue localisé pour les créatures |
 
-Conséquence assumée : un inventaire ou un bestiaire existant peut mélanger FR et EN après
-bascule. Pour l’éviter, il faudrait stocker une clé de base par objet **et par créature**
-(sauvegarde v7 + migration). Estimation : **+8 à 12 h** pour les objets, **+4 à 6 h** pour les
-110 créatures et 35 gardiens (renommage des clés, table de correspondance, tests). Non
-recommandé pour la première livraison, mais à décider avant de traduire les noms de créatures.
+Conséquence assumée : un inventaire existant peut mélanger FR et EN après bascule. Pour
+l’éviter, il faudrait stocker une clé de base par objet (sauvegarde v8 + migration), estimé
+**+8 à 12 h**. Les créatures sont déjà couvertes par la v7.
 
 ### 5.4 Manuel
 
@@ -190,12 +206,11 @@ recommandé pour la première livraison, mais à décider avant de traduire les 
 - Corrections de mise en page au fil de l’eau.
 **Sortie** : app FR identique, toutes les chaînes UI en ressources.
 
-### Étape 3 — Moteur et contenu (14–20 h)
+### Étape 3 — Moteur et contenu (10–14 h)
 - Clés pour rareté/emplacement/effet/ensemble/biome/titre/créature/capacité de gardien.
-- **Identifiants stables de créatures** (110 monstres + 35 gardiens) pour `bestiary`,
-  `bossKills`, `firstSeen`, `bossFirstSeen`, avec migration des clés françaises.
+- **Identifiants stables de créatures** : fait en v7 (110 monstres + 35 gardiens).
 - Journal : structure de clé + fallback texte.
-- Noms d’objets/consommables localisés à la création.
+- Noms d’objets/consommables/créatures localisés à la création.
 **Sortie** : plus aucun texte de gameplay en dur, bestiaire traduisible.
 
 ### Étape 4 — Traduction anglaise (10–14 h)
@@ -228,14 +243,14 @@ recommandé pour la première livraison, mais à décider avant de traduire les 
 | 0 — Inventaire | 2–3 | 0,5 h | validation des écrans |
 | 1 — Infrastructure | 4–6 | 0 | invisible |
 | 2 — Extraction UI | 12–16 | 1 h | arbitrages de formulation |
-| 3 — Moteur/contenu | 14–20 | 1,5 h | décisions journal/objets/identifiants de créatures |
+| 3 — Moteur/contenu | 10–14 | 1,5 h | décisions journal/objets/catalogues de créatures |
 | 4 — Traduction EN | 10–14 | **4–6 h** | relecture indispensable |
 | 5 — Manuel EN | 14–20 | **3–5 h** | captures + validation |
 | 6 — QA | 8–12 | 2 h | tests sur ton téléphone |
 | 7 — Doc/bascule | 2–4 | 1 h | décision finale |
-| **Total** | **66–95 h** | **12,5–17,5 h** | ~9–12 jours de dev |
+| **Total** | **62–89 h** | **12–17 h** | ~8–11 jours de dev |
 
-Jalon intermédiaire : **étapes 0–4 = 42–59 h** pour une app anglaise complète sans manuel.
+Jalon intermédiaire : **étapes 0–4 = 38–53 h** pour une app anglaise complète sans manuel.
 
 ## 8. Plan de test
 
@@ -250,9 +265,10 @@ Jalon intermédiaire : **étapes 0–4 = 42–59 h** pour une app anglaise compl
 - **Manuel** : vérification des 36 images, des ancres, du sélecteur, du repli FR, et des
   compteurs/version injectés dans les deux langues.
 - **Appareil** : passe FR puis EN (réglages, inventaire, combat, absence, Codex, manuel).
-- **Sauvegardes** : ouverture d’une sauvegarde v4/v5 en FR et en EN ; la migration v6
-  (`MOB_RENAMES`, nettoyage des biomes non découverts, `firstSeen`) doit être identique dans
-  les deux langues. Une future migration d’identifiants de créatures sera testée en v7.
+- **Sauvegardes** : ouverture d’une sauvegarde v4/v5/v6 en FR et en EN ; les migrations v6
+  (`MOB_RENAMES`, nettoyage des biomes non découverts, `firstSeen`) et v7 (identifiants stables,
+  conservation des clés legacy, backup `pre_migration_v6`) doivent être identiques dans les
+  deux langues.
 
 ## 9. Risques et parades
 
@@ -260,7 +276,7 @@ Jalon intermédiaire : **étapes 0–4 = 42–59 h** pour une app anglaise compl
 |---|---|---|
 | Débordements de texte (tailles fixes, `maxLines`) | UI cassée | pseudo-locale, captures, marges |
 | Journal/objets figés en FR | incohérence | politique assumée + clés pour le futur |
-| Bestiaire/gardiens keyés en noms FR | compteurs faux après traduction | identifiants stables de créatures + migration v7 |
+| Noms de créatures encore en dur en FR | bestiaire anglais avec noms français | catalogue localisé (identifiants v7 déjà en place) |
 | Fichiers de manuel générés édités à la main | divergence template/sortie | toujours modifier `*.template.html` puis régénérer |
 | 36 captures à refaire | délai | prioriser les captures avec texte |
 | Typographie française | qualité | règles de traduction dédiées |
@@ -273,9 +289,10 @@ Jalon intermédiaire : **étapes 0–4 = 42–59 h** pour une app anglaise compl
 1. **Défaut** : garder le français comme langue par défaut, ou basculer en anglais après validation ?
 2. **Contenu** : traduire les noms descriptifs et garder les noms propres ?
 3. **Sauvegardes** : accepter le mélange FR/EN dans les inventaires existants, ou payer la
-   migration par clés (+8–12 h pour les objets, +4–6 h pour les 110 créatures / 35 gardiens) ?
-4. **Bestiaire** : garder les clés en noms français (traduction impossible sans migration) ou
-   introduire des identifiants stables (`bat_neiges`, `cerebov`) en sauvegarde v7 ?
+   migration par clés pour les objets (+8–12 h) ? Les 110 créatures / 35 gardiens sont déjà
+   couverts par la v7.
+4. **Bestiaire** : les identifiants stables sont en place (v7). Reste à décider si les noms de
+   créatures sont traduits en anglais ou restent des noms propres français.
 5. **Manuel** : captures EN refaites pour les 36 images, ou seulement celles qui contiennent du texte ?
 6. **Manuel généré** : un template par langue (`index.template.html`, `index.en.template.html`)
    ou un template unique avec libellés localisés injectés au build ?

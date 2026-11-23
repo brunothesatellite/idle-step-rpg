@@ -1,10 +1,13 @@
 package com.brunothesatellite.idlesteprpg.ui
 
 import android.Manifest
+import android.app.LocaleManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.LocaleList
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,6 +55,7 @@ import androidx.core.content.ContextCompat
 import kotlin.math.roundToInt
 import com.brunothesatellite.idlesteprpg.BuildConfig
 import com.brunothesatellite.idlesteprpg.GameViewModel
+import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.OfflineMode
@@ -91,8 +96,17 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f)) {
-                Text("RÉGLAGES", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
-                Text("Confort, données et compte", fontSize = 7.sp, color = Muted)
+                Text(
+                    stringResource(R.string.settings_title),
+                    fontFamily = Press,
+                    fontSize = 9.sp,
+                    color = GoldLight
+                )
+                Text(
+                    stringResource(R.string.settings_subtitle),
+                    fontSize = 7.sp,
+                    color = Muted
+                )
             }
             CloseButton(onClose)
         }
@@ -103,6 +117,8 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                 .verticalScroll(rememberScrollState())
                 .padding(14.dp)
         ) {
+            LanguageCard(context)
+            Spacer(Modifier.height(8.dp))
             PixelCard(Modifier.fillMaxWidth()) {
                 SectionLabel("Affichage")
                 Spacer(Modifier.height(6.dp))
@@ -925,9 +941,65 @@ private fun lastCheckLabel(timestamp: Long): String {
 }
 
 @Composable
-private fun ChoiceChip(label: String, active: Boolean, onClick: () -> Unit) {
+private fun LanguageCard(context: Context) {
+    val manager = context.getSystemService(LocaleManager::class.java) ?: return
+    val current = manager.applicationLocales
+    val currentTag = if (current.isEmpty) "system" else current[0].language
+
+    fun apply(tag: String?) {
+        manager.applicationLocales =
+            if (tag == null) LocaleList.getEmptyLocaleList()
+            else LocaleList.forLanguageTags(tag)
+    }
+
+    PixelCard(Modifier.fillMaxWidth()) {
+        SectionLabel(stringResource(R.string.settings_language_title))
+        Spacer(Modifier.height(4.dp))
+        Text(
+            stringResource(R.string.settings_language_hint),
+            fontSize = 6.2.sp,
+            color = Muted
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            ChoiceChip(
+                stringResource(R.string.settings_language_system),
+                currentTag == "system",
+                Modifier.weight(1f)
+            ) { apply(null) }
+            ChoiceChip(
+                stringResource(R.string.settings_language_french),
+                currentTag == "fr",
+                Modifier.weight(1f)
+            ) { apply("fr") }
+            ChoiceChip(
+                stringResource(R.string.settings_language_english),
+                currentTag == "en",
+                Modifier.weight(1f)
+            ) { apply("en") }
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            stringResource(R.string.settings_language_partial),
+            fontSize = 5.8.sp,
+            color = Muted2,
+            lineHeight = 8.sp
+        )
+    }
+}
+
+@Composable
+private fun ChoiceChip(
+    label: String,
+    active: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Box(
-        Modifier
+        modifier
             .clip(RoundedCornerShape(4.dp))
             .background(if (active) Gold.copy(alpha = 0.18f) else Panel2)
             .border(1.dp, if (active) Gold.copy(alpha = 0.7f) else Line, RoundedCornerShape(4.dp))

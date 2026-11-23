@@ -1,5 +1,6 @@
 package com.brunothesatellite.idlesteprpg.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -27,47 +28,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.brunothesatellite.idlesteprpg.R
 
 private data class OnboardingPage(
-    val title: String,
-    val text: String,
-    val note: String,
+    @StringRes val title: Int,
+    @StringRes val text: Int,
+    @StringRes val note: Int,
     val icon: String
 )
 
 private val PAGES = listOf(
     OnboardingPage(
-        title = "LA MARCHE DES ÂMES",
-        text = "Vos pas deviennent la distance parcourue dans un donjon infini, " +
-            "qu'ils viennent de Garmin ou de Santé Connect. 10 pas = 1 mètre. " +
-            "Les combats, gardiens et coffres avancent sans que vous ayez à jouer en continu.",
-        note = "Le jeu se joue en marchant, pas en restant sur l'écran.",
+        title = R.string.onboarding_page1_title,
+        text = R.string.onboarding_page1_text,
+        note = R.string.onboarding_page1_note,
         icon = "hero/human.png"
     ),
     OnboardingPage(
-        title = "SOURCE DE PAS",
-        text = "Garmin utilise une clé personnelle et un jeton de 24 h. Santé Connect lit les pas " +
-            "enregistrés par Google Fit, Samsung Health ou une montre. Vous pourrez changer " +
-            "de source à tout moment dans les réglages.",
-        note = "Une seule source est active à la fois : pas de double comptage.",
+        title = R.string.onboarding_page2_title,
+        text = R.string.onboarding_page2_text,
+        note = R.string.onboarding_page2_note,
         icon = "item/misc_crystal.png"
     ),
     OnboardingPage(
-        title = "RÉGLAGES ET ALERTES",
-        text = "Vous pouvez ajuster la taille du texte, couper les notifications, réduire les animations " +
-            "et exporter votre sauvegarde depuis l'écran Réglages.",
-        note = "Notifications désactivables à tout moment.",
+        title = R.string.onboarding_page3_title,
+        text = R.string.onboarding_page3_text,
+        note = R.string.onboarding_page3_note,
         icon = "fx/heart.png"
     ),
     OnboardingPage(
-        title = "LE FEU DE CAMP",
-        text = "Le camp met la marche en pause, soigne le héros et permet de gérer l'équipement. " +
-            "Les pas continuent d'être mis en réserve pendant la pause.",
-        note = "Reprenez l'expédition quand vous êtes prêt.",
+        title = R.string.onboarding_page4_title,
+        text = R.string.onboarding_page4_text,
+        note = R.string.onboarding_page4_note,
         icon = "fx/cloud_fire0.png"
     )
 )
@@ -106,7 +103,7 @@ fun OnboardingOverlay(onFinish: () -> Unit, onConnect: () -> Unit, onHealth: () 
             }
             Spacer(Modifier.height(14.dp))
             Text(
-                current.title,
+                stringResource(current.title),
                 fontFamily = Press,
                 fontSize = 10.sp,
                 color = GoldLight,
@@ -114,7 +111,7 @@ fun OnboardingOverlay(onFinish: () -> Unit, onConnect: () -> Unit, onHealth: () 
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                current.text,
+                stringResource(current.text),
                 fontSize = 8.sp,
                 color = Parchment.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center,
@@ -122,7 +119,7 @@ fun OnboardingOverlay(onFinish: () -> Unit, onConnect: () -> Unit, onHealth: () 
             )
             Spacer(Modifier.height(9.dp))
             Text(
-                current.note,
+                stringResource(current.note),
                 fontSize = 6.8.sp,
                 color = Ember,
                 textAlign = TextAlign.Center,
@@ -142,23 +139,46 @@ fun OnboardingOverlay(onFinish: () -> Unit, onConnect: () -> Unit, onHealth: () 
             }
             Spacer(Modifier.height(16.dp))
             if (page == 1) {
-                OverlayAction("UTILISER GARMIN", Modifier.fillMaxWidth(), onConnect, primary = true)
+                OverlayAction(
+                    stringResource(R.string.onboarding_use_garmin),
+                    Modifier.fillMaxWidth(),
+                    onConnect,
+                    primary = true
+                )
                 Spacer(Modifier.height(5.dp))
-                OverlayAction("UTILISER SANTÉ CONNECT", Modifier.fillMaxWidth(), onHealth)
+                OverlayAction(
+                    stringResource(R.string.onboarding_use_health),
+                    Modifier.fillMaxWidth(),
+                    onHealth
+                )
                 Spacer(Modifier.height(5.dp))
             }
             if (page < PAGES.lastIndex) {
-                OverlayAction("SUIVANT", Modifier.fillMaxWidth(), {
-                    page++
-                }, primary = page != 1)
+                OverlayAction(
+                    stringResource(R.string.onboarding_next),
+                    Modifier.fillMaxWidth(),
+                    {
+                        page++
+                    },
+                    primary = page != 1
+                )
                 Spacer(Modifier.height(5.dp))
-                OverlayAction("PASSER", Modifier.fillMaxWidth(), onFinish)
+                OverlayAction(
+                    stringResource(R.string.onboarding_skip),
+                    Modifier.fillMaxWidth(),
+                    onFinish
+                )
             } else {
-                OverlayAction("COMMENCER LA MARCHE", Modifier.fillMaxWidth(), onFinish, primary = true)
+                OverlayAction(
+                    stringResource(R.string.onboarding_start),
+                    Modifier.fillMaxWidth(),
+                    onFinish,
+                    primary = true
+                )
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "Étape ${page + 1} / ${PAGES.size}",
+                stringResource(R.string.onboarding_step, page + 1, PAGES.size),
                 fontSize = 6.sp,
                 color = Muted2
             )

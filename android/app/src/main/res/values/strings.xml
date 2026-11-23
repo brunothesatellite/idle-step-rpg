@@ -1,4 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">La Marche des Âmes</string>
+    <string name="app_name" translatable="false">La Marche des Âmes</string>
+
+    <!-- Réglages -->
+    <string name="settings_title">RÉGLAGES</string>
+    <string name="settings_subtitle">Confort, données et compte</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_page1_title">LA MARCHE DES ÂMES</string>
+    <string name="onboarding_page1_text">Vos pas deviennent la distance parcourue dans un donjon infini, qu\'ils viennent de Garmin ou de Santé Connect. 10 pas = 1 mètre. Les combats, gardiens et coffres avancent sans que vous ayez à jouer en continu.</string>
+    <string name="onboarding_page1_note">Le jeu se joue en marchant, pas en restant sur l\'écran.</string>
+    <string name="onboarding_page2_title">SOURCE DE PAS</string>
+    <string name="onboarding_page2_text">Garmin utilise une clé personnelle et un jeton de 24 h. Santé Connect lit les pas enregistrés par Google Fit, Samsung Health ou une montre. Vous pourrez changer de source à tout moment dans les réglages.</string>
+    <string name="onboarding_page2_note">Une seule source est active à la fois : pas de double comptage.</string>
+    <string name="onboarding_page3_title">RÉGLAGES ET ALERTES</string>
+    <string name="onboarding_page3_text">Vous pouvez ajuster la taille du texte, couper les notifications, réduire les animations et exporter votre sauvegarde depuis l\'écran Réglages.</string>
+    <string name="onboarding_page3_note">Notifications désactivables à tout moment.</string>
+    <string name="onboarding_page4_title">LE FEU DE CAMP</string>
+    <string name="onboarding_page4_text">Le camp met la marche en pause, soigne le héros et permet de gérer l\'équipement. Les pas continuent d\'être mis en réserve pendant la pause.</string>
+    <string name="onboarding_page4_note">Reprenez l\'expédition quand vous êtes prêt.</string>
+    <string name="onboarding_use_garmin">UTILISER GARMIN</string>
+    <string name="onboarding_use_health">UTILISER SANTÉ CONNECT</string>
+    <string name="onboarding_next">SUIVANT</string>
+    <string name="onboarding_skip">PASSER</string>
+    <string name="onboarding_start">COMMENCER LA MARCHE</string>
+    <string name="onboarding_step">Étape %1$d / %2$d</string>
+
+    <!-- Réglages · Langue -->
+    <string name="settings_language_title">Langue</string>
+    <string name="settings_language_system">Système</string>
+    <string name="settings_language_french">Français</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_hint">Langue de l\'interface.</string>
+    <string name="settings_language_partial">Une partie de l\'interface sera traduite progressivement. Le manuel reste en français pour l\'instant.</string>
 </resources>

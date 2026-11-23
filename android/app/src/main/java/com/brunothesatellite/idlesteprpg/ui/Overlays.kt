@@ -91,6 +91,7 @@ import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.JournalEntry
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
+import com.brunothesatellite.idlesteprpg.engine.allMobTemplates
 import com.brunothesatellite.idlesteprpg.engine.SpecialOutcome
 import com.brunothesatellite.idlesteprpg.engine.chestRemainingMs
 import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
@@ -1848,7 +1849,8 @@ fun JournalOverlay(
                         if (bestiary.isEmpty()) {
                             EmptyJournal("Aucune créature vaincue pour l'instant.")
                         }
-                        bestiary.entries.sortedByDescending { it.value }.forEach { (name, kills) ->
+                        bestiary.entries.sortedByDescending { it.value }.forEach { (id, kills) ->
+                            val name = allMobTemplates().firstOrNull { it.id == id }?.name ?: id
                             Row(
                                 Modifier
                                     .fillMaxWidth()
