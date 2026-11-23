@@ -62,6 +62,10 @@ class Enemy:
     shield_period: float = 0.0
     ability_period: float = 6.5
     ability_mult: float = 1.8
+    enrage_after: float = 0.0
+    enrage_step: float = 5.0
+    enrage_pct: float = 0.25
+    enrage_cap: float = 0.75
     xp: int = 0
     gold: int = 0
 
@@ -128,7 +132,11 @@ class Tuning:
     shield_reduction: float = 0.40
     shield_duration: float = 3.0
     shield_period: float = 8.0
-    target_boss_atk_div: float = 15.0
+    target_boss_atk_div: float = 16.0
+    enrage_after: float = 15.0
+    enrage_step: float = 5.0
+    enrage_pct: float = 0.25
+    enrage_cap: float = 0.75
 
 
 def rule_for(floor: int, biome: str) -> Rule:
@@ -265,6 +273,10 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shiel
         shield_duration=shield_duration,
         shield_period=shield_period,
         ability_mult=ability_mult,
+        enrage_after=tuning.enrage_after,
+        enrage_step=tuning.enrage_step,
+        enrage_pct=tuning.enrage_pct,
+        enrage_cap=tuning.enrage_cap,
         xp=round(xp),
         gold=round(gold),
     )
@@ -399,7 +411,11 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
 
             if enemy_timer <= 0:
                 enemy_swings += 1
-                dmg = enemy.atk * (0.9 + rng.random() * 0.1) * (1.0 - build.damage_reduction)
+                enrage = 1.0
+                if enemy.enrage_after > 0 and t >= enemy.enrage_after:
+                    steps = int((t - enemy.enrage_after) / enemy.enrage_step) + 1
+                    enrage += min(enemy.enrage_cap, steps * enemy.enrage_pct)
+                dmg = enemy.atk * (0.9 + rng.random() * 0.1) * enrage * (1.0 - build.damage_reduction)
                 hp -= dmg
                 taken += dmg
                 enemy_timer += enemy.interval
@@ -418,7 +434,11 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
 
             if enemy.ability == "slam" and ability_timer <= 0:
                 enemy_swings += 1
-                dmg = enemy.atk * enemy.ability_mult * (1.0 - build.damage_reduction)
+                enrage = 1.0
+                if enemy.enrage_after > 0 and t >= enemy.enrage_after:
+                    steps = int((t - enemy.enrage_after) / enemy.enrage_step) + 1
+                    enrage += min(enemy.enrage_cap, steps * enemy.enrage_pct)
+                dmg = enemy.atk * enemy.ability_mult * enrage * (1.0 - build.damage_reduction)
                 hp -= dmg
                 taken += dmg
                 ability_timer = enemy.ability_period
@@ -567,7 +587,11 @@ def main() -> None:
     parser.add_argument("--shield-reduction", type=float, default=0.40)
     parser.add_argument("--shield-duration", type=float, default=3.0)
     parser.add_argument("--shield-period", type=float, default=8.0)
-    parser.add_argument("--target-boss-atk-div", type=float, default=15.0)
+    parser.add_argument("--target-boss-atk-div", type=float, default=16.0)
+    parser.add_argument("--enrage-after", type=float, default=15.0)
+    parser.add_argument("--enrage-step", type=float, default=5.0)
+    parser.add_argument("--enrage-pct", type=float, default=0.25)
+    parser.add_argument("--enrage-cap", type=float, default=0.75)
     parser.add_argument("--xp", action="store_true", help="affiche les courbes d'XP et de pas")
     parser.add_argument("--economy", action="store_true", help="affiche le résumé XP/pas")
     args = parser.parse_args()
@@ -589,6 +613,10 @@ def main() -> None:
         shield_duration=args.shield_duration,
         shield_period=args.shield_period,
         target_boss_atk_div=args.target_boss_atk_div,
+        enrage_after=args.enrage_after,
+        enrage_step=args.enrage_step,
+        enrage_pct=args.enrage_pct,
+        enrage_cap=args.enrage_cap,
     )
     floors = [int(x) for x in args.floors.split(",") if x.strip()]
     builds = [x.strip() for x in args.build.split(",") if x.strip()]

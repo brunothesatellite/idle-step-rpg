@@ -200,10 +200,10 @@ Cible : **monstre ~5 s**, **gardien ~18 s**, **≥ 30 coups portés**, à tous l
 
 | Palier | PV monstre | ATQ monstre | PV gardien | ATQ gardien |
 |---:|---:|---:|---:|---:|
-| 36 | 30,6 k | 1 247 | 87,7 k | 628 |
-| 50 | 39,2 k | 1 684 | 112,3 k | 776 |
-| 75 | 53,5 k | 2 308 | 153,7 k | 1 039 |
-| 100 | 63,7 k | 2 809 | 184,8 k | 1 302 |
+| 36 | 30,6 k | 1 247 | 87,7 k | 589 |
+| 50 | 39,2 k | 1 684 | 112,3 k | 727 |
+| 75 | 53,5 k | 2 308 | 153,7 k | 974 |
+| 100 | 63,7 k | 2 809 | 184,8 k | 1 221 |
 
 Formules linéaires proposées (à ajuster par simulation) :
 
@@ -211,7 +211,7 @@ Formules linéaires proposées (à ajuster par simulation) :
 mobHpMult  = 26.0 - 0.08  * (floor - 10)
 mobAtkMult = 16.6 - 0.045 * (floor - 10)
 bossHpMult = 72.0 - 0.20  * (floor - 10)
-bossAtkMult = 7.7 - 0.02  * (floor - 10)
+bossAtkMult = 7.2 - 0.024 * (floor - 10)
 
 PV  = basePV(level)  * mult * règleBiome
 ATQ = baseATQ(level) * mult * règleBiome
@@ -221,14 +221,15 @@ ATQ = baseATQ(level) * mult * règleBiome
 - Élites : 1,8× PV, 1,15× ATQ.
 - Les multiplicateurs **baissent** avec le palier parce que les PV/ATQ de base montent déjà linéairement et que le DPS de référence monte plus vite (ATQ × VIT). Ce n’est pas une erreur.
 
-Simulation de cette cible (ATQ gardien = EHP de référence / 15) :
+Simulation de cette cible (ATQ gardien = EHP de référence / 16, enrage après 15 s) :
 
 | Build | Gardien 36 | Gardien 50 | Gardien 75 | Gardien 100 |
 |---|---|---|---|---|
 | `reference_high` | 15,9 s · 54 coups · 100 % | 14,1 s · 48 coups · 100 % | 15,8 s · 54 coups · 100 % | 15,8 s · 54 coups · 100 % |
-| `reference` (mid) | 20,0 s · 68 coups · 99 % | 17,9 s · 61 coups · 34 % | ~18,6 s · 63 coups · 1 % | ~18,6 s · 63 coups · 1 % |
+| `reference` (mid) | 20,0 s · 68 coups · 99 % | 17,9 s · 61 coups · 34 % | 18,6 s · 63 coups · 1 % | 18,6 s · 63 coups · 1 % |
+| `reference` + potion ATQ | — | — | 13,8 s · 47 coups · 100 % | 13,8 s · 47 coups · 100 % |
 
-Le build haut est au-dessus de la cible ; le build moyen franchit 36-50, puis bute sur 75-100. Il faut soit relever le stuff moyen d’environ 10-15 %, soit baisser l’ATQ des gardiens de 5-10 %. L’important est acquis : **aucun gardien ne tombe en 2-3 coups**, le combat dure 14-20 s, et le stuff moyen ne gagne pas automatiquement.
+Le build haut gagne sans potion ; le build moyen franchit 36-50, puis doit utiliser une potion pour finir avant l’enrage à 75-100. L’important est acquis : **aucun gardien ne tombe en 2-3 coups**, le combat dure 14-20 s, et le stuff moyen ne gagne pas automatiquement sans consommable.
 
 ### 6.2 Courbe d'XP
 

@@ -85,10 +85,11 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 |---|---|
 | Monstre normal, build `reference` | ≥ 95 % de victoires, TTK 4-7 s, ≤ 0,2 ration |
 | Élite, build `reference` | ≥ 80 % de victoires, TTK 8-12 s |
-| Gardien, build `reference` | 40-70 % de victoires, TTK 15-22 s, ≥ 30 coups portés, 1 ration |
-| Gardien, build `reference_high` au 100 | 80-95 % de victoires, TTK 15-22 s, ≥ 30 coups portés |
+| Gardien, build `reference` sans potion | 0-30 % de victoires, TTK 15-22 s, ≥ 30 coups portés, 1 ration |
+| Gardien, build `reference` + potion | 40-70 % de victoires, TTK 13-18 s, ≥ 30 coups portés |
+| Gardien, build `reference_high` au 100 | 90-100 % de victoires, TTK 15-22 s, ≥ 30 coups portés |
 | Gardien + potion, build `reference_high` | TTK réduit de 20-40 %, jamais < 10 s ni < 25 coups |
-| Gardien avec enrage après 15 s | `reference_high` n’est plus à 100 % ; les potions permettent de finir avant |
+| Gardien avec enrage après 15 s | sécurise les combats longs ; à renforcer si le meilleur stuff gagne encore trop souvent |
 | Build `under` | perd les gardiens, gagne encore des monstres |
 | Palier 36, build `player36` | ≥ 80 % de victoires sur monstre et gardien après patch |
 | Écart entre builds | aucun build > 2× plus rapide qu’un autre |
@@ -134,7 +135,7 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 
 **Sortie** : simulateur de confiance, tableau de calibration.
 
-**Écart connu à corriger** : sur la courbe `target` actuelle, `reference` est à ~1 % et `reference_high` à 100 % au palier 100. La cible est 40-70 % pour le stuff moyen et 80-95 % pour le stuff haut : il faut relever le stuff moyen ou baisser l’ATQ des gardiens de 5-10 %, puis rejouer la matrice. Pour casser le 100 % du meilleur stuff, ajouter l’**enrage douce** (6.6) et vérifier qu’elle ne rend pas le stuff moyen impossible.
+**Écart connu** : sur la courbe `target` finale (ATQ gardien = EHP/16, enrage après 15 s), `reference` sans potion est à ~1 % aux 75/100, `reference` + potion à 100 % (13,8 s / 47 coups), `reference_high` à 100 % (15,8 s / 54 coups). Le point restant est le 100 % du meilleur stuff : soit l’accepter comme récompense du sur-stuff, soit renforcer l’enrage (par exemple après 12 s) et vérifier que le stuff moyen + potion reste à 40-70 %.
 
 ### Phase A — Débloquer le palier 36
 
