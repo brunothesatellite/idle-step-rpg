@@ -41,9 +41,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.engine.BIOMES
 import com.brunothesatellite.idlesteprpg.engine.BIOME_POOLS
 import com.brunothesatellite.idlesteprpg.engine.BiomeRule
@@ -93,7 +95,7 @@ fun CodexOverlay(state: GameState, onClose: () -> Unit) {
         ) {
             Column(Modifier.weight(1f)) {
                 Text("CODEX", fontFamily = Press, fontSize = 10.sp, color = GoldLight)
-                Text("Bestiaire, ensembles et biomes", fontSize = 7.sp, color = Muted)
+                Text(stringResource(R.string.codex_subtitle), fontSize = 7.sp, color = Muted)
             }
             CloseButton(onClose)
         }
@@ -102,9 +104,9 @@ fun CodexOverlay(state: GameState, onClose: () -> Unit) {
             Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 7.dp),
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            CodexTab("bestiary", "BESTIAIRE", tab, Modifier.weight(1f)) { tab = it }
-            CodexTab("sets", "ENSEMBLES", tab, Modifier.weight(1f)) { tab = it }
-            CodexTab("biomes", "BIOMES", tab, Modifier.weight(1f)) { tab = it }
+            CodexTab("bestiary", stringResource(R.string.codex_bestiary), tab, Modifier.weight(1f)) { tab = it }
+            CodexTab("sets", stringResource(R.string.codex_tab_sets), tab, Modifier.weight(1f)) { tab = it }
+            CodexTab("biomes", stringResource(R.string.codex_biomes), tab, Modifier.weight(1f)) { tab = it }
         }
         Column(
             Modifier
@@ -160,16 +162,21 @@ private fun BestiaryCodex(state: GameState) {
     val discoveredMobs = mobs.count { (state.bestiary[it.id] ?: 0) > 0 }
     val discoveredBosses = bosses.count { (state.bossKills[it.id] ?: 0) > 0 }
     PixelCard(Modifier.fillMaxWidth(), borderColor = Gold.copy(alpha = 0.3f)) {
-        SectionLabel("BESTIAIRE")
+        SectionLabel(stringResource(R.string.codex_bestiary))
         Text(
-            "$discoveredMobs / ${mobs.size} créatures · $discoveredBosses / ${bosses.size} gardiens",
+            stringResource(
+                R.string.codex_count,
+                discoveredMobs,
+                mobs.size,
+                discoveredBosses,
+                bosses.size
+            ),
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             color = GoldLight
         )
         Text(
-            "Les silhouettes inconnues se révèlent à la première victoire. Les biomes non " +
-                "découverts restent affichés en silhouettes. Appuyez sur une créature pour ouvrir sa fiche.",
+            stringResource(R.string.codex_intro1) + " " + stringResource(R.string.codex_intro2),
             fontSize = 6.3.sp,
             color = Muted,
             lineHeight = 9.sp
@@ -192,21 +199,27 @@ private fun BestiaryCodex(state: GameState) {
                 Column(Modifier.weight(1f)) {
                     SectionLabel(biomeLabelRes(biome.key))
                     Text(
-                        "$foundMobs / ${biomeMobs.size} créatures · $foundBosses / ${biomeBosses.size} gardiens",
+                        stringResource(
+                            R.string.codex_count,
+                            foundMobs,
+                            biomeMobs.size,
+                            foundBosses,
+                            biomeBosses.size
+                        ),
                         fontSize = 6.5.sp,
                         color = Muted
                     )
                 }
                 if (!unlocked) {
                     Text(
-                        "NON DÉCOUVERT",
+                        stringResource(R.string.codex_undiscovered),
                         fontFamily = Press,
                         fontSize = 5.sp,
                         color = Muted2,
                         letterSpacing = 0.4.sp
                     )
                 } else if (biomeKeyFor(state.floor) == key) {
-                    Text("ACTUEL", fontFamily = Press, fontSize = 5.5.sp, color = GoldLight)
+                    Text(stringResource(R.string.codex_current), fontFamily = Press, fontSize = 5.5.sp, color = GoldLight)
                 }
             }
             Spacer(Modifier.height(6.dp))
@@ -221,7 +234,7 @@ private fun BestiaryCodex(state: GameState) {
             }
             if (biomeBosses.isNotEmpty()) {
                 Spacer(Modifier.height(2.dp))
-                Text("GARDIENS", fontSize = 5.5.sp, color = Blood, letterSpacing = 0.8.sp)
+                Text(stringResource(R.string.codex_guardians), fontSize = 5.5.sp, color = Blood, letterSpacing = 0.8.sp)
                 biomeBosses.forEach { boss ->
                     BossEntry(state, boss, biome.fromFloor) { selectedBoss = boss }
                 }
@@ -238,9 +251,9 @@ private fun BestiaryCodex(state: GameState) {
             borderColor = Blood.copy(alpha = 0.35f),
             background = Color(0xFF20121B)
         ) {
-            SectionLabel("GARDIENS DE JALON")
+            SectionLabel(stringResource(R.string.codex_milestone_guardians))
             Text(
-                "Ces gardiens apparaissent à un palier fixe, en dehors de la rotation des biomes.",
+                stringResource(R.string.codex_milestone_note),
                 fontSize = 6.2.sp,
                 color = Muted,
                 lineHeight = 9.sp
@@ -298,7 +311,7 @@ private fun MobEntry(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                if (known) "$kills victime(s)" else "Non rencontré",
+                if (known) stringResource(R.string.codex_kills, kills) else stringResource(R.string.codex_not_met),
                 fontSize = 5.2.sp,
                 color = if (known) Green else Muted2
             )
@@ -421,9 +434,9 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("BESTIAIRE", fontFamily = Press, fontSize = 6.5.sp, color = Muted)
+                        Text(stringResource(R.string.codex_bestiary), fontFamily = Press, fontSize = 6.5.sp, color = Muted)
                         Text(
-                            if (known) creatureNameRes(mob.name) else "Créature inconnue",
+                            if (known) creatureNameRes(mob.name) else stringResource(R.string.codex_unknown_creature),
                             fontFamily = Press,
                             fontSize = 10.sp,
                             color = if (known) GoldLight else Muted2,
@@ -461,7 +474,13 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    "${preview.tier} · ${preview.zone} · Palier ${preview.floor} · Niv. ${preview.level}",
+                    stringResource(
+                        R.string.codex_preview_line,
+                        localizedTier(preview.tier),
+                        localizedZoneName(preview.zone),
+                        preview.floor,
+                        preview.level
+                    ),
                     fontSize = 6.sp,
                     color = Muted,
                     textAlign = TextAlign.Center
@@ -469,8 +488,7 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                 Spacer(Modifier.height(10.dp))
                 if (!known) {
                     Text(
-                        "Cette créature n'a pas encore été vaincue. Sa fiche et ses statistiques " +
-                            "se révéleront au premier combat gagné.",
+                        stringResource(R.string.codex_mob_unknown1) + " " + stringResource(R.string.codex_mob_unknown2),
                         fontSize = 7.sp,
                         color = Muted,
                         textAlign = TextAlign.Center,
@@ -478,20 +496,20 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     )
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        MobStat("PV", formatCompact(preview.hp), Modifier.weight(1f))
-                        MobStat("ATQ", formatCompact(preview.atk), Modifier.weight(1f), Ember)
+                        MobStat(stringResource(R.string.overlay_hp), formatCompact(preview.hp), Modifier.weight(1f))
+                        MobStat(stringResource(R.string.overlay_atk), formatCompact(preview.atk), Modifier.weight(1f), Ember)
                         MobStat(
-                            "CADENCE",
-                            String.format(Locale.FRENCH, "%.2f s", preview.intervalMs / 1000.0),
+                            stringResource(R.string.codex_cadence),
+                            decimalRes(preview.intervalMs / 1000.0, 2) + " s",
                             Modifier.weight(1f),
                             Color(0xFF86B8D9)
                         )
                     }
                     Spacer(Modifier.height(5.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        MobStat("OR", formatCompact(preview.gold), Modifier.weight(1f))
-                        MobStat("XP", formatCompact(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
-                        MobStat("VICTIMES", formatCompact(kills), Modifier.weight(1f))
+                        MobStat(stringResource(R.string.overlay_gold), formatCompact(preview.gold), Modifier.weight(1f))
+                        MobStat(stringResource(R.string.codex_xp), formatCompact(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
+                        MobStat(stringResource(R.string.overlay_recap_kills), formatCompact(kills), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Box(
@@ -503,7 +521,7 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                             .padding(9.dp)
                     ) {
                         Column {
-                            SectionLabel("RÈGLE DE BIOME", color = Ember)
+                            SectionLabel(stringResource(R.string.codex_biome_rule), color = Ember)
                             Text(
                                 biomeRuleLabelRes(preview.rule.id),
                                 fontSize = 7.sp,
@@ -517,11 +535,9 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     Spacer(Modifier.height(7.dp))
                     Text(
                         if (state.firstSeen.containsKey(mob.id)) {
-                            "Statistiques telles qu'à la première rencontre (palier ${preview.floor}), " +
-                                "règle de biome incluse. 10 % de chance d'élite : Niv. +2, PV ×2,2, ATQ ×1,3."
+                            stringResource(R.string.codex_stats_seen, preview.floor)
                         } else {
-                            "Statistiques de base au palier ${preview.floor}, règle de biome incluse. " +
-                                "10 % de chance d'élite : Niv. +2, PV ×2,2, ATQ ×1,3."
+                            stringResource(R.string.codex_stats_base, preview.floor)
                         },
                         fontSize = 5.6.sp,
                         color = Muted2,
@@ -530,7 +546,7 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     )
                 }
                 Spacer(Modifier.height(12.dp))
-                GoldButton(if (known) "FERMER" else "COMPRIS", onClick = onDismiss)
+                GoldButton(if (known) stringResource(R.string.overlay_close) else stringResource(R.string.codex_understood), onClick = onDismiss)
             }
         }
     }
@@ -582,16 +598,17 @@ private fun buildBossPreview(state: GameState, boss: BossTemplate): BossPreview 
     )
 }
 
+@Composable
 private fun bossAbilityDescription(id: String): String = when (id) {
-    "slam" -> "Frappe lourde : inflige 240 % de l'ATQ."
-    "drain" -> "Drain d'âme : inflige 150 % de l'ATQ et soigne le gardien de 80 % des dégâts."
-    "regen" -> "Régénération : récupère 7 % de ses PV maximum."
-    "shield" -> "Blindage : réduit les dégâts subis de 65 % pendant 4,5 s."
-    "breath" -> "Souffle : inflige 200 % de l'ATQ et applique GIVRE (+15 % de dégâts subis, 6 s)."
-    "roots" -> "Racines : inflige 120 % de l'ATQ et applique RACINES (-25 % VIT, 5 s)."
-    "acid" -> "Acide : inflige 140 % de l'ATQ et applique ACIDE (+15 % de dégâts subis, 6 s)."
-    "pressure" -> "Pression : inflige 180 % de l'ATQ et retire 10 points de ferveur."
-    else -> "Frappe : inflige 180 % de l'ATQ."
+    "slam" -> stringResource(R.string.codex_ability_slam)
+    "drain" -> stringResource(R.string.codex_ability_drain)
+    "regen" -> stringResource(R.string.codex_ability_regen)
+    "shield" -> stringResource(R.string.codex_ability_shield)
+    "breath" -> stringResource(R.string.codex_ability_breath)
+    "roots" -> stringResource(R.string.codex_ability_roots)
+    "acid" -> stringResource(R.string.codex_ability_acid)
+    "pressure" -> stringResource(R.string.codex_ability_pressure)
+    else -> stringResource(R.string.codex_ability_hit)
 }
 
 @Composable
@@ -617,9 +634,9 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("CODEX · GARDIEN", fontFamily = Press, fontSize = 6.5.sp, color = Muted)
+                        Text(stringResource(R.string.codex_guardian_title), fontFamily = Press, fontSize = 6.5.sp, color = Muted)
                         Text(
-                            if (known) creatureNameRes(boss.name) else "Gardien inconnu",
+                            if (known) creatureNameRes(boss.name) else stringResource(R.string.codex_unknown_guardian),
                             fontFamily = Press,
                             fontSize = 10.sp,
                             color = if (known) GoldLight else Muted2,
@@ -657,7 +674,7 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    "GARDIEN · PALIER ${preview.floor} · NIV. ${preview.level}",
+                    stringResource(R.string.codex_guardian_header, preview.floor, preview.level),
                     fontSize = 6.sp,
                     color = Muted,
                     textAlign = TextAlign.Center
@@ -665,8 +682,7 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                 Spacer(Modifier.height(10.dp))
                 if (!known) {
                     Text(
-                        "Ce gardien n'a pas encore été vaincu. Sa fiche et ses statistiques " +
-                            "se révéleront à la première victoire.",
+                        stringResource(R.string.codex_boss_unknown1) + " " + stringResource(R.string.codex_boss_unknown2),
                         fontSize = 7.sp,
                         color = Muted,
                         textAlign = TextAlign.Center,
@@ -674,20 +690,20 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     )
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        MobStat("PV", formatCompact(preview.hp), Modifier.weight(1f))
-                        MobStat("ATQ", formatCompact(preview.atk), Modifier.weight(1f), Blood)
+                        MobStat(stringResource(R.string.overlay_hp), formatCompact(preview.hp), Modifier.weight(1f))
+                        MobStat(stringResource(R.string.overlay_atk), formatCompact(preview.atk), Modifier.weight(1f), Blood)
                         MobStat(
-                            "CADENCE",
-                            String.format(Locale.FRENCH, "%.2f s", preview.intervalMs / 1000.0),
+                            stringResource(R.string.codex_cadence),
+                            decimalRes(preview.intervalMs / 1000.0, 2) + " s",
                             Modifier.weight(1f),
                             Color(0xFF86B8D9)
                         )
                     }
                     Spacer(Modifier.height(5.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        MobStat("OR", formatCompact(preview.gold), Modifier.weight(1f))
-                        MobStat("XP", formatCompact(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
-                        MobStat("VICTIMES", formatCompact(kills), Modifier.weight(1f))
+                        MobStat(stringResource(R.string.overlay_gold), formatCompact(preview.gold), Modifier.weight(1f))
+                        MobStat(stringResource(R.string.codex_xp), formatCompact(preview.xp), Modifier.weight(1f), Color(0xFF8FD39B))
+                        MobStat(stringResource(R.string.overlay_recap_kills), formatCompact(kills), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Box(
@@ -699,9 +715,9 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                             .padding(9.dp)
                     ) {
                         Column {
-                            SectionLabel("CAPACITÉ", color = Blood)
+                            SectionLabel(stringResource(R.string.codex_ability), color = Blood)
                             Text(
-                                preview.abilityLabel,
+                                abilityLabelRes(preview.abilityId),
                                 fontSize = 7.sp,
                                 color = GoldLight,
                                 fontWeight = FontWeight.Bold
@@ -714,7 +730,7 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                                 lineHeight = 9.sp
                             )
                             Spacer(Modifier.height(2.dp))
-                            Text("Déclenchée toutes les 7 s.", fontSize = 5.6.sp, color = Muted2)
+                            Text(stringResource(R.string.codex_ability_every), fontSize = 5.6.sp, color = Muted2)
                         }
                     }
                     Spacer(Modifier.height(8.dp))
@@ -727,7 +743,7 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                             .padding(9.dp)
                     ) {
                         Column {
-                            SectionLabel("RÈGLE DE BIOME", color = Ember)
+                            SectionLabel(stringResource(R.string.codex_biome_rule), color = Ember)
                             Text(
                                 biomeRuleLabelRes(preview.rule.id),
                                 fontSize = 7.sp,
@@ -741,12 +757,12 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     Spacer(Modifier.height(7.dp))
                     Text(
                         (if (state.bossFirstSeen.containsKey(boss.id)) {
-                            "Statistiques telles qu'à la première rencontre (palier ${preview.floor}), "
+                            stringResource(R.string.codex_boss_seen1, preview.floor)
                         } else {
-                            "Statistiques de base au palier ${preview.floor}, "
-                        }) + "règle de biome incluse, hors modificateur. Modificateur aléatoire : " +
-                            "RAPIDE (cadence 0,90 s), BLINDÉ (PV +30 %), BERSERK (ATQ +30 %), " +
-                            "RÉGÉNÉRANT (PV +15 %, régénération), VOLEUR (ATQ +10 %, vole de l'or).",
+                            stringResource(R.string.codex_boss_stats1, preview.floor)
+                        }) + " " + stringResource(R.string.codex_boss_stats2) + " " +
+                            stringResource(R.string.codex_boss_stats3) + " " +
+                            stringResource(R.string.codex_boss_stats4),
                         fontSize = 5.6.sp,
                         color = Muted2,
                         textAlign = TextAlign.Center,
@@ -754,7 +770,7 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     )
                 }
                 Spacer(Modifier.height(12.dp))
-                GoldButton(if (known) "FERMER" else "COMPRIS", onClick = onDismiss)
+                GoldButton(if (known) stringResource(R.string.overlay_close) else stringResource(R.string.codex_understood), onClick = onDismiss)
             }
         }
     }
@@ -793,7 +809,7 @@ private fun BossEntry(
         Spacer(Modifier.width(6.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                if (known) creatureNameRes(boss.name) else "Gardien inconnu",
+                if (known) creatureNameRes(boss.name) else stringResource(R.string.codex_unknown_guardian),
                 fontSize = 6.5.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (known) GoldLight else Muted2,
@@ -801,14 +817,17 @@ private fun BossEntry(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                "CAPACITÉ · ${abilityLabelRes(bossAbilityFor(boss.name, floor).id)}",
+                stringResource(
+                    R.string.codex_ability_line,
+                    abilityLabelRes(bossAbilityFor(boss.name, floor).id)
+                ),
                 fontSize = 5.2.sp,
                 color = if (known) Ember else Muted2,
                 maxLines = 1
             )
         }
         Text(
-            "GARDIEN",
+            stringResource(R.string.codex_guardian_badge),
             fontFamily = Press,
             fontSize = 4.6.sp,
             color = Blood,
@@ -834,16 +853,16 @@ private fun SetsCodex(state: GameState) {
     val completed = ITEM_SETS.count { discoveredSetSlots(state, it).size >= 6 }
     val started = ITEM_SETS.count { discoveredSetSlots(state, it).isNotEmpty() }
     PixelCard(Modifier.fillMaxWidth(), borderColor = Gold.copy(alpha = 0.3f)) {
-        SectionLabel("ENSEMBLES")
+        SectionLabel(stringResource(R.string.codex_sets))
         Text(
-            "$completed / ${ITEM_SETS.size} collections complètes · $started commencées",
+            stringResource(R.string.codex_sets_count, completed, ITEM_SETS.size, started),
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             color = GoldLight
         )
         Text(
-            "La collection est permanente : une pièce découverte reste acquise même si vous la vendez. " +
-                "Les bonus s'activent à 2, 4 et 6 pièces équipées.",
+            stringResource(R.string.codex_set_note1) + " " +
+                stringResource(R.string.codex_set_note2),
             fontSize = 6.3.sp,
             color = Muted,
             lineHeight = 9.sp
@@ -870,9 +889,9 @@ private fun SetsCodex(state: GameState) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    SectionLabel(setLabel(set))
+                    SectionLabel(setLabelRes(set))
                     Text(
-                        "Collection $collectedCount/6 · Équipé $equippedCount/6",
+                        stringResource(R.string.codex_set_line, collectedCount, equippedCount),
                         fontSize = 7.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (collectedCount >= 2) GoldLight else Muted
@@ -880,9 +899,9 @@ private fun SetsCodex(state: GameState) {
                 }
                 Text(
                     when {
-                        equippedCount >= 2 -> "BONUS ACTIF"
-                        collectedCount >= 2 -> "À ÉQUIPER"
-                        else -> "À COMPLÉTER"
+                        equippedCount >= 2 -> stringResource(R.string.codex_set_active)
+                        collectedCount >= 2 -> stringResource(R.string.codex_set_equip)
+                        else -> stringResource(R.string.codex_set_collect)
                     },
                     fontFamily = Press,
                     fontSize = 5.sp,
@@ -922,7 +941,7 @@ private fun SetsCodex(state: GameState) {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            slotLabel(slot).take(4).uppercase(),
+                            slotLabelRes(slot).take(4).uppercase(),
                             fontSize = 4.5.sp,
                             color = when {
                                 on -> GoldLight
@@ -937,26 +956,33 @@ private fun SetsCodex(state: GameState) {
             if (collectedCount >= 1) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    if (equippedCount >= 2) setBonusDescription(set, equippedCount)
-                    else "2 pièces équipées : ${setBonusDescription(set, 2)}",
+                    if (equippedCount >= 2) localizedSetBonus(setBonusDescription(set, equippedCount))
+                    else stringResource(
+                        R.string.overlay_set_two,
+                        localizedSetBonus(setBonusDescription(set, 2))
+                    ),
                     fontSize = 6.2.sp,
                     color = if (equippedCount >= 2) Green else Muted
                 )
             }
             if (equippedCount in 2..5) {
                 Text(
-                    "Prochain palier ($next équipées) : ${setBonusDescription(set, next)}",
+                    stringResource(
+                        R.string.codex_set_next,
+                        next,
+                        localizedSetBonus(setBonusDescription(set, next))
+                    ),
                     fontSize = 5.6.sp,
                     color = Muted,
                     lineHeight = 8.sp
                 )
             } else if (equippedCount >= 6) {
-                Text("Bonus maximal actif.", fontSize = 5.6.sp, color = Green)
+                Text(stringResource(R.string.codex_set_max), fontSize = 5.6.sp, color = Green)
             }
             val source = setSourceLabel(set)
             if (source.isNotBlank()) {
                 Text(
-                    "Se trouve : $source",
+                    stringResource(R.string.codex_set_source, localizedBiomeText(setSourceLabel(set))),
                     fontSize = 5.6.sp,
                     color = Muted2,
                     lineHeight = 8.sp
@@ -993,15 +1019,15 @@ private fun BiomeBanner(key: String, modifier: Modifier = Modifier) {
 private fun BiomesCodex(state: GameState) {
     val visited = BIOMES.count { state.floor >= it.fromFloor }
     PixelCard(Modifier.fillMaxWidth(), borderColor = Green.copy(alpha = 0.3f)) {
-        SectionLabel("BIOMES")
+        SectionLabel(stringResource(R.string.codex_biomes))
         Text(
-            "$visited / ${BIOMES.size} biomes découverts",
+            stringResource(R.string.codex_biomes_count, visited, BIOMES.size),
             fontSize = 8.sp,
             fontWeight = FontWeight.Bold,
             color = GoldLight
         )
         Text(
-            "Chaque biome a sa règle, ses créatures, ses gardiens et ses objets.",
+            stringResource(R.string.codex_biomes_note),
             fontSize = 6.3.sp,
             color = Muted
         )
@@ -1026,14 +1052,14 @@ private fun BiomesCodex(state: GameState) {
                 Column(Modifier.weight(1f)) {
                     SectionLabel(biomeLabelRes(biome.key))
                     Text(
-                        if (known) biomeRuleLabelRes(rule.id) else "Palier ${biome.fromFloor} · Biome non découvert",
+                        if (known) biomeRuleLabelRes(rule.id) else stringResource(R.string.codex_biome_locked, biome.fromFloor),
                         fontSize = 7.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (known) Green else Muted2
                     )
                 }
                 if (biomeKeyFor(state.floor) == biome.key) {
-                    Text("ACTUEL", fontFamily = Press, fontSize = 5.5.sp, color = GoldLight)
+                    Text(stringResource(R.string.codex_current), fontFamily = Press, fontSize = 5.5.sp, color = GoldLight)
                 }
             }
             if (known) {
@@ -1043,7 +1069,15 @@ private fun BiomesCodex(state: GameState) {
                 Text(biomeRuleDescRes(rule.id), fontSize = 6.2.sp, color = Muted, lineHeight = 9.sp)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Créatures $foundMobs / ${mobs.size} · Gardiens $foundBosses / ${bosses.size} · Objets $foundItems / ${items.size}",
+                    stringResource(
+                        R.string.codex_biome_counts,
+                        foundMobs,
+                        mobs.size,
+                        foundBosses,
+                        bosses.size,
+                        foundItems,
+                        items.size
+                    ),
                     fontSize = 6.sp,
                     color = Parchment
                 )

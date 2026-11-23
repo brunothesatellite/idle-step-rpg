@@ -140,6 +140,35 @@ fun itemName(res: Resources, name: String, effect: String): String {
     return if (effect.isBlank()) localizedBase else localizedBase + " · " + effectLabel(res, effect)
 }
 
+private val FRENCH_TIERS = mapOf(
+    "DÉBUT DE PALIER" to R.string.codex_tier_easy,
+    "MILIEU DE PALIER" to R.string.codex_tier_mid,
+    "FIN DE PALIER" to R.string.codex_tier_hard,
+)
+
+fun tierRes(res: Resources, raw: String): String {
+    val key = FRENCH_TIERS[raw] ?: return raw
+    return res.getString(key)
+}
+
+fun zoneRes(res: Resources, raw: String): String =
+    if (raw == "palier verrouillé") res.getString(R.string.codex_locked_floor) else raw
+
+fun setBonusRes(res: Resources, text: String): String {
+    if (isFrench(res) || text.isBlank()) return text
+    return text
+        .replace("PV/s", "HP/s")
+        .replace("ATQ", "ATK")
+        .replace("PV", "HP")
+        .replace("VIT", "SPD")
+        .replace("dégâts gardiens", "guardian damage")
+        .replace("dégâts critiques", "critical damage")
+        .replace("dégâts", "damage")
+        .replace("vol de vie", "lifesteal")
+        .replace("crit.", "crit")
+        .replace(",", ".")
+}
+
 fun statLineRes(res: Resources, item: Item): String {
     val parts = mutableListOf<String>()
     if (item.atk != 0) parts += res.getString(R.string.content_stat_atk, item.atk)
@@ -472,5 +501,24 @@ fun localizedCreature(raw: String): String =
     creatureDisplay(LocalContext.current.resources, raw)
 
 @Composable
+fun localizedTier(raw: String): String = tierRes(LocalContext.current.resources, raw)
+
+@Composable
+fun localizedZoneName(raw: String): String = zoneRes(LocalContext.current.resources, raw)
+
+@Composable
+fun localizedSetBonus(text: String): String =
+    setBonusRes(LocalContext.current.resources, text)
+
+@Composable
 fun localizedBiomeName(raw: String): String =
     biomeNameRes(LocalContext.current.resources, raw)
+
+@Composable
+fun localizedBiomeText(raw: String): String {
+    var out = raw
+    for ((fr, key) in FRENCH_BIOMES) {
+        out = out.replace(fr, LocalContext.current.resources.getString(key))
+    }
+    return out
+}

@@ -939,6 +939,7 @@ private fun InventoryTab(
         listOf("weapon", "head", "body", "hands", "feet", "talisman").forEach { slot ->
             val item = equipped(state, slot)
             val slotLabel = slotLabelRes(slot)
+            val itemLabel = item?.let { localizedItem(it) }
             Column(
                 Modifier
                     .weight(1f)
@@ -952,7 +953,7 @@ private fun InventoryTab(
                     )
                     .clickable(enabled = item != null) { item?.let(onSelectItem) }
                     .semantics {
-                        contentDescription = "$slotLabel : ${item?.name ?: emptySlot}"
+                        contentDescription = "$slotLabel : ${itemLabel ?: emptySlot}"
                     }
                     .padding(3.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -1235,6 +1236,8 @@ private fun MiniChip(label: String, active: Boolean, onClick: () -> Unit) {
 private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val unidentifiedDescription = stringResource(R.string.dashboard_unidentified_item)
     val rarityLabel = rarityLabelRes(item.rarity)
+    val mysteriousName = stringResource(R.string.dashboard_mysterious_item)
+    val displayName = if (item.identified) localizedItem(item) else mysteriousName
     Column(
         modifier
             .heightIn(min = 62.dp)
@@ -1248,7 +1251,7 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
             .clickable(onClick = onClick)
             .semantics {
                 contentDescription = if (item.identified) {
-                    "${item.name}, $rarityLabel"
+                    "$displayName, $rarityLabel"
                 } else {
                     unidentifiedDescription
                 }
@@ -1259,7 +1262,7 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
     ) {
         AssetIcon(item.icon, 27.dp)
         Text(
-            if (item.identified) localizedItem(item) else stringResource(R.string.dashboard_mysterious_item),
+            displayName,
             fontSize = 6.sp,
             color = Parchment.copy(alpha = 0.85f),
             maxLines = 2,

@@ -149,12 +149,15 @@ fun ItemDialog(
     val missingShards = (1 - state.shards).coerceAtLeast(0)
     val canUpgrade = item.identified && missingGold == 0 && missingShards == 0
     val upgradeHint = when {
-        !item.identified -> "Objet non identifié."
-        canUpgrade -> "Forge · ${formatCompact(upgradePrice)} or + 1 éclat"
-        else -> "Il manque " + buildList {
-            if (missingGold > 0) add("${formatCompact(missingGold)} or")
-            if (missingShards > 0) add(if (missingShards > 1) "$missingShards éclats" else "1 éclat")
-        }.joinToString(" et ") + " pour améliorer"
+        !item.identified -> stringResource(R.string.overlay_item_unidentified_hint)
+        canUpgrade -> stringResource(R.string.overlay_forge_hint, formatCompact(upgradePrice))
+        else -> {
+            val missing = buildList {
+                if (missingGold > 0) add(stringResource(R.string.overlay_missing_gold, formatCompact(missingGold)))
+                if (missingShards > 0) add(stringResource(R.string.overlay_missing_shards, missingShards))
+            }.joinToString(stringResource(R.string.overlay_and))
+            stringResource(R.string.overlay_missing_hint, missing)
+        }
     }
     val equippedSetCount = state.equipment.count { it.setName == item.setName }
     val collectionSetCount = discoveredSetSlots(state, item.setName).size
@@ -188,20 +191,23 @@ fun ItemDialog(
                     Spacer(Modifier.width(9.dp))
                     Column(Modifier.weight(1f)) {
                         Text(
-                            if (item.identified) rarityLabelRes(item.rarity) else "NON IDENTIFIÉ",
+                            if (item.identified) rarityLabelRes(item.rarity) else stringResource(R.string.overlay_unidentified_tag),
                             fontSize = 5.5.sp,
                             letterSpacing = 1.sp,
                             color = if (item.identified) rarityColor(item.rarity) else Ember
                         )
                         Text(
-                            if (item.identified) localizedItem(item) else "Objet mystérieux",
+                            if (item.identified) localizedItem(item) else stringResource(R.string.overlay_mysterious_item),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = Parchment
                         )
                         Text(
-                            "${slotLabelRes(item.slot)} · Niv. ${item.level}" +
-                                if (item.locked) " · VERROUILLÉ" else "",
+                            stringResource(
+                                R.string.overlay_slot_level,
+                                slotLabelRes(item.slot),
+                                item.level
+                            ) + if (item.locked) stringResource(R.string.overlay_locked_suffix) else "",
                             fontSize = 7.sp,
                             color = if (item.locked) Ember else Muted
                         )
@@ -210,7 +216,12 @@ fun ItemDialog(
                         }
                         if (item.identified && item.setName.isNotBlank()) {
                             Text(
-                                "${setLabelRes(item.setName)} · équipé $equippedSetCount/6 · collection $collectionSetCount/6",
+                                stringResource(
+                                    R.string.overlay_set_line,
+                                    setLabelRes(item.setName),
+                                    equippedSetCount,
+                                    collectionSetCount
+                                ),
                                 fontSize = 5.8.sp,
                                 color = Blue
                             )
@@ -251,16 +262,16 @@ fun ItemDialog(
                 } else {
                 if (!item.identified) {
                     Text(
-                        "Un éclat d'âme suffit pour révéler les statistiques, l'effet et l'ensemble de cet objet.",
+                        stringResource(R.string.overlay_identify_hint),
                         fontSize = 7.sp,
                         color = Muted,
                         lineHeight = 10.sp
                     )
                     Spacer(Modifier.height(8.dp))
-                    OverlayAction("IDENTIFIER · 1 ÉCLAT", Modifier.fillMaxWidth(), onIdentify, primary = true)
+                    OverlayAction(stringResource(R.string.overlay_identify_button), Modifier.fillMaxWidth(), onIdentify, primary = true)
                     Spacer(Modifier.height(5.dp))
                     OverlayAction(
-                        if (item.locked) "VERROUILLÉ" else "VENDRE +${formatCompact(item.value)} or",
+                        if (item.locked) stringResource(R.string.overlay_locked) else stringResource(R.string.overlay_sell, formatCompact(item.value)),
                         Modifier.fillMaxWidth(),
                         onSell,
                         enabled = !item.locked
@@ -269,8 +280,8 @@ fun ItemDialog(
                     if (equippedHere) {
                         val nextLevel = GameEngine.upgradedItem(item)
                         ItemCompareTable(
-                            leftTitle = "Actuel",
-                            rightTitle = "Après +1 niv.",
+                            leftTitle = stringResource(R.string.overlay_current),
+                            rightTitle = stringResource(R.string.overlay_after_level),
                             left = item,
                             right = nextLevel
                         )
@@ -283,7 +294,13 @@ fun ItemDialog(
                             )
                         )
                         Text(
-                            "Héros · ATQ ${formatCompact(before.atk)} → ${formatCompact(after.atk)} · PV ${formatCompact(before.maxHp)} → ${formatCompact(after.maxHp)}",
+                            stringResource(
+                                R.string.overlay_hero_stats,
+                                formatCompact(before.atk),
+                                formatCompact(after.atk),
+                                formatCompact(before.maxHp),
+                                formatCompact(after.maxHp)
+                            ),
                             fontSize = 6.5.sp,
                             color = Blue,
                             modifier = Modifier.padding(top = 4.dp),
@@ -293,14 +310,14 @@ fun ItemDialog(
                         )
                     } else {
                         ItemCompareTable(
-                            leftTitle = "Équipé",
-                            rightTitle = "Cet objet",
+                            leftTitle = stringResource(R.string.overlay_equipped_lower),
+                            rightTitle = stringResource(R.string.overlay_this_item),
                             left = equippedItem,
                             right = item
                         )
                     }
                     Spacer(Modifier.height(4.dp))
-                    StatRow("Valeur", "${formatCompact(item.value)} or")
+                    StatRow(stringResource(R.string.overlay_value), stringResource(R.string.overlay_gold_value, formatCompact(item.value)))
                     if (item.identified && item.setName.isNotBlank()) {
                         Spacer(Modifier.height(5.dp))
                         val tier = when {
@@ -317,14 +334,22 @@ fun ItemDialog(
                                 .padding(6.dp)
                         ) {
                             Text(
-                                "${setLabelRes(item.setName)} · équipé $equippedSetCount/6 · collection $collectionSetCount/6",
+                                stringResource(
+                                    R.string.overlay_set_line,
+                                    setLabelRes(item.setName),
+                                    equippedSetCount,
+                                    collectionSetCount
+                                ),
                                 fontSize = 6.sp,
                                 letterSpacing = 0.5.sp,
                                 color = Blue
                             )
                             Text(
-                                if (equippedSetCount >= 2) setBonusDescription(item.setName, tier)
-                                else "2 pièces équipées : ${setBonusDescription(item.setName, 2)}",
+                                if (equippedSetCount >= 2) localizedSetBonus(setBonusDescription(item.setName, tier))
+                                else stringResource(
+                                    R.string.overlay_set_two,
+                                    localizedSetBonus(setBonusDescription(item.setName, 2))
+                                ),
                                 fontSize = 6.3.sp,
                                 color = Parchment.copy(alpha = 0.8f)
                             )
@@ -347,12 +372,12 @@ fun ItemDialog(
                     Spacer(Modifier.height(9.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         OverlayAction(
-                            if (item.locked) "DÉVERROUILLER" else "VERROUILLER",
+                            if (item.locked) stringResource(R.string.overlay_unlock) else stringResource(R.string.overlay_lock),
                             Modifier.weight(1f),
                             onToggleLock
                         )
                         OverlayAction(
-                            if (fusionCount >= 3) "FUSIONNER" else "FUSIONNER $fusionCount/3",
+                            if (fusionCount >= 3) stringResource(R.string.overlay_fuse) else stringResource(R.string.overlay_fuse_count, fusionCount),
                             Modifier.weight(1f),
                             onFuse,
                             enabled = GameEngine.canFuse(state, item)
@@ -362,19 +387,19 @@ fun ItemDialog(
                         Spacer(Modifier.height(5.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             OverlayAction(
-                                "REFORGER · 2",
+                                stringResource(R.string.overlay_reforge_cost),
                                 Modifier.weight(1f),
                                 { lastReforgeOld = null; forgeMode = ForgeMode.REFORGE },
                                 enabled = item.identified && state.shards >= 2
                             )
                             OverlayAction(
-                                "AMÉLIORER · ${formatCompact(upgradePrice)}",
+                                stringResource(R.string.overlay_upgrade_cost, formatCompact(upgradePrice)),
                                 Modifier.weight(1.2f),
                                 { lastUpgrade = null; forgeMode = ForgeMode.UPGRADE },
                                 enabled = canUpgrade
                             )
                             OverlayAction(
-                                "DÉMONTER",
+                                stringResource(R.string.overlay_salvage),
                                 Modifier.weight(0.9f),
                                 onDismantle,
                                 danger = true,
@@ -389,7 +414,7 @@ fun ItemDialog(
                         )
                     } else {
                         Text(
-                            "La forge se débloque après le premier gardien vaincu.",
+                            stringResource(R.string.overlay_forge_locked),
                             fontSize = 6.sp,
                             color = Muted2,
                             modifier = Modifier.padding(top = 4.dp)
@@ -398,14 +423,14 @@ fun ItemDialog(
                     Spacer(Modifier.height(5.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         OverlayAction(
-                            if (item.locked) "VERROUILLÉ"
-                            else "VENDRE +${formatCompact(item.value)} or",
+                            if (item.locked) stringResource(R.string.overlay_locked)
+                            else stringResource(R.string.overlay_sell, formatCompact(item.value)),
                             Modifier.weight(0.85f),
                             onSell,
                             enabled = !item.locked && !equippedHere
                         )
                         OverlayAction(
-                            if (equippedHere) "ÉQUIPÉ" else "ÉQUIPER",
+                            if (equippedHere) stringResource(R.string.overlay_equipped) else stringResource(R.string.overlay_equip),
                             Modifier.weight(1.15f),
                             onEquip,
                             primary = true,
@@ -443,7 +468,7 @@ private fun ForgePanel(
         Text("←", fontSize = 15.sp, color = Gold)
         Spacer(Modifier.width(7.dp))
         Text(
-            if (mode == ForgeMode.UPGRADE) "ATELIER · AMÉLIORER" else "ATELIER · REFORGER",
+            if (mode == ForgeMode.UPGRADE) stringResource(R.string.overlay_workshop_upgrade) else stringResource(R.string.overlay_workshop_reforge),
             fontFamily = Press,
             fontSize = 9.sp,
             color = GoldLight
@@ -492,15 +517,15 @@ private fun UpgradePanel(
     val result = lastUpgrade?.takeIf { item.level >= it.toLevel }
 
     Text(
-        "Niv. ${item.level} → ${next.level}",
+        stringResource(R.string.overlay_level_arrow, item.level, next.level),
         fontFamily = Press,
         fontSize = 11.sp,
         color = GoldLight
     )
     Spacer(Modifier.height(2.dp))
     Text(
-        if (equippedHere) "Objet équipé : l'amélioration change aussi les statistiques du héros."
-        else "Aperçu de l'objet après amélioration, comparé à l'équipement actuel.",
+        if (equippedHere) stringResource(R.string.overlay_upgrade_note)
+        else stringResource(R.string.overlay_preview_note),
         fontSize = 6.2.sp,
         color = Muted,
         lineHeight = 9.sp
@@ -517,13 +542,13 @@ private fun UpgradePanel(
                 .padding(6.dp)
         ) {
             Text(
-                "Amélioration appliquée · Niv. ${result.fromLevel} → ${result.toLevel}",
+                stringResource(R.string.overlay_upgrade_applied, result.fromLevel, result.toLevel),
                 fontSize = 6.6.sp,
                 fontWeight = FontWeight.Bold,
                 color = Green
             )
             Text(
-                "ATQ ${result.fromAtk} → ${result.toAtk} · PV ${result.fromHp} → ${result.toHp}",
+                stringResource(R.string.overlay_upgrade_stats, result.fromAtk, result.toAtk, result.fromHp, result.toHp),
                 fontSize = 6.2.sp,
                 color = Parchment.copy(alpha = 0.85f)
             )
@@ -540,7 +565,13 @@ private fun UpgradePanel(
         val after = statsOf(afterState)
         Spacer(Modifier.height(4.dp))
         Text(
-            "Héros · ATQ ${formatCompact(before.atk)} → ${formatCompact(after.atk)} · PV ${formatCompact(before.maxHp)} → ${formatCompact(after.maxHp)}",
+            stringResource(
+                R.string.overlay_hero_stats,
+                formatCompact(before.atk),
+                formatCompact(after.atk),
+                formatCompact(before.maxHp),
+                formatCompact(after.maxHp)
+            ),
             fontSize = 6.5.sp,
             color = Blue,
             maxLines = 1,
@@ -550,32 +581,32 @@ private fun UpgradePanel(
     } else {
         UpgradeTable(reference = equippedItem, current = item, next = next)
         Text(
-            if (equippedItem == null) "Aucun objet équipé dans cet emplacement."
-            else "Référence : ${localizedItem(equippedItem)}.",
+            if (equippedItem == null) stringResource(R.string.overlay_no_equipped)
+            else stringResource(R.string.overlay_reference, localizedItem(equippedItem)),
             fontSize = 6.1.sp,
             color = Muted2
         )
     }
 
     Spacer(Modifier.height(7.dp))
-    CostRow("Coût", "${formatCompact(upgradePrice)} or · 1 éclat")
-    CostRow("Disponible", "${formatCompact(state.gold)} or · ${state.shards} éclats")
+    CostRow(stringResource(R.string.overlay_cost), stringResource(R.string.overlay_cost_one_shard, formatCompact(upgradePrice)))
+    CostRow(stringResource(R.string.overlay_available), stringResource(R.string.overlay_cost_shards, formatCompact(state.gold), state.shards))
     if (!canUpgrade) {
         Text(upgradeHint, fontSize = 6.2.sp, color = Ember, lineHeight = 9.sp)
     }
     Spacer(Modifier.height(8.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         OverlayAction(
-            if (result != null) "CONTINUER À AMÉLIORER" else "AMÉLIORER",
+            if (result != null) stringResource(R.string.overlay_keep_upgrading) else stringResource(R.string.overlay_upgrade),
             Modifier.weight(1.35f),
             onConfirm,
             primary = true,
             enabled = canUpgrade
         )
-        OverlayAction("FERMER", Modifier.weight(0.65f), onClose)
+        OverlayAction(stringResource(R.string.overlay_close), Modifier.weight(0.65f), onClose)
     }
     Text(
-        "L'objet reste dans le sac ; le gain n'est actif qu'une fois équipé.",
+        stringResource(R.string.overlay_upgrade_stays),
         fontSize = 5.9.sp,
         color = Muted2,
         modifier = Modifier.padding(top = 5.dp)
@@ -590,14 +621,14 @@ private fun ItemCompareTable(
     right: Item
 ) {
     Row(Modifier.fillMaxWidth().padding(bottom = 2.dp)) {
-        Text("Statistique", Modifier.weight(1.25f), fontSize = 5.7.sp, color = Muted2)
+        Text(stringResource(R.string.overlay_stat), Modifier.weight(1.25f), fontSize = 5.7.sp, color = Muted2)
         Text(leftTitle, Modifier.weight(1f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
         Text(rightTitle, Modifier.weight(1.15f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
     }
-    CompareLine("ATQ", left?.atk, right.atk, percent = false)
-    CompareLine("PV", left?.hp, right.hp, percent = false)
-    CompareLine("% VIT", left?.vitPct, right.vitPct, percent = true)
-    CompareLine("Critique", left?.critPct, right.critPct, percent = true)
+    CompareLine(stringResource(R.string.overlay_atk), left?.atk, right.atk, percent = false)
+    CompareLine(stringResource(R.string.overlay_hp), left?.hp, right.hp, percent = false)
+    CompareLine(stringResource(R.string.overlay_pct_vit), left?.vitPct, right.vitPct, percent = true)
+    CompareLine(stringResource(R.string.overlay_crit), left?.critPct, right.critPct, percent = true)
     CompareRegenLine(left?.regen, right.regen)
 }
 
@@ -656,7 +687,7 @@ private fun CompareRegenLine(left: Double?, right: Double) {
         Modifier.fillMaxWidth().padding(vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Régénération", Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
+        Text(stringResource(R.string.overlay_regeneration), Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
         Text(
             left?.let { regenText(it) } ?: "—",
             Modifier.weight(1f),
@@ -683,23 +714,23 @@ private fun CompareRegenLine(left: Double?, right: Double) {
 @Composable
 private fun UpgradeTable(reference: Item?, current: Item, next: Item) {
     Row(Modifier.fillMaxWidth().padding(bottom = 2.dp)) {
-        Text("Statistique", Modifier.weight(1.25f), fontSize = 5.7.sp, color = Muted2)
+        Text(stringResource(R.string.overlay_stat), Modifier.weight(1.25f), fontSize = 5.7.sp, color = Muted2)
         if (reference != null) {
-            Text("Équipé", Modifier.weight(1f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
+            Text(stringResource(R.string.overlay_equipped_lower), Modifier.weight(1f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
         }
         Text(
-            if (reference == null) "Actuel" else "Objet",
+            if (reference == null) stringResource(R.string.overlay_current) else stringResource(R.string.overlay_item),
             Modifier.weight(0.9f),
             fontSize = 5.7.sp,
             color = Muted2,
             textAlign = TextAlign.End
         )
-        Text("Après", Modifier.weight(1.15f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
+        Text(stringResource(R.string.overlay_after), Modifier.weight(1.15f), fontSize = 5.7.sp, color = Muted2, textAlign = TextAlign.End)
     }
-    UpgradeLine("ATQ", reference?.atk, current.atk, next.atk, percent = false)
-    UpgradeLine("PV", reference?.hp, current.hp, next.hp, percent = false)
-    UpgradeLine("% VIT", reference?.vitPct, current.vitPct, next.vitPct, percent = true)
-    UpgradeLine("Critique", reference?.critPct, current.critPct, next.critPct, percent = true)
+    UpgradeLine(stringResource(R.string.overlay_atk), reference?.atk, current.atk, next.atk, percent = false)
+    UpgradeLine(stringResource(R.string.overlay_hp), reference?.hp, current.hp, next.hp, percent = false)
+    UpgradeLine(stringResource(R.string.overlay_pct_vit), reference?.vitPct, current.vitPct, next.vitPct, percent = true)
+    UpgradeLine(stringResource(R.string.overlay_crit), reference?.critPct, current.critPct, next.critPct, percent = true)
     UpgradeRegenLine(reference?.regen, current.regen, next.regen)
 }
 
@@ -768,7 +799,7 @@ private fun UpgradeRegenLine(reference: Double?, before: Double, after: Double) 
         Modifier.fillMaxWidth().padding(vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Régén.", Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
+        Text(stringResource(R.string.overlay_regen_short), Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
         if (reference != null) {
             Text(
                 regenText(reference),
@@ -840,7 +871,11 @@ private fun ReforgePanel(
     val current = if (item.effect.isBlank()) stringResource(R.string.journal_no_effect) else effectLabelRes(item.effect)
     val result = lastReforgeOld
     Text(
-        "Effet : $current → ${if (result == null) "aléatoire" else current}",
+        stringResource(
+            R.string.overlay_effect_arrow,
+            current,
+            if (result == null) stringResource(R.string.overlay_random) else current
+        ),
         fontFamily = Press,
         fontSize = 10.sp,
         color = GoldLight
@@ -849,8 +884,8 @@ private fun ReforgePanel(
 
     if (result == null) {
         Text(
-            "L'effet est tiré au hasard. Le niveau, les statistiques et l'ensemble ne changent pas. " +
-                "L'effet peut être identique ou disparaître.",
+            stringResource(R.string.overlay_reforge_note1) + " " +
+                stringResource(R.string.overlay_reforge_note2),
             fontSize = 6.3.sp,
             color = Muted,
             lineHeight = 9.sp
@@ -858,21 +893,21 @@ private fun ReforgePanel(
         Spacer(Modifier.height(7.dp))
         ReforgePool(currentEffect = item.effect)
         Spacer(Modifier.height(7.dp))
-        CostRow("Coût", "2 éclats")
-        CostRow("Disponible", "${state.shards} éclats")
+        CostRow(stringResource(R.string.overlay_cost), stringResource(R.string.overlay_shards_count, 2))
+        CostRow(stringResource(R.string.overlay_available), stringResource(R.string.overlay_shards_count, state.shards))
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             OverlayAction(
-                "REFORGER",
+                stringResource(R.string.overlay_reforge),
                 Modifier.weight(1.35f),
                 onConfirm,
                 primary = true,
                 enabled = state.shards >= 2
             )
-            OverlayAction("ANNULER", Modifier.weight(0.65f), onBack)
+            OverlayAction(stringResource(R.string.overlay_cancel), Modifier.weight(0.65f), onBack)
         }
         if (state.shards < 2) {
-            Text("2 éclats requis.", fontSize = 6.2.sp, color = Ember, modifier = Modifier.padding(top = 5.dp))
+            Text(stringResource(R.string.msg_two_shards), fontSize = 6.2.sp, color = Ember, modifier = Modifier.padding(top = 5.dp))
         }
     } else {
         Column(
@@ -884,32 +919,37 @@ private fun ReforgePanel(
                 .padding(7.dp)
         ) {
             Text(
-                "$result → $current" + if (result == current) " (identique)" else "",
+                stringResource(
+                    R.string.overlay_effect_result,
+                    result,
+                    current,
+                    if (result == current) stringResource(R.string.overlay_identical) else ""
+                ),
                 fontSize = 7.sp,
                 fontWeight = FontWeight.Bold,
                 color = Green
             )
-            Text("Nom : ${localizedItem(item)}", fontSize = 6.2.sp, color = Parchment.copy(alpha = 0.85f))
+            Text(stringResource(R.string.overlay_name, localizedItem(item)), fontSize = 6.2.sp, color = Parchment.copy(alpha = 0.85f))
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            "Statistiques, niveau et ensemble inchangés. L'objet reste dans le sac.",
+            stringResource(R.string.overlay_reforge_note),
             fontSize = 6.1.sp,
             color = Muted,
             lineHeight = 9.sp
         )
         Spacer(Modifier.height(6.dp))
-        CostRow("Éclats restants", "${state.shards}")
+        CostRow(stringResource(R.string.overlay_shards_left), "${state.shards}")
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             OverlayAction(
-                "REFORGER ENCORE",
+                stringResource(R.string.overlay_reforge_again),
                 Modifier.weight(1.35f),
                 onConfirm,
                 primary = true,
                 enabled = state.shards >= 2
             )
-            OverlayAction("FERMER", Modifier.weight(0.65f), onClose)
+            OverlayAction(stringResource(R.string.overlay_close), Modifier.weight(0.65f), onClose)
         }
     }
 }
@@ -935,7 +975,7 @@ private fun ReforgePool(currentEffect: String) {
                             .padding(horizontal = 4.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            effect?.let { effectLabelRes(it) } ?: "Aucun",
+                            effect?.let { effectLabelRes(it) } ?: stringResource(R.string.overlay_none),
                             fontSize = 5.6.sp,
                             color = if (active) GoldLight else Muted,
                             maxLines = 1
@@ -995,7 +1035,7 @@ fun ChestDialog(
                 Spacer(Modifier.height(4.dp))
                 Text(chestTypeRes(chest.type), fontSize = 5.5.sp, letterSpacing = 1.sp, color = Gold)
                 Text(
-                    "Serrure de ${formatCompact(chest.quota)} pas",
+                    stringResource(R.string.overlay_chest_lock, formatCompact(chest.quota)),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Parchment,
@@ -1005,7 +1045,7 @@ fun ChestDialog(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Consacrer vos pas fige la marche jusqu'à l'ouverture. La progression de la serrure est conservée.",
+                    stringResource(R.string.overlay_chest_note),
                     fontSize = 7.5.sp,
                     color = Muted,
                     textAlign = TextAlign.Center,
@@ -1020,7 +1060,11 @@ fun ChestDialog(
                 )
                 Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
-                        "${formatCompact(chest.progress.toInt())} / ${formatCompact(chest.quota)} pas",
+                        stringResource(
+                            R.string.overlay_chest_progress,
+                            formatCompact(chest.progress.toInt()),
+                            formatCompact(chest.quota)
+                        ),
                         fontSize = 6.5.sp,
                         color = GoldLight,
                         maxLines = 1,
@@ -1028,9 +1072,9 @@ fun ChestDialog(
                     )
                     Text(
                         when (chest.type) {
-                            "bois" -> "40–80 or · objet inhabituel"
-                            "fer" -> "130–220 or · objet rare"
-                            else -> "380–550 or · objet épique"
+                            "bois" -> stringResource(R.string.overlay_chest_loot_wood)
+                            "fer" -> stringResource(R.string.overlay_chest_loot_iron)
+                            else -> stringResource(R.string.overlay_chest_loot_runic)
                         },
                         fontSize = 6.sp,
                         color = Muted
@@ -1039,31 +1083,31 @@ fun ChestDialog(
                 val remaining = chestRemainingMs(chest)
                 Row(Modifier.fillMaxWidth().padding(top = 3.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
-                        "Expire dans ${formatRemaining(remaining)}",
+                        stringResource(R.string.overlay_chest_expire, formatRemaining(remaining)),
                         fontSize = 6.5.sp,
                         color = if (remaining < 60 * 60 * 1000L) Blood else Ember
                     )
                     if (state.chestQueue.isNotEmpty()) {
-                        Text("+${state.chestQueue.size} coffre en attente", fontSize = 6.5.sp, color = Gold)
+                        Text(stringResource(R.string.overlay_chest_pending, state.chestQueue.size), fontSize = 6.5.sp, color = Gold)
                     }
                 }
                 Spacer(Modifier.height(9.dp))
                 if (forcing) {
                     OverlayAction(
-                        if (state.stepBank > 0) "FORÇAGE EN COURS…" else "EN ATTENTE DE PAS",
+                        if (state.stepBank > 0) stringResource(R.string.overlay_chest_forcing) else stringResource(R.string.overlay_chest_waiting),
                         Modifier.fillMaxWidth(),
                         {},
                         primary = true,
                         enabled = false
                     )
                     Spacer(Modifier.height(4.dp))
-                    OverlayAction("ARRÊTER LE FORÇAGE", Modifier.fillMaxWidth(), {
+                    OverlayAction(stringResource(R.string.overlay_chest_stop), Modifier.fillMaxWidth(), {
                         onStop()
                         onDismiss()
                     })
                 } else {
                     OverlayAction(
-                        if (chest.progress > 0) "REPRENDRE LE FORÇAGE" else "CONSACRER MES PAS",
+                        if (chest.progress > 0) stringResource(R.string.overlay_chest_resume) else stringResource(R.string.overlay_chest_commit),
                         Modifier.fillMaxWidth(),
                         onForce,
                         primary = true
@@ -1071,7 +1115,7 @@ fun ChestDialog(
                 }
                 Spacer(Modifier.height(4.dp))
                 OverlayAction(
-                    if (forcing) "MASQUER · LE FORÇAGE CONTINUE" else "CONTINUER LA MARCHE",
+                    if (forcing) stringResource(R.string.overlay_chest_hide) else stringResource(R.string.overlay_keep_walking),
                     Modifier.fillMaxWidth(),
                     onDismiss
                 )
@@ -1118,11 +1162,16 @@ fun CampOverlay(
     var healTick by remember { mutableIntStateOf(0) }
     var healReport by remember { mutableStateOf<String?>(null) }
     var pendingAction by remember { mutableStateOf<String?>(null) }
+    val campResources = androidx.compose.ui.platform.LocalContext.current.resources
 
     LaunchedEffect(state.hp) {
         val delta = state.hp - lastHp
         if (delta > 0.5 && pendingAction != null) {
-            healReport = "${pendingAction} · +${delta.roundToInt()} PV"
+            healReport = campResources.getString(
+                R.string.overlay_pending_action,
+                pendingAction,
+                delta.roundToInt()
+            )
             healTick++
             pendingAction = null
         }
@@ -1249,9 +1298,9 @@ fun CampOverlay(
                 .padding(top = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("CAMPEMENT", fontFamily = Press, fontSize = 10.sp, color = GoldLight)
-            Text("Le feu veille", fontSize = 7.5.sp, letterSpacing = 1.sp, color = Muted)
-            Text("L'expédition est en pause", fontSize = 6.2.sp, color = Muted2)
+            Text(stringResource(R.string.overlay_camp_title), fontFamily = Press, fontSize = 10.sp, color = GoldLight)
+            Text(stringResource(R.string.overlay_camp_fire), fontSize = 7.5.sp, letterSpacing = 1.sp, color = Muted)
+            Text(stringResource(R.string.overlay_camp_paused), fontSize = 6.2.sp, color = Muted2)
         }
 
         Box(
@@ -1326,12 +1375,16 @@ fun CampOverlay(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                CampSummary("PALIER", state.floor.toString().padStart(2, '0'), Modifier.weight(0.7f))
-                CampSummary("DISTANCE", "${state.distance.toInt()} m", Modifier.weight(0.9f))
-                CampSummary("FERVEUR", state.ferveur.toString(), Modifier.weight(0.7f))
+                CampSummary(stringResource(R.string.overlay_floor), state.floor.toString().padStart(2, '0'), Modifier.weight(0.7f))
+                CampSummary(stringResource(R.string.overlay_distance), stringResource(R.string.overlay_meters, state.distance.toInt()), Modifier.weight(0.9f))
+                CampSummary(stringResource(R.string.overlay_fervour), state.ferveur.toString(), Modifier.weight(0.7f))
                 CampSummary(
-                    "PV",
-                    "${formatCompact(state.hp.toInt())} / ${formatCompact(stats.maxHp)}",
+                    stringResource(R.string.overlay_hp),
+                    stringResource(
+                        R.string.overlay_hp_of,
+                        formatCompact(state.hp.toInt()),
+                        formatCompact(stats.maxHp)
+                    ),
                     Modifier.weight(1.7f)
                 )
             }
@@ -1340,10 +1393,10 @@ fun CampOverlay(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                CampSummary("PAS EN ATTENTE", formatCompact(state.stepBank.toInt()), Modifier.weight(1.3f))
-                CampSummary("OR", formatCompact(state.gold), Modifier.weight(1.0f))
-                CampSummary("SÉRIE", "${state.streak.coerceAtLeast(1)} j", Modifier.weight(0.7f))
-                CampSummary("TOTAL", formatCompact(state.totalSteps), Modifier.weight(1.0f))
+                CampSummary(stringResource(R.string.overlay_pending_steps), formatCompact(state.stepBank.toInt()), Modifier.weight(1.3f))
+                CampSummary(stringResource(R.string.overlay_gold), formatCompact(state.gold), Modifier.weight(1.0f))
+                CampSummary(stringResource(R.string.overlay_streak), stringResource(R.string.overlay_days_short, state.streak.coerceAtLeast(1)), Modifier.weight(0.7f))
+                CampSummary(stringResource(R.string.overlay_total), formatCompact(state.totalSteps), Modifier.weight(1.0f))
             }
             Spacer(Modifier.height(6.dp))
             Row(
@@ -1355,37 +1408,40 @@ fun CampOverlay(
                 CurrencyChip("item/misc_crystal.png", state.shards.toString())
             }
             Spacer(Modifier.height(7.dp))
+            val restLabel = stringResource(R.string.overlay_camp_rest)
+            val resupplyLabel = stringResource(R.string.overlay_camp_resupply)
+            val vigilLabel = stringResource(R.string.overlay_camp_vigil)
             CampAction(
-                "Se reposer",
-                "+40 % PV · 1 ration",
+                restLabel,
+                stringResource(R.string.overlay_camp_rest_desc),
                 "item/meat_ration.png",
                 state.rations.toString(),
                 enabled = state.rations > 0 && state.hp < stats.maxHp,
-                onClick = { pendingAction = "Se reposer"; onRest() }
+                onClick = { pendingAction = restLabel; onRest() }
             )
             Spacer(Modifier.height(4.dp))
             CampAction(
-                "Se ressourcer",
-                "PV complets · 1 éclat",
+                resupplyLabel,
+                stringResource(R.string.overlay_camp_resupply_desc),
                 "item/misc_crystal.png",
                 state.shards.toString(),
                 enabled = state.shards > 0 && state.hp < stats.maxHp,
-                onClick = { pendingAction = "Se ressourcer"; onShard() }
+                onClick = { pendingAction = resupplyLabel; onShard() }
             )
             Spacer(Modifier.height(4.dp))
             CampAction(
-                "Veillée gratuite",
-                "+15 % PV · une fois par jour",
+                vigilLabel,
+                stringResource(R.string.overlay_camp_vigil_desc),
                 "fx/heart.png",
-                if (state.freeRestDay == state.day) "UTILISÉE" else "GRATUIT",
+                if (state.freeRestDay == state.day) stringResource(R.string.overlay_used) else stringResource(R.string.overlay_free),
                 enabled = state.freeRestDay != state.day && state.hp < stats.maxHp,
-                onClick = { pendingAction = "Veillée gratuite"; onFreeRest() }
+                onClick = { pendingAction = vigilLabel; onFreeRest() }
             )
             if (state.stash.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
                 CampAction(
-                    "Coffre de camp",
-                    "Récupérer les objets en réserve",
+                    stringResource(R.string.overlay_camp_stash),
+                    stringResource(R.string.overlay_camp_stash_desc),
                     "item/misc_crystal.png",
                     state.stash.size.toString(),
                     enabled = state.inventory.size < 24,
@@ -1394,15 +1450,15 @@ fun CampOverlay(
             }
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                OverlayAction("JOURNAL", Modifier.weight(1f), onOpenJournal)
-                OverlayAction("INVENTAIRE", Modifier.weight(1f), onOpenInventory)
-                OverlayAction("POTIONS", Modifier.weight(1f), onOpenConsumables)
+                OverlayAction(stringResource(R.string.overlay_journal), Modifier.weight(1f), onOpenJournal)
+                OverlayAction(stringResource(R.string.overlay_inventory), Modifier.weight(1f), onOpenInventory)
+                OverlayAction(stringResource(R.string.overlay_potions), Modifier.weight(1f), onOpenConsumables)
             }
             Spacer(Modifier.height(7.dp))
-            GoldButton("REPRENDRE L'EXPÉDITION", onClick = onResume)
+            GoldButton(stringResource(R.string.overlay_resume_expedition), onClick = onResume)
             Spacer(Modifier.height(6.dp))
             Text(
-                "« La défaite n'est qu'un détour. Vingt mètres en arrière, l'or coule encore. »",
+                stringResource(R.string.overlay_camp_quote),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 fontSize = 6.5.sp,
@@ -1533,8 +1589,8 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f)) {
-                Text("COMPTE GARMIN", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
-                Text("Personal API · lecture seule", fontSize = 7.sp, color = Muted)
+                Text(stringResource(R.string.overlay_garmin_account), fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                Text(stringResource(R.string.overlay_garmin_readonly), fontSize = 7.sp, color = Muted)
             }
             CloseButton(onClose)
         }
@@ -1550,21 +1606,21 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     Box(Modifier.size(7.dp).clip(RoundedCornerShape(50)).background(if (ui.connected) Green else Blood))
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        if (ui.connected) "Connecté à Garmin" else "Aucune clé enregistrée",
+                        if (ui.connected) stringResource(R.string.overlay_garmin_connected) else stringResource(R.string.overlay_garmin_no_key),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (ui.connected) Green else Blood
                     )
                 }
                 Spacer(Modifier.height(5.dp))
-                GarminInfoRow("Dernière synchronisation", formatTime(ui.lastSync))
-                GarminInfoRow("Clé visible jusqu'au", formatDate(expiry))
-                GarminInfoRow("Jeton OAuth2", formatTokenTime(ui.tokenExpiry))
+                GarminInfoRow(stringResource(R.string.overlay_garmin_last_sync), formatTime(ui.lastSync))
+                GarminInfoRow(stringResource(R.string.overlay_garmin_key_visible), formatDate(expiry))
+                GarminInfoRow(stringResource(R.string.overlay_garmin_oauth), formatTokenTime(ui.tokenExpiry))
                 if (ui.keyExpiry != null) {
                     val days = ChronoUnit.DAYS.between(LocalDate.now(), ui.keyExpiry)
                     GarminInfoRow(
-                        "Expiration de la clé",
-                        if (days < 0) "EXPIRÉE" else "dans $days jour(s)",
+                        stringResource(R.string.overlay_garmin_expiry),
+                        if (days < 0) stringResource(R.string.overlay_garmin_expired) else stringResource(R.string.overlay_in_days, days),
                         if (days < 0) Blood else if (days <= 30) Ember else Parchment
                     )
                 }
@@ -1575,14 +1631,14 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(10.dp))
             Text(
-                "La 2FA Garmin se fait dans le navigateur. L'application ne voit jamais votre mot de passe ni votre code 2FA.",
+                stringResource(R.string.overlay_garmin_2fa),
                 fontSize = 7.5.sp,
                 color = Muted,
                 lineHeight = 11.sp
             )
             Spacer(Modifier.height(8.dp))
             OverlayAction(
-                "OUVRIR GARMIN CONNECT",
+                stringResource(R.string.overlay_garmin_open),
                 Modifier.fillMaxWidth(),
                 onClick = {
                     val intent = CustomTabsIntent.Builder().setShowTitle(true).build()
@@ -1591,7 +1647,7 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "Connectez-vous, créez une clé Personal API (elle ne s'affiche qu'une fois), copiez-la, puis collez-la ci-dessous.",
+                stringResource(R.string.overlay_garmin_instructions),
                 fontSize = 7.sp,
                 color = Muted2,
                 lineHeight = 10.sp
@@ -1601,12 +1657,12 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 value = key,
                 onValueChange = { key = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Clé personnelle Garmin (GCDC_…)", fontSize = 7.sp) },
+                label = { Text(stringResource(R.string.overlay_garmin_key_hint), fontSize = 7.sp) },
                 singleLine = true,
                 visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     Text(
-                        if (showKey) "CACHER" else "VOIR",
+                        if (showKey) stringResource(R.string.overlay_hide) else stringResource(R.string.overlay_show),
                         modifier = Modifier.clickable { showKey = !showKey }.padding(6.dp),
                         fontSize = 6.sp,
                         color = Gold
@@ -1633,9 +1689,9 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("Date d'expiration de la clé", fontSize = 9.sp, color = Parchment)
+                    Text(stringResource(R.string.overlay_garmin_expiry_date), fontSize = 9.sp, color = Parchment)
                     Text(
-                        "Garmin ne l'expose pas via l'API. Renseignez-la pour les rappels.",
+                        stringResource(R.string.overlay_garmin_expiry_note),
                         fontSize = 6.5.sp,
                         color = Muted
                     )
@@ -1664,8 +1720,8 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(10.dp))
             GoldButton(
-                text = if (ui.syncing) "VALIDATION…" else "TESTER ET ENREGISTRER",
-                subtitle = "Échange la clé contre un jeton OAuth2",
+                text = if (ui.syncing) "VALIDATION…" else stringResource(R.string.overlay_garmin_test_save),
+                subtitle = stringResource(R.string.overlay_garmin_exchange),
                 enabled = key.isNotBlank() && !ui.syncing,
                 onClick = {
                     vm.saveKey(key, expiry)
@@ -1673,16 +1729,16 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             )
             if (ui.connected) {
                 Spacer(Modifier.height(5.dp))
-                OverlayAction("SYNCHRONISER MAINTENANT", Modifier.fillMaxWidth(), { vm.syncNow() })
+                OverlayAction(stringResource(R.string.overlay_garmin_sync_now), Modifier.fillMaxWidth(), { vm.syncNow() })
             }
             if (BuildConfig.DEBUG) {
                 Spacer(Modifier.height(8.dp))
-                OverlayAction("AJOUTER 500 PAS (DÉMO)", Modifier.fillMaxWidth(), { vm.debugAddSteps(500) })
+                OverlayAction(stringResource(R.string.overlay_garmin_add_demo), Modifier.fillMaxWidth(), { vm.debugAddSteps(500) })
             }
             Spacer(Modifier.height(12.dp))
             if (ui.connected) {
                 OverlayAction(
-                    "RÉVOQUER LA CLÉ ET EFFACER",
+                    stringResource(R.string.overlay_garmin_revoke_erase),
                     Modifier.fillMaxWidth(),
                     { confirmRevoke = true },
                     danger = true
@@ -1690,7 +1746,7 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(14.dp))
             Text(
-                "La clé est chiffrée dans Android Keystore. Elle n'est jamais envoyée à un serveur de l'application ; seules les requêtes HTTPS vers Garmin l'utilisent.",
+                stringResource(R.string.overlay_garmin_keystore),
                 fontSize = 6.5.sp,
                 color = Muted2,
                 lineHeight = 9.sp
@@ -1702,11 +1758,11 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
     if (confirmRevoke) {
         AlertDialog(
             onDismissRequest = { confirmRevoke = false },
-            title = { WithAppFontScale { Text("Révoquer la clé ?", fontSize = 15.sp) } },
+            title = { WithAppFontScale { Text(stringResource(R.string.overlay_garmin_revoke_title), fontSize = 15.sp) } },
             text = {
                 WithAppFontScale {
                     Text(
-                        "La clé et le jeton seront supprimés de l'appareil. La progression du jeu est conservée.",
+                        stringResource(R.string.overlay_garmin_revoke_note),
                         fontSize = 9.sp
                     )
                 }
@@ -1716,12 +1772,12 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     TextButton(onClick = {
                         confirmRevoke = false
                         vm.revokeGarmin()
-                    }) { Text("RÉVOQUER", color = Blood) }
+                    }) { Text(stringResource(R.string.overlay_garmin_revoke), color = Blood) }
                 }
             },
             dismissButton = {
                 WithAppFontScale {
-                    TextButton(onClick = { confirmRevoke = false }) { Text("ANNULER", color = Muted) }
+                    TextButton(onClick = { confirmRevoke = false }) { Text(stringResource(R.string.overlay_cancel), color = Muted) }
                 }
             },
             containerColor = Panel2
@@ -1954,16 +2010,16 @@ fun OfflineOverlay(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    if (absence) "BON RETOUR" else "LE SENTIER A CONTINUÉ",
+                    if (absence) stringResource(R.string.overlay_absence_title) else stringResource(R.string.overlay_absence_title_mixed),
                     fontFamily = Press,
                     fontSize = 9.sp,
                     color = GoldLight
                 )
                 Text(
                     when {
-                        mixed -> "Absence et rattrapage des pas"
-                        absence -> "Pendant votre absence"
-                        else -> "Récapitulatif hors ligne"
+                        mixed -> stringResource(R.string.overlay_absence_desc)
+                        absence -> stringResource(R.string.overlay_absence_during)
+                        else -> stringResource(R.string.overlay_absence_summary)
                     },
                     fontSize = 7.5.sp,
                     color = Muted
@@ -1971,27 +2027,31 @@ fun OfflineOverlay(
                 Spacer(Modifier.height(12.dp))
                 if (absence) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RecapTile(formatAbsence(report.minutes), "ABSENCE", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.stepsConsumed), "PAS CONSOMMÉS", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
+                        RecapTile(formatAbsence(report.minutes), stringResource(R.string.overlay_recap_absence), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.stepsConsumed), stringResource(R.string.overlay_recap_steps_used), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.distanceMeters), stringResource(R.string.overlay_recap_meters), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(6.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RecapTile(formatCompact(report.combats), "COMBATS", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.gold), "OR", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.floors), "PALIERS", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.bosses), "GARDIENS", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.combats), stringResource(R.string.overlay_recap_fights), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.gold), stringResource(R.string.overlay_gold), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.floors), stringResource(R.string.overlay_recap_floors), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.bosses), stringResource(R.string.overlay_recap_guardians), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(6.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RecapTile(formatCompact(report.levels), "NIVEAUX", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.chests), "COFFRES", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.remainingSteps), "RÉSERVE", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.levels), stringResource(R.string.overlay_recap_levels), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.chests), stringResource(R.string.overlay_recap_chests), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.remainingSteps), stringResource(R.string.overlay_recap_reserve), Modifier.weight(1f))
                     }
                     if (mixed) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Synchro : ${report.days} jour(s) · ${formatCompact(report.steps)} pas importés",
+                            stringResource(
+                                R.string.overlay_sync_summary,
+                                report.days,
+                                formatCompact(report.steps)
+                            ),
                             fontSize = 6.8.sp,
                             color = Gold,
                             textAlign = TextAlign.Center
@@ -1999,27 +2059,27 @@ fun OfflineOverlay(
                     }
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RecapTile(report.days.toString(), "JOURS", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.steps), "PAS", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.distanceMeters), "MÈTRES", Modifier.weight(1f))
+                        RecapTile(report.days.toString(), stringResource(R.string.overlay_recap_days), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.steps), stringResource(R.string.overlay_recap_steps), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.distanceMeters), stringResource(R.string.overlay_recap_meters), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(6.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RecapTile(formatCompact(report.combats), "COMBATS", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.gold), "OR", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.floors), "PALIERS", Modifier.weight(1f))
-                        RecapTile(formatCompact(report.kills), "VICTIMES", Modifier.weight(1f))
+                        RecapTile(formatCompact(report.combats), stringResource(R.string.overlay_recap_fights), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.gold), stringResource(R.string.overlay_gold), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.floors), stringResource(R.string.overlay_recap_floors), Modifier.weight(1f))
+                        RecapTile(formatCompact(report.kills), stringResource(R.string.overlay_recap_kills), Modifier.weight(1f))
                     }
                 }
                 Spacer(Modifier.height(10.dp))
                 Text(
                     when {
-                        mixed -> "Votre réserve de pas et les pas synchronisés ont été traités dans le même calcul. Le reste de la réserve vous attend."
+                        mixed -> stringResource(R.string.overlay_report_mixed)
                         report.stepsConsumed == 0 && report.remainingSteps > 0 ->
-                            "Aucun pas n'a été consommé : le quota hors ligne du jour est épuisé. Votre réserve vous attend."
-                        report.stepsConsumed == 0 -> "La réserve de pas était vide à la fermeture : rien n'a avancé."
-                        absence -> "Votre réserve de pas a été consommée pendant votre absence. Le reste de la réserve vous attend."
-                        else -> "Vos pas des derniers jours ont été récupérés et ajoutés à la marche, sans double comptage."
+                            stringResource(R.string.overlay_report_quota)
+                        report.stepsConsumed == 0 -> stringResource(R.string.overlay_report_empty)
+                        absence -> stringResource(R.string.overlay_report_consumed)
+                        else -> stringResource(R.string.overlay_report_recovered)
                     },
                     fontSize = 7.sp,
                     color = Muted,
@@ -2038,11 +2098,11 @@ fun OfflineOverlay(
                             .border(1.dp, Gold.copy(alpha = 0.25f), RoundedCornerShape(4.dp))
                             .padding(7.dp)
                     ) {
-                        Text("BUTIN", fontFamily = Press, fontSize = 6.sp, color = Gold)
+                        Text(stringResource(R.string.overlay_recap_loot), fontFamily = Press, fontSize = 6.sp, color = Gold)
                         val counts = buildList {
-                            if (report.consumables > 0) add("${report.consumables} consommable(s)")
-                            if (report.rations > 0) add("${report.rations} ration(s)")
-                            if (report.shards > 0) add("${report.shards} éclat(s)")
+                            if (report.consumables > 0) add(stringResource(R.string.overlay_report_consumables, report.consumables))
+                            if (report.rations > 0) add(stringResource(R.string.overlay_report_rations, report.rations))
+                            if (report.shards > 0) add(stringResource(R.string.overlay_report_shards, report.shards))
                         }
                         if (counts.isNotEmpty()) {
                             Text(counts.joinToString(" · "), fontSize = 6.5.sp, color = Parchment)
@@ -2051,14 +2111,14 @@ fun OfflineOverlay(
                             Text("• ${localizedItemName(name)}", fontSize = 6.2.sp, color = Green, maxLines = 1)
                         }
                         if (report.lootItems.size > 8) {
-                            Text("… et ${report.lootItems.size - 8} autre(s)", fontSize = 6.sp, color = Muted)
+                            Text(stringResource(R.string.overlay_report_more, report.lootItems.size - 8), fontSize = 6.sp, color = Muted)
                         }
                     }
                 }
                 if (report.special) {
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "Une rencontre vous attend sur le sentier.",
+                        stringResource(R.string.overlay_report_special),
                         fontSize = 7.sp,
                         color = GoldLight,
                         textAlign = TextAlign.Center
@@ -2076,17 +2136,17 @@ fun OfflineOverlay(
                 if (pendingSync) {
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "Pas en cours de récupération · ils seront ajoutés dès que la synchro aboutit.",
+                        stringResource(R.string.overlay_report_pending),
                         fontSize = 6.5.sp,
                         color = Muted,
                         textAlign = TextAlign.Center
                     )
                 }
                 Spacer(Modifier.height(12.dp))
-                GoldButton("REPRENDRE LA MARCHE", onClick = onDismiss)
+                GoldButton(stringResource(R.string.overlay_resume_walk), onClick = onDismiss)
                 if (onOpenJournal != null) {
                     TextButton(onClick = onOpenJournal) {
-                        Text("VOIR LE JOURNAL", fontSize = 7.sp, color = Muted)
+                        Text(stringResource(R.string.overlay_view_journal), fontSize = 7.sp, color = Muted)
                     }
                 }
             }
@@ -2098,11 +2158,12 @@ private fun formatAbsence(minutes: Int): String =
     if (minutes >= 60) "${minutes / 60} h ${minutes % 60}" else "$minutes min"
 
 /** Phrase de défaite : nombre explicite et recul total (20 m par défaite). */
+@Composable
 private fun defeatSummary(report: OfflineReport): String {
     val defeats = report.defeats
-    if (defeats <= 0) return "Le héros a été repoussé et a repris des forces."
-    val word = if (defeats == 1) "défaite simulée" else "défaites simulées"
-    return "$defeats $word · ${defeats * 20} m de recul"
+    if (defeats <= 0) return stringResource(R.string.overlay_report_defeated)
+    val word = if (defeats == 1) stringResource(R.string.overlay_report_defeat) else stringResource(R.string.overlay_report_defeats)
+    return stringResource(R.string.overlay_report_defeats_line, defeats, word, defeats * 20)
 }
 
 @Composable
@@ -2178,7 +2239,7 @@ fun ResumeOverlay(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "REPRISE DE LA MARCHE",
+                stringResource(R.string.overlay_resuming),
                 fontFamily = Press,
                 fontSize = 10.sp,
                 color = GoldLight,
@@ -2187,8 +2248,8 @@ fun ResumeOverlay(
             Spacer(Modifier.height(12.dp))
             Text(
                 when (resume.phase) {
-                    ResumePhase.SIMULATING -> "La veillée s'écoule…"
-                    ResumePhase.SYNCING -> "Lecture de ${resume.sourceLabel}…"
+                    ResumePhase.SIMULATING -> stringResource(R.string.overlay_vigil_passing)
+                    ResumePhase.SYNCING -> stringResource(R.string.overlay_reading, resume.sourceLabel)
                 },
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 fontSize = 8.sp,
@@ -2198,9 +2259,9 @@ fun ResumeOverlay(
             Spacer(Modifier.height(4.dp))
             Text(
                 if (resume.phase == ResumePhase.SIMULATING) {
-                    "Vos combats hors ligne sont simulés."
+                    stringResource(R.string.overlay_sim_fights)
                 } else {
-                    "Vos pas sont récupérés pour un seul résumé."
+                    stringResource(R.string.overlay_sim_steps)
                 },
                 fontSize = 6.5.sp,
                 color = Muted,
@@ -2239,14 +2300,14 @@ fun ResumeOverlay(
             if (elapsedMs >= 800L) {
                 TextButton(onClick = onSkip) {
                     Text(
-                        "CONTINUER SANS ATTENDRE",
+                        stringResource(R.string.overlay_continue_no_wait),
                         fontFamily = Pixel,
                         fontSize = 6.5.sp,
                         color = Muted
                     )
                 }
                 Text(
-                    "La synchro continuera en arrière-plan.",
+                    stringResource(R.string.overlay_sync_background),
                     fontSize = 6.sp,
                     color = Muted2,
                     textAlign = TextAlign.Center
@@ -2285,25 +2346,25 @@ fun ImportPreviewDialog(
                     .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
                     .padding(18.dp)
             ) {
-                Text("IMPORTER CETTE SAUVEGARDE ?", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                Text(stringResource(R.string.overlay_import_title), fontFamily = Press, fontSize = 9.sp, color = GoldLight)
                 Spacer(Modifier.height(8.dp))
-                ImportRow("Niveau", summary.level.toString())
-                ImportRow("Palier", summary.floor.toString())
-                ImportRow("Or", formatCompact(summary.gold))
-                ImportRow("Jour", summary.day.ifBlank { "—" })
-                ImportRow("Objets", summary.items.toString())
-                ImportRow("Version", "v${summary.version}")
+                ImportRow(stringResource(R.string.overlay_import_level), summary.level.toString())
+                ImportRow(stringResource(R.string.overlay_import_floor), summary.floor.toString())
+                ImportRow(stringResource(R.string.overlay_import_gold), formatCompact(summary.gold))
+                ImportRow(stringResource(R.string.overlay_import_day), summary.day.ifBlank { "—" })
+                ImportRow(stringResource(R.string.overlay_import_items), summary.items.toString())
+                ImportRow(stringResource(R.string.overlay_import_version), "v${summary.version}")
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "La progression actuelle sera remplacée. La clé Garmin et les réglages restent inchangés.",
+                    stringResource(R.string.overlay_import_note),
                     fontSize = 7.sp,
                     color = Blood,
                     lineHeight = 10.sp
                 )
                 Spacer(Modifier.height(12.dp))
-                OverlayAction("REMPLACER LA PROGRESSION", Modifier.fillMaxWidth(), onConfirm, primary = true)
+                OverlayAction(stringResource(R.string.overlay_import_replace), Modifier.fillMaxWidth(), onConfirm, primary = true)
                 Spacer(Modifier.height(5.dp))
-                OverlayAction("ANNULER", Modifier.fillMaxWidth(), onCancel)
+                OverlayAction(stringResource(R.string.overlay_cancel), Modifier.fillMaxWidth(), onCancel)
             }
         }
     }
@@ -2382,18 +2443,18 @@ fun SpecialDialog(
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (special.goldCost > 0) {
-                        SpecialCost("${formatCompact(special.goldCost)} or", state.gold >= special.goldCost)
+                        SpecialCost(stringResource(R.string.overlay_special_gold, formatCompact(special.goldCost)), state.gold >= special.goldCost)
                     }
                     if (special.shardCost > 0) {
-                        SpecialCost("${special.shardCost} éclat(s)", state.shards >= special.shardCost)
+                        SpecialCost(stringResource(R.string.overlay_special_shards, special.shardCost), state.shards >= special.shardCost)
                     }
                     if (special.rationCost > 0) {
-                        SpecialCost("${special.rationCost} ration", state.rations >= special.rationCost)
+                        SpecialCost(stringResource(R.string.overlay_special_ration, special.rationCost), state.rations >= special.rationCost)
                     }
                 }
                 Spacer(Modifier.height(7.dp))
                 Text(
-                    "Récompense : " + if (special.type == "marchand") {
+                    stringResource(R.string.overlay_special_reward) + if (special.type == "marchand") {
                         special.offer?.let { localizedItem(it) } ?: ""
                     } else {
                         specialRewardRes(special.type)
@@ -2453,7 +2514,7 @@ fun SpecialResultDialog(outcome: SpecialOutcome, onDismiss: () -> Unit) {
                     .padding(18.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("RÉSULTAT", fontFamily = Press, fontSize = 10.sp, color = GoldLight)
+                Text(stringResource(R.string.overlay_special_result), fontFamily = Press, fontSize = 10.sp, color = GoldLight)
                 Spacer(Modifier.height(9.dp))
                 Text(
                     localizedText(outcome.text),
@@ -2464,7 +2525,7 @@ fun SpecialResultDialog(outcome: SpecialOutcome, onDismiss: () -> Unit) {
                     lineHeight = 15.sp
                 )
                 Spacer(Modifier.height(14.dp))
-                OverlayAction("CONTINUER", Modifier.fillMaxWidth(), onDismiss, primary = true)
+                OverlayAction(stringResource(R.string.overlay_continue), Modifier.fillMaxWidth(), onDismiss, primary = true)
             }
         }
     }
@@ -2494,9 +2555,13 @@ fun ConsumablesOverlay(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("SAC DE CONSOMMABLES", fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                    Text(stringResource(R.string.overlay_bag_title), fontFamily = Press, fontSize = 9.sp, color = GoldLight)
                     Text(
-                        "${state.consumables.values.sum()} objet(s) · ${activeBuffs.size} effet(s) actif(s)",
+                        stringResource(
+                            R.string.overlay_bag_count,
+                            state.consumables.values.sum(),
+                            activeBuffs.size
+                        ),
                         fontSize = 7.sp,
                         color = Muted
                     )
@@ -2511,7 +2576,7 @@ fun ConsumablesOverlay(
                     activeBuffs.take(3).forEach { buff ->
                         val seconds = ((buff.expiresAt - now) / 1000L).coerceAtLeast(0L)
                         OverlayAction(
-                            "${buff.label} ${seconds}s",
+                            "${buffLabelRes(buff.label)} ${seconds}s",
                             Modifier.weight(1f),
                             {},
                             primary = true,
@@ -2530,7 +2595,7 @@ fun ConsumablesOverlay(
             ) {
                 if (owned.isEmpty()) {
                     Text(
-                        "Aucun consommable. Les monstres et les coffres en laissent parfois.",
+                        stringResource(R.string.dashboard_consumables_empty),
                         modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
                         textAlign = TextAlign.Center,
                         fontSize = 8.sp,
@@ -2593,7 +2658,7 @@ fun ConsumablesOverlay(
                         }
                         Spacer(Modifier.width(6.dp))
                         OverlayAction(
-                            "UTILISER",
+                            stringResource(R.string.overlay_bag_use),
                             Modifier.width(86.dp),
                             { onUse(template.id) },
                             primary = true,
@@ -2603,7 +2668,7 @@ fun ConsumablesOverlay(
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Les soins et la ferveur servent au camp comme en exploration. Les objets de combat exigent un combat en cours.",
+                    stringResource(R.string.overlay_bag_note),
                     fontSize = 6.3.sp,
                     color = Muted2,
                     lineHeight = 9.sp,
