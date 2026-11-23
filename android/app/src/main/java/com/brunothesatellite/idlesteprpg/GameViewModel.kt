@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.SystemClock
 import android.provider.Settings
+import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -20,6 +21,7 @@ import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.steps.StepFetch
 import com.brunothesatellite.idlesteprpg.steps.StepSourceType
 import com.brunothesatellite.idlesteprpg.ui.formatInt
+import com.brunothesatellite.idlesteprpg.ui.itemName
 import com.brunothesatellite.idlesteprpg.ui.translateText
 import com.brunothesatellite.idlesteprpg.update.UpdateChecker
 import com.brunothesatellite.idlesteprpg.update.UpdateInfo
@@ -203,7 +205,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                     container.gameRepository.tick(stepMs.toDouble())
                     if (game.value.chestsOpened > chestsBefore) {
                         _toasts.tryEmit(
-                            "Coffre ouvert · +${formatInt(game.value.chestFlashGold)} or"
+                            tr(R.string.toast_chest_open, formatInt(game.value.chestFlashGold))
                         )
                     }
                     // Sauvegarde périodique pendant le jeu : une mise à jour d'APK
@@ -229,7 +231,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 }
                 val today = game.value.day
                 if (lastKnownDay.isNotBlank() && today.isNotBlank() && today != lastKnownDay) {
-                    _ui.update { it.copy(dayBanner = "Nouveau jour · serments renouvelés") }
+                    _ui.update { it.copy(dayBanner = tr(R.string.toast_new_day)) }
                     viewModelScope.launch {
                         delay(6_000)
                         _ui.update { it.copy(dayBanner = null) }
@@ -310,7 +312,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     private suspend fun resumeSession(elapsed: Long, canSimulate: Boolean, canSync: Boolean) {
         val startedAt = SystemClock.elapsedRealtime()
         val sourceLabel = if (container.stepRepository.current() == StepSourceType.HEALTH) {
-            "Santé Connect"
+            tr(R.string.notify_health_connect)
         } else {
             "Garmin"
         }
@@ -403,7 +405,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 )
             }
             if (sync.ok && sync.added > 0) {
-                _toasts.tryEmit("+${formatInt(sync.added)} pas récupérés")
+                _toasts.tryEmit(tr(R.string.toast_steps_recovered, formatInt(sync.added)))
             }
             refreshGarmin()
         }
@@ -431,7 +433,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun togglePause() {
         val next = !_ui.value.paused
         _ui.update { it.copy(paused = next) }
-        _toasts.tryEmit(if (next) "Marche en pause." else "Marche reprise.")
+        _toasts.tryEmit(if (next) tr(R.string.toast_pause) else tr(R.string.toast_resume))
     }
 
     fun refreshGarmin() {
@@ -462,7 +464,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         )
         refreshGarmin()
         _toasts.tryEmit(
-            "Source de pas : ${type.label}. La journée en cours reste calée sur l'ancienne source."
+            tr(R.string.toast_source_changed, type.label)
         )
         if (container.stepRepository.canSync()) syncNow(silent = true)
     }
@@ -472,10 +474,10 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun onHealthPermissionResult(granted: Boolean) {
         refreshGarmin()
         if (granted) {
-            _toasts.tryEmit("Santé Connect autorisé.")
+            _toasts.tryEmit(tr(R.string.toast_health_granted))
             syncNow(silent = true)
         } else {
-            _toasts.tryEmit("Lecture des pas refusée : la marche ne peut pas avancer.")
+            _toasts.tryEmit(tr(R.string.toast_health_denied))
         }
     }
 
@@ -508,10 +510,10 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             _ui.update { it.copy(syncing = false) }
             refreshGarmin()
             if (result.isSuccess) {
-                _toasts.emit("Clé Garmin enregistrée.")
+                _toasts.emit(tr(R.string.toast_key_saved))
                 syncNow(silent = true)
             } else {
-                _toasts.emit(result.exceptionOrNull()?.message ?: "Clé Garmin refusée.")
+                _toasts.emit(result.exceptionOrNull()?.message ?: tr(R.string.toast_key_refused))
             }
         }
     }
@@ -519,13 +521,13 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun updateExpiry(date: LocalDate) {
         container.stepRepository.setGarminKeyExpiry(date)
         refreshGarmin()
-        _toasts.tryEmit("Date d'expiration mise à jour.")
+        _toasts.tryEmit(tr(R.string.toast_expiry_updated))
     }
 
     fun revokeGarmin() {
         container.stepRepository.revokeGarmin()
         refreshGarmin()
-        _toasts.tryEmit("Clé Garmin supprimée de l'appareil.")
+        _toasts.tryEmit(tr(R.string.toast_key_removed))
     }
 
     fun openCamp() {
@@ -597,8 +599,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             container.gameRepository.mutate { it.holdFloor = value }
             _toasts.emit(
-                if (value) "Farm activé : le palier est verrouillé."
-                else "Farm désactivé : le prochain gardien fera avancer."
+                if (value) tr(R.string.toast_farm_on)
+                else tr(R.string.toast_farm_off)
             )
         }
     }
@@ -754,7 +756,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             container.gameRepository.reset()
             _ui.update { it.copy(selectedItem = null, chestOpen = false) }
-            _toasts.emit("Progression effacée. La clé Garmin est conservée.")
+            _toasts.emit(tr(R.string.toast_progress_cleared))
         }
     }
 
@@ -768,7 +770,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                     } ?: error("Flux indisponible")
                 }
             }.isSuccess
-            _toasts.emit(if (ok) "Sauvegarde exportée." else "Export impossible.")
+            _toasts.emit(if (ok) tr(R.string.toast_export_ok) else tr(R.string.toast_export_fail))
         }
     }
 
@@ -789,7 +791,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             if (text == null || summary == null) {
                 pendingImportText = null
                 _ui.update { it.copy(pendingImport = null) }
-                _toasts.emit("Fichier de sauvegarde invalide ou incompatible.")
+                _toasts.emit(tr(R.string.toast_import_invalid))
             } else {
                 pendingImportText = text
                 _ui.update { it.copy(pendingImport = summary) }
@@ -812,10 +814,10 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                         prefsOpen = false
                     )
                 }
-                _toasts.emit("Sauvegarde importée.")
+                _toasts.emit(tr(R.string.toast_import_ok))
             } else {
                 _ui.update { it.copy(pendingImport = null) }
-                _toasts.emit("Import impossible.")
+                _toasts.emit(tr(R.string.toast_import_fail))
             }
         }
     }
@@ -827,7 +829,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun checkForUpdate(manual: Boolean = false) {
         if (BuildConfig.PLAY_DISTRIBUTION) {
-            if (manual) _toasts.tryEmit("Les mises à jour sont gérées par Google Play.")
+            if (manual) _toasts.tryEmit(tr(R.string.toast_updates_play))
             return
         }
         if (_ui.value.updateChecking) return
@@ -845,7 +847,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                         availableUpdate = if (show) info else null
                     )
                 }
-                if (manual) _toasts.emit("Mise à jour ${info.tag} disponible.")
+                if (manual) _toasts.emit(tr(R.string.toast_update_available, info.tag))
             } else {
                 _ui.update {
                     it.copy(
@@ -856,8 +858,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 }
                 if (manual) {
                     _toasts.emit(
-                        if (info == null) "Vérification impossible. Réessayez plus tard."
-                        else "Vous avez la dernière version."
+                        if (info == null) tr(R.string.toast_check_fail)
+                        else tr(R.string.toast_latest)
                     )
                 }
             }
@@ -928,7 +930,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         val context = container.context
         if (!context.packageManager.canRequestPackageInstalls()) {
             _ui.update {
-                it.copy(updateError = "Autorisez l'installation depuis cette application, puis réessayez.")
+                it.copy(updateError = tr(R.string.toast_install_permission))
             }
             runCatching {
                 context.startActivity(
@@ -955,7 +957,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 _ui.update {
                     it.copy(
                         updateDownloading = false,
-                        updateError = "Téléchargement ou vérification impossible."
+                        updateError = tr(R.string.toast_download_fail)
                     )
                 }
                 return@launch
@@ -988,7 +990,12 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             )
         }.onFailure {
             _ui.update { state ->
-                state.copy(updateError = "Installation impossible : ${it.message ?: "erreur inconnue"}")
+                state.copy(
+                    updateError = tr(
+                        R.string.toast_install_fail,
+                        it.message ?: tr(R.string.msg_unknown_error)
+                    )
+                )
             }
         }
     }
@@ -998,7 +1005,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var swaps = 0
             container.gameRepository.mutate { swaps = GameEngine.equipBest(it) }
             _toasts.emit(
-                if (swaps > 0) "$swaps pièce(s) équipée(s)." else "Votre équipement est déjà optimal."
+                if (swaps > 0) tr(R.string.toast_equip_changed, swaps)
+                else tr(R.string.toast_equip_optimal)
             )
         }
     }
@@ -1008,7 +1016,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var gold = 0
             container.gameRepository.mutate { gold = GameEngine.sellCommons(it) }
             _toasts.emit(
-                if (gold > 0) "Objets communs vendus · +$gold or." else "Aucun objet commun à vendre."
+                if (gold > 0) tr(R.string.toast_sold_commons, gold) else tr(R.string.toast_no_commons)
             )
         }
     }
@@ -1027,8 +1035,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             container.gameRepository.mutate { fused = GameEngine.fuseItem(it, item.id) }
             _ui.update { it.copy(selectedItem = null) }
             _toasts.emit(
-                if (fused != null) "Fusion réussie."
-                else "Il faut 3 objets du même emplacement et de même rareté."
+                if (fused != null) tr(R.string.toast_fused)
+                else tr(R.string.toast_fuse_requirements)
             )
         }
     }
@@ -1038,7 +1046,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var moved = 0
             container.gameRepository.mutate { moved = GameEngine.withdrawStash(it) }
             _toasts.emit(
-                if (moved > 0) "$moved objet(s) récupéré(s)." else "Inventaire plein ou coffre vide."
+                if (moved > 0) tr(R.string.toast_stash_taken, moved) else tr(R.string.toast_stash_full_empty)
             )
         }
     }
@@ -1047,7 +1055,12 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.withdrawStashItem(it, item.id) }
-            _toasts.emit(if (ok) "${item.name} récupéré." else "Inventaire plein.")
+            _toasts.emit(
+                if (ok) tr(
+                    R.string.toast_item_taken,
+                    itemName(container.context.resources, item.name, item.effect)
+                ) else tr(R.string.toast_inventory_full)
+            )
         }
     }
 
@@ -1061,7 +1074,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.identifyItem(it, item.id) }
             refreshSelected(item.id)
-            _toasts.emit(if (ok) "Objet identifié." else "1 éclat requis.")
+            _toasts.emit(if (ok) tr(R.string.toast_identified) else "1 éclat requis.")
         }
     }
 
@@ -1070,7 +1083,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var outcome: ForgeOutcome = ForgeOutcome.NotFound
             container.gameRepository.mutate { outcome = GameEngine.rerollEffectDetailed(it, item.id) }
             refreshSelected(item.id)
-            _toasts.emit(forgeMessage(outcome, "Affixe reforgé."))
+            _toasts.emit(forgeMessage(outcome, tr(R.string.toast_rerolled)))
         }
     }
 
@@ -1079,33 +1092,41 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var outcome: ForgeOutcome = ForgeOutcome.NotFound
             container.gameRepository.mutate { outcome = GameEngine.upgradeItemDetailed(it, item.id) }
             refreshSelected(item.id)
-            _toasts.emit(forgeMessage(outcome, "Objet amélioré."))
+            _toasts.emit(forgeMessage(outcome, tr(R.string.toast_upgraded)))
         }
     }
 
     /** Message de forge : n'annonce que ce qui manque vraiment. */
     private fun forgeMessage(outcome: ForgeOutcome, success: String): String = when (outcome) {
         ForgeOutcome.Success -> success
-        ForgeOutcome.NotFound -> "Objet introuvable."
-        ForgeOutcome.NotIdentified -> "Objet non identifié."
-        ForgeOutcome.Locked -> "Objet verrouillé."
+        ForgeOutcome.NotFound -> tr(R.string.toast_not_found)
+        ForgeOutcome.NotIdentified -> tr(R.string.toast_not_identified)
+        ForgeOutcome.Locked -> tr(R.string.toast_locked)
         is ForgeOutcome.Missing -> {
             val missing = buildList {
-                if (outcome.gold > 0) add("${formatInt(outcome.gold)} or")
+                if (outcome.gold > 0) add(tr(R.string.toast_missing_gold, formatInt(outcome.gold)))
                 if (outcome.shards > 0) {
-                    add(if (outcome.shards > 1) "${outcome.shards} éclats" else "1 éclat")
+                    add(
+                        if (outcome.shards > 1) tr(R.string.toast_missing_shards, outcome.shards)
+                        else tr(R.string.toast_one_shard)
+                    )
                 }
             }
-            "Il manque ${missing.joinToString(" et ")}."
+            tr(R.string.toast_missing, missing.joinToString(tr(R.string.overlay_and)))
         }
     }
+
+    private fun tr(@StringRes id: Int, vararg args: Any): String =
+        container.context.getString(id, *args)
 
     fun dismantleItem(item: Item) {
         viewModelScope.launch {
             var shards = 0
             container.gameRepository.mutate { shards = GameEngine.dismantleItem(it, item.id) }
             _ui.update { it.copy(selectedItem = null) }
-            _toasts.emit(if (shards > 0) "Objet démonté · +$shards éclat(s)." else "Objet verrouillé.")
+            _toasts.emit(
+                if (shards > 0) tr(R.string.toast_dismantled, shards) else tr(R.string.toast_locked)
+            )
         }
     }
 
@@ -1113,7 +1134,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.freeRest(it) }
-            _toasts.emit(if (ok) "Veillée gratuite." else "Veillée déjà utilisée ou PV complets.")
+            _toasts.emit(if (ok) tr(R.string.toast_vigil) else tr(R.string.toast_vigil_used))
         }
     }
 
@@ -1158,7 +1179,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.equipItem(it, item.id) }
             _ui.update { it.copy(selectedItem = null) }
-            if (ok) _toasts.tryEmit("${item.name} équipé.")
+            if (ok) _toasts.tryEmit(
+                tr(R.string.toast_equipped, itemName(container.context.resources, item.name, item.effect))
+            )
         }
     }
 
@@ -1167,7 +1190,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.sellItem(it, item.id) }
             _ui.update { it.copy(selectedItem = null) }
-            if (ok) _toasts.tryEmit("${item.name} vendu.")
+            if (ok) _toasts.tryEmit(
+                tr(R.string.toast_sold, itemName(container.context.resources, item.name, item.effect))
+            )
         }
     }
 
@@ -1175,7 +1200,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.rest(it) }
-            _toasts.tryEmit(if (ok) "Repos au feu." else "Impossible de se reposer.")
+            _toasts.tryEmit(if (ok) tr(R.string.toast_rest_ok) else tr(R.string.toast_rest_fail))
         }
     }
 
@@ -1183,7 +1208,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.shardHeal(it) }
-            _toasts.tryEmit(if (ok) "PV restaurés." else "Impossible de se soigner.")
+            _toasts.tryEmit(if (ok) tr(R.string.toast_hp_restored) else tr(R.string.toast_heal_fail))
         }
     }
 
@@ -1191,7 +1216,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.forceChest(it) }
-            if (!ok) _toasts.tryEmit("Terminez le combat avant de forcer le coffre.")
+            if (!ok) _toasts.tryEmit(tr(R.string.toast_force_fight))
         }
     }
 

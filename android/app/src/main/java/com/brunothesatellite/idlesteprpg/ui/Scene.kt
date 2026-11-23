@@ -62,6 +62,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -76,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.brunothesatellite.idlesteprpg.BuildConfig
+import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.audio.SoundFx
 import com.brunothesatellite.idlesteprpg.engine.Buff
 import com.brunothesatellite.idlesteprpg.engine.FLOOR_METERS
@@ -392,7 +394,7 @@ fun Scene(
         )
         if (paused) {
             SceneTag(
-                "PAUSE",
+                stringResource(R.string.scene_pause),
                 Ember,
                 Modifier
                     .align(Alignment.TopStart)
@@ -450,14 +452,14 @@ fun Scene(
             val fight = state.fight
             if (fight != null && fight.enemyHp < fight.enemyMaxHp * 0.5) {
                 SceneTag(
-                    "PHASE 2 · EMBRASÉ",
+                    stringResource(R.string.scene_phase2),
                     Ember,
                     Modifier.align(Alignment.TopCenter).padding(top = 74.dp)
                 )
             }
             if (state.bossBlessing > 0) {
                 SceneTag(
-                    "BÉNÉDICTION +25 %",
+                    stringResource(R.string.scene_blessing),
                     Green,
                     Modifier.align(Alignment.TopCenter).padding(top = 96.dp)
                 )
@@ -466,13 +468,13 @@ fun Scene(
         if (state.mode == "farmWait" || state.fight?.farm == true) {
             val step = (state.farmKills + 1).coerceIn(1, 3)
             SceneTag(
-                "ZONE DE REPLI · FARM $step/3",
+                stringResource(R.string.scene_farm_zone, step),
                 Blood,
                 Modifier.align(Alignment.TopCenter).padding(top = 58.dp)
             )
         }
         if (state.mode == "chest") {
-            SceneTag("FORÇAGE DU COFFRE", Gold, Modifier.align(Alignment.TopCenter).padding(top = 58.dp))
+            SceneTag(stringResource(R.string.scene_chest_force), Gold, Modifier.align(Alignment.TopCenter).padding(top = 58.dp))
         }
         if (levelBanner > 0) {
             LevelUpBanner(
@@ -875,9 +877,9 @@ private fun SyncButton(
         else -> Ember
     }
     val label = when {
-        syncing -> "Synchronisation des pas en cours"
-        connected -> "Synchroniser les pas"
-        else -> "Connecter une source de pas"
+        syncing -> stringResource(R.string.scene_sync_syncing)
+        connected -> stringResource(R.string.scene_sync_sync)
+        else -> stringResource(R.string.scene_sync_connect)
     }
     Box(
         modifier
@@ -932,6 +934,11 @@ private fun PauseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val pauseDescription = if (paused) {
+        stringResource(R.string.scene_resume_walk)
+    } else {
+        stringResource(R.string.scene_pause_walk)
+    }
     Box(
         modifier
             .size(40.dp)
@@ -944,8 +951,7 @@ private fun PauseButton(
             )
             .clickable(onClick = onClick)
             .semantics {
-                contentDescription =
-                    if (paused) "Reprendre la marche" else "Mettre la marche en pause"
+                contentDescription = pauseDescription
             },
         contentAlignment = Alignment.Center
     ) {
@@ -984,6 +990,8 @@ private fun PauseGlyph(paused: Boolean, color: Color, modifier: Modifier = Modif
 
 @Composable
 private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Modifier) {
+    val devBuildDescription = stringResource(R.string.scene_dev_build)
+    val campDescription = stringResource(R.string.scene_camp)
     Row(
         modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -998,7 +1006,7 @@ private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Mo
         ) {
             Box(Modifier.size(4.dp).background(Ember))
             Spacer(Modifier.width(4.dp))
-            Text("PALIER ", fontSize = 7.sp, letterSpacing = 0.5.sp, color = Muted)
+            Text(stringResource(R.string.scene_floor_prefix) + " ", fontSize = 7.sp, letterSpacing = 0.5.sp, color = Muted)
             Text(
                 state.floor.toString().padStart(2, '0'),
                 fontFamily = Press,
@@ -1014,7 +1022,7 @@ private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Mo
                     .clip(RoundedCornerShape(3.dp))
                     .background(Ink.copy(alpha = 0.80f))
                     .border(1.dp, Gold.copy(alpha = 0.35f), RoundedCornerShape(3.dp))
-                    .semantics { contentDescription = "Build de développement" },
+                    .semantics { contentDescription = devBuildDescription },
                 contentAlignment = Alignment.Center
             ) {
                 AssetIcon("mon/worm.png", 16.dp)
@@ -1053,7 +1061,7 @@ private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Mo
                 .background(Brush.verticalGradient(listOf(Panel2, Ink2)))
                 .border(1.dp, Gold.copy(alpha = 0.34f), RoundedCornerShape(3.dp))
                 .clickable(onClick = onCamp)
-                .semantics { contentDescription = "Feu de camp" },
+                .semantics { contentDescription = campDescription },
             contentAlignment = Alignment.Center
         ) {
             FlameIcon(Modifier.size(14.dp))
@@ -1470,7 +1478,7 @@ private fun EnemyUnit(
             enemy = true,
             width = plateWidth,
             subtitle = if (fight.isBoss && fight.abilityLabel.isNotBlank()) {
-                "CAPACITÉ · ${abilityLabelRes(fight.ability)}"
+                stringResource(R.string.codex_ability_line, abilityLabelRes(fight.ability))
             } else null
         )
         Spacer(Modifier.height(4.dp))
@@ -1560,7 +1568,7 @@ private fun EnemyUnit(
                         .border(1.dp, Gold, RoundedCornerShape(2.dp))
                         .padding(horizontal = 3.dp, vertical = 1.dp)
                 ) {
-                    Text("ÉLITE", fontFamily = Press, fontSize = 4.5.sp, color = GoldLight)
+                    Text(stringResource(R.string.scene_elite), fontFamily = Press, fontSize = 4.5.sp, color = GoldLight)
                 }
             }
         }
@@ -1688,8 +1696,8 @@ private fun LevelUpBanner(level: Int, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("NIVEAU $level", fontFamily = Press, fontSize = 11.sp, color = Ink)
-            Text("Kaelen se renforce", fontSize = 6.sp, color = Ink.copy(alpha = 0.7f))
+            Text(stringResource(R.string.scene_level, level), fontFamily = Press, fontSize = 11.sp, color = Ink)
+            Text(stringResource(R.string.scene_level_note), fontSize = 6.sp, color = Ink.copy(alpha = 0.7f))
         }
     }
 }
@@ -1747,9 +1755,9 @@ private fun WaitingMob(state: GameState, animateDecor: Boolean, modifier: Modifi
             )
             Spacer(Modifier.height(3.dp))
         }
-        SceneTag("EN ATTENTE DE PAS", Ember)
+        SceneTag(stringResource(R.string.scene_waiting_steps), Ember)
         Spacer(Modifier.height(2.dp))
-        Text("prochain combat dans $remaining m", fontSize = 4.6.sp, color = Muted)
+        Text(stringResource(R.string.scene_next_fight, remaining), fontSize = 4.6.sp, color = Muted)
     }
 }
 
@@ -1785,7 +1793,7 @@ private fun GateView(state: GameState, animateDecor: Boolean = false, modifier: 
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                "GARDIEN",
+                stringResource(R.string.codex_guardian_badge),
                 fontFamily = Press,
                 fontSize = 4.5.sp,
                 color = if (active) GoldLight else Muted2,
@@ -1831,7 +1839,7 @@ private fun GateView(state: GameState, animateDecor: Boolean = false, modifier: 
                 val remaining = (FLOOR_METERS - state.distance).roundToInt().coerceAtLeast(0)
                 val waiting = state.stepBank <= 0.0 && state.fight == null
                 Text(
-                    if (waiting) "EN ATTENTE DE PAS" else "À $remaining m",
+                    if (waiting) stringResource(R.string.scene_waiting_steps) else stringResource(R.string.scene_away, remaining),
                     fontSize = 4.2.sp,
                     color = if (waiting) Ember else Muted,
                     modifier = Modifier.padding(top = 3.dp)
@@ -1844,21 +1852,22 @@ private fun GateView(state: GameState, animateDecor: Boolean = false, modifier: 
 @Composable
 private fun ConsumablesChip(state: GameState, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val count = state.consumables.values.sum()
+    val bagDescription = stringResource(R.string.scene_bag_desc)
     Row(
         modifier
             .clip(RoundedCornerShape(4.dp))
             .background(Ink.copy(alpha = 0.88f))
             .border(1.dp, if (count > 0) Gold.copy(alpha = 0.5f) else Line, RoundedCornerShape(4.dp))
             .clickable(onClick = onClick)
-            .semantics { contentDescription = "Sac de consommables" }
+            .semantics { contentDescription = bagDescription }
             .padding(horizontal = 7.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AssetIcon("item/cons_potion_red.png", 15.dp)
         Spacer(Modifier.width(5.dp))
         Column {
-            Text("SAC", fontFamily = Press, fontSize = 5.sp, color = GoldLight)
-            Text(if (count > 0) "×$count" else "vide", fontSize = 4.8.sp, color = if (count > 0) Ember else Muted2)
+            Text(stringResource(R.string.scene_bag), fontFamily = Press, fontSize = 5.sp, color = GoldLight)
+            Text(if (count > 0) "×$count" else stringResource(R.string.scene_empty), fontSize = 4.8.sp, color = if (count > 0) Ember else Muted2)
         }
     }
 }
@@ -1884,8 +1893,9 @@ private fun BuffStrip(state: GameState, modifier: Modifier = Modifier) {
         descriptionParts += "${buffLabelRes(buff.label)} ${buffTime(buff.expiresAt - now)}"
     }
     val description = descriptionParts.joinToString(", ")
+    val effectsDescription = stringResource(R.string.scene_active_effects, description)
     Row(
-        modifier.semantics { contentDescription = "Effets actifs : $description" },
+        modifier.semantics { contentDescription = effectsDescription },
         horizontalArrangement = Arrangement.spacedBy(3.dp)
     ) {
         active.forEach { buff ->
@@ -1933,13 +1943,14 @@ private fun buffColor(buff: Buff): Color = when {
 private fun ChestChip(state: GameState, onChest: () -> Unit, modifier: Modifier = Modifier) {
     val chest = state.chest ?: return
     val pending = 1 + state.chestQueue.size
+    val chestPendingDescription = stringResource(R.string.scene_chest_pending_desc)
     Row(
         modifier
             .clip(RoundedCornerShape(4.dp))
             .background(Ink.copy(alpha = 0.88f))
             .border(1.dp, Gold.copy(alpha = 0.55f), RoundedCornerShape(4.dp))
             .clickable(onClick = onChest)
-            .semantics { contentDescription = "Coffre en attente" }
+            .semantics { contentDescription = chestPendingDescription }
             .padding(horizontal = 7.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -1955,14 +1966,14 @@ private fun ChestChip(state: GameState, onChest: () -> Unit, modifier: Modifier 
         Spacer(Modifier.width(5.dp))
         Column {
             Text(
-                "COFFRE" + if (pending > 1) " ×$pending" else "",
+                stringResource(R.string.scene_chest) + if (pending > 1) " ×$pending" else "",
                 fontFamily = Press,
                 fontSize = 5.sp,
                 color = GoldLight
             )
             val stalled = state.mode == "chest" && state.stepBank <= 0.0
             Text(
-                if (stalled) "EN ATTENTE" else formatRemaining(chestRemainingMs(chest)),
+                if (stalled) stringResource(R.string.scene_pending) else formatRemaining(chestRemainingMs(chest)),
                 fontSize = 4.8.sp,
                 color = if (stalled) Ember else Muted2
             )
@@ -1982,12 +1993,13 @@ private fun ChestChip(state: GameState, onChest: () -> Unit, modifier: Modifier 
 @Composable
 private fun ChestButton(state: GameState, onChest: () -> Unit, modifier: Modifier = Modifier) {
     val chest = state.chest ?: return
+    val chestDescription = stringResource(R.string.scene_chest_desc)
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             Modifier
                 .size(58.dp)
                 .clickable(onClick = onChest)
-                .semantics { contentDescription = "Coffre" }
+                .semantics { contentDescription = chestDescription }
         ) {
             Canvas(Modifier.fillMaxSize()) {
                 val w = size.width
@@ -2062,13 +2074,13 @@ private fun BottomHud(state: GameState, modifier: Modifier = Modifier) {
             Spacer(Modifier.width(5.dp))
             Column(Modifier.weight(1f)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Ferveur", fontSize = 6.5.sp, color = Muted)
+                    Text(stringResource(R.string.scene_fervour), fontSize = 6.5.sp, color = Muted)
                     Text("${state.ferveur}", fontFamily = Press, fontSize = 6.5.sp, color = Ember)
                 }
                 MiniBar(state.ferveur / 100f, Ember, Modifier.fillMaxWidth(), height = 3.dp)
                 Spacer(Modifier.height(3.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Réserve", fontSize = 6.5.sp, color = Muted)
+                    Text(stringResource(R.string.scene_reserve), fontSize = 6.5.sp, color = Muted)
                     Text(
                         formatCompact(state.stepBank.toInt()),
                         fontFamily = Press,
@@ -2087,7 +2099,7 @@ private fun BottomHud(state: GameState, modifier: Modifier = Modifier) {
                 )
             }
             Spacer(Modifier.width(4.dp))
-            Text(tierName(state.ferveur), fontSize = 5.5.sp, color = Ember)
+            Text(tierLabelRes(state.ferveur), fontSize = 5.5.sp, color = Ember)
         }
         Row(
             Modifier
@@ -2110,7 +2122,7 @@ private fun BottomHud(state: GameState, modifier: Modifier = Modifier) {
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text("pas aujourd'hui", fontSize = 5.5.sp, color = Muted)
+                Text(stringResource(R.string.scene_steps_today), fontSize = 5.5.sp, color = Muted)
             }
         }
         }
@@ -2133,9 +2145,12 @@ private fun BossBanner(state: GameState) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                "GARDIEN · ${localizedCreature(fight.enemyName)}" +
-                    (if (fight.modifier.isNotBlank()) " · ${modifierLabelRes(fight.modifier)}" else "") +
-                    " · Niv. ${fight.enemyLevel}",
+                stringResource(
+                    R.string.scene_boss_banner,
+                    localizedCreature(fight.enemyName),
+                    if (fight.modifier.isNotBlank()) " · ${modifierLabelRes(fight.modifier)}" else "",
+                    fight.enemyLevel
+                ),
                 fontSize = 6.sp,
                 color = Blood,
                 maxLines = 1

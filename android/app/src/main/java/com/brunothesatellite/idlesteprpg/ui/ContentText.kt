@@ -99,6 +99,9 @@ private val FIXED = mapOf(
     "Ferveur déjà au maximum." to R.string.msg_fervour_full,
     "Effet inconnu." to R.string.msg_unknown_effect,
     "PV complets" to R.string.msg_hp_full_short,
+    "Votre clé Garmin est expirée. Remplacez-la dans Compte Garmin." to R.string.msg_garmin_key_expired,
+    "Réseau indisponible. Dernière synchronisation conservée." to R.string.msg_garmin_network,
+    "erreur inconnue" to R.string.msg_unknown_error,
 )
 
 private fun consumableIdFor(name: String): String? =
@@ -459,6 +462,32 @@ private val RULES: List<Rule> = listOf(
     },
     Rule(Regex("""^ATQ \+(\d+) % · vulnérable$""")) { r, m ->
         r.getString(R.string.msg_berserk, m.groupValues[1].toInt())
+    },
+    Rule(Regex("""^Votre clé Garmin expire dans (\d+) jour\(s\)\.$""")) { r, m ->
+        r.getString(R.string.msg_garmin_key_expires, m.groupValues[1].toInt())
+    },
+    Rule(Regex("""^Rattrapage Garmin · (\d+) jour\(s\), (\d+) pas$""")) { r, m ->
+        r.getString(
+            R.string.msg_garmin_catchup,
+            m.groupValues[1].toInt(),
+            m.groupValues[2].toInt()
+        )
+    },
+    Rule(Regex("""^Garmin synchronisé · \+(\d+) pas$""")) { r, m ->
+        r.getString(R.string.msg_garmin_synced, m.groupValues[1].toInt())
+    },
+    Rule(Regex("""^Limite Garmin atteinte\. Nouvel essai à (.+)\.$""")) { r, m ->
+        r.getString(R.string.msg_garmin_rate, m.groupValues[1])
+    },
+    Rule(Regex("""^Impossible de joindre Garmin : (.+)$""")) { r, m ->
+        r.getString(R.string.msg_garmin_unreachable, m.groupValues[1])
+    },
+    Rule(Regex("""^Synchronisation impossible : (.+)$""")) { r, m ->
+        r.getString(R.string.msg_sync_impossible, m.groupValues[1])
+    },
+    Rule(Regex("""^(COFFRE DE BOIS|COFFRE DE FER|COFFRE RUNIQUE) expire dans (.+)$""")) { r, m ->
+        val chest = FRENCH_CHESTS[m.groupValues[1]] ?: "runique"
+        r.getString(R.string.msg_chest_expires, chestType(r, chest), m.groupValues[2])
     },
     // Dernière règle : nom de créature suivi d'une capacité de gardien.
     Rule(Regex("""^(.+) · (.+)$""")) { r, m ->

@@ -6,11 +6,11 @@
 
 ## 1. Résumé exécutif
 
-- L’application est **principalement en français dans le code** : **586 littéraux accentués**
+- L’application est **principalement en français dans le code** : **528 littéraux accentués**
   restants, dont **≈ 143 clés de correspondance** français → ressource (catalogue de contenu et
   traducteur de journal), environ **750 à 950 chaînes** visibles, plus le contenu de jeu.
-  Les écrans Réglages, Onboarding, Journal, Dashboard, Codex, Overlays et les contenus
-  dynamiques (objets, créatures, effets, journal) sont déjà extraits en ressources FR/EN.
+  Les écrans Réglages, Onboarding, Journal, Dashboard, Codex, Overlays, Scène, les notifications
+  et les contenus dynamiques (objets, créatures, effets, journal) sont déjà extraits.
 - Le Codex compte désormais **110 créatures et 35 gardiens**, avec de nouveaux libellés
   (`NON DÉCOUVERT`, `GARDIEN`, `GARDIENS DE JALON`, `Première rencontre`, tiers de spawn).
 - Le manuel représente **≈ 7 400 mots** et **36 captures** dont l’interface est en français.
@@ -50,6 +50,13 @@
   sac de consommables, résultat de rencontre.
 - **Codex extrait** : en-tête et onglets, cartes Bestiaire/Ensembles/Biomes, fiches créature et
   gardien, capacités et descriptions, progression des ensembles, sources de butin.
+- **Scène extraite** : HUD (palier, biome, or, sac, coffre, ferveur, réserve, pas du jour),
+  boutons et descriptions d’accessibilité, bannière gardien, tags phase 2/bénédiction/farm,
+  bandeau de niveau, écran d’attente et portail.
+- **Notifications extraites** : canaux, niveau, gardien, rencontre, gardien en attente, serments,
+  coffre, clé Garmin, synchronisation, action « Remplacer la clé ».
+- **Toasts extraits** : pause, source, santé, clé Garmin, farm, export/import, mises à jour,
+  équipement, vente, fusion, coffre, objets, forge, repos, soins.
 - **Journal et résultats traduits** : 45 formats de messages (combat, jalons, équipement,
   forge, serments, consommables, rencontres). Les anciennes entrées déjà en sauvegarde sont
   traduites à l’affichage ; le français est renvoyé tel quel.
@@ -60,8 +67,7 @@
 **Reste**
 - Réglages : chaînes dynamiques restantes (statuts de source, journal de synchronisation,
   libellés de `StepSourceType`).
-- Scène : textes d’interface du HUD, du camp latéral, des tags de combat et des bannières.
-- Notifications et toasts : textes système encore en français.
+- Widget et textes de pas système.
 - Manuel EN et captures anglaises.
 
 ## 2. Périmètre
@@ -84,7 +90,7 @@
 | Élément | Mesure |
 |---|---|
 | Fichiers de ressources | `res/values/strings.xml` + `res/values-en/strings.xml` |
-| Littéraux contenant des accents | **586** dans 34 fichiers Kotlin, dont ≈ 143 clés de correspondance |
+| Littéraux contenant des accents | **528** dans 34 fichiers Kotlin, dont ≈ 143 clés de correspondance |
 | Appels `Text(` | **403** |
 | Littéraux texte | ~3 400, dont une part de clés, chemins, identifiants |
 | Chaînes réellement traduisibles | **750 à 950** (estimation) |
@@ -92,9 +98,9 @@
 | `engine/GameEngine.kt` | 94 : journal, événements, messages système |
 | `ui/Overlays.kt` / `Settings.kt` | 12 / 0 : overlays et Réglages extraits |
 | `ui/Codex.kt` / `Dashboard.kt` | 11 / 7 : Codex, cartes, fiches (Dashboard extrait) |
+| `ui/Scene.kt` / `GameViewModel.kt` | 4 / 1 : HUD et toasts extraits (restent des correspondances de noms d’objets) |
 | `ui/ContentCatalog.kt` / `ContentText.kt` | 105 clés : catalogue FR→ressource, traducteur de journal |
-| `GameViewModel.kt` | 40 : toasts, états |
-| Notifications / widget / pas | 7 + textes widget + statuts de synchronisation |
+| Notifications / widget / pas | canaux, alertes et actions extraits ; widget et statuts de pas à suivre |
 | Manuel | **≈ 7 400 mots**, **36 images**, 77 Ko HTML, généré depuis un template |
 | Journal | `JournalEntry.text` = chaîne figée en base, traduite à l’affichage |
 | Objets | `Item.name` = chaîne figée en base, traduite à l’affichage via son nom de base |

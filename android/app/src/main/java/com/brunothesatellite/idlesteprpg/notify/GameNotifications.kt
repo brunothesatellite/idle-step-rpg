@@ -15,6 +15,9 @@ import com.brunothesatellite.idlesteprpg.MainActivity
 import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.engine.GATE_METERS
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.ui.creatureDisplay
+import com.brunothesatellite.idlesteprpg.ui.specialTitle
+import com.brunothesatellite.idlesteprpg.ui.translateText
 import java.time.LocalTime
 
 object GameNotifications {
@@ -44,27 +47,27 @@ object GameNotifications {
 
         val alerts = NotificationChannel(
             CHANNEL_ALERTS,
-            "Alertes de marche",
+            context.getString(R.string.notify_channel_alerts),
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
-            description = "Gardien, niveau, serments et coffres"
+            description = context.getString(R.string.notify_channel_alerts_desc)
             enableVibration(true)
         }
         val silent = NotificationChannel(
             CHANNEL_ALERTS_SILENT,
-            "Alertes de marche (sans vibration)",
+            context.getString(R.string.notify_channel_alerts_silent),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Gardien, niveau, serments et coffres"
+            description = context.getString(R.string.notify_channel_alerts_desc)
             enableVibration(false)
             setSound(null, null)
         }
         val account = NotificationChannel(
             CHANNEL_ACCOUNT,
-            "Compte Garmin",
+            context.getString(R.string.notify_channel_account),
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
-            description = "Expiration de la clé personnelle Garmin"
+            description = context.getString(R.string.notify_channel_account_desc)
         }
         manager.createNotificationChannels(listOf(alerts, silent, account))
     }
@@ -72,8 +75,8 @@ object GameNotifications {
     fun diff(context: Context, before: GameState, after: GameState) {
         if (after.level > before.level) {
             post(
-                context, ID_LEVEL, "Niveau ${after.level}",
-                "Kaelen se renforce. Nouvelles stats disponibles.",
+                context, ID_LEVEL, context.getString(R.string.notify_level_title, after.level),
+                context.getString(R.string.notify_level_text),
                 category = "level",
                 vibration = vibrationsEnabled(context)
             )
@@ -81,8 +84,13 @@ object GameNotifications {
         if (after.fight?.isBoss == true && before.fight?.isBoss != true) {
             val boss = after.fight
             post(
-                context, ID_BOSS, "Gardien du palier",
-                "${boss?.enemyName ?: "Un gardien"} vous attend au palier ${after.floor}.",
+                context, ID_BOSS, context.getString(R.string.notify_boss_title),
+                context.getString(
+                    R.string.notify_boss_text,
+                    boss?.enemyName?.let { creatureDisplay(context.resources, it) }
+                        ?: context.getString(R.string.notify_guardian_fallback),
+                    after.floor
+                ),
                 category = "boss",
                 vibration = vibrationsEnabled(context)
             )
@@ -91,8 +99,10 @@ object GameNotifications {
         if (!appVisible && before.special == null && after.special != null) {
             val special = after.special
             post(
-                context, ID_SPECIAL, special?.title ?: "Rencontre",
-                "Une rencontre vous attend au palier ${after.floor}. Rouvrez la marche pour la résoudre.",
+                context, ID_SPECIAL,
+                special?.let { specialTitle(context.resources, it.type) }
+                    ?: context.getString(R.string.notify_special_title_fallback),
+                context.getString(R.string.notify_special_text, after.floor),
                 category = "special",
                 vibration = vibrationsEnabled(context)
             )
@@ -101,8 +111,8 @@ object GameNotifications {
         // est en pause devant la porte, le joueur peut revenir.
         if (!appVisible && !bossWaiting(before) && bossWaiting(after)) {
             post(
-                context, ID_BOSS_WAIT, "Gardien en attente",
-                "Le gardien du palier ${after.floor} attend vos pas. Rouvrez la marche pour l'affronter.",
+                context, ID_BOSS_WAIT, context.getString(R.string.notify_boss_wait_title),
+                context.getString(R.string.notify_boss_wait_text, after.floor),
                 category = "boss_waiting",
                 vibration = vibrationsEnabled(context)
             )
@@ -111,24 +121,24 @@ object GameNotifications {
         val a = after.oaths
         if (!b.stepsClaimed && a.stepsClaimed) {
             post(
-                context, ID_OATH_STEPS, "Serment de marche accompli",
-                "Récompense : 150 or et 1 éclat.",
+                context, ID_OATH_STEPS, context.getString(R.string.notify_oath_steps_title),
+                context.getString(R.string.notify_oath_steps_text),
                 category = "oaths",
                 vibration = vibrationsEnabled(context)
             )
         }
         if (!b.bossesClaimed && a.bossesClaimed) {
             post(
-                context, ID_OATH_BOSS, "Serment de chasse accompli",
-                "Récompense : 250 or et 2 éclats.",
+                context, ID_OATH_BOSS, context.getString(R.string.notify_oath_boss_title),
+                context.getString(R.string.notify_oath_boss_text),
                 category = "oaths",
                 vibration = vibrationsEnabled(context)
             )
         }
         if (!b.chestsClaimed && a.chestsClaimed) {
             post(
-                context, ID_OATH_CHEST, "Serment de curiosité accompli",
-                "Récompense : 100 or et un objet inhabituel.",
+                context, ID_OATH_CHEST, context.getString(R.string.notify_oath_chest_title),
+                context.getString(R.string.notify_oath_chest_text),
                 category = "oaths",
                 vibration = vibrationsEnabled(context)
             )
@@ -137,8 +147,11 @@ object GameNotifications {
 
     fun chestWarning(context: Context, message: String) {
         post(
-            context, ID_CHEST, "Coffre bientôt perdu",
-            "$message. Ouvrez-le ou forcez sa serrure avant expiration.",
+            context, ID_CHEST, context.getString(R.string.notify_chest_title),
+            context.getString(
+                R.string.notify_chest_text,
+                translateText(context.resources, message)
+            ),
             category = "chest",
             screen = "chest",
             vibration = vibrationsEnabled(context)
@@ -147,17 +160,18 @@ object GameNotifications {
 
     fun keyExpiry(context: Context, message: String) {
         post(
-            context, ID_KEY, "Compte Garmin", message,
+            context, ID_KEY, context.getString(R.string.notify_channel_account),
+            translateText(context.resources, message),
             account = true, category = "key", screen = "garmin", vibration = true,
-            actionLabel = "Remplacer la clé"
+            actionLabel = context.getString(R.string.notify_replace_key)
         )
     }
 
     fun syncDone(context: Context, message: String, ok: Boolean) {
         post(
             context, ID_SYNC,
-            if (ok) "Synchronisation terminée" else "Synchronisation en échec",
-            message,
+            context.getString(if (ok) R.string.notify_sync_done_title else R.string.notify_sync_failed_title),
+            translateText(context.resources, message),
             category = "sync",
             vibration = false
         )
