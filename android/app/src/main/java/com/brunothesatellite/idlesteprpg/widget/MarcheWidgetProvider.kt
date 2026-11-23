@@ -43,6 +43,12 @@ class MarcheWidgetProvider : AppWidgetProvider() {
             val gold = prefs.getInt("gold", 0)
             val views = RemoteViews(context.packageName, R.layout.widget_marche)
             val format = NumberFormat.getIntegerInstance(AppLocale.current)
+            val hero = WidgetHero.load(context)
+            if (hero != null) {
+                views.setImageViewBitmap(R.id.widget_hero, hero)
+            } else {
+                views.setViewVisibility(R.id.widget_hero, android.view.View.GONE)
+            }
             // Les textes du layout sont résolus par le lanceur (locale système) :
             // on les repose ici avec les ressources de l'app pour suivre sa langue.
             views.setTextViewText(R.id.widget_title, context.getString(R.string.widget_title))

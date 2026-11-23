@@ -4,41 +4,59 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_bg"
-    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
     android:padding="12dp">
 
-    <TextView
-        android:id="@+id/widget_title"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/widget_title"
-        android:textColor="#E8C27A"
-        android:textSize="9sp"
-        android:textStyle="bold" />
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/widget_steps"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_steps_default"
-        android:textColor="#F0E2C4"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_title"
+            android:textColor="#E8C27A"
+            android:textSize="9sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/widget_meta"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_meta_default"
-        android:textColor="#9587A8"
-        android:textSize="9sp" />
+        <TextView
+            android:id="@+id/widget_steps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_steps_default"
+            android:textColor="#F0E2C4"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/widget_hint"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="@string/widget_hint"
-        android:textColor="#6E617F"
-        android:textSize="8sp" />
+        <TextView
+            android:id="@+id/widget_meta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_meta_default"
+            android:textColor="#9587A8"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/widget_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/widget_hint"
+            android:textColor="#6E617F"
+            android:textSize="8sp" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/widget_hero"
+        android:layout_width="56dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="8dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter" />
 </LinearLayout>

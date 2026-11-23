@@ -10,6 +10,7 @@ import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.deepCopy
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.widget.MarcheWidgetProvider
+import com.brunothesatellite.idlesteprpg.widget.WidgetHero
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -110,6 +111,10 @@ class GameRepository(
             after = s
         }
         GameNotifications.diff(context, before, after)
+        // Un changement d'équipement doit se voir tout de suite sur le widget.
+        if (WidgetHero.signature(before) != WidgetHero.signature(after)) {
+            withContext(Dispatchers.IO) { syncWidgetLocked(after) }
+        }
     }
 
     suspend fun markActive() {
@@ -392,17 +397,32 @@ class GameRepository(
                     tmp.delete()
                 }
             }
-            context.getSharedPreferences("widget", Context.MODE_PRIVATE).edit()
-                .putInt("steps", snapshot.stepsToday)
-                .putInt("level", snapshot.level)
-                .putInt("floor", snapshot.floor)
-                .putInt("gold", snapshot.gold)
-                .apply()
-            // Le widget n'a pas besoin d'une fraîcheur à la minute.
-            if (now - lastWidgetAt > 15 * 60_000L) {
-                lastWidgetAt = now
-                MarcheWidgetProvider.updateAll(context)
-            }
+            syncWidgetLocked(snapshot)
+        }
+    }
+
+    /**
+     * Met à jour les données du widget. Le paper doll n'est réécrit que si
+     * l'équipement a changé ; le reste suit une fraîcheur de 15 minutes.
+     */
+    @Synchronized
+    private fun syncWidgetLocked(snapshot: GameState) {
+        val prefs = context.getSharedPreferences("widget", Context.MODE_PRIVATE)
+        val signature = WidgetHero.signature(snapshot)
+        val heroChanged = prefs.getString("hero_sig", null) != signature
+        prefs.edit()
+            .putInt("steps", snapshot.stepsToday)
+            .putInt("level", snapshot.level)
+            .putInt("floor", snapshot.floor)
+            .putInt("gold", snapshot.gold)
+            .apply()
+        if (heroChanged && WidgetHero.render(context, snapshot)) {
+            prefs.edit().putString("hero_sig", signature).apply()
+        }
+        val now = System.currentTimeMillis()
+        if (heroChanged || now - lastWidgetAt > 15 * 60_000L) {
+            lastWidgetAt = now
+            MarcheWidgetProvider.updateAll(context)
         }
     }
 }
