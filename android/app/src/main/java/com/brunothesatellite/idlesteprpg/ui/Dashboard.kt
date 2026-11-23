@@ -56,26 +56,18 @@ import com.brunothesatellite.idlesteprpg.engine.allBossTemplates
 import com.brunothesatellite.idlesteprpg.engine.allMobTemplates
 import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.bossAbilityFor
-import com.brunothesatellite.idlesteprpg.engine.biomeFor
+import com.brunothesatellite.idlesteprpg.engine.biomeDefFor
 import com.brunothesatellite.idlesteprpg.engine.biomeRuleFor
 import com.brunothesatellite.idlesteprpg.engine.CONSUMABLES
-import com.brunothesatellite.idlesteprpg.engine.consumableContextLabel
 import com.brunothesatellite.idlesteprpg.engine.equipped
 import com.brunothesatellite.idlesteprpg.engine.itemScore
 import com.brunothesatellite.idlesteprpg.engine.powerOf
 import com.brunothesatellite.idlesteprpg.engine.discoveredSetSlots
-import com.brunothesatellite.idlesteprpg.engine.rarityLabel
 import com.brunothesatellite.idlesteprpg.engine.rankLabel
-import com.brunothesatellite.idlesteprpg.engine.setLabel
-import com.brunothesatellite.idlesteprpg.engine.slotLabel
 import com.brunothesatellite.idlesteprpg.engine.statsOf
-import com.brunothesatellite.idlesteprpg.engine.tierName
-import com.brunothesatellite.idlesteprpg.engine.titleFor
 import com.brunothesatellite.idlesteprpg.engine.upgradeCost
-import com.brunothesatellite.idlesteprpg.engine.upgradeDesc
 import com.brunothesatellite.idlesteprpg.engine.upgradeIcon
 import com.brunothesatellite.idlesteprpg.engine.upgradeLevel
-import com.brunothesatellite.idlesteprpg.engine.upgradeName
 import com.brunothesatellite.idlesteprpg.engine.xpNext
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -186,7 +178,7 @@ private fun DashboardHeader(
             Row(verticalAlignment = Alignment.Bottom) {
                 Text("Kaelen", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Parchment)
                 Spacer(Modifier.width(5.dp))
-                Text(titleFor(state.floor), fontSize = 7.5.sp, color = Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(titleLabelRes(state.floor), fontSize = 7.5.sp, color = Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Row(Modifier.fillMaxWidth().padding(top = 3.dp), verticalAlignment = Alignment.CenterVertically) {
                 MiniBar(
@@ -374,7 +366,7 @@ private fun StatsTab(
         StatTile(
             "item/boots4_green.png",
             stringResource(R.string.dashboard_vit),
-            "%.2f".format(stats.vit * (1.0 + 0.004 * state.ferveur)).replace('.', ','),
+            decimalRes(stats.vit * (1.0 + 0.004 * state.ferveur), 2),
             Modifier.weight(1f)
         )
     }
@@ -438,9 +430,9 @@ private fun BiomeCard(state: GameState, onToggleFarm: (Boolean) -> Unit) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                SectionLabel(stringResource(R.string.dashboard_biome, biomeFor(state.floor)))
-                Text(rule.label, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Green)
-                Text(rule.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
+                SectionLabel(stringResource(R.string.dashboard_biome, biomeLabelRes(biomeDefFor(state.floor).key)))
+                Text(biomeRuleLabelRes(rule.id), fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Green)
+                Text(biomeRuleDescRes(rule.id), fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
             }
             Spacer(Modifier.width(8.dp))
             Text(
@@ -612,7 +604,7 @@ private fun FerveurCard(state: GameState) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             FlameIcon(Modifier.size(11.dp))
             Spacer(Modifier.width(4.dp))
-            Text("Ferveur", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Parchment)
+            Text(stringResource(R.string.dashboard_fervor), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Parchment)
             Spacer(Modifier.weight(1f))
             Text("${state.ferveur}", fontFamily = Press, fontSize = 8.sp, color = Ember)
             Text(" / 100", fontSize = 7.sp, color = Muted)
@@ -624,7 +616,7 @@ private fun FerveurCard(state: GameState) {
                     .border(1.dp, Ember.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
                     .padding(horizontal = 4.dp, vertical = 1.dp)
             ) {
-                Text(tierName(state.ferveur), fontSize = 5.5.sp, color = Ember)
+                Text(tierLabelRes(state.ferveur), fontSize = 5.5.sp, color = Ember)
             }
         }
         Spacer(Modifier.height(5.dp))
@@ -641,9 +633,9 @@ private fun FerveurCard(state: GameState) {
         }
         Spacer(Modifier.height(5.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            BonusText("VIT", "+${"%.1f".format(state.ferveur * 0.4).replace('.', ',')} %")
-            BonusText("RÉGÉN", "+${"%.1f".format(state.ferveur * 0.8).replace('.', ',')} %")
-            BonusText("CRIT", "+${"%.1f".format(state.ferveur * 0.02).replace('.', ',')} %")
+            BonusText(stringResource(R.string.dashboard_fervor_vit), "+${decimalRes(state.ferveur * 0.4)} %")
+            BonusText(stringResource(R.string.dashboard_fervor_regen), "+${decimalRes(state.ferveur * 0.8)} %")
+            BonusText(stringResource(R.string.dashboard_fervor_crit), "+${decimalRes(state.ferveur * 0.02)} %")
         }
     }
 }
@@ -659,35 +651,61 @@ private fun OathsCard(state: GameState) {
     val done = listOf(oaths.stepsClaimed, oaths.bossesClaimed, oaths.chestsClaimed).count { it }
     PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel("Serments du jour")
+            SectionLabel(stringResource(R.string.dashboard_oaths))
             Spacer(Modifier.weight(1f))
             Text("$done / 3", fontFamily = Press, fontSize = 6.5.sp, color = if (done == 3) Green else Ember)
         }
         Spacer(Modifier.height(4.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Série ${state.streak.coerceAtLeast(1)} jour(s)", fontSize = 5.8.sp, color = if (state.streak >= 7) Gold else Muted2)
-            Text("${formatCompact(state.weeklySteps)} pas cette semaine", fontSize = 5.8.sp, color = Muted2)
+            Text(
+                stringResource(
+                    R.string.dashboard_streak,
+                    state.streak.coerceAtLeast(1)
+                ),
+                fontSize = 5.8.sp,
+                color = if (state.streak >= 7) Gold else Muted2
+            )
+            Text(
+                stringResource(
+                    R.string.dashboard_weekly_steps,
+                    formatCompact(state.weeklySteps)
+                ),
+                fontSize = 5.8.sp,
+                color = Muted2
+            )
         }
         Spacer(Modifier.height(3.dp))
         OathRow(
-            "Marche",
-            "${state.stepsToday.coerceAtMost(oaths.stepsTarget)} / ${oaths.stepsTarget} pas",
+            stringResource(R.string.dashboard_oath_walk),
+            stringResource(
+                R.string.dashboard_oath_steps_progress,
+                state.stepsToday.coerceAtMost(oaths.stepsTarget),
+                oaths.stepsTarget
+            ),
             oaths.stepsClaimed,
-            "150 or · 1 éclat",
+            stringResource(R.string.dashboard_oath_walk_reward),
             "item/boots4_green.png"
         )
         OathRow(
-            "Chasse",
-            "${state.bossesToday.coerceAtMost(oaths.bossesTarget)} / ${oaths.bossesTarget} gardien",
+            stringResource(R.string.dashboard_oath_hunt),
+            stringResource(
+                R.string.dashboard_oath_boss_progress,
+                state.bossesToday.coerceAtMost(oaths.bossesTarget),
+                oaths.bossesTarget
+            ),
             oaths.bossesClaimed,
-            "250 or · 2 éclats",
+            stringResource(R.string.dashboard_oath_hunt_reward),
             "item/long_sword3.png"
         )
         OathRow(
-            "Curiosité",
-            "${state.chestsToday.coerceAtMost(oaths.chestsTarget)} / ${oaths.chestsTarget} coffre",
+            stringResource(R.string.dashboard_oath_curiosity),
+            stringResource(
+                R.string.dashboard_oath_chest_progress,
+                state.chestsToday.coerceAtMost(oaths.chestsTarget),
+                oaths.chestsTarget
+            ),
             oaths.chestsClaimed,
-            "100 or · objet",
+            stringResource(R.string.dashboard_oath_curiosity_reward),
             "item/misc_crystal.png"
         )
     }
@@ -696,15 +714,15 @@ private fun OathsCard(state: GameState) {
 @Composable
 private fun AchievementsCard(state: GameState) {
     val items = listOf(
-        "Premier gardien vaincu" to (state.bosses > 0),
-        "10 coffres ouverts" to (state.chestsOpened >= 10),
-        "Palier 10 atteint" to (state.floor >= 10),
-        "50 000 pas cumulés" to (state.totalSteps >= 50_000),
-        "Série de 7 jours" to (state.streak >= 7)
+        stringResource(R.string.dashboard_achievement_boss) to (state.bosses > 0),
+        stringResource(R.string.dashboard_achievement_chests) to (state.chestsOpened >= 10),
+        stringResource(R.string.dashboard_achievement_floor10) to (state.floor >= 10),
+        stringResource(R.string.dashboard_achievement_steps) to (state.totalSteps >= 50_000),
+        stringResource(R.string.dashboard_achievement_streak) to (state.streak >= 7)
     )
     PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel("Exploits")
+            SectionLabel(stringResource(R.string.dashboard_achievements))
             Spacer(Modifier.weight(1f))
             Text(
                 "${items.count { it.second }} / ${items.size}",
@@ -767,7 +785,7 @@ private fun OathRow(
             Text(progress, fontSize = 6.sp, color = Muted)
         }
         Text(
-            if (claimed) "ACCOMPLI" else reward,
+            if (claimed) stringResource(R.string.dashboard_accomplished) else reward,
             fontSize = 5.5.sp,
             color = if (claimed) Green else Muted2,
             maxLines = 1
@@ -779,7 +797,7 @@ private fun OathRow(
 private fun JournalCard(state: GameState, onOpen: () -> Unit) {
     PixelCard(Modifier.fillMaxWidth(), background = Panel.copy(alpha = 0.72f)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel("Journal")
+            SectionLabel(stringResource(R.string.dashboard_journal))
             Spacer(Modifier.weight(1f))
             Row(
                 Modifier
@@ -788,7 +806,7 @@ private fun JournalCard(state: GameState, onOpen: () -> Unit) {
                     .padding(horizontal = 5.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Tout voir", fontSize = 6.sp, color = Gold)
+                Text(stringResource(R.string.dashboard_view_all), fontSize = 6.sp, color = Gold)
                 Text(" ›", fontSize = 7.sp, color = Gold)
             }
         }
@@ -879,6 +897,7 @@ private fun InventoryTab(
     var stashOpen by remember { mutableStateOf(false) }
     var invSection by rememberSaveable { mutableStateOf("gear") }
     val consumableCount = state.consumables.values.sum()
+    val emptySlot = stringResource(R.string.dashboard_empty_slot)
     val filtered = state.inventory
         .filter { slotFilter == "all" || it.slot == slotFilter }
         .filter { !fusionOnly || GameEngine.canFuse(state, it) }
@@ -893,14 +912,21 @@ private fun InventoryTab(
         )
 
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text("ÉQUIPEMENT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Parchment)
+        Text(stringResource(R.string.dashboard_equipment), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Parchment)
         Spacer(Modifier.weight(1f))
-        Text("Puissance ${powerOf(state)}", fontSize = 6.5.sp, color = Muted)
+        Text(
+            stringResource(R.string.dashboard_inventory_power, powerOf(state)),
+            fontSize = 6.5.sp,
+            color = Muted
+        )
     }
     Spacer(Modifier.height(5.dp))
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        MiniChip("Équipement", invSection == "gear") { invSection = "gear" }
-        MiniChip("Consommables ($consumableCount)", invSection == "consumables") {
+        MiniChip(stringResource(R.string.dashboard_equipment_tab), invSection == "gear") { invSection = "gear" }
+        MiniChip(
+            stringResource(R.string.dashboard_consumables_tab, consumableCount),
+            invSection == "consumables"
+        ) {
             invSection = "consumables"
         }
     }
@@ -912,6 +938,7 @@ private fun InventoryTab(
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         listOf("weapon", "head", "body", "hands", "feet", "talisman").forEach { slot ->
             val item = equipped(state, slot)
+            val slotLabel = slotLabelRes(slot)
             Column(
                 Modifier
                     .weight(1f)
@@ -925,7 +952,7 @@ private fun InventoryTab(
                     )
                     .clickable(enabled = item != null) { item?.let(onSelectItem) }
                     .semantics {
-                        contentDescription = "${slotLabel(slot)} : ${item?.name ?: "vide"}"
+                        contentDescription = "$slotLabel : ${item?.name ?: emptySlot}"
                     }
                     .padding(3.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -936,48 +963,52 @@ private fun InventoryTab(
                 } else {
                     Text("+", fontSize = 12.sp, color = Muted2)
                 }
-                Text(slotLabel(slot), fontSize = 4.8.sp, color = Muted, maxLines = 1)
+                Text(slotLabel, fontSize = 4.8.sp, color = Muted, maxLines = 1)
             }
         }
     }
     Spacer(Modifier.height(7.dp))
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-        SmallAction("Équiper le meilleur", Modifier.weight(1.35f), onEquipBest, primary = true)
-        SmallAction("Vendre les communs", Modifier.weight(1f), onSellCommons)
+        SmallAction(stringResource(R.string.dashboard_equip_best), Modifier.weight(1.35f), onEquipBest, primary = true)
+        SmallAction(stringResource(R.string.dashboard_sell_commons), Modifier.weight(1f), onSellCommons)
     }
     Spacer(Modifier.height(7.dp))
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        MiniChip("Score", sort == "score") { sort = "score" }
-        MiniChip("Rareté", sort == "rarity") { sort = "rarity" }
-        MiniChip("Niveau", sort == "level") { sort = "level" }
-        MiniChip("Fusion", fusionOnly) { fusionOnly = !fusionOnly }
+        MiniChip(stringResource(R.string.dashboard_sort_score), sort == "score") { sort = "score" }
+        MiniChip(stringResource(R.string.dashboard_sort_rarity), sort == "rarity") { sort = "rarity" }
+        MiniChip(stringResource(R.string.dashboard_sort_level), sort == "level") { sort = "level" }
+        MiniChip(stringResource(R.string.dashboard_fusion), fusionOnly) { fusionOnly = !fusionOnly }
     }
     Spacer(Modifier.height(4.dp))
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        MiniChip("Tous", slotFilter == "all") { slotFilter = "all" }
+        MiniChip(stringResource(R.string.dashboard_all), slotFilter == "all") { slotFilter = "all" }
         listOf(
-            "weapon" to "Arme",
-            "head" to "Tête",
-            "body" to "Torse",
-            "hands" to "Mains",
-            "feet" to "Bottes",
-            "talisman" to "Talisman"
+            "weapon" to stringResource(R.string.dashboard_slot_weapon),
+            "head" to stringResource(R.string.dashboard_slot_head),
+            "body" to stringResource(R.string.dashboard_slot_body),
+            "hands" to stringResource(R.string.dashboard_slot_hands),
+            "feet" to stringResource(R.string.dashboard_slot_feet),
+            "talisman" to stringResource(R.string.dashboard_slot_talisman)
         ).forEach { (slot, label) ->
             MiniChip(label, slotFilter == slot) { slotFilter = slot }
         }
     }
     Spacer(Modifier.height(9.dp))
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text("BUTIN", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
+        Text(stringResource(R.string.dashboard_loot), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
         Spacer(Modifier.weight(1f))
         Text(
-            "${state.inventory.size} / 24 objets · ${filtered.size} affiché(s)",
+            stringResource(
+                R.string.dashboard_loot_count,
+                state.inventory.size,
+                filtered.size
+            ),
             fontSize = 6.sp,
             color = Muted
         )
@@ -985,7 +1016,7 @@ private fun InventoryTab(
     Spacer(Modifier.height(4.dp))
     if (filtered.isEmpty()) {
         Text(
-            if (fusionOnly) "Aucun objet fusionnable." else "Aucun objet dans ce filtre.",
+            if (fusionOnly) stringResource(R.string.dashboard_no_fusable) else stringResource(R.string.dashboard_no_filtered_items),
             modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
             textAlign = TextAlign.Center,
             fontSize = 7.sp,
@@ -1009,16 +1040,16 @@ private fun InventoryTab(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    SectionLabel("Coffre de camp")
+                    SectionLabel(stringResource(R.string.dashboard_camp_stash))
                     Text(
-                        "${state.stash.size} objet(s) en réserve · inventaire plein",
+                        stringResource(R.string.dashboard_stash_count, state.stash.size),
                         fontSize = 6.5.sp,
                         color = Muted
                     )
                 }
                 Spacer(Modifier.width(6.dp))
                 SmallAction(
-                    if (stashOpen) "FERMER" else "VOIR",
+                    if (stashOpen) stringResource(R.string.dashboard_close) else stringResource(R.string.dashboard_view),
                     Modifier.width(70.dp),
                     onClick = { stashOpen = !stashOpen }
                 )
@@ -1034,33 +1065,33 @@ private fun InventoryTab(
                         Spacer(Modifier.width(5.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                if (item.identified) item.name else "Objet mystérieux",
+                                if (item.identified) item.name else stringResource(R.string.dashboard_mysterious_item),
                                 fontSize = 6.5.sp,
                                 color = Parchment,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                rarityLabel(item.rarity) + if (item.locked) " · VERROU" else "",
+                                rarityLabelRes(item.rarity) + if (item.locked) stringResource(R.string.dashboard_locked_suffix) else "",
                                 fontSize = 5.2.sp,
                                 color = if (item.locked) Ember else rarityColor(item.rarity)
                             )
                         }
                         SmallAction(
-                            "PRENDRE",
+                            stringResource(R.string.dashboard_take),
                             Modifier.width(74.dp),
                             onClick = { onWithdrawStashItem(item) }
                         )
                     }
                 }
                 Spacer(Modifier.height(4.dp))
-                SmallAction("TOUT PRENDRE", Modifier.fillMaxWidth(), onWithdrawStash, primary = true)
+                SmallAction(stringResource(R.string.dashboard_take_all), Modifier.fillMaxWidth(), onWithdrawStash, primary = true)
             }
         }
         Spacer(Modifier.height(5.dp))
     }
     Text(
-        "Touchez un objet pour comparer avant de l'équiper. Les objets verrouillés ne peuvent pas être vendus.",
+        stringResource(R.string.dashboard_inventory_hint),
         modifier = Modifier.fillMaxWidth(),
         textAlign = TextAlign.Center,
         fontSize = 6.sp,
@@ -1083,10 +1114,13 @@ private fun ConsumablesSection(state: GameState, onUse: (String) -> Unit) {
     val owned = CONSUMABLES.filter { (state.consumables[it.id] ?: 0) > 0 }
     Spacer(Modifier.height(9.dp))
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text("CONSOMMABLES", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
+        Text(stringResource(R.string.dashboard_consumables_heading), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Parchment)
         Spacer(Modifier.weight(1f))
         Text(
-            "${state.consumables.values.sum()} objet(s) · soins et buffs",
+            stringResource(
+                R.string.dashboard_consumables_count,
+                state.consumables.values.sum()
+            ),
             fontSize = 6.sp,
             color = Muted
         )
@@ -1094,7 +1128,7 @@ private fun ConsumablesSection(state: GameState, onUse: (String) -> Unit) {
     Spacer(Modifier.height(4.dp))
     if (owned.isEmpty()) {
         Text(
-            "Aucun consommable. Les monstres et les coffres en laissent parfois.",
+            stringResource(R.string.dashboard_consumables_empty),
             modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
             textAlign = TextAlign.Center,
             fontSize = 7.sp,
@@ -1150,12 +1184,12 @@ private fun ConsumablesSection(state: GameState, onUse: (String) -> Unit) {
                     )
                     Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            rarityLabel(template.rarity),
+                            rarityLabelRes(template.rarity),
                             fontSize = 5.sp,
                             color = rarityColor(template.rarity)
                         )
                         Text(
-                            consumableContextLabel(template.context),
+                            contextLabelRes(template.context),
                             fontSize = 5.sp,
                             color = if (template.context == "combat") Ember else Green
                         )
@@ -1163,7 +1197,7 @@ private fun ConsumablesSection(state: GameState, onUse: (String) -> Unit) {
                 }
                 Spacer(Modifier.width(5.dp))
                 SmallAction(
-                    "UTILISER",
+                    stringResource(R.string.dashboard_use),
                     Modifier.width(70.dp),
                     onClick = { onUse(template.id) },
                     primary = true,
@@ -1174,7 +1208,7 @@ private fun ConsumablesSection(state: GameState, onUse: (String) -> Unit) {
         Spacer(Modifier.height(4.dp))
     }
     Text(
-        "Les objets de combat s'utilisent pendant un combat. Les soins et la ferveur servent au camp comme en exploration.",
+        stringResource(R.string.dashboard_consumables_note),
         modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
         textAlign = TextAlign.Center,
         fontSize = 5.8.sp,
@@ -1199,6 +1233,8 @@ private fun MiniChip(label: String, active: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val unidentifiedDescription = stringResource(R.string.dashboard_unidentified_item)
+    val rarityLabel = rarityLabelRes(item.rarity)
     Column(
         modifier
             .heightIn(min = 62.dp)
@@ -1212,9 +1248,9 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
             .clickable(onClick = onClick)
             .semantics {
                 contentDescription = if (item.identified) {
-                    "${item.name}, ${rarityLabel(item.rarity)}"
+                    "${item.name}, $rarityLabel"
                 } else {
-                    "Objet non identifié"
+                    unidentifiedDescription
                 }
             }
             .padding(vertical = 3.dp, horizontal = 3.dp),
@@ -1223,7 +1259,7 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
     ) {
         AssetIcon(item.icon, 27.dp)
         Text(
-            if (item.identified) item.name else "Objet mystérieux",
+            if (item.identified) item.name else stringResource(R.string.dashboard_mysterious_item),
             fontSize = 6.sp,
             color = Parchment.copy(alpha = 0.85f),
             maxLines = 2,
@@ -1233,10 +1269,10 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
         )
         Text(
             when {
-                item.locked -> "VERROU"
-                !item.identified -> "NON IDENTIFIÉ"
-                item.setName.isNotBlank() -> "${rarityLabel(item.rarity)} · ${setLabel(item.setName).split(" ").first()}"
-                else -> rarityLabel(item.rarity)
+                item.locked -> stringResource(R.string.dashboard_lock_tag)
+                !item.identified -> stringResource(R.string.dashboard_unidentified_tag)
+                item.setName.isNotBlank() -> "$rarityLabel · ${setLabelRes(item.setName).split(" ").first()}"
+                else -> rarityLabel
             },
             fontSize = 4.5.sp,
             color = when {
@@ -1259,8 +1295,8 @@ private fun UpgradesTab(
 ) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column {
-            SectionLabel("FEU DE CAMP")
-            Text("Forger la marche", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Parchment)
+            SectionLabel(stringResource(R.string.dashboard_campfire))
+            Text(stringResource(R.string.dashboard_forge_walk), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Parchment)
         }
         Spacer(Modifier.weight(1f))
         CurrencyChip("item/01.png", formatCompact(state.gold))
@@ -1281,22 +1317,33 @@ private fun UpgradesTab(
             AssetImage(boss.icon, Modifier.size(38.dp))
             Spacer(Modifier.width(8.dp))
             Column(Modifier.weight(1f)) {
-                Text("PROCHAIN GARDIEN", fontSize = 5.sp, letterSpacing = 0.8.sp, color = Blood)
+                Text(stringResource(R.string.dashboard_next_guardian), fontSize = 5.sp, letterSpacing = 0.8.sp, color = Blood)
                 Text(boss.name, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = GoldLight)
-                Text("Palier ${state.floor.toString().padStart(2, '0')} · Niv. ${state.floor + 2}", fontSize = 6.sp, color = Muted)
                 Text(
-                    "CAPACITÉ · ${bossAbilityFor(boss.name, state.floor).label}",
+                    stringResource(
+                        R.string.dashboard_guardian_floor,
+                        state.floor.toString().padStart(2, '0'),
+                        state.floor + 2
+                    ),
+                    fontSize = 6.sp,
+                    color = Muted
+                )
+                Text(
+                    stringResource(
+                        R.string.dashboard_guardian_ability,
+                        abilityLabelRes(bossAbilityFor(boss.name, state.floor).id)
+                    ),
                     fontSize = 5.5.sp,
                     color = Ember,
                     maxLines = 1
                 )
             }
-            Text("6× PV\nPHASE 2", fontSize = 5.5.sp, color = Ember, textAlign = TextAlign.End)
+            Text(stringResource(R.string.dashboard_guardian_phase), fontSize = 5.5.sp, color = Ember, textAlign = TextAlign.End)
         }
     }
     Spacer(Modifier.height(4.dp))
     Text(
-        if (ui.lastError.isNotBlank()) ui.lastError else "Les bonus de camp sont permanents. Le coût augmente à chaque niveau.",
+        if (ui.lastError.isNotBlank()) ui.lastError else stringResource(R.string.dashboard_camp_bonus_note),
         modifier = Modifier.fillMaxWidth(),
         textAlign = TextAlign.Center,
         fontSize = 6.sp,
@@ -1314,8 +1361,16 @@ private fun UpgradeCard(state: GameState, key: String, onBuy: (String) -> Unit) 
             AssetIcon(upgradeIcon(key), 28.dp)
             Spacer(Modifier.width(7.dp))
             Column(Modifier.weight(1f)) {
-                Text(upgradeName(key), fontSize = 9.5.sp, fontWeight = FontWeight.Bold, color = Parchment)
-                Text("${upgradeDesc(key)} · Niv. $level", fontSize = 6.2.sp, color = Muted)
+                Text(upgradeNameRes(key), fontSize = 9.5.sp, fontWeight = FontWeight.Bold, color = Parchment)
+                Text(
+                    stringResource(
+                        R.string.dashboard_upgrade_level,
+                        upgradeDescRes(key),
+                        level
+                    ),
+                    fontSize = 6.2.sp,
+                    color = Muted
+                )
                 Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     repeat(10) { i ->
                         Box(
@@ -1340,7 +1395,7 @@ private fun UpgradeCard(state: GameState, key: String, onBuy: (String) -> Unit) 
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    if (afford) formatCompact(cost) else "MANQUE",
+                    if (afford) formatCompact(cost) else stringResource(R.string.dashboard_missing),
                     fontFamily = Press,
                     fontSize = 6.sp,
                     color = if (afford) Ink else Muted2,
@@ -1371,15 +1426,24 @@ private fun SyncBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(
-                        "Dernière sync · ${formatTime(ui.lastSync)}",
+                        stringResource(
+                            R.string.dashboard_last_sync,
+                            formatTime(ui.lastSync)
+                        ),
                         fontSize = 6.sp,
                         color = Muted2
                     )
                     Text(
                         if (ui.lastAdded > 0) {
-                            "+${formatCompact(ui.lastAdded)} pas"
+                            stringResource(
+                                R.string.dashboard_steps_added,
+                                formatCompact(ui.lastAdded)
+                            )
                         } else {
-                            "${formatCompact(state.stepsToday)} pas aujourd'hui"
+                            stringResource(
+                                R.string.dashboard_steps_today,
+                                formatCompact(state.stepsToday)
+                            )
                         },
                         fontSize = 6.sp,
                         color = if (ui.lastAdded > 0) Gold else Muted2,
@@ -1390,7 +1454,7 @@ private fun SyncBar(
                 }
                 Spacer(Modifier.width(8.dp))
                 SmallAction(
-                    if (!ui.connected) "CONNECTER" else if (ui.syncing) "SYNC…" else "SYNC",
+                    if (!ui.connected) stringResource(R.string.dashboard_connect) else if (ui.syncing) stringResource(R.string.dashboard_syncing) else stringResource(R.string.dashboard_sync),
                     Modifier.width(88.dp),
                     onClick = if (ui.connected) onSync else onOpenSettings,
                     primary = ui.connected,
@@ -1401,12 +1465,25 @@ private fun SyncBar(
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                "Dernière sync · ${formatTime(ui.lastSync)}",
+                stringResource(
+                    R.string.dashboard_last_sync,
+                    formatTime(ui.lastSync)
+                ),
                 fontSize = 6.sp,
                 color = Muted2
             )
             Text(
-                if (ui.lastAdded > 0) "+${formatCompact(ui.lastAdded)} pas" else "${formatCompact(state.stepsToday)} pas aujourd'hui",
+                if (ui.lastAdded > 0) {
+                    stringResource(
+                        R.string.dashboard_steps_added,
+                        formatCompact(ui.lastAdded)
+                    )
+                } else {
+                    stringResource(
+                        R.string.dashboard_steps_today,
+                        formatCompact(state.stepsToday)
+                    )
+                },
                 fontSize = 6.sp,
                 color = if (ui.lastAdded > 0) Gold else Muted2,
                 maxLines = 1,
@@ -1415,23 +1492,27 @@ private fun SyncBar(
             )
         }
         Spacer(Modifier.height(4.dp))
-        val sourceLabel = if (ui.stepSource == "health") "SANTÉ CONNECT" else "GARMIN"
-        val sourceDetail = if (ui.stepSource == "health") "Santé Connect" else "Personal API"
+        val sourceLabel = if (ui.stepSource == "health") stringResource(R.string.dashboard_health_upper) else stringResource(R.string.dashboard_garmin_upper)
+        val sourceDetail = if (ui.stepSource == "health") stringResource(R.string.dashboard_health) else stringResource(R.string.dashboard_personal_api)
         when {
             !ui.connected -> GoldButton(
-                text = "CONNECTER $sourceLabel",
-                subtitle = "10 pas = 1 m · $sourceDetail",
+                text = stringResource(R.string.dashboard_connect_source, sourceLabel),
+                subtitle = stringResource(R.string.dashboard_steps_meter, sourceDetail),
                 onClick = onOpenSettings
             )
             ui.syncing -> GoldButton(
-                text = "SYNCHRONISATION…",
+                text = stringResource(R.string.dashboard_synchronizing),
                 subtitle = sourceDetail,
                 enabled = false,
                 onClick = {}
             )
             else -> GoldButton(
-                text = "SYNCHRONISER $sourceLabel",
-                subtitle = "$sourceDetail · ${formatCompact(state.stepsToday)} pas aujourd'hui",
+                text = stringResource(R.string.dashboard_sync_source, sourceLabel),
+                subtitle = stringResource(
+                    R.string.dashboard_source_today,
+                    sourceDetail,
+                    formatCompact(state.stepsToday)
+                ),
                 badge = if (ui.lastAdded > 0) "+${formatCompact(ui.lastAdded)}" else null,
                 onClick = onSync
             )
