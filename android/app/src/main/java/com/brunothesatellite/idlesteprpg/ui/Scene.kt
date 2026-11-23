@@ -1022,7 +1022,7 @@ private fun TopHud(state: GameState, onCamp: () -> Unit, modifier: Modifier = Mo
         }
         Spacer(Modifier.width(6.dp))
         Text(
-            biomeFor(state.floor),
+            localizedBiomeName(biomeFor(state.floor)),
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
             fontSize = 6.5.sp,
@@ -1463,14 +1463,14 @@ private fun EnemyUnit(
 
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         UnitPlate(
-            fight.enemyName,
+            localizedCreature(fight.enemyName),
             fight.enemyLevel,
             fight.enemyHp,
             fight.enemyMaxHp.roundToInt(),
             enemy = true,
             width = plateWidth,
             subtitle = if (fight.isBoss && fight.abilityLabel.isNotBlank()) {
-                "CAPACITÉ · ${fight.abilityLabel}"
+                "CAPACITÉ · ${abilityLabelRes(fight.ability)}"
             } else null
         )
         Spacer(Modifier.height(4.dp))
@@ -1793,7 +1793,7 @@ private fun GateView(state: GameState, animateDecor: Boolean = false, modifier: 
                 modifier = Modifier.padding(bottom = 1.dp)
             )
             Text(
-                guardian.name,
+                creatureNameRes(guardian.name),
                 fontSize = 4.4.sp,
                 color = if (active) Blood else Muted2,
                 maxLines = 1,
@@ -1879,7 +1879,11 @@ private fun BuffStrip(state: GameState, modifier: Modifier = Modifier) {
         .filter { it.expiresAt > now }
         .sortedBy { it.expiresAt }
         .take(6)
-    val description = active.joinToString(", ") { "${it.label} ${buffTime(it.expiresAt - now)}" }
+    val descriptionParts = mutableListOf<String>()
+    for (buff in active) {
+        descriptionParts += "${buffLabelRes(buff.label)} ${buffTime(buff.expiresAt - now)}"
+    }
+    val description = descriptionParts.joinToString(", ")
     Row(
         modifier.semantics { contentDescription = "Effets actifs : $description" },
         horizontalArrangement = Arrangement.spacedBy(3.dp)
@@ -1896,7 +1900,7 @@ private fun BuffStrip(state: GameState, modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "${buff.label} ${buffTime(buff.expiresAt - now)}",
+                    "${buffLabelRes(buff.label)} ${buffTime(buff.expiresAt - now)}",
                     fontSize = 4.6.sp,
                     color = color,
                     maxLines = 1,
@@ -2129,8 +2133,8 @@ private fun BossBanner(state: GameState) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                "GARDIEN · ${fight.enemyName}" +
-                    (if (fight.modifier.isNotBlank()) " · ${fight.modifier}" else "") +
+                "GARDIEN · ${localizedCreature(fight.enemyName)}" +
+                    (if (fight.modifier.isNotBlank()) " · ${modifierLabelRes(fight.modifier)}" else "") +
                     " · Niv. ${fight.enemyLevel}",
                 fontSize = 6.sp,
                 color = Blood,

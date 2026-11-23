@@ -190,7 +190,7 @@ private fun BestiaryCodex(state: GameState) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    SectionLabel(biome.name)
+                    SectionLabel(biomeLabelRes(biome.key))
                     Text(
                         "$foundMobs / ${biomeMobs.size} créatures · $foundBosses / ${biomeBosses.size} gardiens",
                         fontSize = 6.5.sp,
@@ -291,7 +291,7 @@ private fun MobEntry(
         Spacer(Modifier.width(5.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                if (known) mob.name else "???",
+                if (known) creatureNameRes(mob.name) else "???",
                 fontSize = 6.2.sp,
                 color = if (known) Parchment else Muted2,
                 maxLines = 1,
@@ -423,7 +423,7 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     Column(Modifier.weight(1f)) {
                         Text("BESTIAIRE", fontFamily = Press, fontSize = 6.5.sp, color = Muted)
                         Text(
-                            if (known) mob.name else "Créature inconnue",
+                            if (known) creatureNameRes(mob.name) else "Créature inconnue",
                             fontFamily = Press,
                             fontSize = 10.sp,
                             color = if (known) GoldLight else Muted2,
@@ -447,14 +447,14 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     contentAlignment = Alignment.Center
                 ) {
                     if (known) {
-                        AssetImage(mob.icon, Modifier.size(84.dp), contentDescription = mob.name)
+                        AssetImage(mob.icon, Modifier.size(84.dp), contentDescription = creatureNameRes(mob.name))
                     } else {
                         Text("?", fontFamily = Press, fontSize = 30.sp, color = Muted2)
                     }
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    preview.biomeName,
+                    localizedBiomeName(preview.biomeName),
                     fontFamily = Press,
                     fontSize = 7.sp,
                     color = Gold,
@@ -505,13 +505,13 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                         Column {
                             SectionLabel("RÈGLE DE BIOME", color = Ember)
                             Text(
-                                preview.rule.label,
+                                biomeRuleLabelRes(preview.rule.id),
                                 fontSize = 7.sp,
                                 color = GoldLight,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(Modifier.height(2.dp))
-                            Text(preview.rule.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
+                            Text(biomeRuleDescRes(preview.rule.id), fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
                         }
                     }
                     Spacer(Modifier.height(7.dp))
@@ -619,7 +619,7 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     Column(Modifier.weight(1f)) {
                         Text("CODEX · GARDIEN", fontFamily = Press, fontSize = 6.5.sp, color = Muted)
                         Text(
-                            if (known) boss.name else "Gardien inconnu",
+                            if (known) creatureNameRes(boss.name) else "Gardien inconnu",
                             fontFamily = Press,
                             fontSize = 10.sp,
                             color = if (known) GoldLight else Muted2,
@@ -643,14 +643,14 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     contentAlignment = Alignment.Center
                 ) {
                     if (known) {
-                        AssetImage(boss.icon, Modifier.size(92.dp), contentDescription = boss.name)
+                        AssetImage(boss.icon, Modifier.size(92.dp), contentDescription = creatureNameRes(boss.name))
                     } else {
                         Text("?", fontFamily = Press, fontSize = 30.sp, color = Muted2)
                     }
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    preview.biomeName,
+                    localizedBiomeName(preview.biomeName),
                     fontFamily = Press,
                     fontSize = 7.sp,
                     color = Blood,
@@ -729,13 +729,13 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                         Column {
                             SectionLabel("RÈGLE DE BIOME", color = Ember)
                             Text(
-                                preview.rule.label,
+                                biomeRuleLabelRes(preview.rule.id),
                                 fontSize = 7.sp,
                                 color = GoldLight,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(Modifier.height(2.dp))
-                            Text(preview.rule.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
+                            Text(biomeRuleDescRes(preview.rule.id), fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
                         }
                     }
                     Spacer(Modifier.height(7.dp))
@@ -793,7 +793,7 @@ private fun BossEntry(
         Spacer(Modifier.width(6.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                if (known) boss.name else "Gardien inconnu",
+                if (known) creatureNameRes(boss.name) else "Gardien inconnu",
                 fontSize = 6.5.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (known) GoldLight else Muted2,
@@ -801,7 +801,7 @@ private fun BossEntry(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                "CAPACITÉ · ${bossAbilityFor(boss.name, floor).label}",
+                "CAPACITÉ · ${abilityLabelRes(bossAbilityFor(boss.name, floor).id)}",
                 fontSize = 5.2.sp,
                 color = if (known) Ember else Muted2,
                 maxLines = 1
@@ -1024,9 +1024,9 @@ private fun BiomesCodex(state: GameState) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    SectionLabel(biome.name)
+                    SectionLabel(biomeLabelRes(biome.key))
                     Text(
-                        if (known) rule.label else "Palier ${biome.fromFloor} · Biome non découvert",
+                        if (known) biomeRuleLabelRes(rule.id) else "Palier ${biome.fromFloor} · Biome non découvert",
                         fontSize = 7.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (known) Green else Muted2
@@ -1040,7 +1040,7 @@ private fun BiomesCodex(state: GameState) {
                 Spacer(Modifier.height(5.dp))
                 BiomeBanner(biome.key)
                 Spacer(Modifier.height(5.dp))
-                Text(rule.description, fontSize = 6.2.sp, color = Muted, lineHeight = 9.sp)
+                Text(biomeRuleDescRes(rule.id), fontSize = 6.2.sp, color = Muted, lineHeight = 9.sp)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     "Créatures $foundMobs / ${mobs.size} · Gardiens $foundBosses / ${bosses.size} · Objets $foundItems / ${items.size}",

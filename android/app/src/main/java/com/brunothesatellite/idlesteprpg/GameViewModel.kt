@@ -20,6 +20,7 @@ import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.steps.StepFetch
 import com.brunothesatellite.idlesteprpg.steps.StepSourceType
 import com.brunothesatellite.idlesteprpg.ui.formatInt
+import com.brunothesatellite.idlesteprpg.ui.translateText
 import com.brunothesatellite.idlesteprpg.update.UpdateChecker
 import com.brunothesatellite.idlesteprpg.update.UpdateInfo
 import kotlinx.coroutines.CompletableDeferred
@@ -557,7 +558,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             container.gameRepository.mutate { outcome = GameEngine.useConsumable(it, id) }
             outcome?.let {
                 if (it.good) SoundFx.play(container.context, "consume", 1f)
-                _toasts.emit(it.text)
+                _toasts.emit(translateText(container.context.resources, it.text))
             }
         }
     }

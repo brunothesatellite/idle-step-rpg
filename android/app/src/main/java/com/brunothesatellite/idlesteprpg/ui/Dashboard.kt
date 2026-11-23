@@ -828,7 +828,7 @@ private fun JournalCard(state: GameState, onOpen: () -> Unit) {
                         )
                 )
                 Spacer(Modifier.width(5.dp))
-                Text(entry.text, fontSize = 7.5.sp, color = Parchment.copy(alpha = 0.78f), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(localizedText(entry.text), fontSize = 7.5.sp, color = Parchment.copy(alpha = 0.78f), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(entry.time, fontSize = 5.8.sp, color = Muted2)
             }
         }
@@ -1166,7 +1166,7 @@ private fun ConsumablesSection(state: GameState, onUse: (String) -> Unit) {
                 Column(Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            template.name,
+                            consumableNameRes(template.id),
                             fontSize = 8.sp,
                             fontWeight = FontWeight.Bold,
                             color = Parchment,
@@ -1177,7 +1177,7 @@ private fun ConsumablesSection(state: GameState, onUse: (String) -> Unit) {
                         Text("×$quantity", fontFamily = Press, fontSize = 6.sp, color = Gold)
                     }
                     Text(
-                        template.description,
+                        consumableDescRes(template.id),
                         fontSize = 6.2.sp,
                         color = Muted,
                         lineHeight = 9.sp
@@ -1259,7 +1259,7 @@ private fun InventoryCard(item: Item, modifier: Modifier = Modifier, onClick: ()
     ) {
         AssetIcon(item.icon, 27.dp)
         Text(
-            if (item.identified) item.name else stringResource(R.string.dashboard_mysterious_item),
+            if (item.identified) localizedItem(item) else stringResource(R.string.dashboard_mysterious_item),
             fontSize = 6.sp,
             color = Parchment.copy(alpha = 0.85f),
             maxLines = 2,
@@ -1318,7 +1318,7 @@ private fun UpgradesTab(
             Spacer(Modifier.width(8.dp))
             Column(Modifier.weight(1f)) {
                 Text(stringResource(R.string.dashboard_next_guardian), fontSize = 5.sp, letterSpacing = 0.8.sp, color = Blood)
-                Text(boss.name, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = GoldLight)
+                Text(creatureNameRes(boss.name), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = GoldLight)
                 Text(
                     stringResource(
                         R.string.dashboard_guardian_floor,

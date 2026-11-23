@@ -158,6 +158,8 @@ fun ItemDialog(
     }
     val equippedSetCount = state.equipment.count { it.setName == item.setName }
     val collectionSetCount = discoveredSetSlots(state, item.setName).size
+    val noEffectLabel = stringResource(R.string.journal_no_effect)
+    val currentEffectLabel = if (item.effect.isBlank()) noEffectLabel else effectLabelRes(item.effect)
     var forgeMode by remember(item.id) { mutableStateOf<ForgeMode?>(null) }
     var lastUpgrade by remember(item.id) { mutableStateOf<UpgradeSnapshot?>(null) }
     var lastReforgeOld by remember(item.id) { mutableStateOf<String?>(null) }
@@ -186,29 +188,29 @@ fun ItemDialog(
                     Spacer(Modifier.width(9.dp))
                     Column(Modifier.weight(1f)) {
                         Text(
-                            if (item.identified) rarityLabel(item.rarity) else "NON IDENTIFIÉ",
+                            if (item.identified) rarityLabelRes(item.rarity) else "NON IDENTIFIÉ",
                             fontSize = 5.5.sp,
                             letterSpacing = 1.sp,
                             color = if (item.identified) rarityColor(item.rarity) else Ember
                         )
                         Text(
-                            if (item.identified) item.name else "Objet mystérieux",
+                            if (item.identified) localizedItem(item) else "Objet mystérieux",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = Parchment
                         )
                         Text(
-                            "${slotLabel(item.slot)} · Niv. ${item.level}" +
+                            "${slotLabelRes(item.slot)} · Niv. ${item.level}" +
                                 if (item.locked) " · VERROUILLÉ" else "",
                             fontSize = 7.sp,
                             color = if (item.locked) Ember else Muted
                         )
                         if (item.identified && item.effect.isNotBlank()) {
-                            Text(effectLabel(item.effect), fontSize = 6.sp, color = Legendary)
+                            Text(effectLabelRes(item.effect), fontSize = 6.sp, color = Legendary)
                         }
                         if (item.identified && item.setName.isNotBlank()) {
                             Text(
-                                "${setLabel(item.setName)} · équipé $equippedSetCount/6 · collection $collectionSetCount/6",
+                                "${setLabelRes(item.setName)} · équipé $equippedSetCount/6 · collection $collectionSetCount/6",
                                 fontSize = 5.8.sp,
                                 color = Blue
                             )
@@ -241,7 +243,7 @@ fun ItemDialog(
                             onUpgrade()
                         },
                         onConfirmReforge = {
-                            lastReforgeOld = if (item.effect.isBlank()) "Aucun effet" else effectLabel(item.effect)
+                            lastReforgeOld = currentEffectLabel
                             onReroll()
                         },
                         onClose = onDismiss
@@ -315,7 +317,7 @@ fun ItemDialog(
                                 .padding(6.dp)
                         ) {
                             Text(
-                                "${setLabel(item.setName)} · équipé $equippedSetCount/6 · collection $collectionSetCount/6",
+                                "${setLabelRes(item.setName)} · équipé $equippedSetCount/6 · collection $collectionSetCount/6",
                                 fontSize = 6.sp,
                                 letterSpacing = 0.5.sp,
                                 color = Blue
@@ -338,8 +340,8 @@ fun ItemDialog(
                                 .border(1.dp, Legendary.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
                                 .padding(6.dp)
                         ) {
-                            Text(effectLabel(item.effect), fontSize = 6.sp, letterSpacing = 0.6.sp, color = Legendary)
-                            Text(effectDescription(item.effect), fontSize = 6.5.sp, color = Parchment.copy(alpha = 0.8f))
+                            Text(effectLabelRes(item.effect), fontSize = 6.sp, letterSpacing = 0.6.sp, color = Legendary)
+                            Text(effectDescRes(item.effect), fontSize = 6.5.sp, color = Parchment.copy(alpha = 0.8f))
                         }
                     }
                     Spacer(Modifier.height(9.dp))
@@ -549,7 +551,7 @@ private fun UpgradePanel(
         UpgradeTable(reference = equippedItem, current = item, next = next)
         Text(
             if (equippedItem == null) "Aucun objet équipé dans cet emplacement."
-            else "Référence : ${equippedItem.name}.",
+            else "Référence : ${localizedItem(equippedItem)}.",
             fontSize = 6.1.sp,
             color = Muted2
         )
@@ -835,7 +837,7 @@ private fun ReforgePanel(
     onBack: () -> Unit,
     onClose: () -> Unit
 ) {
-    val current = if (item.effect.isBlank()) "Aucun effet" else effectLabel(item.effect)
+    val current = if (item.effect.isBlank()) stringResource(R.string.journal_no_effect) else effectLabelRes(item.effect)
     val result = lastReforgeOld
     Text(
         "Effet : $current → ${if (result == null) "aléatoire" else current}",
@@ -887,7 +889,7 @@ private fun ReforgePanel(
                 fontWeight = FontWeight.Bold,
                 color = Green
             )
-            Text("Nom : ${item.name}", fontSize = 6.2.sp, color = Parchment.copy(alpha = 0.85f))
+            Text("Nom : ${localizedItem(item)}", fontSize = 6.2.sp, color = Parchment.copy(alpha = 0.85f))
         }
         Spacer(Modifier.height(6.dp))
         Text(
@@ -933,7 +935,7 @@ private fun ReforgePool(currentEffect: String) {
                             .padding(horizontal = 4.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            effect?.let { effectLabel(it) } ?: "Aucun",
+                            effect?.let { effectLabelRes(it) } ?: "Aucun",
                             fontSize = 5.6.sp,
                             color = if (active) GoldLight else Muted,
                             maxLines = 1
@@ -991,7 +993,7 @@ fun ChestDialog(
                 ) {
                     ChestArt(Modifier.size(78.dp))
                 Spacer(Modifier.height(4.dp))
-                Text(GameEngine.chestTypeLabel(chest.type), fontSize = 5.5.sp, letterSpacing = 1.sp, color = Gold)
+                Text(chestTypeRes(chest.type), fontSize = 5.5.sp, letterSpacing = 1.sp, color = Gold)
                 Text(
                     "Serrure de ${formatCompact(chest.quota)} pas",
                     fontSize = 16.sp,
@@ -1859,7 +1861,7 @@ fun JournalOverlay(
                                     .padding(vertical = 5.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(name, fontSize = 8.sp, color = Parchment)
+                                Text(creatureNameRes(name), fontSize = 8.sp, color = Parchment)
                                 Text("× $kills", fontFamily = Press, fontSize = 7.sp, color = Gold)
                             }
                             DividerLine()
@@ -1906,7 +1908,7 @@ private fun JournalRow(entry: JournalEntry) {
         Spacer(Modifier.width(7.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                entry.text,
+                localizedText(entry.text),
                 fontSize = 8.sp,
                 color = Parchment.copy(alpha = 0.9f),
                 lineHeight = 11.sp
@@ -2046,7 +2048,7 @@ fun OfflineOverlay(
                             Text(counts.joinToString(" · "), fontSize = 6.5.sp, color = Parchment)
                         }
                         report.lootItems.take(8).forEach { name ->
-                            Text("• $name", fontSize = 6.2.sp, color = Green, maxLines = 1)
+                            Text("• ${localizedItemName(name)}", fontSize = 6.2.sp, color = Green, maxLines = 1)
                         }
                         if (report.lootItems.size > 8) {
                             Text("… et ${report.lootItems.size - 8} autre(s)", fontSize = 6.sp, color = Muted)
@@ -2349,10 +2351,10 @@ fun SpecialDialog(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(special.title, fontFamily = Press, fontSize = 9.sp, color = GoldLight)
+                Text(specialTitleRes(special.type), fontFamily = Press, fontSize = 9.sp, color = GoldLight)
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    special.text,
+                    specialTextRes(special.type),
                     fontSize = 8.sp,
                     color = Parchment.copy(alpha = 0.85f),
                     textAlign = TextAlign.Center,
@@ -2372,8 +2374,8 @@ fun SpecialDialog(
                         AssetImage(offer.icon, Modifier.size(30.dp))
                         Spacer(Modifier.width(7.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(offer.name, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Parchment)
-                            Text(rarityLabel(offer.rarity) + " · " + statLine(offer), fontSize = 6.sp, color = Muted, maxLines = 2)
+                            Text(localizedItem(offer), fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Parchment)
+                            Text(rarityLabelRes(offer.rarity) + " · " + statLineRes(offer), fontSize = 6.sp, color = Muted, maxLines = 2)
                         }
                     }
                 }
@@ -2391,14 +2393,18 @@ fun SpecialDialog(
                 }
                 Spacer(Modifier.height(7.dp))
                 Text(
-                    "Récompense : ${special.rewardText}",
+                    "Récompense : " + if (special.type == "marchand") {
+                        special.offer?.let { localizedItem(it) } ?: ""
+                    } else {
+                        specialRewardRes(special.type)
+                    },
                     fontSize = 6.8.sp,
                     color = GoldLight,
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(10.dp))
                 OverlayAction(
-                    special.acceptLabel,
+                    specialAcceptRes(special.type),
                     Modifier.fillMaxWidth(),
                     onAccept,
                     primary = affordable,
@@ -2450,7 +2456,7 @@ fun SpecialResultDialog(outcome: SpecialOutcome, onDismiss: () -> Unit) {
                 Text("RÉSULTAT", fontFamily = Press, fontSize = 10.sp, color = GoldLight)
                 Spacer(Modifier.height(9.dp))
                 Text(
-                    outcome.text,
+                    localizedText(outcome.text),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (outcome.good) Green else Blood,
@@ -2565,7 +2571,7 @@ fun ConsumablesOverlay(
                         Column(Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    template.name,
+                                    consumableNameRes(template.id),
                                     fontSize = 8.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Parchment,
@@ -2575,9 +2581,9 @@ fun ConsumablesOverlay(
                                 Spacer(Modifier.width(4.dp))
                                 Text("×$quantity", fontFamily = Press, fontSize = 6.sp, color = Gold)
                             }
-                            Text(template.description, fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
+                            Text(consumableDescRes(template.id), fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
                             Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(rarityLabel(template.rarity), fontSize = 5.sp, color = rarityColor(template.rarity))
+                                Text(rarityLabelRes(template.rarity), fontSize = 5.sp, color = rarityColor(template.rarity))
                                 Text(
                                     consumableContextLabel(template.context),
                                     fontSize = 5.sp,

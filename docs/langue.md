@@ -6,10 +6,12 @@
 
 ## 1. Résumé exécutif
 
-- L’application est **principalement en français dans le code** : **605 littéraux accentués**
-  restants, environ **750 à 950 chaînes** visibles, plus le contenu de jeu (objets, créatures,
-  biomes, journal). Les écrans Réglages, Onboarding, Journal et le Dashboard sont déjà
-  extraits en ressources FR/EN.
+- L’application est **principalement en français dans le code** : **748 littéraux accentués**
+  restants, dont **≈ 143 clés de correspondance** français → ressource (catalogue de contenu et
+  traducteur de journal), environ **750 à 950 chaînes** visibles, plus le contenu de jeu.
+  Les écrans Réglages, Onboarding, Journal et le Dashboard sont déjà extraits en ressources
+  FR/EN, et les contenus dynamiques (objets, créatures, effets, journal) sont traduits à
+  l’affichage.
 - Le Codex compte désormais **110 créatures et 35 gardiens**, avec de nouveaux libellés
   (`NON DÉCOUVERT`, `GARDIEN`, `GARDIENS DE JALON`, `Première rencontre`, tiers de spawn).
 - Le manuel représente **≈ 7 400 mots** et **36 captures** dont l’interface est en français.
@@ -40,6 +42,13 @@
   (noms, descriptions, gardien et capacité) et bouton de synchronisation. Le séparateur décimal
   suit la langue (virgule en FR, point en EN).
 - **ManualActivity** : titre extrait.
+- **Contenus dynamiques traduits à l’affichage** : 110 créatures, 34 gardiens, 54 objets,
+  16 consommables (nom + description), 6 effets (libellé + description), 8 biomes, 12 ensembles,
+  10 titres de rang, 5 rencontres spéciales, 3 coffres, 7 modificateurs et 8 buffs. Les noms
+  restent figés en français dans les sauvegardes ; le catalogue les traduit sans migration.
+- **Journal et résultats traduits** : 45 formats de messages (combat, jalons, équipement,
+  forge, serments, consommables, rencontres). Les anciennes entrées déjà en sauvegarde sont
+  traduites à l’affichage ; le français est renvoyé tel quel.
 - Migration **v7** : `bestiary`, `bossKills`, `firstSeen` et `bossFirstSeen` utilisent des
   identifiants stables (`bat_neiges`, `cerebov`). Les anciennes clés inconnues sont conservées.
 - 117 tests, lint OK, debug migré et vérifié sur appareil.
@@ -47,14 +56,12 @@
 **Reste**
 - Réglages : chaînes dynamiques restantes (statuts de source, journal de synchronisation,
   libellés de `StepSourceType`).
-- Dashboard : plus de chaînes d’interface ; restent les contenus dynamiques (noms d’objets,
-  d’effets et de gardiens, entrées de journal) traités avec le contenu de jeu.
-- Codex, autres overlays (absence, camp, forge…), Scène.
-- Contenu de jeu : noms d’objets, de créatures, d’effets, de gardiens et entrées de journal
-  déjà figés en sauvegarde.
-- Chaînes dynamiques (dates, pluriels, volumes, statuts de synchronisation).
+- Dashboard : plus de chaînes d’interface ni de contenus dynamiques ; restent les overlays
+  (absence, fiche d’objet, camp, forge, rencontre) et la Scène, encore en français.
+- Codex, autres overlays (absence, camp, forge…), Scène : textes d’interface à extraire
+  (les noms, règles et capacités qu’ils affichent sont déjà traduits).
+- Notifications et toasts : textes système encore en français.
 - Manuel EN et captures anglaises.
-- Traduction des noms de créatures (possible maintenant que la v7 est faite).
 
 ## 2. Périmètre
 
@@ -76,7 +83,7 @@
 | Élément | Mesure |
 |---|---|
 | Fichiers de ressources | `res/values/strings.xml` + `res/values-en/strings.xml` |
-| Littéraux contenant des accents | **605** dans 32 fichiers Kotlin |
+| Littéraux contenant des accents | **748** dans 34 fichiers Kotlin, dont ≈ 143 clés de correspondance |
 | Appels `Text(` | **403** |
 | Littéraux texte | ~3 400, dont une part de clés, chemins, identifiants |
 | Chaînes réellement traduisibles | **750 à 950** (estimation) |
@@ -84,22 +91,25 @@
 | `engine/GameEngine.kt` | 94 : journal, événements, messages système |
 | `ui/Overlays.kt` / `Settings.kt` | 134 / 0 : UI (Réglages et Journal extraits) |
 | `ui/Codex.kt` / `Dashboard.kt` | 56 / 0 : Codex, cartes, fiches (Dashboard extrait) |
+| `ui/ContentCatalog.kt` / `ContentText.kt` | 105 clés : catalogue FR→ressource, traducteur de journal |
 | `GameViewModel.kt` | 40 : toasts, états |
 | Notifications / widget / pas | 7 + textes widget + statuts de synchronisation |
 | Manuel | **≈ 7 400 mots**, **36 images**, 77 Ko HTML, généré depuis un template |
-| Journal | `JournalEntry.text` = **chaîne figée en base** |
-| Objets | `Item.name` = **chaîne figée en base** |
+| Journal | `JournalEntry.text` = chaîne figée en base, traduite à l’affichage |
+| Objets | `Item.name` = chaîne figée en base, traduite à l’affichage via son nom de base |
 | Bestiaire / gardiens | **clés stables depuis la v7** (`bat_neiges`, `cerebov`) ; anciennes clés legacy conservées |
 | Locale | aucun `localeConfig`, aucun sélecteur, aucune ressource `values-*` |
 | minSdk | **34** → langue par application disponible (API 33+) |
 
 ### Conséquences directes
 
-1. **Le journal et les noms d’objets déjà en sauvegarde ne se traduiront pas** sans migration.
-   Un objet « Lame ancienne » restera français dans un inventaire anglais.
+1. **Le journal et les noms d’objets déjà en sauvegarde sont traduits à l’affichage**, sans
+   migration : le catalogue `ContentCatalog.kt` mappe les noms français vers les ressources et
+   `ContentText.kt` reconnaît les formats de messages du journal. Un nom inconnu du catalogue
+   reste affiché en français plutôt que d’être perdu.
 2. Le bestiaire et les gardiens utilisent des **identifiants stables** depuis la v7
    (`bestiary`, `bossKills`, `firstSeen`, `bossFirstSeen`). Traduire les noms affichés ne touche
-   plus les compteurs ; il reste à extraire ces noms dans un catalogue localisé.
+   plus les compteurs.
 3. Le manuel n’est plus maintenu en double : il est généré depuis `manuel/index.template.html`.
    Toute traduction doit passer par un template EN (ou un générateur bilingue), pas par une
    édition manuelle des fichiers générés.
