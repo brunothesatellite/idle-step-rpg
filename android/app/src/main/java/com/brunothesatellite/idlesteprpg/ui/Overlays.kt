@@ -1613,7 +1613,7 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
                     )
                 }
                 Spacer(Modifier.height(5.dp))
-                GarminInfoRow(stringResource(R.string.overlay_garmin_last_sync), formatTime(ui.lastSync))
+                GarminInfoRow(stringResource(R.string.overlay_garmin_last_sync), formatTimeLocalized(ui.lastSync))
                 GarminInfoRow(stringResource(R.string.overlay_garmin_key_visible), formatDate(expiry))
                 GarminInfoRow(stringResource(R.string.overlay_garmin_oauth), formatTokenTime(ui.tokenExpiry))
                 if (ui.keyExpiry != null) {

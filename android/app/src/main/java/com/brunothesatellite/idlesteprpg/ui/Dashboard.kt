@@ -1431,7 +1431,7 @@ private fun SyncBar(
                     Text(
                         stringResource(
                             R.string.dashboard_last_sync,
-                            formatTime(ui.lastSync)
+                            formatTimeLocalized(ui.lastSync)
                         ),
                         fontSize = 6.sp,
                         color = Muted2

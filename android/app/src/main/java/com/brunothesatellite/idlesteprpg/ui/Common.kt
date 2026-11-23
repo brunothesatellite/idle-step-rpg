@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.brunothesatellite.idlesteprpg.R
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -65,6 +67,12 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 private val fr = Locale.FRANCE
+
+/** Locale de l'application, mise à jour au démarrage et au changement de langue. */
+object AppLocale {
+    @Volatile
+    var current: Locale = Locale.FRANCE
+}
 
 fun formatInt(value: Int): String = NumberFormat.getIntegerInstance(fr).format(value)
 
@@ -124,7 +132,9 @@ private fun compactNumber(value: Long, unitSpace: String): String {
 }
 
 private fun oneDecimal(value: Double): String =
-    String.format(Locale.FRANCE, "%.1f", value).removeSuffix(",0")
+    String.format(AppLocale.current, "%.1f", value)
+        .removeSuffix(",0")
+        .removeSuffix(".0")
 
 fun formatDate(date: LocalDate): String =
     date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", fr))
@@ -135,6 +145,10 @@ fun formatTime(epochMillis: Long): String {
         .atZone(ZoneId.systemDefault())
         .format(DateTimeFormatter.ofPattern("HH:mm", fr))
 }
+
+@Composable
+fun formatTimeLocalized(epochMillis: Long): String =
+    if (epochMillis <= 0) stringResource(R.string.common_never) else formatTime(epochMillis)
 
 fun formatTokenTime(instant: Instant?): String {
     if (instant == null) return "—"

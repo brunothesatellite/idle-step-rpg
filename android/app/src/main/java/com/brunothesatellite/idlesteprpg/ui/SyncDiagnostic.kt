@@ -145,7 +145,7 @@ fun SyncDiagnosticDialog(
                 DiagnosticLine(stringResource(R.string.diag_first_connection), startLabel)
                 DiagnosticLine(
                     stringResource(R.string.diag_last_sync),
-                    formatTime(ui.lastSync) +
+                    formatTimeLocalized(ui.lastSync) +
                         if (ui.lastAdded > 0) {
                             stringResource(R.string.diag_last_sync_added, formatCompact(ui.lastAdded))
                         } else ""

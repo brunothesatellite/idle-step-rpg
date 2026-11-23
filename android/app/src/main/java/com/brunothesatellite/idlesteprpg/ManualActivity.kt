@@ -71,7 +71,13 @@ class ManualActivity : ComponentActivity() {
             isVerticalScrollBarEnabled = true
             isNestedScrollingEnabled = false
             webViewClient = WebViewClient()
-            loadUrl("file:///android_asset/manuel/index.html")
+            val language = resources.configuration.locales[0].language
+            val manualPath = if (language == "en") {
+                "file:///android_asset/manuel/en/index.html"
+            } else {
+                "file:///android_asset/manuel/index.html"
+            }
+            loadUrl(manualPath)
         }
         webView = web
 

@@ -358,6 +358,9 @@ private val RULES: List<Rule> = listOf(
     Rule(Regex("""^Équipement optimisé · (\d+) pièce\(s\)$""")) { r, m ->
         r.getString(R.string.journal_equip_optimized, m.groupValues[1].toInt())
     },
+    Rule(Regex("""^(.+) équipé$""")) { r, m ->
+        r.getString(R.string.journal_equipped, itemNameFrom(r, m.groupValues[1]))
+    },
     Rule(Regex("""^(.+) vendu \(\+(\d+) or\)$""")) { r, m ->
         r.getString(
             R.string.journal_sold,

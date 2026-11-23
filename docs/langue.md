@@ -13,17 +13,17 @@
   En anglais, **« Santé Connect » devient « Health Connect »**.
 - Le Codex compte désormais **110 créatures et 35 gardiens**, avec de nouveaux libellés
   (`NON DÉCOUVERT`, `GARDIEN`, `GARDIENS DE JALON`, `Première rencontre`, tiers de spawn).
-- Le manuel représente **≈ 7 400 mots** et **36 captures** dont l’interface est en français.
-  Il est maintenant **généré depuis `manuel/index.template.html`** (compteurs et version injectés
-  au build), et non plus maintenu en double à la main.
+- Le manuel est **bilingue** : **≈ 7 400 mots par langue** et **36 captures par langue**.
+  Il est **généré depuis `manuel/index.template.html` et `manuel/index.en.template.html`**
+  (compteurs et version injectés au build), avec un sélecteur de langue dans l’en-tête.
 - Objectif réaliste : **FR + EN**, avec une architecture prête pour d’autres langues.
 - Effort estimé de mon côté : **62 à 89 h** pour l’ensemble (app + manuel + captures),
   dont **38 à 53 h** pour un build anglais utilisable sans le manuel.
 - Le levier de non-régression : **garder `values/` en français comme défaut**, ajouter
   `values-en/`, et verrouiller le français par des captures dorées et des tests de ressources.
 - Le risque principal n’est pas la traduction mais **les débordements de texte** dans une UI
-  pixel art à tailles fixes, **les clés de bestiaire figées en français**, et **les 36 captures**
-  du manuel à refaire.
+  pixel art à tailles fixes, **les clés de bestiaire figées en français**, et la maintenance
+  des captures du manuel dans les deux langues.
 
 ### État de la branche `evol-langue`
 
@@ -62,6 +62,8 @@
   erreurs Garmin, écran Diagnostic complet.
 - **Widget extrait** : titre, pas, palier/niveau/or et invite, formatés selon la langue.
 - **Justification Health Connect extraite** : titre, lecture des pas, corps et bouton.
+- **Manuel EN livré** : template anglais, 36 captures anglaises, génération au build,
+  sélecteur de langue dans les pages FR/EN et ouverture du bon fichier dans `ManualActivity`.
 - **Journal et résultats traduits** : 45 formats de messages (combat, jalons, équipement,
   forge, serments, consommables, rencontres). Les anciennes entrées déjà en sauvegarde sont
   traduites à l’affichage ; le français est renvoyé tel quel.
@@ -70,8 +72,8 @@
 - 117 tests, lint OK, debug migré et vérifié sur appareil.
 
 **Reste**
-- Manuel EN et captures anglaises.
 - Validation visuelle du widget sur un écran d’accueil (chaînes compilées et résolues).
+- Mise à jour des captures du manuel à chaque évolution visuelle majeure.
 
 ## 2. Périmètre
 
@@ -104,7 +106,7 @@
 | `ui/Scene.kt` / `GameViewModel.kt` | 4 / 1 : HUD et toasts extraits (restent des correspondances de noms d’objets) |
 | `ui/ContentCatalog.kt` / `ContentText.kt` | 105 clés : catalogue FR→ressource, traducteur de journal |
 | Notifications / widget / pas | canaux, alertes, actions, widget et statuts de source extraits |
-| Manuel | **≈ 7 400 mots**, **36 images**, 77 Ko HTML, généré depuis un template |
+| Manuel | **≈ 7 400 mots par langue**, **36 images par langue**, deux templates générés |
 | Journal | `JournalEntry.text` = chaîne figée en base, traduite à l’affichage |
 | Objets | `Item.name` = chaîne figée en base, traduite à l’affichage via son nom de base |
 | Bestiaire / gardiens | **clés stables depuis la v7** (`bat_neiges`, `cerebov`) ; anciennes clés legacy conservées |
@@ -123,7 +125,8 @@
 3. Le manuel n’est plus maintenu en double : il est généré depuis `manuel/index.template.html`.
    Toute traduction doit passer par un template EN (ou un générateur bilingue), pas par une
    édition manuelle des fichiers générés.
-4. Les captures du manuel montrent l’UI française : elles ne sont pas traduisibles.
+4. Les captures du manuel sont refaites en anglais ; elles restent à maintenir lors des
+   évolutions visuelles.
 5. La sauvegarde est en **v7** : la migration des anciens noms vers les identifiants est faite
    et testée. Les clés inconnues sont conservées pour éviter toute perte de données.
 
@@ -197,18 +200,20 @@ l’éviter, il faudrait stocker une clé de base par objet (sauvegarde v8 + mig
 
 ### 5.4 Manuel
 
-- Aujourd’hui : `manuel/index.template.html` → `manuel/index.html` et
-  `android/app/src/main/assets/manuel/index.html`, via la tâche Gradle `generateManual`
-  (compteurs du Codex et version de l’application injectés depuis `Model.kt` / Gradle).
-- Pour l’anglais : `manuel/index.en.template.html` → `manuel/index.en.html` et
-  `assets/manuel/en/index.html`, avec les mêmes jetons mais des libellés EN
-  (`110 creatures`, `35 guardians`, `11 sets`) et la version injectée.
-- `ManualActivity` choisit le chemin selon la locale de l’app, avec repli FR.
-- Web : `manuel/` reste FR, `manuel/en/` est ajouté, avec un sélecteur de langue en haut.
-- Les ancres (`#absence`, `#reglages`) doivent rester identiques entre langues.
+- **FR** : `manuel/index.template.html` → `manuel/index.html` et
+  `android/app/src/main/assets/manuel/index.html`.
+- **EN** : `manuel/index.en.template.html` → `manuel/en/index.html` et
+  `android/app/src/main/assets/manuel/en/index.html`.
+- La tâche Gradle `generateManual` injecte les compteurs du Codex et la version depuis
+  `Model.kt` / Gradle, puis copie `manuel/en/images/` dans `assets/manuel/en/images/`.
+- `ManualActivity` charge `manuel/en/index.html` quand la langue de l’app est l’anglais,
+  sinon `manuel/index.html` (repli FR).
+- Web : `manuel/` et `manuel/en/`, avec un sélecteur de langue dans l’en-tête des deux pages.
+- Les ancres (`#absence`, `#reglages`) sont identiques entre langues.
 - **Ne jamais éditer les fichiers générés** : modifier le template, puis relancer
-  `generateManual`. Un template bilingue unique est une alternative, mais il faudra alors
-  injecter les libellés localisés et non plus seulement les nombres.
+  `generateManual`.
+- L’écran de clé Garmin est protégé par `FLAG_SECURE` : la capture anglaise de cette section
+  montre la carte **Réglages → Source de pas** plutôt que l’écran protégé.
 
 ### 5.5 Sélecteur de langue
 

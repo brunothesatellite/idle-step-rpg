@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="../favicon-48.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#150F1E">
+<title>Manual — The March of Souls</title>
+<style>
+  :root {
+    --ink: #0b0810;
+    --panel: #171121;
+    --panel2: #21182d;
+    --panel3: #2a1f3a;
+    --line: #33263f;
+    --line2: #443153;
+    --gold: #e8c27a;
+    --gold-light: #f6dda6;
+    --parchment: #f0e2c4;
+    --muted: #9587a8;
+    --muted2: #6e617f;
+    --ember: #ff9448;
+    --blood: #d15458;
+    --green: #8ed39b;
+    --blue: #6fa8ff;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #0b0810 0%, #151022 55%, #0b0810 100%);
+    color: var(--parchment);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--gold-light); }
+  a:hover { color: #fff; }
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 18px 70px;
+  }
+  header.hero {
+    text-align: center;
+    padding: 26px 16px 18px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 22px;
+  }
+  header.hero h1 {
+    margin: 0;
+    color: var(--gold-light);
+    font-size: clamp(24px, 5vw, 40px);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 0 #000;
+  }
+  header.hero p { margin: 8px auto 0; color: var(--muted); max-width: 760px; }
+  .badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 4px 10px;
+    border: 1px solid var(--line2);
+    border-radius: 999px;
+    color: var(--gold);
+    background: var(--panel);
+    font-size: 12px;
+  }
+  nav.toc {
+    background: rgba(23, 17, 33, 0.92);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 26px;
+  }
+  nav.toc h2 { margin: 0 0 10px; color: var(--gold); font-size: 14px; letter-spacing: 1px; }
+  nav.toc ol {
+    columns: 2;
+    column-gap: 30px;
+    margin: 0;
+    padding-left: 22px;
+  }
+  nav.toc li { break-inside: avoid; margin: 3px 0; }
+  nav.toc a { text-decoration: none; color: var(--parchment); }
+  nav.toc .tocHistoire { margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  nav.toc .tocHistoire a { color: var(--gold); font-weight: 600; }
+  section {
+    background: rgba(23, 17, 33, 0.78);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 18px 0;
+  }
+  section > h2 {
+    margin: 0 0 6px;
+    color: var(--gold-light);
+    font-size: 22px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+  h3 { color: var(--gold); margin: 18px 0 6px; font-size: 16px; }
+  h4 { color: var(--parchment); margin: 14px 0 4px; font-size: 14px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code, kbd {
+    background: var(--panel3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.92em;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--gold-light); font-size: 13px; }
+  tr:nth-child(even) td { background: rgba(42, 31, 58, 0.35); }
+  .note, .warn, .ok {
+    border-left: 4px solid var(--gold);
+    background: rgba(42, 31, 58, 0.55);
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: 4px;
+  }
+  .warn { border-left-color: var(--blood); background: rgba(51, 22, 27, 0.5); }
+  .ok { border-left-color: var(--green); background: rgba(22, 45, 30, 0.45); }
+  .note strong, .warn strong, .ok strong { color: var(--gold-light); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 14px 0;
+  }
+  figure.shot {
+    margin: 0;
+    background: var(--panel2);
+    border: 1px solid var(--line2);
+    border-radius: 9px;
+    padding: 8px;
+  }
+  figure.shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  figure.shot figcaption {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .kpi {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .kpi div {
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 8px 10px;
+  }
+  .kpi b { display: block; color: var(--gold-light); font-size: 18px; }
+  .kpi span { color: var(--muted); font-size: 12px; }
+  details {
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 9px 12px;
+    margin: 8px 0;
+  }
+  summary { cursor: pointer; color: var(--gold-light); }
+  .top { text-align: right; font-size: 12px; margin-top: 6px; }
+  footer {
+    color: var(--muted2);
+    text-align: center;
+    font-size: 12px;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    margin-top: 28px;
+  }
+  @media (max-width: 640px) {
+    nav.toc ol { columns: 1; }
+    section { padding: 15px 14px; }
+    .wrap { padding: 14px 10px 50px; }
+  }
+  @media print {
+    body { background: #fff; color: #111; }
+    section, nav.toc, figure.shot { background: #fff; border-color: #bbb; }
+    header.hero h1, section > h2, h3 { color: #333; }
+    nav.toc { break-after: page; }
+    figure.shot { break-inside: avoid; }
+  }
+  p.lang { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+  p.lang a { text-decoration: none; }
+  p.lang strong { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>THE MARCH OF SOULS</h1>
+  <p>Complete user manual — a walking RPG where your steps become your progress.</p>
+  <p class="lang"><a href="../index.html">Français</a> · <strong>English</strong></p>
+  <span class="badge">Version 0.18.1 · Android 14+ · Garmin or Health Connect</span>
+</header>
+
+<nav class="toc">
+  <h2>CONTENTS</h2>
+  <p class="tocHistoire"><a href="#histoire">Story — the origin of the march</a></p>
+  <ol>
+    <li><a href="#decouvrir">Discovering the game</a></li>
+    <li><a href="#installer">Installing and choosing your step source</a></li>
+    <li><a href="#boucle">The daily loop</a></li>
+    <li><a href="#interface">Interface and HUD</a></li>
+    <li><a href="#combat">Automatic combat</a></li>
+    <li><a href="#ferveur">Fervour</a></li>
+    <li><a href="#ressources">Resources</a></li>
+    <li><a href="#serments">Daily oaths</a></li>
+    <li><a href="#coffres">Chests</a></li>
+    <li><a href="#camp">Camp</a></li>
+    <li><a href="#inventaire">Inventory and equipment</a></li>
+    <li><a href="#consommables">Consumables</a></li>
+    <li><a href="#rencontres">Special encounters</a></li>
+    <li><a href="#progression">Progression and content</a></li>
+    <li><a href="#journal">Journal, legend, bestiary</a></li>
+    <li><a href="#reglages">Settings</a></li>
+    <li><a href="#mises-a-jour">Updates</a></li>
+    <li><a href="#garmin">Garmin sync</a></li>
+    <li><a href="#absence">Absence summary</a></li>
+    <li><a href="#faq">Frequently asked questions</a></li>
+    <li><a href="#donnees">Data and privacy</a></li>
+    <li><a href="#credits">Licences and credits</a></li>
+  </ol>
+</nav>
+
+<section id="histoire">
+  <h2>Story</h2>
+  <p><em>Souls do not die. They wait.</em></p>
+  <p>They say that at the gates of Vael, the earth opened one morning without trembling. No chasm, no fire: a low stone door covered in runes, and behind it a staircase descending further than the light.</p>
+  <p>The first to enter never came back. Not dead — held. Their names stayed hooked to the walls, and since then every hall of the dungeon breathes with the breath of someone who has not quite finished leaving.</p>
+  <p>Kaelen was a pilgrim. He carried a satchel, an inherited blade, and an ember in an iron pot. People called him slow. That is why the march was entrusted to him: souls have no need of hurried heroes.</p>
+  <p>He understood one simple thing: dungeons are not tombs, they are knots. Each floor is a thread pulled tight around a soul. The guardian who seals it is not an executioner — it is the last keeper of a pain, the one who refuses to let it go. So Kaelen walks. Ten steps to a metre, a hundred metres to a floor. Each step is a word in a prayer he never says aloud.</p>
+  <p>In the Crypts of Vael, the stone is cold and the candles burn without wax. In the Catacombs, the air smells of moss and old oaths. In the Ash Caverns, he learns to breathe short. In the Drowned Forge, he lays his hand on the anvils and still feels the heat of those who forged for the living. On the Peaks of the Oath, the wind steals his words. In the Wood of Souls, the trees have golden leaves and roots that remember. In the Organic Abyss, the stone bleeds and he does not stop. At the Throne of Souls there is no corridor left: only a door, a guardian, and behind it the First Soul, the one who refused to leave first.</p>
+  <p>The ember never goes out. As long as he walks, it watches; when he stops, he sets it at the centre of the camp, and the souls passing by warm themselves without daring to come closer.</p>
+  <p>Kaelen is not looking for an ending. He knows there is none. He is looking for the next soul willing to breathe.</p>
+  <p><em>“Defeat is only a detour. Twenty metres back, the gold still flows.”</em></p>
+</section>
+
+<section id="decouvrir">
+  <h2>1. Discovering the game</h2>
+  <p><strong>The March of Souls</strong> is an idle pixel-art RPG. You do not steer the walk or the fights: you walk in real life, and your steps are converted into distance in an endless dungeon.</p>
+  <div class="kpi">
+    <div><b>10 steps</b><span>= 1 metre</span></div>
+    <div><b>100 m</b><span>= 1 floor + guardian</span></div>
+    <div><b>24 h</b><span>lifetime of a chest</span></div>
+    <div><b>00:00</b><span>daily local reset</span></div>
+  </div>
+  <ul>
+    <li><strong>Two step sources to choose from</strong>: Garmin (Personal API) or Health Connect — only one active at a time.</li>
+    <li><strong>2FA in the browser</strong>: the app never sees your Garmin password or code.</li>
+    <li><strong>No publisher server</strong>: progress and the key stay on the phone.</li>
+    <li><strong>16 ambient 8-bit tracks</strong>: two variants per biome, long loop and random start.</li>
+    <li><strong>You decide</strong>: force a chest, change equipment, drink a potion, pick an encounter.</li>
+  </ul>
+  <div class="note"><strong>The heart of the game:</strong> your steps fill a reserve. The hero spends it automatically to walk, meet monsters, open chests and face guardians.</div>
+</section>
+
+<section id="installer">
+  <h2>2. Installing and choosing your step source</h2>
+  <h3>Installing the APK</h3>
+  <ol>
+    <li>Download the latest APK from GitHub Releases.</li>
+    <li>Allow unknown-app installs for your browser or file manager.</li>
+    <li>Open the APK and install it. Later updates keep your data.</li>
+  </ol>
+  <h3>Choosing the step source</h3>
+  <p>The game can read your steps in two ways, <strong>one at a time</strong>:</p>
+  <ul>
+    <li><strong>Garmin</strong> — Garmin personal key (Personal API).</li>
+    <li><strong>Health Connect</strong> — steps recorded by Google Fit, Samsung Health or a watch. No key is needed, but you must allow step reading.</li>
+  </ul>
+  <p>The choice is made on first launch, then in <strong>Settings → Step source</strong>. Changing source does not credit steps already counted today again: the first import of the new source becomes the baseline, and later steps count normally.</p>
+  <div class="warn"><strong>Health Connect</strong> is a hub: without a provider app (Google Fit, Samsung Health, a watch), it returns zero steps.</div>
+  <figure class="shot">
+    <img src="images/source_pas.jpg" alt="Settings, Step source section: Health Connect selected and active, Garmin offered above">
+    <figcaption>Settings → Step source: one card per source, the active one highlighted, with its state and actions. Here Health Connect is active.</figcaption>
+  </figure>
+  <figure class="shot">
+    <img src="images/source_sante_connect.jpg" alt="Settings, Step source section with Health Connect selected and authorised">
+    <figcaption>Health Connect selected: step reading is authorised and sync happens locally, without a key.</figcaption>
+  </figure>
+  <h3>Creating the Garmin key</h3>
+  <ol>
+    <li>In the game, open <strong>Settings</strong> (⚙) then the <strong>Garmin account</strong> section.</li>
+    <li>Tap <strong>Open Garmin Connect</strong>: sign-in and 2FA happen in the browser.</li>
+    <li>In Garmin Connect, create a <strong>Personal API Key</strong> and copy it.</li>
+    <li>Paste the key into the app.</li>
+    <li>Enter the <strong>expiry date</strong>: Garmin does not expose it via the API.</li>
+    <li>Tap <strong>Test and save</strong>, then <strong>Sync</strong>.</li>
+  </ol>
+  <div class="warn"><strong>Security:</strong> never share your key. If it has been exposed, revoke it in Garmin Connect and create a new one. The key and token are encrypted in Android Keystore.</div>
+  <h3>What sync does</h3>
+  <ul>
+    <li>The very first sync only credits <strong>today's</strong> steps: you do not start with a reserve inherited from last week.</li>
+    <li>After that, it reads the <strong>last 7 days</strong>, never going back before the <strong>first connection date</strong>.</li>
+    <li>Each day is counted only once: no double counting.</li>
+    <li>Catch-up is capped at <strong>100,000 steps</strong> per sync (a marathon is about 45,000 steps).</li>
+    <li>Recovered steps can be simulated offline: fights, gold, floors.</li>
+    <li>Garmin sync runs every 60 minutes, at launch and manually. Health Connect is read at launch and manually: Android forbids background reading without a dedicated permission, so the game does not attempt it.</li>
+    <li>The <strong>sync diagnostic</strong> (Settings) shows the active source, the 7 days with their state (credited, today, before connection, no steps) and the safeguards applied.</li>
+  </ul>
+  <div class="note"><strong>Forgot to sync:</strong> after 3 days without opening the game, the next sync recovers the 3 missing days (within the 7-day window and the cap). Beyond that, days that are too old are ignored.</div>
+</section>
+
+<section id="boucle">
+  <h2>3. The daily loop</h2>
+  <h3>From steps to distance</h3>
+  <p>Each synced step increases the walking reserve. The hero spends that reserve continuously: about 30 steps/second, or 60 steps/second when the reserve is large. A step is never spent twice.</p>
+  <ul>
+    <li><strong>Daily cap:</strong> 60,000 steps.</li>
+    <li><strong>Suspicious rate:</strong> above 250 steps/minute on average since the last sync, excess steps are ignored and reported in the journal.</li>
+    <li><strong>Reserve at zero:</strong> the hero stops. He sets off again as soon as a sync brings new steps.</li>
+    <li><strong>Encounters:</strong> every 10 m. <strong>Guardian:</strong> at 100 m.</li>
+  </ul>
+  <h3>Reset at 00:00</h3>
+  <p>At local midnight: the daily counter, fervour, ration/shard quotas and oaths reset. Distance already travelled, gold, equipment and floors are kept.</p>
+  <div class="ok"><strong>Tip:</strong> sync after a walk rather than every five minutes. The reserve then drains automatically in the background.</div>
+  <div class="note"><strong>Absence:</strong> if you close the app with a reserve, it keeps draining on your behalf, within <strong>30% of the day's steps</strong> (adjustable in <a href="#reglages">Advanced settings</a>) and 4 simulated minutes. The simulation stops on a special encounter, a new chest or a camp visit. In front of the guardian it only stops if less than one floor of budget remains; with one floor or more, the fight is simulated and the guardian can be defeated. See <a href="#absence">Absence summary</a>.</div>
+</section>
+
+<section id="interface">
+  <h2>4. Interface and HUD</h2>
+  <figure class="shot">
+    <img src="images/home.jpg" alt="Main screen with the scene, the hero, the sync button, fervour, steps and the Stats dashboard">
+    <figcaption>Main screen: scene at the top, sync button top-left, dashboard below.</figcaption>
+  </figure>
+  <h3>Reading the screen at a glance</h3>
+  <figure class="shot">
+    <img src="images/stats_legend.jpg" alt="Annotated main screen: each area numbered from 1 to 16">
+    <figcaption>The sixteen areas of the main screen, with the Stats tab open.</figcaption>
+  </figure>
+  <ol>
+    <li><strong>Floor</strong> — current level. One floor is 100 m; 8 biomes of 10 floors.</li>
+    <li><strong>Biome</strong> — name of the biome you are crossing, with its active rule below.</li>
+    <li><strong>Gold</strong> — game currency (forge, camp, merchant).</li>
+    <li><strong>Distance</strong> — progress within the floor (0 to 100 m). The guardian waits at 100 m.</li>
+    <li><strong>BAG</strong> — stored consumables; tap to open them.</li>
+    <li><strong>Scene</strong> — the biome corridor: arches, torches, floor props, hero on the left, enemy or waiting silhouette on the right.</li>
+    <li><strong>Fervour</strong> — 0 to 100, gained with steps, decaying after 2 h without steps; it speeds up SPD and regeneration.</li>
+    <li><strong>Steps today</strong> — synced total (Garmin or Health Connect), from midnight to midnight.</li>
+    <li><strong>Character</strong> — level, floor title, experience bar and value.</li>
+    <li><strong>Currencies and settings</strong> — gold, rations, shards, and access to settings (⚙). The “!” alert appears if no source is configured, if the Garmin key is expiring or if Health Connect permission is missing.</li>
+    <li><strong>Power</strong> — overall indicator of the hero's strength (equipment, level, upgrades).</li>
+    <li><strong>Rank</strong> — rank tier reached (I, II, III…), computed from depth.</li>
+    <li><strong>Stats</strong> — ATK (damage per attack), maximum HP, SPD (attack speed).</li>
+    <li><strong>Resources</strong> — rations (cap 24), soul shards (cap 12), gold and consumables.</li>
+    <li><strong>Biome and farm</strong> — biome rule and <strong>FARM</strong> button to lock the current floor.</li>
+    <li><strong>Codex</strong> — bestiary, sets and discovered biomes, with direct access.</li>
+    <li><strong>Step reserve</strong> — available steps the hero spends (walking, fights, chests). The bar is full at 4,000 steps.</li>
+  </ol>
+  <h3>Top bar</h3>
+  <ul>
+    <li><strong>Floor</strong> and biome name.</li>
+    <li><strong>Gold</strong> and <strong>campfire</strong> button.</li>
+    <li><strong>Floor gauge</strong>: 0 to 100 m, with the guardian door in the last 15 metres.</li>
+    <li><strong>BAG</strong>: consumables, healing and buffs.</li>
+    <li><strong>CHEST</strong>: number of waiting chests and remaining time. A chest never blocks the walk.</li>
+    <li><strong>Sync button</strong>: small square top-left, aligned with the BAG. ↻ icon and status dot (green = recent, amber = old, red = error). Tap to sync; if the source is not ready (Garmin key missing, Health Connect permission denied), it opens <strong>Settings → Step source</strong>.</li>
+  </ul>
+  <h3>Walking pause</h3>
+  <figure class="shot">
+    <img src="images/pause.jpg" alt="Pause button under sync, PAUSE badge and frozen fight">
+    <figcaption>The pause button under sync, with the PAUSE badge and the frozen fight.</figcaption>
+  </figure>
+  <p>The square button under sync freezes the walk, fights, chest opening and animations. A second tap resumes at exactly the same point.</p>
+  <ul>
+    <li>Pause is kept if you switch to the background; closing the app completely ends it.</li>
+    <li>Fervour, timed buffs, chests and the midnight reset keep following the real clock.</li>
+    <li>The <strong>PAUSE</strong> badge stays visible as long as the walk is frozen.</li>
+  </ul>
+  <h3>Scene</h3>
+  <ul>
+    <li>The hero on the left, the monster on the right.</li>
+    <li>Health bars, names, levels, floating damage, crits and heals.</li>
+    <li>Fervour aura behind the hero, biome particles, guardian door.</li>
+  </ul>
+  <h3>Dashboard</h3>
+  <ul>
+    <li><strong>Stats</strong>: power, ATK, HP, SPD, resources, fervour, oaths, feats, journal.</li>
+    <li><strong>Inventory</strong>: equipment, loot, consumables, camp stash.</li>
+    <li><strong>Upgrades</strong>: three permanent upgrades and the next guardian.</li>
+    <li><strong>Sync bar</strong>: replaced by the square button top-left of the scene. Details remain in <strong>Settings → Step source</strong>.</li>
+  </ul>
+</section>
+
+<section id="combat">
+  <h2>5. Automatic combat</h2>
+  <p>Combat is automatic. The hero attacks according to SPD, the enemy according to its interval. Damage depends on ATK, fervour, crit and equipment effects.</p>
+  <table>
+    <tr><th>Stat</th><th>Effect</th></tr>
+    <tr><td>ATK</td><td>Damage dealt.</td></tr>
+    <tr><td>HP</td><td>Maximum health points.</td></tr>
+    <tr><td>SPD</td><td>Attack speed and out-of-combat regeneration.</td></tr>
+    <tr><td>Crit</td><td>Critical hit chance (boosted damage).</td></tr>
+    <tr><td>Regeneration</td><td>HP restored per second.</td></tr>
+  </table>
+  <h3>Guardians</h3>
+  <ul>
+    <li>About <strong>6× the HP</strong> of a monster of the same level.</li>
+    <li><strong>Phase 2</strong> below 50% HP: faster attacks, blazing aura.</li>
+    <li><strong>Blessing +25%</strong> after a defeat against a guardian: helps on the next attempt.</li>
+    <li>Possible modifiers: <strong>Fast</strong>, <strong>Armored</strong>, <strong>Berserk</strong>, <strong>Regenerating</strong>, <strong>Thief</strong>.</li>
+  </ul>
+  <h3>Guardian abilities</h3>
+  <figure class="shot">
+    <img src="images/combat_boss.jpg" alt="Fight against the Lernaean Hydra with the Regeneration ability displayed">
+    <figcaption>The guardian's ability is shown under its name, then a red banner appears when it triggers.</figcaption>
+  </figure>
+  <table>
+    <tr><th>Ability</th><th>Guardians</th><th>Effect</th></tr>
+    <tr><td>Soul drain</td><td>Lich, Crypt King</td><td>Drains the hero's HP and heals the guardian.</td></tr>
+    <tr><td>Regeneration</td><td>Hydra</td><td>Restores about 7% of the guardian's max HP.</td></tr>
+    <tr><td>Heavy blow</td><td>Balrug, demons, executioners</td><td>Very powerful attack.</td></tr>
+    <tr><td>Armor</td><td>Golems, Forge guardians</td><td>Strongly reduces damage taken for 4.5 s.</td></tr>
+    <tr><td>Breath</td><td>Dragons</td><td>High damage and temporary vulnerability.</td></tr>
+    <tr><td>Roots</td><td>Treant, dryads</td><td>Slows the hero's SPD.</td></tr>
+    <tr><td>Acid</td><td>Oozes, zymes, horrors</td><td>Damage and temporary vulnerability.</td></tr>
+    <tr><td>Pressure</td><td>Throne lords</td><td>Damage and fervour loss.</td></tr>
+  </table>
+  <h3>Defeat and retreat</h3>
+  <ul>
+    <li>The hero steps back <strong>20 m</strong> and resumes at 60% HP.</li>
+    <li>Farm zone: three weakened fights, then the walk resumes.</li>
+    <li>Defeat destroys neither gold nor equipment.</li>
+  </ul>
+</section>
+
+<section id="ferveur">
+  <h2>6. Fervour</h2>
+  <p>Fervour is daily momentum. It rises with new steps and burns away with time.</p>
+  <table>
+    <tr><th>Tier</th><th>Threshold</th><th>Bonus</th></tr>
+    <tr><td>Kindling</td><td>0–24</td><td>No notable bonus</td></tr>
+    <tr><td>Ember</td><td>25–49</td><td>+10% SPD, +20% regeneration, +0.5% crit.</td></tr>
+    <tr><td>Furnace</td><td>50–74</td><td>+20% SPD, +40% regeneration, +1% crit.</td></tr>
+    <tr><td>Tempest</td><td>75–99</td><td>+30% SPD, +60% regeneration, +1.5% crit.</td></tr>
+    <tr><td>Burning soul</td><td>100</td><td>+40% SPD, +80% regeneration, +2% crit.</td></tr>
+  </table>
+  <ul>
+    <li>After <strong>2 hours without new steps</strong>, fervour decays by about 1 point every 3 minutes.</li>
+    <li>Decay is caught up even if the app was closed.</li>
+    <li>Mushrooms, herbs and potions can restore it.</li>
+    <li>An ember aura surrounds the hero depending on its tier.</li>
+  </ul>
+</section>
+
+<section id="ressources">
+  <h2>7. Resources</h2>
+  <div class="kpi">
+    <div><b>Gold</b><span>monsters, guardians, chests, sales</span></div>
+    <div><b>Rations</b><span>1 per 200 steps, max 24/day</span></div>
+    <div><b>Shards</b><span>1 per 500 steps, max 12/day</span></div>
+    <div><b>Consumables</b><span>loot from monsters and chests</span></div>
+  </div>
+  <p>The <strong>RESOURCES</strong> card in the Stats tab always shows: rations, shards, gold and the number of consumables. Rations are also visible in the header and in camp.</p>
+  <ul>
+    <li><strong>Rations:</strong> camp healing, automatic emergency healing in combat, waybread.</li>
+    <li><strong>Shards:</strong> full heal, identification, forge, altars.</li>
+    <li><strong>Gold:</strong> upgrades, merchant, statue, forge, wager.</li>
+    <li><strong>Loot:</strong> guardians give 2 shards and 1 ration; chests give 1 of each.</li>
+  </ul>
+</section>
+
+<section id="serments">
+  <h2>8. Daily oaths</h2>
+  <p>Three optional objectives, renewed at 00:00. Targets vary by date.</p>
+  <table>
+    <tr><th>Oath</th><th>Example target</th><th>Reward</th></tr>
+    <tr><td>Walk</td><td>2,500 to 4,000 steps</td><td>150 gold + 1 shard</td></tr>
+    <tr><td>Hunt</td><td>1 or 2 guardians</td><td>250 gold + 2 shards</td></tr>
+    <tr><td>Curiosity</td><td>1 or 2 chests</td><td>100 gold + 1 uncommon item</td></tr>
+  </table>
+  <ul>
+    <li>Rewards are <strong>automatic</strong> as soon as the target is reached.</li>
+    <li>An unfinished oath disappears at midnight with no penalty.</li>
+    <li>The walking streak and weekly steps are shown in the oaths card.</li>
+  </ul>
+</section>
+
+<section id="coffres">
+  <h2>9. Chests</h2>
+  <figure class="shot">
+    <img src="images/chest.jpg" alt="Iron chest sheet with quota, rewards, expiry and buttons">
+    <figcaption>A chest is never a wall: “Keep walking” closes the sheet and leaves it waiting.</figcaption>
+  </figure>
+  <table>
+    <tr><th>Chest</th><th>Quota</th><th>Gold</th><th>Item</th></tr>
+    <tr><td>Wood</td><td>150 steps</td><td>40–80</td><td>Uncommon</td></tr>
+    <tr><td>Iron</td><td>400 steps</td><td>130–220</td><td>Rare</td></tr>
+    <tr><td>Runic</td><td>900 steps</td><td>380–550</td><td>Epic</td></tr>
+  </table>
+  <ul>
+    <li><strong>24 h</strong> lifetime, <strong>2 chests</strong> waiting at most.</li>
+    <li>A chest can be ignored: the walk continues.</li>
+    <li><strong>Commit my steps</strong> freezes the walk and spends the reserve to fill the lock.</li>
+    <li><strong>Stop forcing</strong> returns to walking; lock progress is kept.</li>
+    <li>The <strong>cross</strong> (or “Hide · forcing continues”) closes the sheet without interrupting the forcing: the CHEST chip then shows lock progress, or “WAITING” if no steps remain.</li>
+    <li>Chests also drop consumables: 1 to 3 depending on type.</li>
+  </ul>
+  <div class="note"><strong>Tip:</strong> force a chest when you have no steps left to convert into distance, for example in the evening.</div>
+</section>
+
+<section id="camp">
+  <h2>10. Camp</h2>
+  <figure class="shot">
+    <img src="images/camp.jpg" alt="Camp with tent, fire, hero and rest panel">
+    <figcaption>Camp pauses the walk, resets an ongoing fight and gives access to healing, potions and the inventory.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Rest:</strong> +40% HP for 1 ration.</li>
+    <li><strong>Resupply:</strong> full HP for 1 shard.</li>
+    <li><strong>Free vigil:</strong> +15% HP, once a day.</li>
+    <li><strong>POTIONS:</strong> opens the consumable bag.</li>
+    <li><strong>INVENTORY / JOURNAL:</strong> management and history.</li>
+    <li><strong>Resume expedition:</strong> closes camp and applies waiting steps.</li>
+  </ul>
+  <p>The panel shows floor, distance, fervour, HP, pending steps, gold, streak and total steps.</p>
+</section>
+
+<section id="inventaire">
+  <h2>11. Inventory and equipment</h2>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/inventory_gear.jpg" alt="Inventory with six slots, equip best, filters and loot">
+      <figcaption>Equipment, sorting, filters and loot.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/item.jpg" alt="Item sheet with Equipped and This item comparison table, effect, forge, fusion and equip">
+      <figcaption>Numerical comparison, effect, forge, fusion and locking.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/atelier.jpg" alt="Upgrade workshop with Equipped, Item and After table, cost and Keep upgrading button">
+      <figcaption>Workshop: next level, cost and chained upgrades.</figcaption>
+    </figure>
+  </div>
+  <h3>Six slots</h3>
+  <p>Weapon, head, body, hands, boots, talisman. An equipped item replaces the old one, which returns to the bag.</p>
+  <h3>Rarities</h3>
+  <p>Common, uncommon, rare, epic, legendary. The border and name colour show it. Rare and above items may have an effect, a set, or be unidentified.</p>
+  <h3>Actions</h3>
+  <ul>
+    <li><strong>Equip best:</strong> compares the six slots and equips every improvement.</li>
+    <li><strong>Sell commons:</strong> converts unlocked common items into gold.</li>
+    <li><strong>Lock:</strong> protects an item from selling and fusion.</li>
+    <li><strong>Fuse:</strong> the open item and the <strong>two best</strong> identified, unlocked items of the same slot and rarity give an item of higher rarity. Three legendaries give a fused legendary. The button shows <strong>FUSE</strong> when all three are gathered, otherwise <strong>FUSE 2/3</strong> and stays greyed out.</li>
+    <li><strong>Identify:</strong> 1 shard reveals the stats of a mysterious item.</li>
+    <li><strong>Reforge:</strong> 2 shards remove or replace the effect (random roll).</li>
+    <li><strong>Upgrade:</strong> gold + 1 shard increase level, ATK and HP.</li>
+    <li><strong>Salvage:</strong> destroys the item for shards.</li>
+  </ul>
+  <h3>Sorting and filtering loot</h3>
+  <p><strong>Score</strong>, <strong>Rarity</strong> and <strong>Level</strong> change the list order; the choice is kept when you switch tabs. The <strong>Fusion</strong> button is an independent filter: when active, it only shows items whose <strong>FUSE</strong> button is enabled, meaning those with at least two eligible partners. It combines with the slot filter (<strong>All</strong>, Weapon, Head, Body, Hands, Boots, Talisman) and shows “No fusable item.” when the list is empty.</p>
+  <h3>Workshop: compare, upgrade, reforge</h3>
+  <p>The item sheet starts with a <strong>Stat / Equipped / This item</strong> table: the item value is green if it beats the equipped gear, red otherwise, with the gain in small text. For an equipped item, the table becomes <strong>Current / After +1 lv.</strong> and a <strong>Hero</strong> line shows the impact on total ATK and HP. The sale value stays under the table.</p>
+  <p><strong>UPGRADE</strong> opens the workshop: current level → next, stat table (Equipped, Item, After), gold and shard cost, then a confirm button. After an upgrade the sheet stays open: a banner recalls the gain applied, the preview moves to the next level and <strong>KEEP UPGRADING</strong> chains without returning to the inventory. The ← arrow returns to the item sheet, CLOSE exits.</p>
+  <p><strong>REFORGE</strong> opens the effect workshop for 2 shards. The roll is random: <strong>25%</strong> no effect, <strong>12.5%</strong> for each of the six effects. Level, stats and set do not change; the effect may stay identical or vanish. The result shows <strong>old → new</strong>, then <strong>REFORGE AGAIN</strong> rolls again.</p>
+  <h3>Sets and forge</h3>
+  <ul>
+    <li>Eleven sets: <strong>Watcher</strong>, <strong>Ember</strong>, <strong>Frost</strong>, <strong>Frame</strong>, <strong>Web</strong>, <strong>Ash</strong>, <strong>Forge</strong>, <strong>Oath</strong>, <strong>Wood</strong>, <strong>Abyss</strong> and <strong>Throne</strong>.</li>
+    <li>Each set covers the <strong>6 slots</strong>: weapon, head, body, hands, boots, talisman. It completes at <strong>6/6</strong>.</li>
+    <li>The <strong>collection is permanent</strong>: a discovered piece stays owned even if you sell, salvage or fuse it. Pieces in the bag, stash and equipment count, identified or not.</li>
+    <li><strong>Bonuses</strong> only apply to <strong>equipped</strong> pieces: tiers at <strong>2, 4 and 6</strong> pieces. Having 6 pieces in the bag gives no bonus.</li>
+    <li>Each biome only drops its own sets, on <strong>rare, epic or legendary</strong> loot, with a <strong>30%</strong> chance of being a set piece. The slot is random: duplicates are frequent.</li>
+    <li>The forge unlocks after the first guardian is defeated.</li>
+    <li>Items may carry <strong>Vampirism</strong>, <strong>Bulwark</strong>, <strong>Frenzy</strong>, <strong>Hunt</strong>, <strong>Vitality</strong> or <strong>Precision</strong>.</li>
+    <li>The hero shows a <strong>paper doll</strong>: helmet, armour, legs, boots and weapon change with worn equipment.</li>
+    <li>Appearance follows the <strong>item family</strong>: sword, axe, mace, staff, dagger, spear or whip; leather, mail, plate or robe; hood, helm or crown; leather or metal boots. Rarity separates items without a family.</li>
+    <li><strong>Tap an equipped slot</strong> to open its sheet, compare and see its stats. Hands and talisman do not change the sprite.</li>
+  </ul>
+  <h3>Camp stash</h3>
+  <p>The inventory is limited to 24 items. When it is full, the game compares the new item with the worst unlocked item: the better one stays in the bag and the other goes to the stash. Locked items are never moved automatically. Unidentified items use a temporary score based on rarity and level. No item is destroyed: you can take them back one by one or all at once.</p>
+</section>
+
+<section id="consommables">
+  <h2>12. Consumables</h2>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/inventory_consumables.jpg" alt="Consumables tab of the inventory with potions and buffs">
+      <figcaption>Consumables tab of the inventory.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/consumables_overlay.jpg" alt="Consumable bag with potions, herbs, ironbark and vampire elixir">
+      <figcaption>The BAG, accessible from the scene and camp.</figcaption>
+    </figure>
+  </div>
+  <h3>Healing and fervour — camp and exploration</h3>
+  <table>
+    <tr><th>Item</th><th>Rarity</th><th>Effect</th></tr>
+    <tr><td>Potion of Healing</td><td>Common</td><td>Restores 30% of max HP.</td></tr>
+    <tr><td>Moon Herb</td><td>Common</td><td>Restores 12% HP and 6 fervour.</td></tr>
+    <tr><td>Ember Mushroom</td><td>Uncommon</td><td>Restores 20 fervour.</td></tr>
+    <tr><td>Watcher's Elixir</td><td>Rare</td><td>Restores all HP.</td></tr>
+    <tr><td>Waybread</td><td>Common</td><td>Restores 20% HP and 1 ration.</td></tr>
+    <tr><td>Dried Meat</td><td>Common</td><td>Restores 25% HP and 1 ration.</td></tr>
+  </table>
+  <h3>Combat — during a fight only</h3>
+  <table>
+    <tr><th>Item</th><th>Rarity</th><th>Effect</th></tr>
+    <tr><td>Rage Vial</td><td>Uncommon</td><td>ATK +50% for 20 s.</td></tr>
+    <tr><td>Ironbark</td><td>Uncommon</td><td>Damage taken −40% for 20 s.</td></tr>
+    <tr><td>Lightning Powder</td><td>Uncommon</td><td>SPD +60% for 15 s.</td></tr>
+    <tr><td>Fire Bomb</td><td>Rare</td><td>Immediately deals 2× your ATK.</td></tr>
+    <tr><td>Vampire Elixir</td><td>Rare</td><td>20% of damage dealt returned as HP for 30 s.</td></tr>
+    <tr><td>Crit Scroll</td><td>Rare</td><td>Crit +50% for 15 s.</td></tr>
+    <tr><td>Berserk Mushroom</td><td>Rare</td><td>ATK +80%, but damage taken +20% for 15 s.</td></tr>
+    <tr><td>Haste Potion</td><td>Rare</td><td>SPD +60% for 20 s.</td></tr>
+    <tr><td>Strength Potion</td><td>Uncommon</td><td>ATK +40% for 20 s.</td></tr>
+    <tr><td>Regeneration Potion</td><td>Rare</td><td>Regeneration +2 HP/s for 30 s.</td></tr>
+  </table>
+  <h3>Where to find them</h3>
+  <ul>
+    <li><strong>Normal monsters:</strong> 18% chance, 1 item.</li>
+    <li><strong>Guardians:</strong> 1 to 2 guaranteed items.</li>
+    <li><strong>Chests:</strong> 1 to 3 items depending on type.</li>
+    <li><strong>Start:</strong> 2 potions of healing and 1 moon herb.</li>
+  </ul>
+  <h3>Active effects and remaining time</h3>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/effects_1.jpg" alt="Active effects strip with a single RAGE chip, width capped at one third">
+      <figcaption>One effect: the chip takes one third of the line.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/effects_6.jpg" alt="Active effects strip with six chips RAGE, BARK, SWIFT, CRIT, VAMP and FRAGILE">
+      <figcaption>Six effects: one line, six chips and debuffs in red.</figcaption>
+    </figure>
+  </div>
+  <p>Timed effects appear in a single-line strip, just above fervour and the reserve. It shows up to <strong>6 effects</strong> with their remaining time. Each chip width is the available width divided by the number of effects, <strong>capped at one third</strong>.</p>
+  <ul>
+    <li>Bonuses are coloured by family: attack, defence, speed, crit, lifesteal and regeneration.</li>
+    <li>Debuffs (<strong>FRAGILE</strong>, <strong>ROOTS</strong>, <strong>ACID</strong>, <strong>FROST</strong>) appear in red.</li>
+    <li>The countdown refreshes every second, even when the game is paused or the bag is open.</li>
+    <li>Durations are real: a 30 s effect expires after 30 s, even with the app closed. Use them just before playing.</li>
+    <li>The strip disappears when no effect is active and reserves no space.</li>
+  </ul>
+</section>
+
+<section id="rencontres">
+  <h2>13. Special encounters</h2>
+  <p>About 8% of encounters are replaced by an event. It is never mandatory.</p>
+  <table>
+    <tr><th>Encounter</th><th>Choice</th><th>Result</th></tr>
+    <tr><td>Altar of embers</td><td>Offer 2 shards</td><td>+180 XP</td></tr>
+    <tr><td>Clear spring</td><td>Drink 1 ration</td><td>Full HP</td></tr>
+    <tr><td>Wandering merchant</td><td>Buy with gold</td><td>Rare or epic item</td></tr>
+    <tr><td>Oath statue</td><td>Pray 100 gold</td><td>+15 fervour, +1 shard</td></tr>
+    <tr><td>Sealed chest</td><td>Wager 100 gold</td><td>45%: +300 gold · 55%: lost</td></tr>
+  </table>
+  <p>After each choice, a <strong>RESULT</strong> window clearly shows the gain or loss. For the wager: <em>“Bet won · +300 gold”</em> or <em>“Bet lost · −100 gold”</em>.</p>
+</section>
+
+<section id="progression">
+  <h2>14. Progression and content</h2>
+  <h3>Levels and experience</h3>
+  <p>Monsters, guardians, oaths and events give XP. Each level increases ATK, HP and SPD. The curve slows down gradually.</p>
+  <h3>Permanent upgrades</h3>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/upgrades.jpg" alt="Upgrades tab with Honed blade, Ancient breath, Swift steps and next guardian">
+      <figcaption>Three upgrades, rising cost, and the next guardian.</figcaption>
+    </figure>
+  </div>
+  <ul>
+    <li><strong>Honed blade:</strong> +3 ATK per level.</li>
+    <li><strong>Ancient breath:</strong> +30 max HP per level.</li>
+    <li><strong>Swift steps:</strong> +2.5% SPD per level.</li>
+  </ul>
+  <h3>Milestones</h3>
+  <ul>
+    <li>Every 10 floors: +5% gold, 5 shards, a new title, a legend entry.</li>
+    <li>Floors 10, 25, 50 and 100: unique guardians.</li>
+    <li>After floor 10, a depth factor increases enemy HP and ATK.</li>
+  </ul>
+  <h3>Biomes</h3>
+  <p>The dungeon crosses <strong>8 biomes</strong>, each with its own walls, floors, statues, props, doors and weather. The change happens every 10 floors.</p>
+  <table>
+    <tr><th>Floors</th><th>Biome</th><th>Atmosphere</th></tr>
+    <tr><td>1–10</td><td>Crypts of Vael</td><td>Purple stone, dust, closed doors.</td></tr>
+    <tr><td>11–20</td><td>Catacombs</td><td>Green stone, spores, runic doors.</td></tr>
+    <tr><td>21–30</td><td>Ash Caverns</td><td>Volcanic rock, embers, blood fountains.</td></tr>
+    <tr><td>31–40</td><td>Drowned Forge</td><td>Metal, sparks, blue pools.</td></tr>
+    <tr><td>41–50</td><td>Peaks of the Oath</td><td>Ice, snow, crystals.</td></tr>
+    <tr><td>51–60</td><td>Wood of Souls</td><td>Grass, golden trees, leaves.</td></tr>
+    <tr><td>61–70</td><td>Organic Abyss</td><td>Slime, spores, acidity.</td></tr>
+    <tr><td>71+</td><td>Throne of Souls</td><td>Red hell, ashes, sealed doors.</td></tr>
+  </table>
+  <h3>Biome rules</h3>
+  <p>Each biome applies a modifier to the hero and to enemies. The <strong>BIOME</strong> card in the Stats tab shows the active rule.</p>
+  <table>
+    <tr><th>Biome</th><th>Rule</th><th>Effect</th></tr>
+    <tr><td>Crypts</td><td>Crypt vigil</td><td>+3% crit · weakened enemies.</td></tr>
+    <tr><td>Catacombs</td><td>Narrow passages</td><td>+6% SPD · slower enemies.</td></tr>
+    <tr><td>Ash</td><td>Poisoned air</td><td>+10% ATK · reduced regeneration · aggressive enemies.</td></tr>
+    <tr><td>Forge</td><td>Iron hides</td><td>−6% damage taken · tougher enemies.</td></tr>
+    <tr><td>Peaks</td><td>Freezing wind</td><td>+8% SPD · −5% max HP · fast enemies.</td></tr>
+    <tr><td>Wood</td><td>Ancient sap</td><td>+0.5 HP/s · sturdy enemies.</td></tr>
+    <tr><td>Abyss</td><td>Acidity</td><td>+12% ATK · −5% max HP · fragile but violent enemies.</td></tr>
+    <tr><td>Throne</td><td>Soul pressure</td><td>+12% guardian damage · −8% max HP · empowered enemies.</td></tr>
+  </table>
+  <h3>Farm mode</h3>
+  <figure class="shot">
+    <img src="images/farm_mode.jpg" alt="Biome card with farm mode active and the FARM badge in the HUD">
+    <figcaption>Farm mode active: the floor is locked, the FARM badge appears and the button disables it.</figcaption>
+  </figure>
+  <p>Farm mode lives in the <strong>BIOME card</strong> of the Stats tab. It is <strong>inactive by default</strong>.</p>
+  <ul>
+    <li><strong>ENABLE:</strong> locks the current floor. A defeated guardian no longer advances to the next floor and returns to 100 m.</li>
+    <li><strong>DISABLE:</strong> the next defeated guardian advances normally.</li>
+    <li>A <strong>FARM</strong> badge shows in the HUD while the mode is active.</li>
+    <li>During farming, <strong>milestones are disabled</strong>: no +5 shards and no repeated legend entry. The guardian's loot, gold and XP remain.</li>
+    <li>The setting is kept in the save and survives a restart.</li>
+  </ul>
+  <h3>Estimated play time</h3>
+  <p>The dungeon is <strong>endless</strong>: there is no ending screen. “Finishing” here means crossing the <strong>8 biomes</strong> (floor 71), then completing the <strong>Codex</strong> (110 monsters, 35 guardians, 11 sets). The calculation starts from <strong>1,000 steps per floor</strong> (10 steps = 1 m, 100 m per floor) and applies a <strong>farm coefficient of 3 to 5</strong> (up to 6 for the Codex) for retreats, retried guardians, chests and gear hunting.</p>
+  <table>
+    <tr><th>Goal</th><th>Steps (pure distance)</th><th>5,000 steps/day</th><th>8,000 steps/day</th><th>10,000 steps/day</th></tr>
+    <tr><td>8 biomes · floor 71</td><td>70,000</td><td>6 to 10 weeks</td><td>4 to 6 weeks</td><td>3 to 5 weeks</td></tr>
+    <tr><td>Legend of Souls title · floor 100</td><td>100,000</td><td>2 to 3.5 months</td><td>5 to 9 weeks</td><td>4 to 7 weeks</td></tr>
+    <tr><td>Full Codex</td><td>≈ 150,000</td><td>4 to 6 months</td><td>2.5 to 4 months</td><td>2 to 3 months</td></tr>
+  </table>
+  <p>In <strong>effective walking time</strong> (≈ 100 steps/minute), that is about <strong>12 h</strong> for the 8 biomes, <strong>17 h</strong> for floor 100 and <strong>25 h</strong> for the Codex. The rest is farming, not walking.</p>
+  <div class="note"><strong>Assumptions:</strong> a player who syncs every day, without hitting the daily cap (60,000 steps) or the suspicious rate (250 steps/min). With no farming at all, the raw path through 70 floors would take only <strong>14 days</strong> at 5,000 steps/day, <strong>9 days</strong> at 8,000 and <strong>7 days</strong> at 10,000: that is the theoretical floor, not a realistic duration. Floors 60+ are endgame and their balance is still being tuned; the high ranges are design targets.</div>
+  <h3>Biome gallery</h3>
+  <p>Each biome has its decor, weather and creatures. The hero's paper doll reflects worn equipment.</p>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/biome_crypts.jpg" alt="Crypts of Vael with stone walls, candles and dust">
+      <figcaption>Crypts of Vael: cold stone, candles and dust.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_catacombs.jpg" alt="Catacombs with the Lernaean Hydra guardian and the hero's paper doll">
+      <figcaption>Catacombs: floor guardian and paper doll.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_ash.jpg" alt="Ash Caverns with volcanic rock, embers and an efreet">
+      <figcaption>Ash Caverns: volcanic rock and embers.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_forge.jpg" alt="Drowned Forge with blue metal walls, pools and crystal guardian">
+      <figcaption>Drowned Forge: blue metal, pools and sparks.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_peaks.jpg" alt="Peaks of the Oath with ice, snow and shadow dragon">
+      <figcaption>Peaks of the Oath: ice, snow and crystals.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_woods.jpg" alt="Wood of Souls with grass, golden trees and a treant">
+      <figcaption>Wood of Souls: grass, golden trees and leaves.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_abyss.jpg" alt="Organic Abyss with slime, spores and an ancient zyme">
+      <figcaption>Organic Abyss: slime, spores and acidity.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_throne.jpg" alt="Throne of Souls with red hell, ashes and Asmodeus">
+      <figcaption>Throne of Souls: red hell, ashes and sealed doors.</figcaption>
+    </figure>
+  </div>
+  <h3>Creatures and loot</h3>
+  <ul>
+    <li>Each biome has its <strong>easy monsters</strong> (0–49 m), <strong>mid</strong> (50–84 m), <strong>hard</strong> (85–99 m) and its <strong>guardians</strong>.</li>
+    <li><strong>Loot tables</strong> are biome-specific: thematic weapons, armour, helmets, boots, gauntlets and talismans.</li>
+    <li>Floors 10, 25, 50 and 100 keep milestone guardians; other floors rotate the biome bosses.</li>
+    <li>Biome sets are favoured in their region: Frame and Web in the catacombs, Ash in the caverns, Forge in the forge, Oath on the peaks, Wood in the forest, Abyss in the abyss and Throne at the summit.</li>
+  </ul>
+  <h3>Ranks and titles</h3>
+  <p>Rank progresses with floors: Pilgrim, Watcher of the Crypts, Pilgrim of the Abyss, Ash Walker, Forge Guardian, Sovereign of the Peaks, Watcher of the Wood, Walker of the Abyss, Legend of Souls.</p>
+</section>
+
+<section id="journal">
+  <h2>15. Journal, legend, bestiary</h2>
+  <figure class="shot">
+    <img src="images/journal.jpg" alt="Journal with filters, Legend and Bestiary tabs, combat events and loot">
+    <figcaption>Filterable journal, legend log and bestiary.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Journal:</strong> 80 events, Good / Alerts / Neutral filters.</li>
+    <li><strong>Legend:</strong> milestones and persistent feats.</li>
+    <li><strong>Bestiary:</strong> number of kills per creature.</li>
+    <li>Events are also summarised in the Stats tab.</li>
+  </ul>
+  <h3>Codex</h3>
+  <p>The Codex lives in <code>Stats → CODEX card → OPEN CODEX</code>. It tracks the collection across three tabs.</p>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/codex_bestiary.jpg" alt="Bestiary Codex with known creatures, unknown silhouettes and guardians by biome">
+      <figcaption>Bestiary: discovered creatures and guardians, still-unknown silhouettes.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_sets.jpg" alt="Sets Codex with permanent collection, equipped pieces and owned slots">
+      <figcaption>Sets: permanent collection, equipped pieces, missing slots and next tier.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_biomes.jpg" alt="Biomes Codex with creature, guardian and item progress per biome">
+      <figcaption>Biomes: active rule, creatures, guardians and discovered items.</figcaption>
+    </figure>
+  </div>
+  <ul>
+    <li><strong>Bestiary:</strong> a creature is revealed by the first victory. Guardians are tracked separately.</li>
+    <li><strong>Sets:</strong> the collection is <strong>permanent</strong> (a discovered piece stays owned even if you sell it); the tab distinguishes <strong>Collection x/6</strong> and <strong>Equipped y/6</strong>, shows missing slots, the biome to farm and the next tier. Only equipped pieces give the 2/4/6 bonus.</li>
+    <li><strong>Biomes:</strong> a biome is discovered as soon as you reach its first floor. The Codex shows its rule, creatures, guardians and items.</li>
+    <li>Items already owned are recognised immediately; items picked up later are added to the collection.</li>
+  </ul>
+  <h3>Completing a collection</h3>
+  <p>A set completes at <strong>6/6</strong>: you need one piece from each of the six slots (weapon, head, body, hands, boots, talisman) bearing the same set name.</p>
+  <div class="note"><strong>Two counters not to confuse:</strong> the <strong>collection</strong> (x/6) is permanent and counts everything you have discovered, wherever it is — equipped, in the bag or in the stash, identified or not. <strong>Equipped</strong> (y/6) only counts worn pieces, and it triggers the bonus at 2, 4 or 6 pieces. Selling or salvaging a piece does not reduce the collection.</div>
+  <ul>
+    <li><strong>Where to farm:</strong> each set only drops in one or two biomes. The Codex shows “Found in: …” on the set sheet.</li>
+    <li><strong>When:</strong> only <strong>rare, epic or legendary</strong> loot can be set pieces, with a <strong>30%</strong> chance. The slot is random: duplicates are frequent and do not help completion.</li>
+    <li><strong>Unidentified piece:</strong> it already counts in the collection. Identify it (1 shard) to reveal its set and bonus on the sheet.</li>
+    <li><strong>Bonus:</strong> equip 2, then 4, then 6 pieces of the same set. The Codex shows the active bonus and the next tier; the item sheet recalls “equipped y/6 · collection x/6”.</li>
+  </ul>
+  <table>
+    <tr><th>Set</th><th>Biome(s)</th><th>2 pieces</th><th>4 pieces</th><th>6 pieces</th></tr>
+    <tr><td>Watcher</td><td>Crypts of Vael (1–10)</td><td>+10 ATK, +30 HP</td><td>+20 ATK, +60 HP</td><td>+30 ATK, +90 HP</td></tr>
+    <tr><td>Frame</td><td>Crypts (1–10), Catacombs (11–20)</td><td>+6 ATK, +25 HP</td><td>+12 ATK, +50 HP</td><td>+18 ATK, +75 HP</td></tr>
+    <tr><td>Web</td><td>Catacombs (11–20)</td><td>+3% SPD, +2% crit</td><td>+6% SPD, +4% crit</td><td>+9% SPD, +6% crit</td></tr>
+    <tr><td>Ember</td><td>Ash Caverns (21–30)</td><td>+3% crit, +5% lifesteal</td><td>+6% crit, +10% lifesteal</td><td>+9% crit, +15% lifesteal</td></tr>
+    <tr><td>Ash</td><td>Ash Caverns (21–30)</td><td>+8 ATK</td><td>+16 ATK, +3% crit</td><td>+24 ATK, +6% crit</td></tr>
+    <tr><td>Forge</td><td>Drowned Forge (31–40)</td><td>+35 HP</td><td>+70 HP, −3% damage taken</td><td>+105 HP, −6% damage taken</td></tr>
+    <tr><td>Frost</td><td>Peaks of the Oath (41–50)</td><td>+5% SPD, +0.3 HP/s</td><td>+10% SPD, +0.6 HP/s</td><td>+15% SPD, +0.9 HP/s</td></tr>
+    <tr><td>Oath</td><td>Peaks of the Oath (41–50)</td><td>+7 ATK</td><td>+14 ATK, +8% guardian damage</td><td>+21 ATK, +16% guardian damage</td></tr>
+    <tr><td>Wood</td><td>Wood of Souls (51–60)</td><td>+4% SPD</td><td>+8% SPD, +0.7 HP/s</td><td>+12% SPD, +1.2 HP/s</td></tr>
+    <tr><td>Abyss</td><td>Organic Abyss (61–70)</td><td>+20 HP, +4% lifesteal</td><td>+40 HP, +8% lifesteal</td><td>+60 HP, +12% lifesteal</td></tr>
+    <tr><td>Throne</td><td>Throne of Souls (71+)</td><td>+10 ATK</td><td>+20 ATK, +15% critical damage</td><td>+30 ATK, +30% critical damage</td></tr>
+  </table>
+  <h3>Creature and guardian sheets</h3>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/codex_mob_detail.jpg" alt="Bat sheet with image, biome, zone, HP, ATK, rate, gold, XP, kills and biome rule">
+      <figcaption>Creature sheet: image, biome, spawn zone, stats, loot and biome rule.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_boss_detail.jpg" alt="Crypt King sheet with Soul drain ability, stats, biome rule and modifiers">
+      <figcaption>Guardian sheet: ability, stats, biome rule and random modifiers.</figcaption>
+    </figure>
+  </div>
+  <p>Tap a creature or guardian to open its sheet. It shows its image, biome and first-encounter floor, spawn zone, level, HP, ATK, rate, gold and XP given, kill count and biome rule. Stats are those of the first encounter. For a guardian, the ability and its effects are also detailed, along with the possible random modifiers. An undefeated creature stays locked until the first victory. Sheets follow the <strong>text size</strong> chosen in settings.</p>
+</section>
+
+<section id="reglages">
+  <h2>16. Settings</h2>
+  <figure class="shot">
+    <img src="images/settings.jpg" alt="Settings screen with text, notifications, sound, help and inventory">
+    <figcaption>Settings: readability, notifications, sounds, help, save.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Text size:</strong> Normal, Large, Very large, Maximum.</li>
+    <li><strong>Notifications:</strong> on/off, with toggles for pending encounter, guardian, guardian waiting, level, oaths, chests, Garmin key.</li>
+    <li><strong>Quiet hours:</strong> 22:00–08:00, alerts without vibration.</li>
+    <li><strong>Reduced motion:</strong> removes bobbing, auras and floating numbers.</li>
+    <li><strong>Vibration:</strong> haptic feedback for alerts.</li>
+    <li><strong>8-bit sounds:</strong> on/off, volume 0–100%, Test sound button.</li>
+    <li><strong>Sell commons automatically:</strong> converts commons on pickup.</li>
+    <li><strong>Step source:</strong> Garmin or Health Connect, with permission, manual sync and sync log.</li>
+    <li><strong>Sync diagnostic:</strong> active source, day-by-day import window with each day's state, safeguards (7 days, 60,000 steps/day, 100,000 steps per import, 250 steps/min) and a sync button.</li>
+    <li><strong>Save:</strong> export, import with preview, clear progress.</li>
+    <li><strong>Sync log:</strong> latest results of the active source, timestamped by day and time.</li>
+    <li><strong>Check for updates:</strong> dedicated card, with an optional daily automatic check.</li>
+    <li><strong>Game manual:</strong> opens this guide inside the app.</li>
+    <li><strong>Licences and privacy:</strong> links to the repository documents.</li>
+  </ul>
+  <h3>Ambient music</h3>
+  <figure class="shot">
+    <img src="images/music_settings.jpg" alt="Sound settings with the Ambient music toggle and music volume at 30%">
+    <figcaption>Ambient music: toggle and volume independent from sound effects.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>16 original tracks</strong>: two 3-minute variants for each of the 8 biomes.</li>
+    <li><strong>Random start</strong>: the track begins at a random position, then loops.</li>
+    <li><strong>Biome change</strong>: short fade to the new atmosphere.</li>
+    <li><strong>Toggle:</strong> Ambient music ON/OFF, enabled by default.</li>
+    <li><strong>Volume:</strong> independent from sound effects, 30% by default.</li>
+    <li><strong>Background:</strong> music pauses when the app is not visible, then resumes.</li>
+    <li>Tracks are generated for the project and released under <strong>CC0</strong>.</li>
+  </ul>
+  <h3>Advanced settings</h3>
+  <p>At the bottom, the <strong>Advanced settings</strong> card is collapsed by default: it only opens on demand. It controls the offline progression budget, meaning the steps spent while the app is closed.</p>
+  <figure class="shot">
+    <img src="images/reglages_avances.jpg" alt="Expanded Advanced settings card: offline absence, Percentage mode, 30%, duration estimate, daily budget and Reset to 30% button">
+    <figcaption>Advanced settings: absence budget as a percentage or maximum steps.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Percentage:</strong> 0 to 30% of the day's steps, <strong>30% by default</strong>.</li>
+    <li><strong>Maximum steps:</strong> 0 to 5,000 steps, with shortcuts 300, 1,000 and 3,000.</li>
+    <li><strong>Daily budget:</strong> what has already been spent offline today is deducted; two closures share the same envelope.</li>
+    <li><strong>Duration:</strong> it follows the steps, about 1 second per 60 steps, up to twice as long if the reserve is nearly empty. The simulation may stop earlier on an event.</li>
+    <li><strong>0</strong> disables offline progression; <strong>RESET TO 30%</strong> returns to the recommended values.</li>
+    <li>These settings can only reduce offline progression.</li>
+  </ul>
+</section>
+
+<section id="mises-a-jour">
+  <h2>17. Updates</h2>
+  <p>The app updates directly from <strong>GitHub releases</strong>, without the Play Store.</p>
+  <ul>
+    <li><strong>Automatic check:</strong> enabled by default. It queries GitHub at most once every 24 h, at app launch.</li>
+    <li><strong>Manual check:</strong> <code>Settings → Updates → Check now</code>.</li>
+    <li>When a newer version exists, a dialog shows the available version and offers <strong>Install update</strong>.</li>
+    <li>The signed APK is downloaded from GitHub into the app cache, then <strong>verified by SHA-256</strong> when the fingerprint is published in the release notes.</li>
+    <li>Android always asks for your <strong>confirmation</strong> before installing the APK. The first time, allow “Install unknown apps” for The March of Souls.</li>
+    <li>An update installed with the same signature <strong>keeps progress, settings and the Garmin key</strong>.</li>
+    <li>After installation, the app offers to <strong>open the GitHub release page</strong> to read the changes. You can also choose “Later”.</li>
+  </ul>
+  <div class="warn"><strong>No silent updates.</strong> Nothing installs without your consent: the download only starts after the Install button, and Android shows its own confirmation screen.</div>
+  <div class="warn"><strong>Play Protect.</strong> Android may show a warning or block an app unknown to Google. If in-app installation is refused, open the GitHub release page and install the APK manually, or allow installation for this app in Android settings.</div>
+</section>
+
+<section id="garmin">
+  <h2>18. Garmin sync</h2>
+  <figure class="shot">
+    <img src="images/garmin.jpg" alt="Settings, Step source section with Garmin selected and the Connect Garmin button">
+    <figcaption>Settings → Step source with Garmin selected: connect a key to synchronise. The sync log and diagnostic sit just below.</figcaption>
+  </figure>
+  <h3>Token and key</h3>
+  <ul>
+    <li>The personal key is exchanged for a <strong>24 h OAuth2 token</strong>.</li>
+    <li>There is no refresh token: the app requests a new token with the key.</li>
+    <li>The key and token are encrypted in Android Keystore.</li>
+    <li>An expired or revoked key causes a 401 error: replace it in Garmin account.</li>
+  </ul>
+  <h3>Common errors</h3>
+  <table>
+    <tr><th>Code</th><th>Meaning</th><th>Action</th></tr>
+    <tr><td>401</td><td>Invalid, expired or revoked key</td><td>Create a new key and paste it.</td></tr>
+    <tr><td>403</td><td>Access denied</td><td>Check the Garmin key permissions.</td></tr>
+    <tr><td>429</td><td>Too many requests</td><td>Wait for the indicated delay, then retry.</td></tr>
+    <tr><td>5xx</td><td>Garmin unavailable</td><td>Try again later.</td></tr>
+  </table>
+  <div class="warn"><strong>The watch must have synced.</strong> If Garmin Connect has not received your steps, the API returns the old total. Open Garmin Connect, wait for the watch, then sync again.</div>
+</section>
+
+<section id="absence">
+  <h2>19. Absence summary</h2>
+  <figure class="shot">
+    <img src="images/absence_report.jpg" alt="Welcome back screen showing absence, steps used, metres, fights, gold, floors, guardians, levels, chests and remaining reserve">
+    <figcaption>The “Welcome back” screen summarises what happened while you were away.</figcaption>
+  </figure>
+  <p>When you close the app with a step reserve, that reserve keeps draining during your absence. On your return, the game shows a <strong>“WELCOME BACK”</strong> screen summarising the walk, fights and gains.</p>
+  <h3>When the calculation starts</h3>
+  <ul>
+    <li>The absence must last <strong>at least 2 minutes</strong>.</li>
+    <li>The simulation only spends the <strong>reserve present at closure</strong>: steps synced on launch are never swallowed by the absence.</li>
+    <li>The hero must not be at camp or on a special encounter.</li>
+    <li>Onboarding must be finished.</li>
+  </ul>
+  <p>The summary appears from 2 minutes of absence, <strong>even if the reserve was empty</strong>: it then states that nothing advanced. Step sync is downloaded in parallel but <strong>only applied when the summary is closed</strong>: the step counter and reserve only move after “RESUME THE WALK”, and the message “Garmin synced · +N steps” or “Health Connect synced · +N steps” arrives at that moment.</p>
+  <p>The summary also lists <strong>loot</strong>: items recovered during the absence, consumables, rations and shards.</p>
+  <h3>Reserve consumption</h3>
+  <p>The simulation uses the <strong>normal active rate</strong> (30 or 60 steps per second depending on reserve size), with a budget adjustable in <strong>Advanced settings</strong> and three safeguards:</p>
+  <div class="kpi">
+    <div><b>30%</b><span>of the day's steps by default (0–30%, or 0–5,000 steps)</span></div>
+    <div><b>4 min</b><span>maximum simulated time</span></div>
+    <div><b>100%</b><span>of the active rate</span></div>
+    <div><b>7 days</b><span>maximum counted absence</span></div>
+  </div>
+  <p>The first limit reached stops the simulation. The budget is <strong>daily</strong>: two absences on the same day share the same envelope. It also stops on an <strong>event</strong>: special encounter, new chest or camp visit. In front of the guardian it only stops if less than one <strong>floor</strong> of budget remains; with one floor or more, the fight is simulated and the guardian can be defeated. <strong>The remaining reserve is not destroyed</strong>: it waits for you and will be spent normally on your return.</p>
+  <h3>Summary contents</h3>
+  <ul>
+    <li>duration of the absence;</li>
+    <li>steps used and metres travelled;</li>
+    <li>fights, floors cleared and guardians defeated;</li>
+    <li>gold gained, levels gained and chests opened;</li>
+    <li>remaining step reserve.</li>
+  </ul>
+  <p>Two buttons: <strong>RESUME THE WALK</strong> closes the summary, <strong>VIEW JOURNAL</strong> opens the event journal directly.</p>
+  <h3>Special encounter</h3>
+  <p>If the simulation hits a <strong>special encounter</strong>, it stops immediately. The summary says so (“An encounter awaits on the path”), then the encounter appears normally. The game never chooses for you.</p>
+  <h3>Defeat against a guardian</h3>
+  <p>If the hero is pushed back during the simulation, the summary says so and you find the corresponding farm zone. No fight is resolved automatically without your knowledge.</p>
+  <h3>Merged with step sync</h3>
+  <p>If a step sync (Garmin or Health Connect) and an absence happen at the same time, both reports are <strong>merged</strong> into a single screen: imported steps and reserve consumption appear together, with no double counting. The title then becomes “Absence and step catch-up”.</p>
+  <h3>Persistent report</h3>
+  <p>The summary stays available until you tap <strong>RESUME THE WALK</strong>. Leaving the app or changing screen does not mark it as read.</p>
+  <div class="warn"><strong>Changed clock.</strong> To prevent abuse, absence is bounded between 0 and 7 days. A time change or an advanced clock cannot trigger an excessive gain.</div>
+  <div class="note"><strong>Fervour.</strong> It decays with real time, not simulated time. The summary does not replace an active session to maintain fervour.</div>
+</section>
+
+<section id="faq">
+  <h2>20. Frequently asked questions</h2>
+  <details>
+    <summary>Why did the game advance while I was away?</summary>
+    <p>That is the absence summary: the step reserve drains while the app is closed, within the absence budget (30% of the day's steps by default, adjustable in Advanced settings) and 4 simulated minutes. The remaining reserve is kept. Guardians can be defeated if the remaining budget covers one floor; otherwise the simulation stops in front of the gate. See <a href="#absence">Absence summary</a>.</p>
+  </details>
+  <details>
+    <summary>The hero is stuck and no longer advances.</summary>
+    <p>The step reserve is probably at zero. The hero sets off again at the next sync containing new steps. Check today's step count and the last sync.</p>
+  </details>
+  <details>
+    <summary>I am in front of the guardian door but there is no monster.</summary>
+    <p>The door appears from 85 m, the guardian only appears at 100 m. If 2 m are missing, that is 20 steps. The “WAITING FOR STEPS” label shows when the reserve is empty.</p>
+  </details>
+  <details>
+    <summary>The chest is blocking me.</summary>
+    <p>A chest never blocks the walk. “Keep walking” closes its sheet. If you started “Commit my steps”, reopen the chest and choose “Stop forcing”: lock progress is kept.</p>
+  </details>
+  <details>
+    <summary>Sync always returns the same number of steps.</summary>
+    <p>Garmin has not yet received the watch's new steps (or the app feeding Health Connect has not written). Open Garmin Connect / the health app, let the watch sync, then tap Sync.</p>
+  </details>
+  <details>
+    <summary>I cannot see my rations.</summary>
+    <p>They are in the RESOURCES card of the Stats tab, in the header (meat icon) and in camp, on the healing actions.</p>
+  </details>
+  <details>
+    <summary>My notifications do not work.</summary>
+    <p>Check Settings → Notifications, then the Android permission. On Android 13+, the permission is requested on first launch. You can open it from the system settings.</p>
+  </details>
+  <details>
+    <summary>What happens when the inventory is full?</summary>
+    <p>The new item is compared with the worst unlocked item in the bag. If the new one is better, the old one goes to the camp stash and the new one stays in the bag; otherwise the new one goes to the stash. Locked items are protected. Unidentified items use a temporary rarity + level score.</p>
+  </details>
+  <details>
+    <summary>How do I back up or change phone?</summary>
+    <p>Settings → Save → Export. The JSON file contains progress, never the Garmin key. On the new phone, install the app, choose your step source, then Import the save and confirm the preview.</p>
+    <p>Progress is also saved automatically about every 30 seconds, on every floor or level change, and just before an app update.</p>
+  </details>
+  <details>
+    <summary>Can I disable sounds or change the volume?</summary>
+    <p>Yes: Settings → Sound. The setting concerns game effects, not Android notifications.</p>
+  </details>
+</section>
+
+<section id="donnees">
+  <h2>21. Data and privacy</h2>
+  <ul>
+    <li>Progress, preferences and the save stay on the device.</li>
+    <li>The Garmin key and token are encrypted in Android Keystore; they only go to Garmin.</li>
+    <li>With <strong>Health Connect</strong>, steps are read locally (permission <code>READ_STEPS</code>), never sent to the publisher.</li>
+    <li>The app only contacts Garmin (Garmin source) and GitHub (updates, GitHub version). No publisher server, no ads, no trackers.</li>
+    <li>“Revoke key” deletes the key and token; “Clear progress” resets the game.</li>
+    <li>Full policy: <a href="https://brunothesatellite.github.io/idle-step-rpg/privacy/">brunothesatellite.github.io/idle-step-rpg/privacy</a>.</li>
+  </ul>
+</section>
+
+<section id="credits">
+  <h2>22. Licences and credits</h2>
+  <ul>
+    <li><strong>Code and texts:</strong> MIT — brunothesatellite.</li>
+    <li><strong>Pixel art:</strong> Dungeon Crawl Stone Soup contributors, CC0 1.0.</li>
+    <li><strong>8-bit sounds:</strong> generated for this project, CC0 1.0.</li>
+    <li><strong>Fonts:</strong> Pixelify Sans and Press Start 2P, SIL Open Font License 1.1.</li>
+    <li>Details: <code>LICENSES.md</code>, <code>assets/CREDITS.md</code>, <code>assets/audio/LICENSE.txt</code>.</li>
+  </ul>
+  <p>Thank you for walking this far. Safe travels through the crypts.</p>
+</section>
+
+<footer>
+  The March of Souls · manual v0.18.1 · <a href="#top">Back to contents</a><br>
+  Garmin or Health Connect · no data sent to a publisher server.
+</footer>
+
+</div>
+</body>
+</html>

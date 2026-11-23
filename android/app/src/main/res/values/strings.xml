@@ -1171,4 +1171,5 @@
     <string name="msg_garmin_rate_soon">Limite Garmin atteinte. Réessayez dans un instant.</string>
     <string name="msg_garmin_unavailable">Garmin est momentanément indisponible.</string>
     <string name="msg_garmin_error_code">Erreur Garmin (%1$d).</string>
+    <string name="common_never">jamais</string>
 </resources>

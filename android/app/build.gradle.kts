@@ -148,8 +148,13 @@ implementation("androidx.health.connect:connect-client:1.1.0")
 // build : le HTML publié et l'asset embarqué restent alignés sur le projet,
 // sans script externe.
 val manualTemplate = rootProject.file("../manuel/index.template.html")
+val manualTemplateEn = rootProject.file("../manuel/index.en.template.html")
 val manualRepo = rootProject.file("../manuel/index.html")
+val manualRepoEn = rootProject.file("../manuel/en/index.html")
 val manualAsset = file("src/main/assets/manuel/index.html")
+val manualAssetEn = file("src/main/assets/manuel/en/index.html")
+val manualImagesEn = rootProject.file("../manuel/en/images")
+val manualAssetImagesEn = file("src/main/assets/manuel/en/images")
 val modelSource = file(
     "src/main/java/com/brunothesatellite/idlesteprpg/engine/Model.kt"
 )
@@ -158,9 +163,14 @@ val appVersionName = android.defaultConfig.versionName ?: "0.0.0"
 val generateManual by tasks.registering {
     inputs.file(modelSource)
     inputs.file(manualTemplate)
+    inputs.file(manualTemplateEn)
+    inputs.dir(manualImagesEn)
     inputs.property("versionName", appVersionName)
     outputs.file(manualRepo)
+    outputs.file(manualRepoEn)
     outputs.file(manualAsset)
+    outputs.file(manualAssetEn)
+    outputs.dir(manualAssetImagesEn)
 
     doLast {
         val model = modelSource.readText()
@@ -180,14 +190,25 @@ val generateManual by tasks.registering {
             ?.get(1)
             .orEmpty()
         val setCount = Regex("\"([^\"]+)\"").findAll(setsBlock).count()
-        val html = manualTemplate.readText()
+        fun render(template: File): String = template.readText()
             .replace("{{MOB_COUNT}}", mobCount.toString())
             .replace("{{BOSS_COUNT}}", bossCount.toString())
             .replace("{{SET_COUNT}}", setCount.toString())
             .replace("{{APP_VERSION}}", appVersionName)
+
+        val html = render(manualTemplate)
         manualRepo.writeText(html)
         manualAsset.parentFile.mkdirs()
         manualAsset.writeText(html)
+
+        val htmlEn = render(manualTemplateEn)
+        manualRepoEn.parentFile.mkdirs()
+        manualRepoEn.writeText(htmlEn)
+        manualAssetEn.parentFile.mkdirs()
+        manualAssetEn.writeText(htmlEn)
+
+        manualAssetImagesEn.deleteRecursively()
+        manualImagesEn.copyRecursively(manualAssetImagesEn, overwrite = true)
     }
 }
 
