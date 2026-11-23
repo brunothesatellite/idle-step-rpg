@@ -38,6 +38,7 @@ class MarcheWidgetProvider : AppWidgetProvider() {
         ) {
             val prefs = context.getSharedPreferences("widget", Context.MODE_PRIVATE)
             val steps = prefs.getInt("steps", 0)
+            val bank = prefs.getInt("bank", 0).coerceAtLeast(0)
             val level = prefs.getInt("level", 1)
             val floor = prefs.getInt("floor", 1)
             val gold = prefs.getInt("gold", 0)
@@ -52,10 +53,18 @@ class MarcheWidgetProvider : AppWidgetProvider() {
             // Les textes du layout sont résolus par le lanceur (locale système) :
             // on les repose ici avec les ressources de l'app pour suivre sa langue.
             views.setTextViewText(R.id.widget_title, context.getString(R.string.widget_title))
-            views.setTextViewText(R.id.widget_hint, context.getString(R.string.widget_hint))
+            views.setTextViewText(R.id.widget_steps, format.format(bank))
             views.setTextViewText(
-                R.id.widget_steps,
-                context.getString(R.string.widget_steps, format.format(steps))
+                R.id.widget_steps_label,
+                context.getString(R.string.widget_reserve)
+            )
+            views.setTextViewText(
+                R.id.widget_hint,
+                if (bank <= 0) {
+                    context.getString(R.string.widget_sync_hint)
+                } else {
+                    context.getString(R.string.widget_today, format.format(steps))
+                }
             )
             views.setTextViewText(
                 R.id.widget_meta,

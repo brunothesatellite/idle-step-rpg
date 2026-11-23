@@ -1116,10 +1116,8 @@
     <string name="hc_failure_permission">autorisation manquante</string>
     <string name="hc_log_read_fail">Lecture des pas impossible</string>
     <string name="widget_title">LA MARCHE DES ÂMES</string>
-    <string name="widget_steps_default">0 pas</string>
+    <string name="widget_steps_default">0</string>
     <string name="widget_meta_default">Palier 1 · Niv. 1</string>
-    <string name="widget_hint">Touchez pour ouvrir et synchroniser</string>
-    <string name="widget_steps">%1$s pas</string>
     <string name="widget_meta">Palier %1$d · Niv. %2$d · %3$s or</string>
     <string name="health_rationale_title">SANTÉ CONNECT</string>
     <string name="health_rationale_heading">LECTURE DES PAS</string>
@@ -1186,4 +1184,7 @@
     <string name="update_installed_title">MISE À JOUR INSTALLÉE</string>
     <string name="update_installed_body">La Marche des Âmes est maintenant en %1$s. Vos données et la clé Garmin ont été conservées.</string>
     <string name="update_view_changes">VOIR LES CHANGEMENTS</string>
+    <string name="widget_reserve">pas disponibles</string>
+    <string name="widget_today">%1$s pas aujourd’hui</string>
+    <string name="widget_sync_hint">Touchez pour synchroniser</string>
 </resources>

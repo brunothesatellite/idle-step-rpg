@@ -406,12 +406,13 @@ class GameRepository(
      * l'équipement a changé ; le reste suit une fraîcheur de 15 minutes.
      */
     @Synchronized
-    private fun syncWidgetLocked(snapshot: GameState) {
+    private fun syncWidgetLocked(snapshot: GameState, force: Boolean = false) {
         val prefs = context.getSharedPreferences("widget", Context.MODE_PRIVATE)
         val signature = WidgetHero.signature(snapshot)
         val heroChanged = prefs.getString("hero_sig", null) != signature
         prefs.edit()
             .putInt("steps", snapshot.stepsToday)
+            .putInt("bank", snapshot.stepBank.toInt().coerceAtLeast(0))
             .putInt("level", snapshot.level)
             .putInt("floor", snapshot.floor)
             .putInt("gold", snapshot.gold)
@@ -420,10 +421,16 @@ class GameRepository(
             prefs.edit().putString("hero_sig", signature).apply()
         }
         val now = System.currentTimeMillis()
-        if (heroChanged || now - lastWidgetAt > 15 * 60_000L) {
+        if (force || heroChanged || now - lastWidgetAt > 15 * 60_000L) {
             lastWidgetAt = now
             MarcheWidgetProvider.updateAll(context)
         }
+    }
+
+    /** Force une mise à jour du widget (réserve fraîche quand l'app passe en arrière-plan). */
+    suspend fun refreshWidget() {
+        val snapshot = _state.value.deepCopy()
+        withContext(Dispatchers.IO) { syncWidgetLocked(snapshot, force = true) }
     }
 }
 

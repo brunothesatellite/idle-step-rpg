@@ -114,7 +114,7 @@ Un contenu inconnu du catalogue **retombe en français** : aucun crash, aucune p
 |---|---|
 | Changement de langue | recréation d’activité, `GameViewModel` conservé ; testé FR↔EN sans redémarrage |
 | Canaux de notification | `ensureChannels` est appelé à chaque démarrage : les noms/descriptions sont réappliqués. Une notification déjà affichée garde sa langue d’émission (normal). |
-| Widget | Le lanceur résout les `@string` du layout avec la **locale système**, pas celle de l’app : le titre et l’invite sont donc reposés par le provider avec les ressources de l’app. Le **paper doll du héros** (équipement actuel) est rendu côté app et affiché à droite ; il est réécrit dès qu’une pièce d’équipement change. Validé sur écran d’accueil en EN et FR. |
+| Widget | Le lanceur résout les `@string` du layout avec la **locale système**, pas celle de l’app : le titre, la réserve et l’invite sont reposés par le provider avec les ressources de l’app. Le **paper doll du héros** (équipement actuel) est rendu côté app et affiché à droite ; il est réécrit dès qu’une pièce d’équipement change. Le gros chiffre est la **réserve de pas** ; les pas du jour restent en dernière ligne, remplacés par « Touchez pour synchroniser » quand la réserve est vide. Le widget est rafraîchi en arrière-plan pour éviter une réserve périmée. Validé en FR et EN. |
 | Manuel EN absent | repli explicite FR, pas d’écran vide. |
 | Regex du journal | compilées une fois, motifs simples ; coût mesuré acceptable sur 80 entrées. |
 | Traductions imbriquées | récursion bornée (journal, butin, logs) ; aucun cycle. |

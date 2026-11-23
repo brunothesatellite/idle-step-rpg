@@ -1114,10 +1114,8 @@
     <string name="hc_failure_permission">missing permission</string>
     <string name="hc_log_read_fail">Unable to read steps</string>
     <string name="widget_title">THE MARCH OF SOULS</string>
-    <string name="widget_steps_default">0 steps</string>
+    <string name="widget_steps_default">0</string>
     <string name="widget_meta_default">Floor 1 · Lv. 1</string>
-    <string name="widget_hint">Tap to open and sync</string>
-    <string name="widget_steps">%1$s steps</string>
     <string name="widget_meta">Floor %1$d · Lv. %2$d · %3$s gold</string>
     <string name="health_rationale_title">HEALTH CONNECT</string>
     <string name="health_rationale_heading">READING STEPS</string>
@@ -1184,4 +1182,7 @@
     <string name="update_installed_title">UPDATE INSTALLED</string>
     <string name="update_installed_body">The March of Souls is now on %1$s. Your data and Garmin key have been kept.</string>
     <string name="update_view_changes">VIEW CHANGES</string>
+    <string name="widget_reserve">steps ready</string>
+    <string name="widget_today">%1$s steps today</string>
+    <string name="widget_sync_hint">Tap to sync</string>
 </resources>

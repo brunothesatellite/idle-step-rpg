@@ -428,6 +428,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         container.ambientMusic.onPause()
         viewModelScope.launch {
             container.gameRepository.markActive()
+            container.gameRepository.refreshWidget()
         }
     }
 
