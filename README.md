@@ -14,11 +14,9 @@
 **Version :** 0.19.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
-[Manuel HTML (FR)](manuel/index.html) ·
-[Manual (EN)](manuel/en/index.html) ·
 [Manuel en ligne](https://brunothesatellite.github.io/idle-step-rpg/manuel/) ·
 [Online manual](https://brunothesatellite.github.io/idle-step-rpg/manuel/en/) ·
-[Démonstration web](https://brunothesatellite.github.io/idle-step-rpg/)
+[Démonstration web (en français uniquement)](https://brunothesatellite.github.io/idle-step-rpg/)
 
 ---
 
@@ -466,6 +464,8 @@ idle-step-rpg/
 
 ## Démonstration web
 
+La démo web est en **français uniquement**.
+
 La maquette d’origine reste disponible :
 
 - [`index.html`](index.html) — démonstration jouable ;
@@ -522,11 +522,9 @@ Détails : [`LICENSES.md`](LICENSES.md), [`assets/CREDITS.md`](assets/CREDITS.md
 **Version:** 0.19.0 · **Android:** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [Android APK](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
-[Manual (FR)](manuel/index.html) ·
-[Manual (EN)](manuel/en/index.html) ·
 [Manual online](https://brunothesatellite.github.io/idle-step-rpg/manuel/) ·
 [Online manual](https://brunothesatellite.github.io/idle-step-rpg/manuel/en/) ·
-[Web demo](https://brunothesatellite.github.io/idle-step-rpg/)
+[Web demo (French only)](https://brunothesatellite.github.io/idle-step-rpg/)
 
 ---
 
@@ -973,6 +971,8 @@ idle-step-rpg/
 ---
 
 ## Web demo
+
+The web demo is in **French only**.
 
 The original mock-up is still available:
 
