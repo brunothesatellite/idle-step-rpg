@@ -59,3 +59,7 @@ Si vous testez, je suis preneur de vos retours.
 - `capture-atelier.png` — l'atelier d'amélioration : niveau suivant, comparaison et coût.
 - `composition.png` — trois captures réunies, prête à poster.
 
+## Version anglaise
+
+Le pitch et les visuels anglais sont dans [`en/`](en/).
+
