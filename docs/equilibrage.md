@@ -2,6 +2,7 @@
 
 > Demande : rapport dans `doc/equilibrage.md`. Le dépôt utilise le dossier `docs/`, ce rapport est donc dans **`docs/equilibrage.md`**.
 > Version analysée : **0.19.1** (`versionCode 46`), sauvegarde **v7**. Aucun code n’a été modifié.
+> Simulateur : **`tools/equilibrage/balance_sim.py`**. Plan de validation : **`docs/validation-equilibrage.md`**.
 
 ## 1. Résumé exécutif
 

@@ -439,6 +439,8 @@ idle-step-rpg/
 │   ├── architecture-android-garmin.md
 │   ├── consommables.md
 │   ├── langue.md
+│   ├── equilibrage.md
+│   ├── validation-equilibrage.md
 │   ├── privacy.md
 │   ├── play-store.md
 │   └── reste-a-faire.md
@@ -490,6 +492,8 @@ Elle simule les pas (aucune montre réelle), le choix de la source de pas (Garmi
 - La synchronisation Garmin dépend de Garmin Connect : la montre doit avoir poussé ses pas.
 
 Voir [`docs/reste-a-faire.md`](docs/reste-a-faire.md) et [`docs/langue.md`](docs/langue.md).
+
+Analyse et validation de l’équilibrage : [`docs/equilibrage.md`](docs/equilibrage.md) · [`docs/validation-equilibrage.md`](docs/validation-equilibrage.md).
 
 ---
 
@@ -947,6 +951,8 @@ idle-step-rpg/
 │   ├── architecture-android-garmin.md
 │   ├── consommables.md
 │   ├── langue.md
+│   ├── equilibrage.md
+│   ├── validation-equilibrage.md
 │   ├── privacy.md
 │   ├── play-store.md
 │   └── reste-a-faire.md
@@ -998,6 +1004,8 @@ It simulates steps (no real watch), the step-source choice (Garmin or Health Con
 - Garmin sync depends on Garmin Connect: the watch must have pushed its steps.
 
 See [`docs/reste-a-faire.md`](docs/reste-a-faire.md) and [`docs/langue.md`](docs/langue.md).
+
+Balance analysis and validation: [`docs/equilibrage.md`](docs/equilibrage.md) · [`docs/validation-equilibrage.md`](docs/validation-equilibrage.md).
 
 ---
 
