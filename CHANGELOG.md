@@ -1,5 +1,11 @@
 # Journal des versions
 
+## v0.18.1
+- **Correctif Codex** : les gardiens des biomes non découverts ne sont plus affichés comme découverts. La migration v6 effaçait les compteurs des monstres mais pas ceux des gardiens ; `bossKills`, `bossFirstSeen` et les entrées de bestiaire des gardiens sont maintenant nettoyés pour les biomes verrouillés.
+- Les gardiens de jalon restent visibles uniquement à partir de leur palier fixe (Mère des Abysses au 25, L'Âme Première au 100).
+- **Tests** : **115 / 115**.
+- **Build** : `versionCode 44`, `versionName 0.18.1`.
+
 ## v0.18.0
 - **Codex — 110 monstres uniques** : 13 variantes inter-biomes, 3 variantes internes et Manticore recolorée. Plus aucun nom n'est partagé entre plusieurs pools ni entre deux tiers d'un même biome. Le Codex affiche **110 créatures / 35 gardiens**.
 - **Badge `NON DÉCOUVERT`** dans le Bestiaire pour les biomes non atteints, et **noms des biomes verrouillés** dans l'onglet Biomes, avec leur palier d'ouverture.

@@ -210,6 +210,8 @@ object GameEngine {
     private fun cleanupUndiscoveredMobs(state: GameState) {
         val bestiary = state.bestiary.toMutableMap()
         val firstSeen = state.firstSeen.toMutableMap()
+        val bossKills = state.bossKills.toMutableMap()
+        val bossSeen = state.bossFirstSeen.toMutableMap()
         val mobNames = mutableSetOf<String>()
 
         BIOME_POOLS.forEach { (key, pool) ->
@@ -222,16 +224,37 @@ object GameEngine {
                     firstSeen.remove(mob.name)
                 }
             }
+            if (!discovered) {
+                // Un gardien de biome ne peut pas être vaincu avant d'avoir
+                // atteint ce biome : on efface les compteurs hérités de la
+                // migration du bestiaire, qui ne connaissait pas le biome.
+                pool.bosses.forEach { boss ->
+                    bestiary.remove(boss.name)
+                    bossKills.remove(boss.name)
+                    bossSeen.remove(boss.name)
+                }
+            }
+        }
+
+        // Les gardiens de jalon ont un palier fixe, parfois avant leur biome
+        // d'accueil (Mère des Abysses au 25, L'Âme Première au 100).
+        SPECIAL_BOSSES.forEach { boss ->
+            val floor = specialBossFloor(boss.name) ?: return@forEach
+            if (state.floor < floor) {
+                bestiary.remove(boss.name)
+                bossKills.remove(boss.name)
+                bossSeen.remove(boss.name)
+            }
         }
 
         val bossNames = allBossTemplates().map { it.name }.toSet()
         bestiary.keys.removeAll { it !in mobNames && it !in bossNames }
         firstSeen.keys.removeAll { it !in mobNames }
-        val bossSeen = state.bossFirstSeen.toMutableMap()
         bossSeen.keys.removeAll { it !in bossNames }
 
         state.bestiary = bestiary
         state.firstSeen = firstSeen
+        state.bossKills = bossKills
         state.bossFirstSeen = bossSeen
     }
 

@@ -324,6 +324,7 @@ class GameEngineTest {
     fun bossKillsAreMigratedFromBestiary() {
         val state = GameState().apply {
             version = 2
+            floor = 12
             bestiary = mapOf("Roi des Cryptes · RAPIDE" to 2, "Hydre de Lerne" to 1)
         }
         GameEngine.migrate(state)
@@ -456,6 +457,51 @@ class GameEngineTest {
         assertNull(state.bestiary["Chauve-souris des neiges"])
         assertEquals(5, state.bestiary["Chauve-souris"])
         assertNull(state.firstSeen["Bête de glace"])
+    }
+
+    @Test
+    fun cleanupErasesBossCountersForUndiscoveredBiomes() {
+        val state = GameState().apply {
+            version = 6
+            floor = 36
+            bossKills = mapOf(
+                "Seigneur de la Forge" to 2,
+                "Dragon de givre" to 2,
+                "Dragon d'orage" to 1,
+                "Mère des Abysses" to 1,
+                "L'Âme Première" to 1
+            )
+            bossFirstSeen = mapOf(
+                "Seigneur de la Forge" to FirstSeen("forge", 31, "boss", 33),
+                "Dragon de givre" to FirstSeen("peaks", 41, "boss", 43)
+            )
+            bestiary = mapOf("Dragon d'orage" to 4, "Seigneur de la Forge" to 2)
+        }
+        GameEngine.migrate(state)
+        assertEquals(2, state.bossKills["Seigneur de la Forge"])
+        assertNull(state.bossKills["Dragon de givre"])
+        assertNull(state.bossKills["Dragon d'orage"])
+        assertEquals(1, state.bossKills["Mère des Abysses"])
+        assertNull(state.bossKills["L'Âme Première"])
+        assertNotNull(state.bossFirstSeen["Seigneur de la Forge"])
+        assertNull(state.bossFirstSeen["Dragon de givre"])
+        assertNull(state.bestiary["Dragon d'orage"])
+    }
+
+    @Test
+    fun cleanupKeepsBossCountersForDiscoveredCimes() {
+        val state = GameState().apply {
+            version = 6
+            floor = 45
+            bossKills = mapOf("Dragon de givre" to 2, "Dragon d'orage" to 1)
+            bossFirstSeen = mapOf(
+                "Dragon de givre" to FirstSeen("peaks", 41, "boss", 43)
+            )
+        }
+        GameEngine.migrate(state)
+        assertEquals(2, state.bossKills["Dragon de givre"])
+        assertEquals(1, state.bossKills["Dragon d'orage"])
+        assertNotNull(state.bossFirstSeen["Dragon de givre"])
     }
 
     @Test
