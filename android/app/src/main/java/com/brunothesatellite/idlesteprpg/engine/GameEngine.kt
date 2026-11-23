@@ -82,11 +82,157 @@ object GameEngine {
             }
             if (kills.isNotEmpty()) state.bossKills = kills
         }
+        // Les anciennes sauvegardes stockaient le nom du gardien avec son
+        // modificateur ("Balrug · BLINDÉ"). On fusionne ces clés vers le nom de
+        // base pour que le bestiaire et le Codex restent cohérents.
+        if (state.bestiary.isNotEmpty()) {
+            val merged = state.bestiary.toMutableMap()
+            var changed = false
+            allBossTemplates().forEach { boss ->
+                val keys = merged.keys.filter { it == boss.name || it.startsWith("${boss.name} ·") }
+                if (keys.isNotEmpty() && (keys.size > 1 || keys.first() != boss.name)) {
+                    val total = keys.sumOf { merged[it] ?: 0 }
+                    keys.forEach { merged.remove(it) }
+                    if (total > 0) merged[boss.name] = total
+                    changed = true
+                }
+            }
+            if (changed) state.bestiary = merged
+        }
+        // Rétro-remplit la première rencontre des sauvegardes existantes : on
+        // reprend le premier pool et son palier d'ouverture, faute d'historique.
+        if (state.bestiary.isNotEmpty()) {
+            val seen = state.firstSeen.toMutableMap()
+            state.bestiary.forEach { (name, kills) ->
+                if (kills <= 0 || seen.containsKey(name)) return@forEach
+                val entry = BIOME_POOLS.entries.firstOrNull { (_, pool) ->
+                    (pool.easy + pool.mid + pool.hard).any { it.name == name }
+                } ?: return@forEach
+                val pool = entry.value
+                val tier = when {
+                    pool.easy.any { it.name == name } -> "easy"
+                    pool.mid.any { it.name == name } -> "mid"
+                    else -> "hard"
+                }
+                val floor = BIOMES.firstOrNull { it.key == entry.key }?.fromFloor ?: 1
+                val level = (floor + when (tier) {
+                    "easy" -> -1
+                    "mid" -> 0
+                    else -> 1
+                }).coerceAtLeast(1)
+                seen[name] = FirstSeen(entry.key, floor, tier, level)
+            }
+            if (seen.size != state.firstSeen.size) state.firstSeen = seen
+        }
+        if (state.bossKills.isNotEmpty()) {
+            val seen = state.bossFirstSeen.toMutableMap()
+            state.bossKills.forEach { (name, kills) ->
+                if (kills <= 0 || seen.containsKey(name)) return@forEach
+                val special = specialBossFloor(name)
+                val entry = BIOME_POOLS.entries.firstOrNull { (_, pool) ->
+                    pool.bosses.any { it.name == name }
+                }
+                val floor = special
+                    ?: entry?.let { (key, _) -> BIOMES.firstOrNull { it.key == key }?.fromFloor }
+                    ?: return@forEach
+                val biomeKey = entry?.key ?: biomeKeyFor(floor)
+                seen[name] = FirstSeen(biomeKey, floor, "boss", floor + 2)
+            }
+            if (seen.size != state.bossFirstSeen.size) state.bossFirstSeen = seen
+        }
+        // Un combat sauvegardé avant l'ajout du tier reste lisible : on le
+        // déduit de la distance, ou du mode farm.
+        state.fight?.let { fight ->
+            if (fight.farm) {
+                fight.tier = "farm"
+            } else if (fight.tier == "easy" && state.distance >= 50) {
+                fight.tier = if (state.distance >= 85) "hard" else "mid"
+            }
+        }
+        // v5 → v6 : les anciens noms partagés deviennent des variantes uniques.
+        // La copie ne s'exécute qu'une fois ; le nettoyage des biomes non
+        // découverts reste actif à chaque chargement.
+        if (state.version < 6) migrateMobRenames(state)
+        cleanupUndiscoveredMobs(state)
         if (state.version < SAVE_VERSION) state.version = SAVE_VERSION
         // Collection permanente : recale les pièces déjà possédées (anciennes
         // sauvegardes, import, pièces acquises avant la v0.17.2).
         seedSetCollections(state)
         return state
+    }
+
+    /**
+     * Copie les compteurs des anciens noms partagés vers leurs variantes
+     * uniques. Les kills de gardien sont retirés du compteur de monstre
+     * (Option B), et seuls les biomes déjà découverts reçoivent une copie.
+     * La première rencontre n'est conservée que sur la variante qui correspond
+     * au biome et au tier d'origine.
+     */
+    private fun migrateMobRenames(state: GameState) {
+        if (MOB_RENAMES.isEmpty()) return
+        val oldBestiary = state.bestiary
+        val oldFirstSeen = state.firstSeen
+        val bestiary = oldBestiary.toMutableMap()
+        val firstSeen = oldFirstSeen.toMutableMap()
+
+        MOB_RENAMES.forEach { (oldName, targets) ->
+            val rawKills = oldBestiary[oldName] ?: 0
+            val bossKillsForName = state.bossKills[oldName] ?: 0
+            val mobKills = (rawKills - bossKillsForName).coerceAtLeast(0)
+            val oldSeen = oldFirstSeen[oldName]
+            bestiary.remove(oldName)
+            firstSeen.remove(oldName)
+            targets.forEach targetLoop@ { targetName ->
+                val location = mobLocation(targetName) ?: return@targetLoop
+                if (state.floor < location.fromFloor) return@targetLoop
+                if (mobKills > 0) {
+                    bestiary[targetName] = max(bestiary[targetName] ?: 0, mobKills)
+                }
+                if (oldSeen != null &&
+                    oldSeen.biomeKey == location.biomeKey &&
+                    oldSeen.tier == location.tier
+                ) {
+                    firstSeen[targetName] = oldSeen
+                }
+            }
+        }
+
+        state.bestiary = bestiary
+        state.firstSeen = firstSeen
+    }
+
+    /**
+     * Efface les compteurs et premières rencontres des monstres dont le biome
+     * n'a pas encore été atteint, et retire les clés orphelines. Idempotent :
+     * tourne à chaque chargement pour nettoyer les anciennes fuites de noms
+     * partagés.
+     */
+    private fun cleanupUndiscoveredMobs(state: GameState) {
+        val bestiary = state.bestiary.toMutableMap()
+        val firstSeen = state.firstSeen.toMutableMap()
+        val mobNames = mutableSetOf<String>()
+
+        BIOME_POOLS.forEach { (key, pool) ->
+            val fromFloor = BIOMES.firstOrNull { it.key == key }?.fromFloor ?: Int.MAX_VALUE
+            val discovered = state.floor >= fromFloor
+            (pool.easy + pool.mid + pool.hard).forEach { mob ->
+                mobNames.add(mob.name)
+                if (!discovered) {
+                    bestiary.remove(mob.name)
+                    firstSeen.remove(mob.name)
+                }
+            }
+        }
+
+        val bossNames = allBossTemplates().map { it.name }.toSet()
+        bestiary.keys.removeAll { it !in mobNames && it !in bossNames }
+        firstSeen.keys.removeAll { it !in mobNames }
+        val bossSeen = state.bossFirstSeen.toMutableMap()
+        bossSeen.keys.removeAll { it !in bossNames }
+
+        state.bestiary = bestiary
+        state.firstSeen = firstSeen
+        state.bossFirstSeen = bossSeen
     }
 
     private fun weekKey(date: LocalDate): String =
@@ -961,9 +1107,14 @@ object GameEngine {
     private fun makeMob(state: GameState): FightData {
         val pos = state.distance
         val biomePool = mobPoolFor(state.floor)
-        val pool = when {
-            pos >= 85 -> biomePool.hard
-            pos >= 50 -> biomePool.mid
+        val tier = when {
+            pos >= 85 -> "hard"
+            pos >= 50 -> "mid"
+            else -> "easy"
+        }
+        val pool = when (tier) {
+            "hard" -> biomePool.hard
+            "mid" -> biomePool.mid
             else -> biomePool.easy
         }
         val t = pool[rnd.nextInt(pool.size)]
@@ -992,7 +1143,8 @@ object GameEngine {
             enemyIntervalMs = ((if (elite) 1100 else 1250) * rule.enemyIntervalMult).roundToLong(),
             gold = gold,
             xp = xp,
-            elite = elite
+            elite = elite,
+            tier = tier
         )
     }
 
@@ -1064,7 +1216,8 @@ object GameEngine {
             enemyIntervalMs = (1250 * rule.enemyIntervalMult).roundToLong(),
             gold = ((6 + 3 * level) * 0.5).roundToInt(),
             xp = ((12 + 5 * level) * 0.5).roundToInt(),
-            farm = true
+            farm = true,
+            tier = "farm"
         )
     }
 
@@ -1215,13 +1368,36 @@ object GameEngine {
         state.goldEarned += earned
         gainXp(state, f.xp)
         state.fight = null
-        recordKill(state, f.enemyName)
+        val clearedFloor = state.floor
+        val killedName = if (f.isBoss) bossFor(clearedFloor).name else f.enemyName
+        recordKill(state, killedName)
+        val baseLevel = (f.enemyLevel - if (f.elite) 2 else 0).coerceAtLeast(1)
+        if (f.isBoss) {
+            if (state.bossFirstSeen[killedName] == null) {
+                state.bossFirstSeen = state.bossFirstSeen + (
+                    killedName to FirstSeen(
+                        biomeKey = biomeKeyFor(clearedFloor),
+                        floor = clearedFloor,
+                        tier = "boss",
+                        level = f.enemyLevel
+                    )
+                    )
+            }
+        } else if (state.firstSeen[killedName] == null) {
+            state.firstSeen = state.firstSeen + (
+                killedName to FirstSeen(
+                    biomeKey = biomeKeyFor(clearedFloor),
+                    floor = clearedFloor,
+                    tier = f.tier,
+                    level = baseLevel
+                )
+                )
+        }
 
         if (f.isBoss) {
             state.bosses++
             state.bossesToday++
-            val clearedFloor = state.floor
-            val baseBoss = bossFor(clearedFloor).name
+            val baseBoss = killedName
             state.bossKills = state.bossKills + (
                 baseBoss to ((state.bossKills[baseBoss] ?: 0) + 1)
                 )

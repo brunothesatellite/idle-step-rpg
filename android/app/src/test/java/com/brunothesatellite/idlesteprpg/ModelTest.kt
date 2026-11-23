@@ -197,6 +197,14 @@ class ModelTest {
     }
 
     @Test
+    fun mobNamesAreUniqueAcrossPools() {
+        val all = BIOME_POOLS.values.flatMap { it.easy + it.mid + it.hard }
+        assertEquals(110, all.size)
+        assertEquals(110, all.distinctBy { it.name }.size)
+        assertEquals(35, allBossTemplates().size)
+    }
+
+    @Test
     fun setCollectionUsesEquipmentInventoryAndStash() {
         val state = GameState().apply {
             equipment = equipment + Item(

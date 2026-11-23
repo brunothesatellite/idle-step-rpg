@@ -4,6 +4,7 @@ import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.FightData
+import com.brunothesatellite.idlesteprpg.engine.FirstSeen
 import com.brunothesatellite.idlesteprpg.engine.ForgeOutcome
 import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
 import com.brunothesatellite.idlesteprpg.engine.Item
@@ -329,6 +330,146 @@ class GameEngineTest {
         assertEquals(2, state.bossKills["Roi des Cryptes"])
         assertEquals(1, state.bossKills["Hydre de Lerne"])
         assertEquals(SAVE_VERSION, state.version)
+    }
+
+    @Test
+    fun victoryRecordsMobFirstEncounter() {
+        val state = GameState().apply { floor = 12 }
+        val fight = FightData(
+            enemyName = "Gobelin",
+            enemyIcon = "mon/goblin.png",
+            enemyLevel = 12,
+            enemyHp = 1.0,
+            enemyMaxHp = 1.0,
+            enemyAtk = 1.0,
+            enemyIntervalMs = 1250,
+            gold = 1,
+            xp = 1,
+            tier = "mid"
+        )
+        GameEngine.victory(state, fight)
+        assertEquals(FirstSeen("catacombs", 12, "mid", 12), state.firstSeen["Gobelin"])
+    }
+
+    @Test
+    fun victoryRecordsBossBaseNameAndFirstEncounter() {
+        val state = GameState().apply { floor = 30 }
+        val fight = FightData(
+            enemyName = "Balrug · BLINDÉ",
+            enemyIcon = "mon/balrug.png",
+            enemyLevel = 32,
+            enemyHp = 1.0,
+            enemyMaxHp = 1.0,
+            enemyAtk = 1.0,
+            enemyIntervalMs = 1250,
+            gold = 1,
+            xp = 1,
+            isBoss = true,
+            modifier = "BLINDÉ",
+            tier = "boss"
+        )
+        GameEngine.victory(state, fight)
+        assertEquals(1, state.bestiary["Balrug"])
+        assertTrue(state.bestiary.keys.none { it.contains(" · ") })
+        assertEquals(1, state.bossKills["Balrug"])
+        assertEquals(FirstSeen("ash", 30, "boss", 32), state.bossFirstSeen["Balrug"])
+    }
+
+    @Test
+    fun migrateSplitsSharedMobsAndErasesUndiscoveredBiomes() {
+        val state = GameState().apply {
+            version = 5
+            floor = 25
+            bestiary = mapOf(
+                "Chauve-souris" to 30,
+                "Kobold" to 12,
+                "Balrug" to 10,
+                "Manticore" to 8,
+                "Golem de fer" to 6,
+                "Bête de glace" to 4
+            )
+            bossKills = mapOf("Balrug" to 6, "Manticore" to 2, "Golem de fer" to 1)
+            firstSeen = mapOf(
+                "Chauve-souris" to FirstSeen("crypts", 1, "easy", 1),
+                "Manticore" to FirstSeen("ash", 21, "mid", 21),
+                "Golem de fer" to FirstSeen("forge", 31, "mid", 31)
+            )
+        }
+        GameEngine.migrate(state)
+        assertEquals(SAVE_VERSION, state.version)
+        assertEquals(30, state.bestiary["Chauve-souris"])
+        assertEquals(30, state.bestiary["Chauve-souris des galeries"])
+        assertNull(state.bestiary["Chauve-souris des neiges"])
+        assertEquals(12, state.bestiary["Kobold"])
+        assertNull(state.bestiary["Kobold mineur"])
+        assertEquals(4, state.bestiary["Balrug"])
+        assertNull(state.bestiary["Balrug déchu"])
+        assertNull(state.bestiary["Manticore"])
+        assertEquals(6, state.bestiary["Manticore de cendre"])
+        assertNull(state.bestiary["Golem de fer"])
+        assertNull(state.bestiary["Golem d'atelier"])
+        assertNull(state.bestiary["Bête de glace"])
+        assertEquals("crypts", state.firstSeen["Chauve-souris"]?.biomeKey)
+        assertNull(state.firstSeen["Chauve-souris des galeries"])
+        assertEquals("ash", state.firstSeen["Manticore de cendre"]?.biomeKey)
+        assertNull(state.firstSeen["Golem d'atelier"])
+    }
+
+    @Test
+    fun migrateCopiesToDiscoveredLaterBiomes() {
+        val state = GameState().apply {
+            version = 5
+            floor = 45
+            bestiary = mapOf("Golem de fer" to 6, "Loup noir" to 9, "Troll de fer" to 4)
+            bossKills = mapOf("Golem de fer" to 1)
+            firstSeen = mapOf(
+                "Golem de fer" to FirstSeen("forge", 31, "mid", 31)
+            )
+        }
+        GameEngine.migrate(state)
+        assertEquals(5, state.bestiary["Golem de fer"])
+        assertEquals(5, state.bestiary["Golem d'atelier"])
+        assertEquals("forge", state.firstSeen["Golem d'atelier"]?.biomeKey)
+        assertNull(state.firstSeen["Golem de fer"])
+        assertEquals(9, state.bestiary["Loup des neiges"])
+        assertNull(state.bestiary["Loup noir"])
+        assertEquals(4, state.bestiary["Troll de fer"])
+        assertEquals(4, state.bestiary["Troll de fonte"])
+    }
+
+    @Test
+    fun cleanupErasesUndiscoveredMobsOnEveryLoad() {
+        val state = GameState().apply {
+            version = 6
+            floor = 25
+            bestiary = mapOf(
+                "Bête de glace" to 4,
+                "Chauve-souris des neiges" to 3,
+                "Chauve-souris" to 5
+            )
+            firstSeen = mapOf(
+                "Bête de glace" to FirstSeen("peaks", 41, "easy", 40)
+            )
+        }
+        GameEngine.migrate(state)
+        assertNull(state.bestiary["Bête de glace"])
+        assertNull(state.bestiary["Chauve-souris des neiges"])
+        assertEquals(5, state.bestiary["Chauve-souris"])
+        assertNull(state.firstSeen["Bête de glace"])
+    }
+
+    @Test
+    fun migrateMergesBossSuffixesAndBackfillsFirstSeen() {
+        val state = GameState().apply {
+            version = 4
+            bestiary = mapOf("Roi des Cryptes · RAPIDE" to 2, "Gobelin" to 3)
+            floor = 20
+        }
+        GameEngine.migrate(state)
+        assertEquals(2, state.bestiary["Roi des Cryptes"])
+        assertTrue(state.bestiary.keys.none { it.contains(" · ") })
+        assertEquals(FirstSeen("crypts", 1, "boss", 3), state.bossFirstSeen["Roi des Cryptes"])
+        assertEquals(FirstSeen("catacombs", 11, "easy", 10), state.firstSeen["Gobelin"])
     }
 
     @Test

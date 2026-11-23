@@ -51,6 +51,7 @@ import com.brunothesatellite.idlesteprpg.engine.BossTemplate
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.ITEM_SETS
 import com.brunothesatellite.idlesteprpg.engine.MobTemplate
+import com.brunothesatellite.idlesteprpg.engine.SPECIAL_BOSSES
 import com.brunothesatellite.idlesteprpg.engine.allBossTemplates
 import com.brunothesatellite.idlesteprpg.engine.allMobTemplates
 import com.brunothesatellite.idlesteprpg.engine.biomeKeyFor
@@ -64,6 +65,7 @@ import com.brunothesatellite.idlesteprpg.engine.setBonusDescription
 import com.brunothesatellite.idlesteprpg.engine.setLabel
 import com.brunothesatellite.idlesteprpg.engine.setSourceLabel
 import com.brunothesatellite.idlesteprpg.engine.slotLabel
+import com.brunothesatellite.idlesteprpg.engine.specialBossFloor
 import java.util.Locale
 import kotlin.math.min
 import kotlin.math.pow
@@ -166,7 +168,8 @@ private fun BestiaryCodex(state: GameState) {
             color = GoldLight
         )
         Text(
-            "Les silhouettes inconnues se révèlent au premier combat ou à la première victoire. Appuyez sur une créature pour ouvrir sa fiche.",
+            "Les silhouettes inconnues se révèlent à la première victoire. Les biomes non " +
+                "découverts restent affichés en silhouettes. Appuyez sur une créature pour ouvrir sa fiche.",
             fontSize = 6.3.sp,
             color = Muted,
             lineHeight = 9.sp
@@ -175,11 +178,16 @@ private fun BestiaryCodex(state: GameState) {
     Spacer(Modifier.height(8.dp))
     BIOME_POOLS.forEach { (key, pool) ->
         val biome = BIOMES.firstOrNull { it.key == key } ?: return@forEach
+        val unlocked = state.floor >= biome.fromFloor
         val biomeMobs = (pool.easy + pool.mid + pool.hard).distinctBy { it.name }
         val biomeBosses = pool.bosses.distinctBy { it.name }
         val foundMobs = biomeMobs.count { (state.bestiary[it.name] ?: 0) > 0 }
         val foundBosses = biomeBosses.count { (state.bossKills[it.name] ?: 0) > 0 }
-        PixelCard(Modifier.fillMaxWidth(), background = Panel2) {
+        PixelCard(
+            Modifier.fillMaxWidth(),
+            borderColor = if (unlocked) Line else Line2,
+            background = if (unlocked) Panel2 else Panel
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     SectionLabel(biome.name)
@@ -189,7 +197,15 @@ private fun BestiaryCodex(state: GameState) {
                         color = Muted
                     )
                 }
-                if (biomeKeyFor(state.floor) == key) {
+                if (!unlocked) {
+                    Text(
+                        "NON DÉCOUVERT",
+                        fontFamily = Press,
+                        fontSize = 5.sp,
+                        color = Muted2,
+                        letterSpacing = 0.4.sp
+                    )
+                } else if (biomeKeyFor(state.floor) == key) {
                     Text("ACTUEL", fontFamily = Press, fontSize = 5.5.sp, color = GoldLight)
                 }
             }
@@ -209,6 +225,29 @@ private fun BestiaryCodex(state: GameState) {
                 biomeBosses.forEach { boss ->
                     BossEntry(state, boss, biome.fromFloor) { selectedBoss = boss }
                 }
+            }
+        }
+        Spacer(Modifier.height(7.dp))
+    }
+    val milestoneBosses = SPECIAL_BOSSES.filter { special ->
+        BIOME_POOLS.values.none { pool -> pool.bosses.any { it.name == special.name } }
+    }
+    if (milestoneBosses.isNotEmpty()) {
+        PixelCard(
+            Modifier.fillMaxWidth(),
+            borderColor = Blood.copy(alpha = 0.35f),
+            background = Color(0xFF20121B)
+        ) {
+            SectionLabel("GARDIENS DE JALON")
+            Text(
+                "Ces gardiens apparaissent à un palier fixe, en dehors de la rotation des biomes.",
+                fontSize = 6.2.sp,
+                color = Muted,
+                lineHeight = 9.sp
+            )
+            Spacer(Modifier.height(5.dp))
+            milestoneBosses.forEach { boss ->
+                BossEntry(state, boss, specialBossFloor(boss.name) ?: 1) { selectedBoss = boss }
             }
         }
         Spacer(Modifier.height(7.dp))
@@ -287,19 +326,21 @@ private fun buildMobPreview(state: GameState, mob: MobTemplate): MobPreview {
     val entry = BIOME_POOLS.entries.firstOrNull { (_, pool) ->
         (pool.easy + pool.mid + pool.hard).any { it.name == mob.name }
     }
-    val key = entry?.key ?: biomeKeyFor(state.floor)
     val pool = entry?.value
-    val tier = when {
+    val poolTier = when {
         pool == null -> "easy"
         pool.easy.any { it.name == mob.name } -> "easy"
         pool.mid.any { it.name == mob.name } -> "mid"
         else -> "hard"
     }
+    val seen = state.firstSeen[mob.name]
+    val key = seen?.biomeKey ?: entry?.key ?: biomeKeyFor(state.floor)
     val biome = BIOMES.firstOrNull { it.key == key }
-    val floor = if (key == biomeKeyFor(state.floor)) state.floor else (biome?.fromFloor ?: state.floor)
+    val floor = seen?.floor ?: (if (key == biomeKeyFor(state.floor)) state.floor else (biome?.fromFloor ?: state.floor))
+    val tier = seen?.tier ?: poolTier
     val rule = biomeRuleFor(floor)
-    val level = (floor + when (tier) {
-        "easy" -> -1
+    val level = seen?.level ?: (floor + when (tier) {
+        "easy", "farm" -> -1
         "mid" -> 0
         else -> 1
     }).coerceAtLeast(1)
@@ -313,11 +354,13 @@ private fun buildMobPreview(state: GameState, mob: MobTemplate): MobPreview {
     val zone = when (tier) {
         "easy" -> "0–50 m"
         "mid" -> "50–85 m"
+        "farm" -> "palier verrouillé"
         else -> "85–100 m"
     }
     val tierLabel = when (tier) {
         "easy" -> "DÉBUT DE PALIER"
         "mid" -> "MILIEU DE PALIER"
+        "farm" -> "FARM"
         else -> "FIN DE PALIER"
     }
     return MobPreview(
@@ -418,7 +461,7 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    "${preview.tier} · ${preview.zone} · Palier ${preview.floor}",
+                    "${preview.tier} · ${preview.zone} · Palier ${preview.floor} · Niv. ${preview.level}",
                     fontSize = 6.sp,
                     color = Muted,
                     textAlign = TextAlign.Center
@@ -473,8 +516,13 @@ private fun MobDetailDialog(state: GameState, mob: MobTemplate, onDismiss: () ->
                     }
                     Spacer(Modifier.height(7.dp))
                     Text(
-                        "Statistiques de base au palier ${preview.floor}, règle de biome incluse. " +
-                            "10 % de chance d'élite : Niv. +2, PV ×2,2, ATQ ×1,3.",
+                        if (state.firstSeen.containsKey(mob.name)) {
+                            "Statistiques telles qu'à la première rencontre (palier ${preview.floor}), " +
+                                "règle de biome incluse. 10 % de chance d'élite : Niv. +2, PV ×2,2, ATQ ×1,3."
+                        } else {
+                            "Statistiques de base au palier ${preview.floor}, règle de biome incluse. " +
+                                "10 % de chance d'élite : Niv. +2, PV ×2,2, ATQ ×1,3."
+                        },
                         fontSize = 5.6.sp,
                         color = Muted2,
                         textAlign = TextAlign.Center,
@@ -506,11 +554,16 @@ private fun buildBossPreview(state: GameState, boss: BossTemplate): BossPreview 
     val entry = BIOME_POOLS.entries.firstOrNull { (_, pool) ->
         pool.bosses.any { it.name == boss.name }
     }
-    val key = entry?.key ?: biomeKeyFor(state.floor)
+    val seen = state.bossFirstSeen[boss.name]
+    val special = specialBossFloor(boss.name)
+    val referenceFloor = seen?.floor ?: special ?: entry?.let { (key, _) ->
+        BIOMES.firstOrNull { it.key == key }?.fromFloor
+    } ?: state.floor
+    val key = seen?.biomeKey ?: entry?.key ?: biomeKeyFor(referenceFloor)
     val biome = BIOMES.firstOrNull { it.key == key }
-    val floor = if (key == biomeKeyFor(state.floor)) state.floor else (biome?.fromFloor ?: state.floor)
+    val floor = referenceFloor
     val rule = biomeRuleFor(floor)
-    val level = floor + 2
+    val level = seen?.level ?: (floor + 2)
     val depth = if (floor <= 10) 1.0 else min(1.08.pow(floor - 10.0), 40.0)
     val ability = bossAbilityFor(boss.name, floor)
     val reward = min(10.0, sqrt(depth))
@@ -687,10 +740,13 @@ private fun BossDetailDialog(state: GameState, boss: BossTemplate, onDismiss: ()
                     }
                     Spacer(Modifier.height(7.dp))
                     Text(
-                        "Statistiques de base au palier ${preview.floor}, règle de biome incluse, " +
-                            "hors modificateur. Modificateur aléatoire : RAPIDE (cadence 0,90 s), " +
-                            "BLINDÉ (PV +30 %), BERSERK (ATQ +30 %), RÉGÉNÉRANT (PV +15 %, régénération), " +
-                            "VOLEUR (ATQ +10 %, vole de l'or).",
+                        (if (state.bossFirstSeen.containsKey(boss.name)) {
+                            "Statistiques telles qu'à la première rencontre (palier ${preview.floor}), "
+                        } else {
+                            "Statistiques de base au palier ${preview.floor}, "
+                        }) + "règle de biome incluse, hors modificateur. Modificateur aléatoire : " +
+                            "RAPIDE (cadence 0,90 s), BLINDÉ (PV +30 %), BERSERK (ATQ +30 %), " +
+                            "RÉGÉNÉRANT (PV +15 %, régénération), VOLEUR (ATQ +10 %, vole de l'or).",
                         fontSize = 5.6.sp,
                         color = Muted2,
                         textAlign = TextAlign.Center,
@@ -751,6 +807,18 @@ private fun BossEntry(
                 maxLines = 1
             )
         }
+        Text(
+            "GARDIEN",
+            fontFamily = Press,
+            fontSize = 4.6.sp,
+            color = Blood,
+            modifier = Modifier
+                .clip(RoundedCornerShape(3.dp))
+                .background(Blood.copy(alpha = 0.10f))
+                .border(1.dp, Blood.copy(alpha = 0.35f), RoundedCornerShape(3.dp))
+                .padding(horizontal = 4.dp, vertical = 2.dp)
+        )
+        Spacer(Modifier.width(4.dp))
         Text(
             if (known) "$kills×" else "—",
             fontSize = 6.sp,
@@ -956,9 +1024,9 @@ private fun BiomesCodex(state: GameState) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    SectionLabel(if (known) biome.name else "???")
+                    SectionLabel(biome.name)
                     Text(
-                        if (known) rule.label else "Biome non découvert",
+                        if (known) rule.label else "Palier ${biome.fromFloor} · Biome non découvert",
                         fontSize = 7.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (known) Green else Muted2

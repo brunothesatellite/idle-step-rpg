@@ -104,6 +104,7 @@ Le manuel complet contient les mécaniques, les tableaux, les écrans et la FAQ.
 - **Captures** : [`manuel/images/`](manuel/images/)
 
 Il est embarqué dans l’APK (`android/app/src/main/assets/manuel/`) et s’ouvre hors ligne dans une activité WebView native.
+Le HTML publié et l’asset sont générés au build depuis `manuel/index.template.html` ; la tâche Gradle `generateManual` y injecte les compteurs réels du Codex et la version de l’application.
 
 ---
 

@@ -26,8 +26,8 @@ android {
         applicationId = "com.brunothesatellite.idlesteprpg"
         minSdk = 34
         targetSdk = 36
-        versionCode = 42
-        versionName = "0.17.8"
+        versionCode = 43
+        versionName = "0.18.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
         manifestPlaceholders["appIconRound"] = "@mipmap/ic_launcher_round"
@@ -144,22 +144,53 @@ implementation("androidx.health.connect:connect-client:1.1.0")
     testImplementation("org.json:json:20231013")
 }
 
+// Compteurs du Codex et version de l'application injectés dans le manuel au
+// build : le HTML publié et l'asset embarqué restent alignés sur le projet,
+// sans script externe.
+val manualTemplate = rootProject.file("../manuel/index.template.html")
+val manualRepo = rootProject.file("../manuel/index.html")
+val manualAsset = file("src/main/assets/manuel/index.html")
+val modelSource = file(
+    "src/main/java/com/brunothesatellite/idlesteprpg/engine/Model.kt"
+)
+val appVersionName = android.defaultConfig.versionName ?: "0.0.0"
 
+val generateManual by tasks.registering {
+    inputs.file(modelSource)
+    inputs.file(manualTemplate)
+    inputs.property("versionName", appVersionName)
+    outputs.file(manualRepo)
+    outputs.file(manualAsset)
 
+    doLast {
+        val model = modelSource.readText()
+        val mobCount = Regex("MobTemplate\\(\"([^\"]+)\"")
+            .findAll(model)
+            .map { it.groupValues[1] }
+            .toSet()
+            .size
+        val bossCount = Regex("BossTemplate\\(\"([^\"]+)\"")
+            .findAll(model)
+            .map { it.groupValues[1] }
+            .toSet()
+            .size
+        val setsBlock = Regex("val ITEM_SETS = listOf\\(([\\s\\S]*?)\\)")
+            .find(model)
+            ?.groupValues
+            ?.get(1)
+            .orEmpty()
+        val setCount = Regex("\"([^\"]+)\"").findAll(setsBlock).count()
+        val html = manualTemplate.readText()
+            .replace("{{MOB_COUNT}}", mobCount.toString())
+            .replace("{{BOSS_COUNT}}", bossCount.toString())
+            .replace("{{SET_COUNT}}", setCount.toString())
+            .replace("{{APP_VERSION}}", appVersionName)
+        manualRepo.writeText(html)
+        manualAsset.parentFile.mkdirs()
+        manualAsset.writeText(html)
+    }
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+tasks.named("preBuild") {
+    dependsOn(generateManual)
+}

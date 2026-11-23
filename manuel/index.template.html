@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#150F1E">
+<title>Manuel — La Marche des Âmes</title>
+<style>
+  :root {
+    --ink: #0b0810;
+    --panel: #171121;
+    --panel2: #21182d;
+    --panel3: #2a1f3a;
+    --line: #33263f;
+    --line2: #443153;
+    --gold: #e8c27a;
+    --gold-light: #f6dda6;
+    --parchment: #f0e2c4;
+    --muted: #9587a8;
+    --muted2: #6e617f;
+    --ember: #ff9448;
+    --blood: #d15458;
+    --green: #8ed39b;
+    --blue: #6fa8ff;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #0b0810 0%, #151022 55%, #0b0810 100%);
+    color: var(--parchment);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--gold-light); }
+  a:hover { color: #fff; }
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 18px 70px;
+  }
+  header.hero {
+    text-align: center;
+    padding: 26px 16px 18px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 22px;
+  }
+  header.hero h1 {
+    margin: 0;
+    color: var(--gold-light);
+    font-size: clamp(24px, 5vw, 40px);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 0 #000;
+  }
+  header.hero p { margin: 8px auto 0; color: var(--muted); max-width: 760px; }
+  .badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 4px 10px;
+    border: 1px solid var(--line2);
+    border-radius: 999px;
+    color: var(--gold);
+    background: var(--panel);
+    font-size: 12px;
+  }
+  nav.toc {
+    background: rgba(23, 17, 33, 0.92);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 26px;
+  }
+  nav.toc h2 { margin: 0 0 10px; color: var(--gold); font-size: 14px; letter-spacing: 1px; }
+  nav.toc ol {
+    columns: 2;
+    column-gap: 30px;
+    margin: 0;
+    padding-left: 22px;
+  }
+  nav.toc li { break-inside: avoid; margin: 3px 0; }
+  nav.toc a { text-decoration: none; color: var(--parchment); }
+  nav.toc .tocHistoire { margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  nav.toc .tocHistoire a { color: var(--gold); font-weight: 600; }
+  section {
+    background: rgba(23, 17, 33, 0.78);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 18px 0;
+  }
+  section > h2 {
+    margin: 0 0 6px;
+    color: var(--gold-light);
+    font-size: 22px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+  h3 { color: var(--gold); margin: 18px 0 6px; font-size: 16px; }
+  h4 { color: var(--parchment); margin: 14px 0 4px; font-size: 14px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code, kbd {
+    background: var(--panel3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.92em;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--gold-light); font-size: 13px; }
+  tr:nth-child(even) td { background: rgba(42, 31, 58, 0.35); }
+  .note, .warn, .ok {
+    border-left: 4px solid var(--gold);
+    background: rgba(42, 31, 58, 0.55);
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: 4px;
+  }
+  .warn { border-left-color: var(--blood); background: rgba(51, 22, 27, 0.5); }
+  .ok { border-left-color: var(--green); background: rgba(22, 45, 30, 0.45); }
+  .note strong, .warn strong, .ok strong { color: var(--gold-light); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 14px 0;
+  }
+  figure.shot {
+    margin: 0;
+    background: var(--panel2);
+    border: 1px solid var(--line2);
+    border-radius: 9px;
+    padding: 8px;
+  }
+  figure.shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  figure.shot figcaption {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .kpi {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .kpi div {
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 8px 10px;
+  }
+  .kpi b { display: block; color: var(--gold-light); font-size: 18px; }
+  .kpi span { color: var(--muted); font-size: 12px; }
+  details {
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 9px 12px;
+    margin: 8px 0;
+  }
+  summary { cursor: pointer; color: var(--gold-light); }
+  .top { text-align: right; font-size: 12px; margin-top: 6px; }
+  footer {
+    color: var(--muted2);
+    text-align: center;
+    font-size: 12px;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    margin-top: 28px;
+  }
+  @media (max-width: 640px) {
+    nav.toc ol { columns: 1; }
+    section { padding: 15px 14px; }
+    .wrap { padding: 14px 10px 50px; }
+  }
+  @media print {
+    body { background: #fff; color: #111; }
+    section, nav.toc, figure.shot { background: #fff; border-color: #bbb; }
+    header.hero h1, section > h2, h3 { color: #333; }
+    nav.toc { break-after: page; }
+    figure.shot { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>LA MARCHE DES ÂMES</h1>
+  <p>Manuel utilisateur complet — un RPG de marche où vos pas deviennent votre progression.</p>
+  <span class="badge">Version {{APP_VERSION}} · Android 14+ · Garmin ou Santé Connect</span>
+</header>
+
+<nav class="toc">
+  <h2>SOMMAIRE</h2>
+  <p class="tocHistoire"><a href="#histoire">Histoire — l'origine de la marche</a></p>
+  <ol>
+    <li><a href="#decouvrir">Découvrir le jeu</a></li>
+    <li><a href="#installer">Installer et choisir sa source de pas</a></li>
+    <li><a href="#boucle">La boucle quotidienne</a></li>
+    <li><a href="#interface">Interface et HUD</a></li>
+    <li><a href="#combat">Combat automatique</a></li>
+    <li><a href="#ferveur">Ferveur</a></li>
+    <li><a href="#ressources">Ressources</a></li>
+    <li><a href="#serments">Serments journaliers</a></li>
+    <li><a href="#coffres">Coffres</a></li>
+    <li><a href="#camp">Campement</a></li>
+    <li><a href="#inventaire">Inventaire et équipement</a></li>
+    <li><a href="#consommables">Consommables</a></li>
+    <li><a href="#rencontres">Rencontres spéciales</a></li>
+    <li><a href="#progression">Progression et contenu</a></li>
+    <li><a href="#journal">Journal, légende, bestiaire</a></li>
+    <li><a href="#reglages">Réglages</a></li>
+    <li><a href="#mises-a-jour">Mises à jour</a></li>
+    <li><a href="#garmin">Synchronisation Garmin</a></li>
+    <li><a href="#absence">Résumé d'absence</a></li>
+    <li><a href="#faq">Questions fréquentes</a></li>
+    <li><a href="#donnees">Données et confidentialité</a></li>
+    <li><a href="#credits">Licences et crédits</a></li>
+  </ol>
+</nav>
+
+<section id="histoire">
+  <h2>Histoire</h2>
+  <p><em>Les âmes ne meurent pas. Elles attendent.</em></p>
+  <p>On raconte qu'aux portes de Vael, la terre s'est ouverte un matin sans trembler. Pas de gouffre, pas de feu : une porte de pierre, basse, couverte de runes, et derrière elle un escalier qui descendait plus loin que la lumière.</p>
+  <p>Les premiers à y entrer ne sont pas revenus. Pas morts — retenus. Leurs noms sont restés accrochés aux murs, et depuis, chaque salle du donjon respire avec le souffle de quelqu'un qui n'a pas fini de partir.</p>
+  <p>Kaelen était pèlerin. Il portait une besace, une lame héritée, et une braise dans un pot de fer. On le disait lent. C'est pour ça qu'on lui a confié la marche : les âmes n'ont pas besoin de héros pressés.</p>
+  <p>Il a compris une chose simple : les donjons ne sont pas des tombeaux, ce sont des nœuds. Chaque palier est un fil serré autour d'une âme. Le gardien qui le scelle n'est pas un bourreau — c'est le dernier gardien d'une douleur, celui qui refuse de la laisser partir. Alors Kaelen marche. Dix pas pour un mètre, cent mètres pour un palier. Chaque pas est un mot dans une prière qu'il ne prononce pas à voix haute.</p>
+  <p>Aux Cryptes de Vael, la pierre est froide et les cierges brûlent sans cire. Aux Catacombes, l'air sent la mousse et les serments anciens. Dans les Cavernes de cendre, il apprend à respirer court. Dans la Forge noyée, il pose la main sur les enclumes et sent encore la chaleur de ceux qui forgeaient pour les vivants. Aux Cimes du Serment, le vent lui vole ses mots. Dans le Bois des Âmes, les arbres ont des feuilles d'or et des racines qui se souviennent. Dans l'Abîme organique, la pierre saigne et il ne s'arrête pas. Au Trône des Âmes, il n'y a plus de couloir : seulement une porte, un gardien, et derrière, la Première Âme, celle qui a refusé de partir la première.</p>
+  <p>La braise ne s'éteint jamais. Tant qu'il marche, elle veille ; quand il s'arrête, il la pose au centre du camp, et les âmes qui passent s'y réchauffent sans oser s'approcher.</p>
+  <p>Kaelen ne cherche pas la fin. Il sait qu'il n'y en a pas. Il cherche la prochaine âme qui acceptera de respirer.</p>
+  <p><em>« La défaite n'est qu'un détour. Vingt mètres en arrière, l'or coule encore. »</em></p>
+</section>
+
+<section id="decouvrir">
+  <h2>1. Découvrir le jeu</h2>
+  <p><strong>La Marche des Âmes</strong> est un RPG idle et pixel art. Vous ne pilotez ni la marche ni les combats : vous marchez dans la vraie vie, puis vos pas sont convertis en distance dans un donjon infini.</p>
+  <div class="kpi">
+    <div><b>10 pas</b><span>= 1 mètre</span></div>
+    <div><b>100 m</b><span>= 1 palier + gardien</span></div>
+    <div><b>24 h</b><span>durée de vie d'un coffre</span></div>
+    <div><b>00:00</b><span>reset local quotidien</span></div>
+  </div>
+  <ul>
+    <li><strong>Deux sources de pas au choix</strong> : Garmin (Personal API) ou Santé Connect — une seule active à la fois.</li>
+    <li><strong>2FA dans le navigateur</strong> : l'application ne voit jamais votre mot de passe ni votre code Garmin.</li>
+    <li><strong>Aucun serveur éditeur</strong> : la progression et la clé restent sur le téléphone.</li>
+    <li><strong>16 pistes d'ambiance 8 bits</strong> : deux variantes par biome, boucle longue et démarrage aléatoire.</li>
+    <li><strong>Vous décidez</strong> : forcer un coffre, changer d'équipement, lancer une potion, choisir une rencontre.</li>
+  </ul>
+  <div class="note"><strong>Le cœur du jeu :</strong> vos pas remplissent une réserve. Le héros la consomme automatiquement pour marcher, rencontrer des monstres, ouvrir des coffres et affronter les gardiens.</div>
+</section>
+
+<section id="installer">
+  <h2>2. Installer et choisir sa source de pas</h2>
+  <h3>Installer l'APK</h3>
+  <ol>
+    <li>Téléchargez le dernier APK depuis GitHub Releases.</li>
+    <li>Autorisez l'installation d'applications inconnues pour votre navigateur ou gestionnaire de fichiers.</li>
+    <li>Ouvrez l'APK et installez-le. Les mises à jour suivantes conservent les données.</li>
+  </ol>
+  <h3>Choisir la source de pas</h3>
+  <p>Le jeu peut lire vos pas de deux façons, <strong>une seule à la fois</strong> :</p>
+  <ul>
+    <li><strong>Garmin</strong> — clé personnelle Garmin (Personal API).</li>
+    <li><strong>Santé Connect</strong> — les pas enregistrés par Google Fit, Samsung Health ou une montre. Aucune clé n'est nécessaire, mais il faut autoriser la lecture des pas.</li>
+  </ul>
+  <p>Le choix se fait à l'installation, puis dans <strong>Réglages → Source de pas</strong>. Changer de source ne recrédite pas les pas déjà comptés dans la journée : le premier import de la nouvelle source sert de base, et les pas suivants comptent normalement.</p>
+  <div class="warn"><strong>Santé Connect</strong> est un hub : sans application fournisseur (Google Fit, Samsung Health, montre), il renvoie zéro pas.</div>
+  <figure class="shot">
+    <img src="images/source_pas.jpg" alt="Réglages, section Source de pas : Garmin sélectionné et actif, Santé Connect proposé en dessous">
+    <figcaption>Réglages → Source de pas : une carte par source, la source active en surbrillance, son état et ses actions. Ici Garmin est actif.</figcaption>
+  </figure>
+  <figure class="shot">
+    <img src="images/source_sante_connect.jpg" alt="Réglages, section Source de pas avec Santé Connect sélectionné et autorisé">
+    <figcaption>Santé Connect sélectionné : l'autorisation de lecture des pas est accordée et la synchronisation se fait localement, sans clé.</figcaption>
+  </figure>
+  <h3>Créer la clé Garmin</h3>
+  <ol>
+    <li>Dans le jeu, ouvrez <strong>Réglages</strong> (⚙) puis la section <strong>Compte Garmin</strong>.</li>
+    <li>Appuyez sur <strong>Ouvrir Garmin Connect</strong> : la connexion et la 2FA se font dans le navigateur.</li>
+    <li>Dans Garmin Connect, créez une <strong>Personal API Key</strong> et copiez-la.</li>
+    <li>Collez la clé dans l'application.</li>
+    <li>Saisissez la <strong>date d'expiration</strong> : Garmin ne l'expose pas via l'API.</li>
+    <li>Appuyez sur <strong>Tester et enregistrer</strong>, puis <strong>Synchroniser</strong>.</li>
+  </ol>
+  <div class="warn"><strong>Sécurité :</strong> ne partagez jamais votre clé. Si elle a été exposée, révoquez-la dans Garmin Connect et créez-en une nouvelle. La clé et le jeton sont chiffrés dans Android Keystore.</div>
+  <h3>Ce que fait la synchronisation</h3>
+  <ul>
+    <li>La toute première synchronisation ne crédite que les pas <strong>de la journée</strong> : on ne démarre pas avec une réserve héritée de la semaine passée.</li>
+    <li>Ensuite, elle lit les <strong>7 derniers jours</strong>, sans jamais remonter avant la <strong>date de première connexion</strong>.</li>
+    <li>Chaque jour n'est compté qu'une fois : pas de double comptage.</li>
+    <li>Le rattrapage est plafonné à <strong>100 000 pas</strong> par synchronisation (un marathon fait environ 45 000 pas).</li>
+    <li>Les pas récupérés peuvent être simulés hors ligne : combats, or, paliers.</li>
+    <li>La synchronisation Garmin tourne toutes les 60 minutes, à l'ouverture et manuellement. Santé Connect est lu à l'ouverture et manuellement : Android interdit sa lecture en arrière-plan sans une autorisation dédiée, donc le jeu ne la tente pas.</li>
+    <li>Le <strong>diagnostic de synchronisation</strong> (Réglages) montre la source active, les 7 jours avec leur état (crédité, aujourd'hui, avant connexion, aucun pas) et les garde-fous appliqués.</li>
+  </ul>
+  <div class="note"><strong>Oubli de synchronisation :</strong> après 3 jours sans ouvrir le jeu, la synchronisation suivante récupère les 3 journées manquantes (dans la limite des 7 jours et du plafond). Au-delà, les jours trop anciens sont ignorés.</div>
+</section>
+
+<section id="boucle">
+  <h2>3. La boucle quotidienne</h2>
+  <h3>Des pas à la distance</h3>
+  <p>Chaque pas synchronisé augmente la réserve de marche. Le héros consomme cette réserve en continu : environ 30 pas/seconde, ou 60 pas/seconde quand la réserve est grande. Un pas n'est jamais consommé deux fois.</p>
+  <ul>
+    <li><strong>Plafond journalier :</strong> 60 000 pas.</li>
+    <li><strong>Rythme suspect :</strong> au-delà de 250 pas/minute en moyenne depuis la dernière synchronisation, les pas excédentaires sont ignorés et signalés dans le journal.</li>
+    <li><strong>Réserve à zéro :</strong> le héros s'arrête. Il repart dès qu'une synchronisation apporte de nouveaux pas.</li>
+    <li><strong>Rencontres :</strong> tous les 10 m. <strong>Gardien :</strong> à 100 m.</li>
+  </ul>
+  <h3>Reset à 00:00</h3>
+  <p>À minuit local : le compteur du jour, la ferveur, les quotas de rations/éclats et les serments repartent à zéro. La distance déjà parcourue, l'or, l'équipement et les paliers sont conservés.</p>
+  <div class="ok"><strong>Astuce :</strong> synchronisez après une marche plutôt que toutes les cinq minutes. La réserve s'écoule ensuite automatiquement en arrière-plan.</div>
+  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de <strong>30 % des pas du jour</strong> (réglable dans <a href="#reglages">Réglages avancés</a>) et de 4 minutes simulées. La simulation s'arrête sur une rencontre spéciale, un nouveau coffre ou un passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un palier de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. Voir <a href="#absence">Résumé d'absence</a>.</div>
+</section>
+
+<section id="interface">
+  <h2>4. Interface et HUD</h2>
+  <figure class="shot">
+    <img src="images/home.jpg" alt="Écran principal avec la scène, le héros, le bouton de synchronisation, la ferveur, les pas et le tableau de bord Stats">
+    <figcaption>Écran principal : scène en haut, bouton de synchronisation en haut à gauche, tableau de bord en bas.</figcaption>
+  </figure>
+  <h3>Lire l'écran d'un coup d'œil</h3>
+  <figure class="shot">
+    <img src="images/stats_legend.jpg" alt="Écran principal annoté : chaque zone numérotée de 1 à 16">
+    <figcaption>Les seize zones de l'écran principal, avec l'onglet Stats ouvert.</figcaption>
+  </figure>
+  <ol>
+    <li><strong>Palier</strong> — étage courant. Un palier fait 100 m ; 8 biomes de 10 paliers.</li>
+    <li><strong>Biome</strong> — nom du biome traversé, avec sa règle active plus bas.</li>
+    <li><strong>Or</strong> — monnaie du jeu (forge, camp, marchand).</li>
+    <li><strong>Distance</strong> — progression dans le palier (0 à 100 m). Le gardien attend à 100 m.</li>
+    <li><strong>SAC</strong> — consommables en réserve ; appuyez pour les ouvrir.</li>
+    <li><strong>Scène</strong> — le couloir du biome : arches, torches, props au sol, héros à gauche, ennemi ou silhouette d'attente à droite.</li>
+    <li><strong>Ferveur</strong> — 0 à 100, gagnée avec les pas, décroissante après 2 h sans pas ; elle accélère la VIT et la régénération.</li>
+    <li><strong>Pas du jour</strong> — total synchronisé (Garmin ou Santé Connect), de minuit à minuit.</li>
+    <li><strong>Personnage</strong> — niveau, titre de palier, barre et valeur d'expérience.</li>
+    <li><strong>Devises et réglages</strong> — or, rations, éclats, et accès aux réglages (⚙). L'alerte « ! » apparaît si aucune source n'est configurée, si la clé Garmin expire ou si l'autorisation Santé Connect manque.</li>
+    <li><strong>Puissance</strong> — indicateur global de la force du héros (équipement, niveau, améliorations).</li>
+    <li><strong>Rang</strong> — palier de rang atteint (I, II, III…), calculé d'après la profondeur.</li>
+    <li><strong>Statistiques</strong> — ATQ (dégâts par attaque), PV maximum, VIT (vitesse d'attaque).</li>
+    <li><strong>Ressources</strong> — rations (plafond 24), éclats d'âme (plafond 12), or et consommables.</li>
+    <li><strong>Biome et farm</strong> — règle du biome et bouton <strong>FARM</strong> pour verrouiller le palier courant.</li>
+    <li><strong>Codex</strong> — bestiaire, ensembles et biomes découverts, avec accès direct.</li>
+    <li><strong>Réserve de pas</strong> — pas disponibles que le héros consomme (marche, combats, coffres). La barre est pleine à 4 000 pas.</li>
+  </ol>
+  <h3>Bandeau supérieur</h3>
+  <ul>
+    <li><strong>Palier</strong> et nom du biome.</li>
+    <li><strong>Or</strong> et bouton <strong>feu de camp</strong>.</li>
+    <li><strong>Jauge de palier</strong> : 0 à 100 m, avec la porte du gardien dans les 15 derniers mètres.</li>
+    <li><strong>SAC</strong> : consommables, soins et buffs.</li>
+    <li><strong>COFFRE</strong> : nombre de coffres en attente et temps restant. Un coffre ne bloque jamais la marche.</li>
+    <li><strong>Bouton de synchronisation</strong> : petit carré en haut à gauche, aligné avec le SAC. Icône ↻ et point d'état (vert = récent, ambre = ancien, rouge = erreur). Appuyez pour synchroniser ; si la source n'est pas prête (clé Garmin absente, autorisation Santé Connect refusée), il ouvre <strong>Réglages → Source de pas</strong>.</li>
+  </ul>
+  <h3>Pause de la marche</h3>
+  <figure class="shot">
+    <img src="images/pause.jpg" alt="Bouton de pause sous la synchronisation, badge PAUSE et combat figé">
+    <figcaption>Le bouton de pause sous la synchronisation, avec le badge PAUSE et le combat figé.</figcaption>
+  </figure>
+  <p>Le bouton carré sous la synchronisation fige la marche, les combats, l'ouverture des coffres et les animations. Un second appui reprend exactement au même point.</p>
+  <ul>
+    <li>La pause est conservée si vous passez en arrière-plan ; fermer complètement l'application la termine.</li>
+    <li>La ferveur, les buffs temporisés, les coffres et le reset de minuit continuent de suivre l'horloge réelle.</li>
+    <li>Le badge <strong>PAUSE</strong> reste visible tant que la marche est figée.</li>
+  </ul>
+  <h3>Scène</h3>
+  <ul>
+    <li>Le héros à gauche, le monstre à droite.</li>
+    <li>Barres de vie, noms, niveaux, dégâts flottants, critiques et soins.</li>
+    <li>Aura de ferveur derrière le héros, particules de biome, porte du gardien.</li>
+  </ul>
+  <h3>Tableau de bord</h3>
+  <ul>
+    <li><strong>Stats</strong> : puissance, ATQ, PV, VIT, ressources, ferveur, serments, exploits, journal.</li>
+    <li><strong>Inventaire</strong> : équipement, butin, consommables, coffre de camp.</li>
+    <li><strong>Améliorations</strong> : trois améliorations permanentes et prochain gardien.</li>
+    <li><strong>Barre de synchronisation</strong> : remplacée par le bouton carré en haut à gauche de la scène. Les détails restent dans <strong>Réglages → Source de pas</strong>.</li>
+  </ul>
+</section>
+
+<section id="combat">
+  <h2>5. Combat automatique</h2>
+  <p>Le combat est automatique. Le héros attaque selon sa VIT, l'ennemi selon son intervalle. Les dégâts dépendent de l'ATQ, de la ferveur, du critique et des effets d'équipement.</p>
+  <table>
+    <tr><th>Statistique</th><th>Effet</th></tr>
+    <tr><td>ATQ</td><td>Dégâts infligés.</td></tr>
+    <tr><td>PV</td><td>Points de vie maximum.</td></tr>
+    <tr><td>VIT</td><td>Vitesse d'attaque et régénération hors combat.</td></tr>
+    <tr><td>Critique</td><td>Chance de coup critique (dégâts renforcés).</td></tr>
+    <tr><td>Régénération</td><td>PV rendus par seconde.</td></tr>
+  </table>
+  <h3>Gardiens</h3>
+  <ul>
+    <li>Environ <strong>6× les PV</strong> d'un monstre du même niveau.</li>
+    <li><strong>Phase 2</strong> sous 50 % de PV : attaques plus rapides, aura embrasée.</li>
+    <li><strong>Bénédiction +25 %</strong> après une défaite contre un gardien : aide à la tentative suivante.</li>
+    <li>Modificateurs possibles : <strong>Rapide</strong>, <strong>Blindé</strong>, <strong>Berserk</strong>, <strong>Régénérant</strong>, <strong>Voleur</strong>.</li>
+  </ul>
+  <h3>Capacités de gardien</h3>
+  <figure class="shot">
+    <img src="images/combat_boss.jpg" alt="Combat contre l'Hydre de Lerne avec la capacité Régénération affichée">
+    <figcaption>La capacité du gardien est affichée sous son nom, puis un bandeau rouge apparaît quand elle se déclenche.</figcaption>
+  </figure>
+  <table>
+    <tr><th>Capacité</th><th>Gardiens</th><th>Effet</th></tr>
+    <tr><td>Drain d'âme</td><td>Liche, Roi des Cryptes</td><td>Draine les PV du héros et soigne le gardien.</td></tr>
+    <tr><td>Régénération</td><td>Hydre</td><td>Rend environ 7 % des PV max du gardien.</td></tr>
+    <tr><td>Frappe lourde</td><td>Balrug, démons, bourreaux</td><td>Attaque très puissante.</td></tr>
+    <tr><td>Blindage</td><td>Golems, gardiens de la Forge</td><td>Réduit fortement les dégâts subis pendant 4,5 s.</td></tr>
+    <tr><td>Souffle</td><td>Dragons</td><td>Gros dégâts et vulnérabilité temporaire.</td></tr>
+    <tr><td>Racines</td><td>Tréant, dryades</td><td>Ralentit la VIT du héros.</td></tr>
+    <tr><td>Acide</td><td>Vases, zymes, horreurs</td><td>Dégâts et vulnérabilité temporaire.</td></tr>
+    <tr><td>Pression</td><td>Seigneurs du Trône</td><td>Dégâts et baisse de ferveur.</td></tr>
+  </table>
+  <h3>Défaite et repli</h3>
+  <ul>
+    <li>Le héros recule de <strong>20 m</strong> et reprend à 60 % de PV.</li>
+    <li>Zone de farm : trois combats affaiblis, puis la marche reprend.</li>
+    <li>La défaite ne détruit ni or ni équipement.</li>
+  </ul>
+</section>
+
+<section id="ferveur">
+  <h2>6. Ferveur</h2>
+  <p>La ferveur est l'élan quotidien. Elle monte avec les nouveaux pas et se consume avec le temps.</p>
+  <table>
+    <tr><th>Palier</th><th>Seuil</th><th>Bonus</th></tr>
+    <tr><td>Tison</td><td>0–24</td><td>Aucun bonus notable</td></tr>
+    <tr><td>Braise</td><td>25–49</td><td>+10 % VIT, +20 % régénération, +0,5 % crit.</td></tr>
+    <tr><td>Fournaise</td><td>50–74</td><td>+20 % VIT, +40 % régénération, +1 % crit.</td></tr>
+    <tr><td>Tempête</td><td>75–99</td><td>+30 % VIT, +60 % régénération, +1,5 % crit.</td></tr>
+    <tr><td>Âme ardente</td><td>100</td><td>+40 % VIT, +80 % régénération, +2 % crit.</td></tr>
+  </table>
+  <ul>
+    <li>Après <strong>2 heures sans nouveau pas</strong>, la ferveur décroît d'environ 1 point toutes les 3 minutes.</li>
+    <li>La décroissance est rattrapée même si l'application était fermée.</li>
+    <li>Les champignons, herbes et potions peuvent la restaurer.</li>
+    <li>Une aura de braise entoure le héros selon son niveau.</li>
+  </ul>
+</section>
+
+<section id="ressources">
+  <h2>7. Ressources</h2>
+  <div class="kpi">
+    <div><b>Or</b><span>monstres, gardiens, coffres, ventes</span></div>
+    <div><b>Rations</b><span>1 par 200 pas, max 24/jour</span></div>
+    <div><b>Éclats</b><span>1 par 500 pas, max 12/jour</span></div>
+    <div><b>Consommables</b><span>butin des monstres et coffres</span></div>
+  </div>
+  <p>La carte <strong>RESSOURCES</strong> de l'onglet Stats affiche en permanence : rations, éclats, or et nombre de consommables. Les rations sont aussi visibles dans l'en-tête et dans le camp.</p>
+  <ul>
+    <li><strong>Rations :</strong> soin au camp, soin automatique d'urgence en combat, pain de route.</li>
+    <li><strong>Éclats :</strong> soin complet, identification, forge, autels.</li>
+    <li><strong>Or :</strong> améliorations, marchand, statue, forge, pari.</li>
+    <li><strong>Butin :</strong> les gardiens donnent 2 éclats et 1 ration ; les coffres donnent 1 de chaque.</li>
+  </ul>
+</section>
+
+<section id="serments">
+  <h2>8. Serments journaliers</h2>
+  <p>Trois objectifs optionnels, renouvelés à 00:00. Les cibles varient selon la date.</p>
+  <table>
+    <tr><th>Serment</th><th>Exemple de cible</th><th>Récompense</th></tr>
+    <tr><td>Marche</td><td>2 500 à 4 000 pas</td><td>150 or + 1 éclat</td></tr>
+    <tr><td>Chasse</td><td>1 ou 2 gardiens</td><td>250 or + 2 éclats</td></tr>
+    <tr><td>Curiosité</td><td>1 ou 2 coffres</td><td>100 or + 1 objet inhabituel</td></tr>
+  </table>
+  <ul>
+    <li>Les récompenses sont <strong>automatiques</strong> dès la cible atteinte.</li>
+    <li>Un serment non accompli disparaît à minuit sans pénalité.</li>
+    <li>La série de jours de marche et les pas de la semaine sont affichés dans la carte des serments.</li>
+  </ul>
+</section>
+
+<section id="coffres">
+  <h2>9. Coffres</h2>
+  <figure class="shot">
+    <img src="images/chest.jpg" alt="Fiche d'un coffre de fer avec quota, récompenses, expiration et boutons">
+    <figcaption>Un coffre n'est jamais un mur : « Continuer la marche » ferme la fiche et le laisse en attente.</figcaption>
+  </figure>
+  <table>
+    <tr><th>Coffre</th><th>Quota</th><th>Or</th><th>Objet</th></tr>
+    <tr><td>Bois</td><td>150 pas</td><td>40–80</td><td>Inhabituel</td></tr>
+    <tr><td>Fer</td><td>400 pas</td><td>130–220</td><td>Rare</td></tr>
+    <tr><td>Runique</td><td>900 pas</td><td>380–550</td><td>Épique</td></tr>
+  </table>
+  <ul>
+    <li><strong>24 h</strong> de conservation, <strong>2 coffres</strong> en attente maximum.</li>
+    <li>Un coffre peut être ignoré : la marche continue.</li>
+    <li><strong>Consacrer mes pas</strong> fige la marche et consomme la réserve pour remplir la serrure.</li>
+    <li><strong>Arrêter le forçage</strong> rend la marche ; la progression de la serrure est conservée.</li>
+    <li>La <strong>croix</strong> (ou « Masquer · le forçage continue ») ferme la fiche sans interrompre le forçage : la pastille COFFRE affiche alors la progression de la serrure, ou « EN ATTENTE » s'il n'y a plus de pas.</li>
+    <li>Les coffres lâchent aussi des consommables : 1 à 3 selon le type.</li>
+  </ul>
+  <div class="note"><strong>Astuce :</strong> forcez un coffre quand vous n'avez plus de pas à convertir en distance, par exemple le soir.</div>
+</section>
+
+<section id="camp">
+  <h2>10. Campement</h2>
+  <figure class="shot">
+    <img src="images/camp.jpg" alt="Campement avec tente, feu, héros et panneau de repos">
+    <figcaption>Le camp met la marche en pause, réinitialise un combat en cours et donne accès aux soins, potions et à l'inventaire.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Se reposer :</strong> +40 % PV pour 1 ration.</li>
+    <li><strong>Se ressourcer :</strong> PV complets pour 1 éclat.</li>
+    <li><strong>Veillée gratuite :</strong> +15 % PV, une fois par jour.</li>
+    <li><strong>POTIONS :</strong> ouvre le sac de consommables.</li>
+    <li><strong>INVENTAIRE / JOURNAL :</strong> gestion et historique.</li>
+    <li><strong>Reprendre l'expédition :</strong> ferme le camp et applique les pas en attente.</li>
+  </ul>
+  <p>Le panneau affiche palier, distance, ferveur, PV, pas en attente, or, série et total de pas.</p>
+</section>
+
+<section id="inventaire">
+  <h2>11. Inventaire et équipement</h2>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/inventory_gear.jpg" alt="Inventaire avec six emplacements, équiper le meilleur, filtres et butin">
+      <figcaption>Équipement, tri, filtres et butin.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/item.jpg" alt="Fiche d'un objet avec tableau de comparaison Équipé et Cet objet, effet, forge, fusion et équiper">
+      <figcaption>Comparaison chiffrée, effet, forge, fusion et verrouillage.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/atelier.jpg" alt="Atelier d'amélioration avec tableau Équipé, Objet et Après, coût et bouton Continuer à améliorer">
+      <figcaption>Atelier : niveau suivant, coût et amélioration enchaînée.</figcaption>
+    </figure>
+  </div>
+  <h3>Six emplacements</h3>
+  <p>Arme, tête, torse, mains, bottes, talisman. Un objet équipé remplace l'ancien, qui retourne dans le sac.</p>
+  <h3>Raretés</h3>
+  <p>Commun, inhabituel, rare, épique, légendaire. La couleur de la bordure et du nom l'indique. Les objets rares et plus peuvent avoir un effet, un ensemble ou être non identifiés.</p>
+  <h3>Actions</h3>
+  <ul>
+    <li><strong>Équiper le meilleur :</strong> compare les six emplacements et équipe chaque amélioration.</li>
+    <li><strong>Vendre les communs :</strong> convertit les objets communs non verrouillés en or.</li>
+    <li><strong>Verrouiller :</strong> protège un objet de la vente et de la fusion.</li>
+    <li><strong>Fusionner :</strong> l'objet ouvert et les <strong>deux meilleurs</strong> objets identifiés et non verrouillés du même emplacement et de la même rareté donnent un objet de rareté supérieure. Trois légendaires donnent un légendaire fusionné. Le bouton affiche <strong>FUSIONNER</strong> quand les trois sont réunis, sinon <strong>FUSIONNER 2/3</strong> et reste grisé.</li>
+    <li><strong>Identifier :</strong> 1 éclat révèle les statistiques d'un objet mystérieux.</li>
+    <li><strong>Reforger :</strong> 2 éclats retirent ou remplacent l'effet (tirage aléatoire).</li>
+    <li><strong>Améliorer :</strong> or + 1 éclat augmentent le niveau, l'ATQ et les PV.</li>
+    <li><strong>Démonter :</strong> détruit l'objet contre des éclats.</li>
+  </ul>
+  <h3>Trier et filtrer le butin</h3>
+  <p><strong>Score</strong>, <strong>Rareté</strong> et <strong>Niveau</strong> changent l'ordre de la liste ; le choix est conservé quand vous changez d'onglet. Le bouton <strong>Fusion</strong> est un filtre indépendant : activé, il ne montre que les objets dont le bouton <strong>FUSIONNER</strong> est actif, c'est-à-dire ceux qui ont au moins deux partenaires éligibles. Il se combine avec le filtre d'emplacement (<strong>Tous</strong>, Arme, Tête, Torse, Mains, Bottes, Talisman) et affiche « Aucun objet fusionnable. » quand la liste est vide.</p>
+  <h3>Atelier : comparer, améliorer, reforger</h3>
+  <p>La fiche d'objet commence par un tableau <strong>Statistique / Équipé / Cet objet</strong> : la valeur de l'objet est verte si elle dépasse l'équipement, rouge sinon, avec le gain en petit. Pour un objet équipé, le tableau devient <strong>Actuel / Après +1 niv.</strong> et une ligne <strong>Héros</strong> indique l'impact sur l'ATQ et les PV totaux. La valeur de vente reste sous le tableau.</p>
+  <p><strong>AMÉLIORER</strong> ouvre l'atelier : niveau actuel → suivant, tableau des statistiques (Équipé, Objet, Après), coût en or et éclats, puis bouton de validation. Après une amélioration, la feuille reste ouverte : un bandeau rappelle le gain appliqué, l'aperçu passe au niveau suivant et <strong>CONTINUER À AMÉLIORER</strong> enchaîne sans revenir à l'inventaire. La flèche ← revient à la fiche, FERMER quitte.</p>
+  <p><strong>REFORGER</strong> ouvre l'atelier des effets pour 2 éclats. Le tirage est aléatoire : <strong>25 %</strong> aucun effet, <strong>12,5 %</strong> pour chacun des six effets. Le niveau, les statistiques et l'ensemble ne changent pas ; l'effet peut rester identique ou disparaître. Le résultat affiche <strong>ancien → nouveau</strong>, puis <strong>REFORGER ENCORE</strong> relance un tirage.</p>
+  <h3>Ensembles et forge</h3>
+  <ul>
+    <li>Onze ensembles : <strong>Veilleur</strong>, <strong>Braise</strong>, <strong>Givre</strong>, <strong>Ossature</strong>, <strong>Toile</strong>, <strong>Cendre</strong>, <strong>Forge</strong>, <strong>Serment</strong>, <strong>Bois</strong>, <strong>Abîme</strong> et <strong>Trône</strong>.</li>
+    <li>Chaque ensemble couvre les <strong>6 emplacements</strong> : arme, tête, torse, mains, bottes, talisman. Il se complète à <strong>6/6</strong>.</li>
+    <li>La <strong>collection est permanente</strong> : une pièce découverte reste acquise même si vous la vendez, la démontez ou la fusionnez. Les pièces du sac, du coffre et de l'équipement comptent, identifiées ou non.</li>
+    <li>Les <strong>bonus</strong> ne s'appliquent qu'aux pièces <strong>équipées</strong> : paliers à <strong>2, 4 et 6</strong> pièces. Avoir 6 pièces au sac ne donne aucun bonus.</li>
+    <li>Chaque biome ne fait tomber que ses propres ensembles, sur un butin <strong>rare, épique ou légendaire</strong>, avec <strong>30 %</strong> de chance d'être une pièce d'ensemble. Le slot est tiré au hasard : les doublons sont fréquents.</li>
+    <li>La forge se débloque après le premier gardien vaincu.</li>
+    <li>Les objets peuvent porter <strong>Vampirisme</strong>, <strong>Rempart</strong>, <strong>Frénésie</strong>, <strong>Chasse</strong>, <strong>Vitalité</strong> ou <strong>Précision</strong>.</li>
+    <li>Le héros affiche un <strong>paper doll</strong> : casque, armure, jambes, bottes et arme changent selon l'équipement porté.</li>
+    <li>L'apparence suit la <strong>famille d'objet</strong> : épée, hache, masse, bâton, dague, lance ou fouet ; cuir, maille, plate ou robe ; capuche, heaume ou couronne ; bottes de cuir ou de métal. La rareté départage les objets sans famille.</li>
+    <li><strong>Touchez un emplacement équipé</strong> pour ouvrir sa fiche, comparer et voir ses statistiques. Les mains et le talisman ne changent pas le sprite.</li>
+  </ul>
+  <h3>Coffre de camp</h3>
+  <p>L'inventaire est limité à 24 objets. Quand il est plein, le jeu compare le nouvel objet au moins bon objet non verrouillé : le meilleur reste dans le sac et l'autre part au coffre. Les objets verrouillés ne sont jamais déplacés automatiquement. Les objets non identifiés utilisent un score provisoire basé sur la rareté et le niveau. Aucun objet n'est détruit : vous pouvez les récupérer un par un ou en bloc.</p>
+</section>
+
+<section id="consommables">
+  <h2>12. Consommables</h2>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/inventory_consumables.jpg" alt="Onglet Consommables de l'inventaire avec potions et buffs">
+      <figcaption>Onglet Consommables de l'inventaire.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/consumables_overlay.jpg" alt="Sac de consommables avec potions, herbes, écorce de fer et élixir de vampire">
+      <figcaption>Le SAC, accessible depuis la scène et le camp.</figcaption>
+    </figure>
+  </div>
+  <h3>Soins et ferveur — camp et exploration</h3>
+  <table>
+    <tr><th>Objet</th><th>Rareté</th><th>Effet</th></tr>
+    <tr><td>Potion de soin</td><td>Commun</td><td>Rend 30 % des PV max.</td></tr>
+    <tr><td>Herbe de lune</td><td>Commun</td><td>Rend 12 % des PV et 6 ferveur.</td></tr>
+    <tr><td>Champignon de braise</td><td>Inhabituel</td><td>Rend 20 ferveur.</td></tr>
+    <tr><td>Élixir du veilleur</td><td>Rare</td><td>Restaure tous les PV.</td></tr>
+    <tr><td>Pain de route</td><td>Commun</td><td>Rend 20 % des PV et 1 ration.</td></tr>
+    <tr><td>Viande séchée</td><td>Commun</td><td>Rend 25 % des PV et 1 ration.</td></tr>
+  </table>
+  <h3>Combat — pendant un combat uniquement</h3>
+  <table>
+    <tr><th>Objet</th><th>Rareté</th><th>Effet</th></tr>
+    <tr><td>Fiole de rage</td><td>Inhabituel</td><td>ATQ +50 % pendant 20 s.</td></tr>
+    <tr><td>Écorce de fer</td><td>Inhabituel</td><td>Dégâts subis −40 % pendant 20 s.</td></tr>
+    <tr><td>Poudre d'éclair</td><td>Inhabituel</td><td>VIT +60 % pendant 15 s.</td></tr>
+    <tr><td>Bombe de feu</td><td>Rare</td><td>Inflige immédiatement 2× votre ATQ.</td></tr>
+    <tr><td>Élixir de vampire</td><td>Rare</td><td>20 % des dégâts rendus en PV pendant 30 s.</td></tr>
+    <tr><td>Parchemin critique</td><td>Rare</td><td>Critique +50 % pendant 15 s.</td></tr>
+    <tr><td>Champignon berserk</td><td>Rare</td><td>ATQ +80 %, mais dégâts subis +20 % pendant 15 s.</td></tr>
+    <tr><td>Potion de hâte</td><td>Rare</td><td>VIT +60 % pendant 20 s.</td></tr>
+    <tr><td>Potion de force</td><td>Inhabituel</td><td>ATQ +40 % pendant 20 s.</td></tr>
+    <tr><td>Potion de régénération</td><td>Rare</td><td>Régénération +2 PV/s pendant 30 s.</td></tr>
+  </table>
+  <h3>Où les trouver</h3>
+  <ul>
+    <li><strong>Monstres normaux :</strong> 18 % de chance, 1 objet.</li>
+    <li><strong>Gardiens :</strong> 1 à 2 objets garantis.</li>
+    <li><strong>Coffres :</strong> 1 à 3 objets selon le type.</li>
+    <li><strong>Départ :</strong> 2 potions de soin et 1 herbe de lune.</li>
+  </ul>
+  <h3>Effets actifs et durée restante</h3>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/effects_1.jpg" alt="Bandeau d'effets actifs avec un seul chip RAGE, largeur plafonnée à un tiers">
+      <figcaption>Un seul effet : le chip occupe un tiers de la ligne.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/effects_6.jpg" alt="Bandeau d'effets actifs avec six chips RAGE, ÉCORCE, VIF, CRIT, VAMP et FRAGILE">
+      <figcaption>Six effets : une seule ligne, six chips et malus en rouge.</figcaption>
+    </figure>
+  </div>
+  <p>Les effets temporisés apparaissent dans un bandeau d'une seule ligne, juste au-dessus de la ferveur et de la réserve. Il affiche jusqu'à <strong>6 effets</strong> avec leur durée restante. La largeur de chaque chip est la largeur disponible divisée par le nombre d'effets, <strong>plafonnée à un tiers</strong>.</p>
+  <ul>
+    <li>Les bonus sont colorés par famille : attaque, défense, vitesse, critique, vol de vie et régénération.</li>
+    <li>Les malus (<strong>FRAGILE</strong>, <strong>RACINES</strong>, <strong>ACIDE</strong>, <strong>GIVRE</strong>) apparaissent en rouge.</li>
+    <li>Le compte à rebours se rafraîchit chaque seconde, même quand le jeu est en pause ou le sac ouvert.</li>
+    <li>Les durées sont réelles : un effet de 30 s expire au bout de 30 s, même application fermée. Utilisez-les juste avant de jouer.</li>
+    <li>Le bandeau disparaît quand aucun effet n'est actif et ne réserve aucun espace.</li>
+  </ul>
+</section>
+
+<section id="rencontres">
+  <h2>13. Rencontres spéciales</h2>
+  <p>Environ 8 % des rencontres sont remplacées par un événement. Il n'est jamais obligatoire.</p>
+  <table>
+    <tr><th>Rencontre</th><th>Choix</th><th>Résultat</th></tr>
+    <tr><td>Autel de braise</td><td>Offrir 2 éclats</td><td>+180 XP</td></tr>
+    <tr><td>Source claire</td><td>Boire 1 ration</td><td>PV complets</td></tr>
+    <tr><td>Marchand errant</td><td>Acheter avec de l'or</td><td>Objet rare ou épique</td></tr>
+    <tr><td>Statue du serment</td><td>Prier 100 or</td><td>+15 ferveur, +1 éclat</td></tr>
+    <tr><td>Coffre scellé</td><td>Parier 100 or</td><td>45 % : +300 or · 55 % : perdu</td></tr>
+  </table>
+  <p>Après chaque choix, une fenêtre <strong>RÉSULTAT</strong> affiche clairement le gain ou la perte. Pour le pari : <em>« Pari gagné · +300 or »</em> ou <em>« Pari perdu · −100 or »</em>.</p>
+</section>
+
+<section id="progression">
+  <h2>14. Progression et contenu</h2>
+  <h3>Niveaux et expérience</h3>
+  <p>Les monstres, gardiens, serments et événements donnent de l'XP. Chaque niveau augmente l'ATQ, les PV et la VIT. La courbe ralentit progressivement.</p>
+  <h3>Améliorations permanentes</h3>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/upgrades.jpg" alt="Onglet Améliorations avec Lame affûtée, Souffle ancien, Pas vifs et prochain gardien">
+      <figcaption>Trois améliorations, coût croissant, et prochain gardien.</figcaption>
+    </figure>
+  </div>
+  <ul>
+    <li><strong>Lame affûtée :</strong> +3 ATQ par niveau.</li>
+    <li><strong>Souffle ancien :</strong> +30 PV max par niveau.</li>
+    <li><strong>Pas vifs :</strong> +2,5 % VIT par niveau.</li>
+  </ul>
+  <h3>Jalons</h3>
+  <ul>
+    <li>Tous les 10 paliers : +5 % d'or, 5 éclats, nouveau titre, entrée dans la légende.</li>
+    <li>Paliers 10, 25, 50 et 100 : gardiens uniques.</li>
+    <li>Après le palier 10, un facteur de profondeur augmente les PV et l'ATQ ennemis.</li>
+  </ul>
+  <h3>Biomes</h3>
+  <p>Le donjon traverse <strong>8 biomes</strong>, chacun avec ses murs, sols, statues, props, portes et météo. Le changement se fait tous les 10 paliers.</p>
+  <table>
+    <tr><th>Paliers</th><th>Biome</th><th>Ambiance</th></tr>
+    <tr><td>1–10</td><td>Cryptes de Vael</td><td>Pierre violette, poussière, portes fermées.</td></tr>
+    <tr><td>11–20</td><td>Catacombes</td><td>Pierre verte, spores, portes runiques.</td></tr>
+    <tr><td>21–30</td><td>Cavernes de cendre</td><td>Roche volcanique, braises, fontaines de sang.</td></tr>
+    <tr><td>31–40</td><td>Forge noyée</td><td>Métal, étincelles, bassins bleus.</td></tr>
+    <tr><td>41–50</td><td>Cimes du Serment</td><td>Glace, neige, cristaux.</td></tr>
+    <tr><td>51–60</td><td>Bois des Âmes</td><td>Herbe, arbres d'or, feuilles.</td></tr>
+    <tr><td>61–70</td><td>Abîme organique</td><td>Slime, spores, acidité.</td></tr>
+    <tr><td>71+</td><td>Trône des Âmes</td><td>Enfer rouge, cendres, portes scellées.</td></tr>
+  </table>
+  <h3>Règles de biome</h3>
+  <p>Chaque biome applique un modificateur au héros et aux ennemis. La carte <strong>BIOME</strong> de l'onglet Stats affiche la règle active.</p>
+  <table>
+    <tr><th>Biome</th><th>Règle</th><th>Effet</th></tr>
+    <tr><td>Cryptes</td><td>Veillée des cryptes</td><td>+3 % critique · ennemis fragilisés.</td></tr>
+    <tr><td>Catacombes</td><td>Passages étroits</td><td>+6 % VIT · ennemis plus lents.</td></tr>
+    <tr><td>Cendre</td><td>Air empoisonné</td><td>+10 % ATQ · régénération réduite · ennemis agressifs.</td></tr>
+    <tr><td>Forge</td><td>Peaux de fer</td><td>−6 % dégâts subis · ennemis plus résistants.</td></tr>
+    <tr><td>Cimes</td><td>Vent glacial</td><td>+8 % VIT · −5 % PV max · ennemis rapides.</td></tr>
+    <tr><td>Bois</td><td>Sève ancienne</td><td>+0,5 PV/s · ennemis coriaces.</td></tr>
+    <tr><td>Abîme</td><td>Acidité</td><td>+12 % ATQ · −5 % PV max · ennemis fragiles mais violents.</td></tr>
+    <tr><td>Trône</td><td>Pression des âmes</td><td>+12 % dégâts gardiens · −8 % PV max · ennemis renforcés.</td></tr>
+  </table>
+  <h3>Mode farm</h3>
+  <figure class="shot">
+    <img src="images/farm_mode.jpg" alt="Carte Biome avec le mode farm actif et le badge FARM dans le HUD">
+    <figcaption>Mode farm actif : le palier est verrouillé, le badge FARM apparaît et le bouton permet de désactiver.</figcaption>
+  </figure>
+  <p>Le mode farm se trouve dans la <strong>carte BIOME</strong> de l'onglet Stats. Il est <strong>inactif par défaut</strong>.</p>
+  <ul>
+    <li><strong>ACTIVER :</strong> verrouille le palier actuel. Le gardien vaincu ne fait plus passer au palier suivant et revient à 100 m.</li>
+    <li><strong>DÉSACTIVER :</strong> le prochain gardien vaincu fait avancer normalement.</li>
+    <li>Un badge <strong>FARM</strong> s'affiche dans le HUD tant que le mode est actif.</li>
+    <li>Pendant le farm, les <strong>jalons sont désactivés</strong> : pas de +5 éclats ni d'entrée de légende répétée. Le butin, l'or et l'XP du gardien restent.</li>
+    <li>Le réglage est conservé dans la sauvegarde et survit au redémarrage.</li>
+  </ul>
+  <h3>Durée de vie estimée</h3>
+  <p>Le donjon est <strong>infini</strong> : il n'y a pas d'écran de fin. « Finir » signifie ici parcourir les <strong>8 biomes</strong> (palier 71), puis compléter le <strong>Codex</strong> ({{MOB_COUNT}} monstres, {{BOSS_COUNT}} gardiens, {{SET_COUNT}} ensembles). Le calcul part de <strong>1 000 pas par palier</strong> (10 pas = 1 m, 100 m par palier) et applique un <strong>coefficient de farm de 3 à 5</strong> (jusqu'à 6 pour le Codex) pour les retraites, les gardiens réessayés, les coffres et la recherche d'équipement.</p>
+  <table>
+    <tr><th>Objectif</th><th>Pas (distance pure)</th><th>5 000 pas/jour</th><th>8 000 pas/jour</th><th>10 000 pas/jour</th></tr>
+    <tr><td>8 biomes · palier 71</td><td>70 000</td><td>6 à 10 semaines</td><td>4 à 6 semaines</td><td>3 à 5 semaines</td></tr>
+    <tr><td>Titre Légende des Âmes · palier 100</td><td>100 000</td><td>2 à 3,5 mois</td><td>5 à 9 semaines</td><td>4 à 7 semaines</td></tr>
+    <tr><td>Codex complet</td><td>≈ 150 000</td><td>4 à 6 mois</td><td>2,5 à 4 mois</td><td>2 à 3 mois</td></tr>
+  </table>
+  <p>En <strong>temps de marche effectif</strong> (≈ 100 pas/minute), cela représente environ <strong>12 h</strong> pour les 8 biomes, <strong>17 h</strong> pour le palier 100 et <strong>25 h</strong> pour le Codex. Le reste du temps est du farm, pas de la marche.</p>
+  <div class="note"><strong>Hypothèses :</strong> un joueur qui synchronise chaque jour, sans plafond journalier atteint (60 000 pas) ni rythme suspect (250 pas/min). Sans aucun farm, le parcours brut des 70 paliers ne prendrait que <strong>14 jours</strong> à 5 000 pas/jour, <strong>9 jours</strong> à 8 000 et <strong>7 jours</strong> à 10 000 : c'est le plancher théorique, pas une durée réaliste. Les paliers 60+ relèvent de l'endgame et leur équilibrage est encore en ajustement ; les fourchettes hautes sont des cibles de conception.</div>
+  <h3>Galerie des biomes</h3>
+  <p>Chaque biome possède son décor, sa météo et ses créatures. Le paper doll du héros reflète l'équipement porté.</p>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/biome_crypts.jpg" alt="Cryptes de Vael avec murs de pierre, cierges et poussière">
+      <figcaption>Cryptes de Vael : pierre froide, cierges et poussière.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_catacombs.jpg" alt="Catacombes avec le gardien Hydre de Lerne et le paper doll du héros">
+      <figcaption>Catacombes : gardien du palier et paper doll.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_ash.jpg" alt="Cavernes de cendre avec roche volcanique, braises et éfrit">
+      <figcaption>Cavernes de cendre : roche volcanique et braises.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_forge.jpg" alt="Forge noyée avec murs de métal bleu, bassins et gardien de cristal">
+      <figcaption>Forge noyée : métal bleu, bassins et étincelles.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_peaks.jpg" alt="Cimes du Serment avec glace, neige et dragon d'ombre">
+      <figcaption>Cimes du Serment : glace, neige et cristaux.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_woods.jpg" alt="Bois des Âmes avec herbe, arbres d'or et tréant">
+      <figcaption>Bois des Âmes : herbe, arbres d'or et feuilles.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_abyss.jpg" alt="Abîme organique avec slime, spores et zyme ancienne">
+      <figcaption>Abîme organique : slime, spores et acidité.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/biome_throne.jpg" alt="Trône des Âmes avec enfer rouge, cendres et Asmodée">
+      <figcaption>Trône des Âmes : enfer rouge, cendres et portes scellées.</figcaption>
+    </figure>
+  </div>
+  <h3>Créatures et butin</h3>
+  <ul>
+    <li>Chaque biome a ses <strong>monstres faciles</strong> (0–49 m), <strong>intermédiaires</strong> (50–84 m), <strong>difficiles</strong> (85–99 m) et ses <strong>gardiens</strong>.</li>
+    <li>Les <strong>tables de butin</strong> sont propres au biome : armes, armures, casques, bottes, gantelets et talismans thématiques.</li>
+    <li>Les paliers 10, 25, 50 et 100 gardent des gardiens de jalon ; les autres paliers font tourner les boss du biome.</li>
+    <li>Les ensembles de biome sont favorisés dans leur région : Ossature et Toile aux catacombes, Cendre dans les cavernes, Forge dans la forge, Serment aux cimes, Bois dans la forêt, Abîme dans l'abîme et Trône au sommet.</li>
+  </ul>
+  <h3>Rangs et titres</h3>
+  <p>Le rang progresse avec les paliers : Pèlerin, Veilleur des Cryptes, Pèlerin des Abysses, Marcheur de Cendre, Gardien de la Forge, Souverain des Cimes, Veilleur du Bois, Marcheur de l'Abîme, Légende des Âmes.</p>
+</section>
+
+<section id="journal">
+  <h2>15. Journal, légende, bestiaire</h2>
+  <figure class="shot">
+    <img src="images/journal.jpg" alt="Journal avec filtres, onglets Légende et Bestiaire, événements de combat et butin">
+    <figcaption>Journal filtrable, journal de légende et bestiaire.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Journal :</strong> 80 événements, filtres Favorables / Alertes / Neutres.</li>
+    <li><strong>Légende :</strong> jalons et hauts faits persistants.</li>
+    <li><strong>Bestiaire :</strong> nombre de victimes par créature.</li>
+    <li>Les événements sont aussi résumés dans l'onglet Stats.</li>
+  </ul>
+  <h3>Codex</h3>
+  <p>Le Codex se trouve dans <code>Stats → carte CODEX → OUVRIR LE CODEX</code>. Il suit la collection sur trois onglets.</p>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/codex_bestiary.jpg" alt="Codex Bestiaire avec créatures connues, silhouettes inconnues et gardiens par biome">
+      <figcaption>Bestiaire : créatures et gardiens découverts, silhouettes encore inconnues.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_sets.jpg" alt="Codex Ensembles avec collection permanente, pièces équipées et slots possédés">
+      <figcaption>Ensembles : collection permanente, pièces équipées, slots manquants et prochain palier.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_biomes.jpg" alt="Codex Biomes avec progression des créatures, gardiens et objets par biome">
+      <figcaption>Biomes : règle active, créatures, gardiens et objets découverts.</figcaption>
+    </figure>
+  </div>
+  <ul>
+    <li><strong>Bestiaire :</strong> une créature est révélée à la première victoire. Les gardiens sont suivis séparément.</li>
+    <li><strong>Ensembles :</strong> la collection est <strong>permanente</strong> (une pièce découverte reste acquise même si vous la vendez) ; l'onglet distingue <strong>Collection x/6</strong> et <strong>Équipé y/6</strong>, affiche les slots manquants, le biome où farmer et le prochain palier. Seules les pièces équipées donnent le bonus 2/4/6.</li>
+    <li><strong>Biomes :</strong> un biome est découvert dès que vous atteignez son premier palier. Le Codex affiche sa règle, ses créatures, ses gardiens et ses objets.</li>
+    <li>Les objets déjà possédés sont reconnus immédiatement ; les objets ramassés ensuite sont ajoutés à la collection.</li>
+  </ul>
+  <h3>Compléter une collection</h3>
+  <p>Un ensemble se complète à <strong>6/6</strong> : il faut une pièce de chacun des six emplacements (arme, tête, torse, mains, bottes, talisman) portant le même nom d'ensemble.</p>
+  <div class="note"><strong>Deux compteurs à ne pas confondre :</strong> la <strong>collection</strong> (x/6) est permanente et compte tout ce que vous avez découvert, où qu'il soit — équipé, au sac ou au coffre, identifié ou non. L'<strong>équipé</strong> (y/6) ne compte que les pièces portées, et c'est lui qui déclenche le bonus à 2, 4 ou 6 pièces. Vendre ou démonter une pièce ne fait pas reculer la collection.</div>
+  <ul>
+    <li><strong>Où farmer :</strong> chaque ensemble ne tombe que dans un ou deux biomes. Le Codex affiche « Se trouve : … » sur la fiche de l'ensemble.</li>
+    <li><strong>Quand :</strong> seuls les butins <strong>rares, épiques ou légendaires</strong> peuvent être des pièces d'ensemble, avec <strong>30 %</strong> de chance. Le slot est tiré au hasard : les doublons sont fréquents et n'aident pas à compléter.</li>
+    <li><strong>Pièce non identifiée :</strong> elle compte déjà dans la collection. Identifiez-la (1 éclat) pour révéler son ensemble et son bonus dans la fiche.</li>
+    <li><strong>Bonus :</strong> équipez 2, 4 puis 6 pièces du même ensemble. Le Codex affiche le bonus actif et le prochain palier ; la fiche d'objet rappelle « équipé y/6 · collection x/6 ».</li>
+  </ul>
+  <table>
+    <tr><th>Ensemble</th><th>Biome(s)</th><th>2 pièces</th><th>4 pièces</th><th>6 pièces</th></tr>
+    <tr><td>Veilleur</td><td>Cryptes de Vael (1–10)</td><td>+10 ATQ, +30 PV</td><td>+20 ATQ, +60 PV</td><td>+30 ATQ, +90 PV</td></tr>
+    <tr><td>Ossature</td><td>Cryptes (1–10), Catacombes (11–20)</td><td>+6 ATQ, +25 PV</td><td>+12 ATQ, +50 PV</td><td>+18 ATQ, +75 PV</td></tr>
+    <tr><td>Toile</td><td>Catacombes (11–20)</td><td>+3 % VIT, +2 % critique</td><td>+6 % VIT, +4 % critique</td><td>+9 % VIT, +6 % critique</td></tr>
+    <tr><td>Braise</td><td>Cavernes de cendre (21–30)</td><td>+3 % critique, +5 % vol de vie</td><td>+6 % critique, +10 % vol de vie</td><td>+9 % critique, +15 % vol de vie</td></tr>
+    <tr><td>Cendre</td><td>Cavernes de cendre (21–30)</td><td>+8 ATQ</td><td>+16 ATQ, +3 % critique</td><td>+24 ATQ, +6 % critique</td></tr>
+    <tr><td>Forge</td><td>Forge noyée (31–40)</td><td>+35 PV</td><td>+70 PV, −3 % dégâts subis</td><td>+105 PV, −6 % dégâts subis</td></tr>
+    <tr><td>Givre</td><td>Cimes du Serment (41–50)</td><td>+5 % VIT, +0,3 PV/s</td><td>+10 % VIT, +0,6 PV/s</td><td>+15 % VIT, +0,9 PV/s</td></tr>
+    <tr><td>Serment</td><td>Cimes du Serment (41–50)</td><td>+7 ATQ</td><td>+14 ATQ, +8 % dégâts gardiens</td><td>+21 ATQ, +16 % dégâts gardiens</td></tr>
+    <tr><td>Bois</td><td>Bois des Âmes (51–60)</td><td>+4 % VIT</td><td>+8 % VIT, +0,7 PV/s</td><td>+12 % VIT, +1,2 PV/s</td></tr>
+    <tr><td>Abîme</td><td>Abîme organique (61–70)</td><td>+20 PV, +4 % vol de vie</td><td>+40 PV, +8 % vol de vie</td><td>+60 PV, +12 % vol de vie</td></tr>
+    <tr><td>Trône</td><td>Trône des Âmes (71+)</td><td>+10 ATQ</td><td>+20 ATQ, +15 % dégâts critiques</td><td>+30 ATQ, +30 % dégâts critiques</td></tr>
+  </table>
+  <h3>Fiche de créature et de gardien</h3>
+  <div class="grid">
+    <figure class="shot">
+      <img src="images/codex_mob_detail.jpg" alt="Fiche Chauve-souris avec image, biome, zone, PV, ATQ, cadence, or, XP, victimes et règle de biome">
+      <figcaption>Fiche d'une créature : image, biome, zone d'apparition, statistiques, butin et règle de biome.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="images/codex_boss_detail.jpg" alt="Fiche Roi des Cryptes avec capacité Drain d'âme, statistiques, règle de biome et modificateurs">
+      <figcaption>Fiche d'un gardien : capacité, statistiques, règle de biome et modificateurs aléatoires.</figcaption>
+    </figure>
+  </div>
+  <p>Appuyez sur une créature ou un gardien pour ouvrir sa fiche. Elle affiche son image, son biome et son palier de première rencontre, sa zone d'apparition, son niveau, ses PV, son ATQ, sa cadence, l'or et l'XP donnés, le nombre de victimes et la règle de biome. Les statistiques sont celles de la première rencontre. Pour un gardien, la capacité et ses effets sont aussi détaillés, ainsi que les modificateurs aléatoires possibles. Une créature non vaincue reste verrouillée jusqu'à la première victoire. Les fiches suivent la <strong>taille du texte</strong> choisie dans les réglages.</p>
+</section>
+
+<section id="reglages">
+  <h2>16. Réglages</h2>
+  <figure class="shot">
+    <img src="images/settings.jpg" alt="Écran Réglages avec texte, notifications, son, aide et inventaire">
+    <figcaption>Réglages : lisibilité, notifications, sons, aide, sauvegarde.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Taille du texte :</strong> Normal, Grand, Très grand, Maximal.</li>
+    <li><strong>Notifications :</strong> activées/désactivées, avec cases rencontre en attente, gardien, gardien en attente, niveau, serments, coffres, clé Garmin.</li>
+    <li><strong>Heures calmes :</strong> 22:00–08:00, alertes sans vibration.</li>
+    <li><strong>Animations réduites :</strong> supprime le balancement, les auras et les nombres flottants.</li>
+    <li><strong>Vibrations :</strong> retour haptique des alertes.</li>
+    <li><strong>Sons 8 bits :</strong> activés/désactivés, volume 0–100 %, bouton Tester le son.</li>
+    <li><strong>Vendre les communs automatiquement :</strong> convertit les communs au ramassage.</li>
+    <li><strong>Source de pas :</strong> Garmin ou Santé Connect, avec autorisation, synchronisation manuelle et journal de synchronisation.</li>
+    <li><strong>Diagnostic de synchronisation :</strong> source active, fenêtre d'import jour par jour avec l'état de chaque journée, garde-fous (7 jours, 60 000 pas/jour, 100 000 pas par import, 250 pas/min) et bouton de synchronisation.</li>
+    <li><strong>Sauvegarde :</strong> exporter, importer avec aperçu, effacer la progression.</li>
+    <li><strong>Journal de synchronisation :</strong> derniers résultats de la source active, horodatés au jour et à l'heure.</li>
+    <li><strong>Vérifier les mises à jour :</strong> carte dédiée, avec vérification automatique quotidienne facultative.</li>
+    <li><strong>Manuel du jeu :</strong> ouvre ce guide dans l'application.</li>
+    <li><strong>Licences et confidentialité :</strong> liens vers les documents du dépôt.</li>
+  </ul>
+  <h3>Musique d'ambiance</h3>
+  <figure class="shot">
+    <img src="images/music_settings.jpg" alt="Réglages Son avec le toggle Musique d'ambiance et le volume musique à 30 %">
+    <figcaption>Musique d'ambiance : activation et volume indépendant des effets sonores.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>16 pistes originales</strong> : deux variantes de 3 minutes pour chacun des 8 biomes.</li>
+    <li><strong>Démarrage aléatoire</strong> : la piste commence à une position tirée au hasard, puis boucle.</li>
+    <li><strong>Changement de biome</strong> : fondu court vers la nouvelle ambiance.</li>
+    <li><strong>Activation :</strong> Musique d'ambiance ON/OFF, activée par défaut.</li>
+    <li><strong>Volume :</strong> réglage indépendant des effets sonores, 30 % par défaut.</li>
+    <li><strong>Arrière-plan :</strong> la musique se met en pause quand l'application n'est plus visible, puis reprend.</li>
+    <li>Les pistes sont générées pour le projet et publiées en <strong>CC0</strong>.</li>
+  </ul>
+  <h3>Réglages avancés</h3>
+  <p>En bas de l'écran, la carte <strong>Réglages avancés</strong> est repliée par défaut : elle ne s'ouvre qu'à la demande. Elle règle le budget de progression hors ligne, c'est-à-dire les pas consommés quand l'application est fermée.</p>
+  <figure class="shot">
+    <img src="images/reglages_avances.jpg" alt="Carte Réglages avancés dépliée : absence hors ligne, mode Pourcentage, 30 %, estimation de durée, budget du jour et bouton Rétablir 30 %">
+    <figcaption>Réglages avancés : budget d'absence en pourcentage ou en pas maximum.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Pourcentage :</strong> de 0 à 30 % des pas du jour, <strong>30 % par défaut</strong>.</li>
+    <li><strong>Pas maximum :</strong> de 0 à 5 000 pas, avec les raccourcis 300, 1 000 et 3 000.</li>
+    <li><strong>Budget journalier :</strong> ce qui a déjà été consommé hors ligne aujourd'hui est déduit ; deux fermetures partagent la même enveloppe.</li>
+    <li><strong>Durée :</strong> elle découle des pas, environ 1 seconde pour 60 pas, jusqu'à deux fois plus si la réserve est presque vide. La simulation peut s'arrêter avant sur un événement.</li>
+    <li><strong>0</strong> désactive la progression hors ligne ; <strong>RÉTABLIR 30 %</strong> revient aux valeurs recommandées.</li>
+    <li>Ces réglages ne peuvent que réduire la progression hors ligne.</li>
+  </ul>
+</section>
+
+<section id="mises-a-jour">
+  <h2>17. Mises à jour</h2>
+  <p>L'application se met à jour directement depuis les <strong>releases GitHub</strong>, sans Play Store.</p>
+  <ul>
+    <li><strong>Vérification automatique :</strong> active par défaut. Elle interroge GitHub au plus une fois toutes les 24 h, au lancement de l'application.</li>
+    <li><strong>Vérification manuelle :</strong> <code>Réglages → Mises à jour → Vérifier maintenant</code>.</li>
+    <li>Quand une version plus récente existe, un dialogue affiche la version disponible et propose <strong>Installer la mise à jour</strong>.</li>
+    <li>L'APK signé est téléchargé depuis GitHub dans le cache de l'application, puis <strong>vérifié par SHA-256</strong> lorsque l'empreinte est publiée dans les notes de release.</li>
+    <li>Android demande toujours votre <strong>confirmation</strong> avant d'installer l'APK. La première fois, autorisez « Installer des applications inconnues » pour La Marche des Âmes.</li>
+    <li>Une mise à jour installée avec la même signature <strong>conserve la progression, les réglages et la clé Garmin</strong>.</li>
+    <li>Après l'installation, l'application propose d'<strong>ouvrir la page GitHub de la release</strong> pour lire les changements. Vous pouvez aussi choisir « Plus tard ».</li>
+  </ul>
+  <div class="warn"><strong>Pas de mise à jour silencieuse.</strong> Rien ne s'installe sans votre accord : le téléchargement ne démarre qu'après le bouton Installer, et Android affiche son propre écran de confirmation.</div>
+  <div class="warn"><strong>Play Protect.</strong> Android peut afficher un avertissement ou bloquer une application inconnue de Google. Si l'installation in-app est refusée, ouvrez la page GitHub de la release et installez l'APK manuellement, ou autorisez l'installation pour cette application dans les réglages Android.</div>
+</section>
+
+<section id="garmin">
+  <h2>18. Synchronisation Garmin</h2>
+  <figure class="shot">
+    <img src="images/garmin.jpg" alt="Carte Compte Garmin connecté avec boutons Synchroniser et Gérer la clé">
+    <figcaption>Compte Garmin connecté : synchronisation manuelle et gestion de la clé.</figcaption>
+  </figure>
+  <h3>Jeton et clé</h3>
+  <ul>
+    <li>La clé personnelle est échangée contre un <strong>jeton OAuth2 de 24 h</strong>.</li>
+    <li>Il n'y a pas de refresh token : l'application redemande un jeton avec la clé.</li>
+    <li>La clé et le jeton sont chiffrés dans Android Keystore.</li>
+    <li>Une clé expirée ou révoquée provoque une erreur 401 : remplacez-la dans Compte Garmin.</li>
+  </ul>
+  <h3>Erreurs fréquentes</h3>
+  <table>
+    <tr><th>Code</th><th>Signification</th><th>Action</th></tr>
+    <tr><td>401</td><td>Clé invalide, expirée ou révoquée</td><td>Créer une nouvelle clé et la coller.</td></tr>
+    <tr><td>403</td><td>Accès refusé</td><td>Vérifier les droits de la clé Garmin.</td></tr>
+    <tr><td>429</td><td>Trop de requêtes</td><td>Attendre le délai indiqué, puis réessayer.</td></tr>
+    <tr><td>5xx</td><td>Garmin indisponible</td><td>Réessayer plus tard.</td></tr>
+  </table>
+  <div class="warn"><strong>La montre doit avoir synchronisé.</strong> Si Garmin Connect n'a pas reçu vos pas, l'API renvoie l'ancien total. Ouvrez Garmin Connect, attendez la montre, puis resynchronisez.</div>
+</section>
+
+<section id="absence">
+  <h2>19. Résumé d'absence</h2>
+  <figure class="shot">
+    <img src="images/absence_report.jpg" alt="Écran Bon retour affichant l'absence, les pas consommés, les mètres, les combats, l'or, les paliers, les gardiens, les niveaux, les coffres et la réserve restante">
+    <figcaption>L'écran « Bon retour » résume ce qui s'est passé pendant votre absence.</figcaption>
+  </figure>
+  <p>Quand vous fermez l'application avec une réserve de pas, cette réserve continue de s'écouler pendant votre absence. À votre retour, le jeu affiche un écran <strong>« BON RETOUR »</strong> qui résume la marche, les combats et les gains.</p>
+  <h3>Quand le calcul se lance</h3>
+  <ul>
+    <li>L'absence doit durer <strong>au moins 2 minutes</strong>.</li>
+    <li>La simulation ne consomme que la <strong>réserve présente à la fermeture</strong> : les pas synchronisés à l'ouverture ne sont jamais avalés par l'absence.</li>
+    <li>Le héros ne doit être ni au campement, ni sur une rencontre spéciale.</li>
+    <li>L'onboarding doit être terminé.</li>
+  </ul>
+  <p>Le résumé s'affiche dès 2 minutes d'absence, <strong>même si la réserve était vide</strong> : il indique alors que rien n'a avancé. La synchronisation des pas est téléchargée en parallèle mais <strong>appliquée seulement à la fermeture</strong> du résumé : le compteur de pas et la réserve ne bougent qu'après « REPRENDRE LA MARCHE », et le message « Garmin synchronisé · +N pas » ou « Santé Connect synchronisé · +N pas » arrive à ce moment-là.</p>
+<p>Le résumé liste aussi le <strong>butin</strong> : objets récupérés pendant l'absence, consommables, rations et éclats.</p>
+  <h3>Consommation de la réserve</h3>
+  <p>La simulation utilise le <strong>rythme actif normal</strong> (30 ou 60 pas par seconde selon la taille de la réserve), avec un budget réglable dans <strong>Réglages avancés</strong> et trois garde-fous :</p>
+  <div class="kpi">
+    <div><b>30 %</b><span>des pas du jour par défaut (0–30 %, ou 0–5 000 pas)</span></div>
+    <div><b>4 min</b><span>de temps simulé maximum</span></div>
+    <div><b>100 %</b><span>du rythme actif</span></div>
+    <div><b>7 jours</b><span>absence maximale comptée</span></div>
+  </div>
+  <p>La première limite atteinte arrête la simulation. Le budget est <strong>journalier</strong> : deux absences dans la même journée partagent la même enveloppe. Elle s'arrête aussi sur un <strong>événement</strong> : rencontre spéciale, nouveau coffre ou passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un <strong>palier</strong> de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
+  <h3>Contenu du résumé</h3>
+  <ul>
+    <li>durée de l'absence ;</li>
+    <li>pas consommés et mètres parcourus ;</li>
+    <li>combats, paliers franchis et gardiens vaincus ;</li>
+    <li>or gagné, niveaux gagnés et coffres ouverts ;</li>
+    <li>réserve de pas restante.</li>
+  </ul>
+  <p>Deux boutons : <strong>REPRENDRE LA MARCHE</strong> ferme le résumé, <strong>VOIR LE JOURNAL</strong> ouvre directement le journal des événements.</p>
+  <h3>Rencontre spéciale</h3>
+  <p>Si la simulation tombe sur une <strong>rencontre spéciale</strong>, elle s'arrête immédiatement. Le résumé l'indique (« Une rencontre vous attend sur le sentier »), puis la rencontre s'affiche normalement. Le jeu ne choisit jamais à votre place.</p>
+  <h3>Défaite contre un gardien</h3>
+  <p>Si le héros est repoussé pendant la simulation, le résumé l'indique et vous retrouvez la zone de farm correspondante. Aucun combat n'est résolu automatiquement sans que vous le sachiez.</p>
+  <h3>Fusion avec la synchronisation des pas</h3>
+  <p>Si une synchronisation de pas (Garmin ou Santé Connect) et une absence arrivent en même temps, les deux rapports sont <strong>fusionnés</strong> en un seul écran : les pas importés et la consommation de la réserve apparaissent ensemble, sans double comptage. Le titre devient alors « Absence et rattrapage des pas ».</p>
+  <h3>Rapport persistant</h3>
+  <p>Le résumé reste disponible tant que vous n'avez pas appuyé sur <strong>REPRENDRE LA MARCHE</strong>. Quitter l'application ou changer d'écran ne le marque pas comme lu.</p>
+  <div class="warn"><strong>Horloge modifiée.</strong> Pour éviter les abus, l'absence est bornée entre 0 et 7 jours. Un changement d'heure ou une horloge avancée ne peut pas déclencher un gain démesuré.</div>
+  <div class="note"><strong>Ferveur.</strong> Elle décroît selon le temps réel, pas selon le temps simulé. Le résumé ne remplace pas une session active pour entretenir la ferveur.</div>
+</section>
+
+<section id="faq">
+  <h2>20. Questions fréquentes</h2>
+  <details>
+    <summary>Pourquoi le jeu a-t-il avancé pendant que j'étais absent ?</summary>
+    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite du budget d'absence (30 % des pas du jour par défaut, réglable dans Réglages avancés) et de 4 minutes simulées. La réserve restante est conservée. Les gardiens peuvent être vaincus si le budget restant couvre un palier ; sinon la simulation s'arrête devant le portail. Voir <a href="#absence">Résumé d'absence</a>.</p>
+  </details>
+  <details>
+    <summary>Le héros est bloqué et n'avance plus.</summary>
+    <p>La réserve de pas est probablement à zéro. Le héros repart à la prochaine synchronisation contenant de nouveaux pas. Vérifiez le nombre de pas du jour et la dernière synchronisation.</p>
+  </details>
+  <details>
+    <summary>Je suis devant la porte du gardien mais il n'y a pas de monstre.</summary>
+    <p>La porte apparaît dès 85 m, le gardien n'apparaît qu'à 100 m. S'il manque 2 m, il faut 20 pas. Le libellé « EN ATTENTE DE PAS » s'affiche quand la réserve est vide.</p>
+  </details>
+  <details>
+    <summary>Le coffre me bloque.</summary>
+    <p>Un coffre ne bloque jamais la marche. « Continuer la marche » ferme sa fiche. Si vous avez lancé « Consacrer mes pas », rouvrez le coffre et choisissez « Arrêter le forçage » : la progression de la serrure est conservée.</p>
+  </details>
+  <details>
+    <summary>La synchronisation renvoie toujours le même nombre de pas.</summary>
+    <p>Garmin n'a pas encore reçu les nouveaux pas de la montre (ou l'application qui alimente Santé Connect n'a pas écrit). Ouvrez Garmin Connect / l'app de santé, laissez la montre synchroniser, puis appuyez sur Synchroniser.</p>
+  </details>
+  <details>
+    <summary>Je ne vois pas mes rations.</summary>
+    <p>Elles sont dans la carte RESSOURCES de l'onglet Stats, dans l'en-tête (icône viande) et dans le camp, sur les actions de soin.</p>
+  </details>
+  <details>
+    <summary>Mes notifications ne fonctionnent pas.</summary>
+    <p>Vérifiez Réglages → Notifications, puis la permission Android. Sur Android 13+, la permission est demandée au premier lancement. Vous pouvez l'ouvrir depuis les réglages système.</p>
+  </details>
+  <details>
+    <summary>Que se passe-t-il quand l'inventaire est plein ?</summary>
+    <p>Le nouvel objet est comparé au moins bon objet non verrouillé du sac. Si le nouveau est meilleur, l'ancien part au coffre de camp et le nouveau reste dans le sac ; sinon, le nouveau part au coffre. Les objets verrouillés sont protégés. Les non identifiés utilisent un score provisoire rareté + niveau.</p>
+  </details>
+  <details>
+    <summary>Comment sauvegarder ou changer de téléphone ?</summary>
+    <p>Réglages → Sauvegarde → Exporter. Le fichier JSON contient la progression, jamais la clé Garmin. Sur le nouveau téléphone, installez l'app, choisissez votre source de pas, puis Importez la sauvegarde et confirmez l'aperçu.</p>
+    <p>La progression est aussi enregistrée automatiquement toutes les 30 secondes environ, à chaque changement de palier ou de niveau, et juste avant une mise à jour de l'application.</p>
+  </details>
+  <details>
+    <summary>Puis-je désactiver les sons ou changer le volume ?</summary>
+    <p>Oui : Réglages → Son. Le réglage concerne les effets du jeu, pas les notifications Android.</p>
+  </details>
+</section>
+
+<section id="donnees">
+  <h2>21. Données et confidentialité</h2>
+  <ul>
+    <li>La progression, les préférences et la sauvegarde restent sur l'appareil.</li>
+    <li>La clé et le jeton Garmin sont chiffrés dans Android Keystore ; ils ne partent que vers Garmin.</li>
+    <li>Avec <strong>Santé Connect</strong>, les pas sont lus localement (permission <code>READ_STEPS</code>), jamais envoyés à l'éditeur.</li>
+    <li>L'application ne contacte que Garmin (source Garmin) et GitHub (mises à jour, version GitHub). Aucun serveur éditeur, aucune publicité, aucun traceur.</li>
+    <li>« Révoquer la clé » supprime la clé et le jeton ; « Effacer la progression » remet le jeu à zéro.</li>
+    <li>Politique complète : <a href="https://brunothesatellite.github.io/idle-step-rpg/privacy/">brunothesatellite.github.io/idle-step-rpg/privacy</a>.</li>
+  </ul>
+</section>
+
+<section id="credits">
+  <h2>22. Licences et crédits</h2>
+  <ul>
+    <li><strong>Code et textes :</strong> MIT — brunothesatellite.</li>
+    <li><strong>Pixel art :</strong> Dungeon Crawl Stone Soup contributors, CC0 1.0.</li>
+    <li><strong>Sons 8 bits :</strong> générés pour ce projet, CC0 1.0.</li>
+    <li><strong>Polices :</strong> Pixelify Sans et Press Start 2P, SIL Open Font License 1.1.</li>
+    <li>Détails : <code>LICENSES.md</code>, <code>assets/CREDITS.md</code>, <code>assets/audio/LICENSE.txt</code>.</li>
+  </ul>
+  <p>Merci d'avoir marché jusqu'ici. Bonne route dans les cryptes.</p>
+</section>
+
+<footer>
+  La Marche des Âmes · manuel v{{APP_VERSION}} · <a href="#top">Retour au sommaire</a><br>
+  Garmin ou Santé Connect · aucune donnée envoyée à un serveur éditeur.
+</footer>
+
+</div>
+</body>
+</html>
+
+

@@ -79,7 +79,7 @@ const val INVENTORY_CAP = 24
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250
-const val SAVE_VERSION = 4
+const val SAVE_VERSION = 6
 
 @Serializable
 data class Upgrades(
@@ -139,7 +139,18 @@ data class FightData(
     var ability: String = "",
     var abilityLabel: String = "",
     var abilityFlashMs: Double = 0.0,
-    var shieldMs: Double = 0.0
+    var shieldMs: Double = 0.0,
+    /** Pool d'apparition : easy, mid, hard ou farm. */
+    var tier: String = "easy"
+)
+
+/** Première victoire sur une créature ou un gardien, pour la fiche du Codex. */
+@Serializable
+data class FirstSeen(
+    val biomeKey: String,
+    val floor: Int,
+    val tier: String,
+    val level: Int
 )
 
 @Serializable
@@ -397,6 +408,10 @@ data class GameState(
     var legend: List<JournalEntry> = emptyList(),
     var bestiary: Map<String, Int> = emptyMap(),
     var bossKills: Map<String, Int> = emptyMap(),
+    /** Biome, palier et niveau de la première victoire sur un monstre, par nom. */
+    var firstSeen: Map<String, FirstSeen> = emptyMap(),
+    /** Biome, palier et niveau de la première victoire sur un gardien, par nom. */
+    var bossFirstSeen: Map<String, FirstSeen> = emptyMap(),
     var discoveredItems: List<String> = emptyList(),
     /**
      * Collection permanente des ensembles : nom d'ensemble → slots découverts.
@@ -592,7 +607,7 @@ val CATACOMB_POOL = MobPool(
         MobTemplate("Araignée sauteuse", "mon/jumping_spider.png"),
         MobTemplate("Cafard géant", "mon/giant_cockroach.png"),
         MobTemplate("Grenouille géante", "mon/giant_frog.png"),
-        MobTemplate("Chauve-souris", "mon/bat.png")
+        MobTemplate("Chauve-souris des galeries", "mon/bat_galeries.png")
     ),
     mid = listOf(
         MobTemplate("Gnoll", "mon/gnoll.png"),
@@ -627,7 +642,7 @@ val ASH_POOL = MobPool(
     mid = listOf(
         MobTemplate("Élémentaire de feu", "mon/fire_elemental.png"),
         MobTemplate("Éfrit", "mon/efreet.png"),
-        MobTemplate("Manticore", "mon/manticore.png"),
+        MobTemplate("Manticore de cendre", "mon/manticore_ember.png"),
         MobTemplate("Légionnaire infernal", "mon/hellion.png")
     ),
     hard = listOf(
@@ -649,13 +664,13 @@ val FORGE_POOL = MobPool(
         MobTemplate("Élémentaire de fer", "mon/iron_elemental.png"),
         MobTemplate("Oushabti", "mon/ushabti.png"),
         MobTemplate("Nain des profondeurs", "mon/deep_dwarf.png"),
-        MobTemplate("Kobold", "mon/kobold.png")
+        MobTemplate("Kobold mineur", "mon/kobold_mineur.png")
     ),
     mid = listOf(
-        MobTemplate("Golem de fer", "mon/iron_golem.png"),
+        MobTemplate("Golem d'atelier", "mon/iron_golem_workshop.png"),
         MobTemplate("Golem gardien", "mon/guardian_golem.png"),
-        MobTemplate("Troll des abîmes", "mon/deep_troll.png"),
-        MobTemplate("Troll de fer", "mon/iron_troll.png")
+        MobTemplate("Troll des scories", "mon/deep_troll_slag.png"),
+        MobTemplate("Troll de fonte", "mon/iron_troll_molten.png")
     ),
     hard = listOf(
         MobTemplate("Gardien de cristal", "mon/crystal_guardian.png"),
@@ -673,10 +688,10 @@ val FORGE_POOL = MobPool(
 
 val PEAK_POOL = MobPool(
     easy = listOf(
-        MobTemplate("Loup noir", "mon/wolf.png"),
+        MobTemplate("Loup des neiges", "mon/wolf_snow.png"),
         MobTemplate("Bête de glace", "mon/ice_beast.png"),
         MobTemplate("Raiju", "mon/raiju.png"),
-        MobTemplate("Chauve-souris", "mon/bat.png")
+        MobTemplate("Chauve-souris des neiges", "mon/bat_neiges.png")
     ),
     mid = listOf(
         MobTemplate("Ours polaire", "mon/polar_bear.png"),
@@ -704,22 +719,22 @@ val WOOD_POOL = MobPool(
     easy = listOf(
         MobTemplate("Faune", "mon/faun.png"),
         MobTemplate("Abeille tueuse", "mon/killer_bee.png"),
-        MobTemplate("Grenouille géante", "mon/giant_frog.png"),
+        MobTemplate("Grenouille des sous-bois", "mon/giant_frog_woods.png"),
         MobTemplate("Loup noir", "mon/wolf.png")
     ),
     mid = listOf(
         MobTemplate("Dryade", "mon/dryad.png"),
-        MobTemplate("Harpie", "mon/harpy.png"),
+        MobTemplate("Harpie sylvestre", "mon/harpy_woods.png"),
         MobTemplate("Satyre", "mon/satyr.png"),
         MobTemplate("Reine des abeilles", "mon/queen_bee.png"),
-        MobTemplate("Rôdeur des lianes", "mon/vine_stalker.png"),
+        MobTemplate("Rôdeur des racines", "mon/vine_stalker_roots.png"),
         MobTemplate("Ours noir", "mon/black_bear.png")
     ),
     hard = listOf(
         MobTemplate("Tréant", "mon/treant.png"),
         MobTemplate("Chasseur d'épines", "mon/thorn_hunter.png"),
         MobTemplate("Rôdeur des lianes", "mon/vine_stalker.png"),
-        MobTemplate("Griffon", "mon/griffon.png")
+        MobTemplate("Griffon des bois", "mon/griffon_woods.png")
     ),
     bosses = listOf(
         BossTemplate("Tréant", "mon/treant.png"),
@@ -759,16 +774,16 @@ val ABYSS_POOL = MobPool(
 
 val THRONE_POOL = MobPool(
     easy = listOf(
-        MobTemplate("Diablotin", "mon/crimson_imp.png"),
+        MobTemplate("Diablotin de braise", "mon/crimson_imp_ember.png"),
         MobTemplate("Diablotin d'ombre", "mon/shadow_imp.png"),
         MobTemplate("Diablotin de fer", "mon/iron_imp.png"),
         MobTemplate("Ufetubus", "mon/ufetubus.png")
     ),
     mid = listOf(
-        MobTemplate("Légionnaire infernal", "mon/hellion.png"),
-        MobTemplate("Sentinelle des enfers", "mon/hell_sentinel.png"),
-        MobTemplate("Diable de glace", "mon/ice_devil.png"),
-        MobTemplate("Balrug", "mon/balrug.png")
+        MobTemplate("Légionnaire des abysses", "mon/hellion_abyss.png"),
+        MobTemplate("Sentinelle du trône", "mon/hell_sentinel_throne.png"),
+        MobTemplate("Diable de lave", "mon/ice_devil_lava.png"),
+        MobTemplate("Balrug déchu", "mon/balrug_fallen.png")
     ),
     hard = listOf(
         MobTemplate("Bourreau", "mon/executioner.png"),
@@ -802,11 +817,65 @@ val SPECIAL_BOSSES = listOf(
     BossTemplate("L'Âme Première", "mon/cerebov.png")
 )
 
+/** Palier de référence des gardiens de jalon qui n'appartiennent à aucun pool. */
+fun specialBossFloor(name: String): Int? = when (name) {
+    "Mère des Abysses" -> 25
+    "L'Âme Première" -> 100
+    else -> null
+}
+
 fun allMobTemplates(): List<MobTemplate> =
     BIOME_POOLS.values.flatMap { it.easy + it.mid + it.hard }.distinctBy { it.name }
 
 fun allBossTemplates(): List<BossTemplate> =
     (BIOME_POOLS.values.flatMap { it.bosses } + SPECIAL_BOSSES).distinctBy { it.name }
+
+/** Biome et pool d'un monstre, ou null s'il n'existe plus dans les pools actuels. */
+data class MobLocation(val biomeKey: String, val tier: String, val fromFloor: Int)
+
+fun mobLocation(name: String): MobLocation? {
+    BIOME_POOLS.forEach { (key, pool) ->
+        val tier = when {
+            pool.easy.any { it.name == name } -> "easy"
+            pool.mid.any { it.name == name } -> "mid"
+            pool.hard.any { it.name == name } -> "hard"
+            else -> null
+        }
+        if (tier != null) {
+            return MobLocation(
+                biomeKey = key,
+                tier = tier,
+                fromFloor = BIOMES.firstOrNull { it.key == key }?.fromFloor ?: 1
+            )
+        }
+    }
+    return null
+}
+
+/**
+ * Anciens noms partagés entre plusieurs pools, remplacés par des variantes
+ * uniques. Sert une seule fois à la migration des sauvegardes v5 → v6.
+ */
+val MOB_RENAMES: Map<String, List<String>> = mapOf(
+    "Chauve-souris" to listOf(
+        "Chauve-souris", "Chauve-souris des galeries", "Chauve-souris des neiges"
+    ),
+    "Kobold" to listOf("Kobold", "Kobold mineur"),
+    "Grenouille géante" to listOf("Grenouille géante", "Grenouille des sous-bois"),
+    "Loup noir" to listOf("Loup noir", "Loup des neiges"),
+    "Harpie" to listOf("Harpie", "Harpie sylvestre"),
+    "Griffon" to listOf("Griffon", "Griffon des bois"),
+    "Diablotin" to listOf("Diablotin", "Diablotin de braise"),
+    "Légionnaire infernal" to listOf("Légionnaire infernal", "Légionnaire des abysses"),
+    "Sentinelle des enfers" to listOf("Sentinelle des enfers", "Sentinelle du trône"),
+    "Balrug" to listOf("Balrug", "Balrug déchu"),
+    "Diable de glace" to listOf("Diable de glace", "Diable de lave"),
+    "Troll des abîmes" to listOf("Troll des abîmes", "Troll des scories"),
+    "Golem de fer" to listOf("Golem de fer", "Golem d'atelier"),
+    "Troll de fer" to listOf("Troll de fer", "Troll de fonte"),
+    "Rôdeur des lianes" to listOf("Rôdeur des lianes", "Rôdeur des racines"),
+    "Manticore" to listOf("Manticore de cendre")
+)
 
 fun ownedItemNames(state: GameState): Set<String> =
     (state.equipment + state.inventory + state.stash)

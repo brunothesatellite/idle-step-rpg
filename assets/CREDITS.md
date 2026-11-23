@@ -116,6 +116,33 @@ Pièces de héros supplémentaires, même export `releases/Nov-2015`, **CC0 1.0*
 
 ---
 
+## Extension v0.18.0 - variantes de monstres
+
+Dix-sept variantes recolorées à partir des sprites **CC0 1.0** du même export
+`releases/Nov-2015`, pour donner un monstre unique à chaque biome :
+
+- `bat_galeries`, `bat_neiges` (dérivés de `bat`)
+- `kobold_mineur` (dérivé de `kobold`)
+- `giant_frog_woods` (dérivé de `giant_frog`)
+- `wolf_snow` (dérivé de `wolf`)
+- `harpy_woods` (dérivé de `harpy`)
+- `griffon_woods` (dérivé de `griffon`)
+- `crimson_imp_ember` (dérivé de `crimson_imp`)
+- `hellion_abyss` (dérivé de `hellion`)
+- `hell_sentinel_throne` (dérivé de `hell_sentinel`)
+- `balrug_fallen` (dérivé de `balrug`)
+- `ice_devil_lava` (dérivé de `ice_devil`)
+- `deep_troll_slag` (dérivé de `deep_troll`)
+- `iron_golem_workshop` (dérivé de `iron_golem`)
+- `iron_troll_molten` (dérivé de `iron_troll`)
+- `vine_stalker_roots` (dérivé de `vine_stalker`)
+- `manticore_ember` (dérivé de `manticore`)
+
+Ces recoloriages et duotones sont produits pour le projet et restent sous
+**CC0 1.0**, comme les sprites sources.
+
+---
+
 ## Musiques d'ambiance (16 pistes, CC0 1.0)
 
 Les pistes de `assets/music/` et `android/app/src/main/assets/music/` sont **générées pour ce projet** par `tools/generate_music.py` :

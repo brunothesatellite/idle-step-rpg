@@ -1,5 +1,16 @@
 # Journal des versions
 
+## v0.18.0
+- **Codex — 110 monstres uniques** : 13 variantes inter-biomes, 3 variantes internes et Manticore recolorée. Plus aucun nom n'est partagé entre plusieurs pools ni entre deux tiers d'un même biome. Le Codex affiche **110 créatures / 35 gardiens**.
+- **Badge `NON DÉCOUVERT`** dans le Bestiaire pour les biomes non atteints, et **noms des biomes verrouillés** dans l'onglet Biomes, avec leur palier d'ouverture.
+- **Chip `GARDIEN`** sur les entrées de gardiens, en complément du bandeau de combat et de la fiche.
+- **Première rencontre** : biome, palier, tier et niveau enregistrés à la première victoire. Les fiches affichent les statistiques de cette rencontre ; Mère des Abysses et L'Âme Première ont un palier fixe (25 et 100).
+- **Migration v6** : fusion des anciens noms suffixés (`Balrug · BLINDÉ`), copie des compteurs vers les variantes découvertes, suppression des compteurs des biomes non découverts, conservation de la première rencontre sur la variante d'origine. Les kills de gardien sont retirés du compteur de monstre (Option B). Sauvegarde `pre_migration_v5` avant migration.
+- **Manuel** : compteurs du Codex et version de l'application injectés au build depuis `manuel/index.template.html`.
+- **Assets** : 17 variantes recolorées, créditées dans `assets/CREDITS.md` ; `statue_hero.png` ajouté à la source `assets/env`.
+- **Tests** : **113 / 113**, lint Android OK.
+- **Build** : `versionCode 43`, `versionName 0.18.0`.
+
 ## v0.17.3
 - **Atelier d'amélioration** : la fiche d'objet ouvre un atelier persistant. `AMÉLIORER` affiche le niveau suivant, le tableau `Équipé / Objet / Après`, le coût en or et éclats ; après validation, la feuille reste ouverte avec le gain appliqué, l'aperçu du niveau suivant et `CONTINUER À AMÉLIORER`.
 - **Atelier de reforge** : `REFORGER` montre le pool complet (25 % aucun effet, 12,5 % par effet), applique le tirage pour 2 éclats, puis affiche `ancien → nouveau` avec `REFORGER ENCORE`. Le niveau, les statistiques et l'ensemble restent inchangés.
