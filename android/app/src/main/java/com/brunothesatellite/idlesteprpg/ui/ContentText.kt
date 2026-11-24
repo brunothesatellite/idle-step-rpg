@@ -148,19 +148,39 @@ fun creatureDisplay(res: Resources, raw: String): String {
     return out.toString()
 }
 
+private const val FUSED_SUFFIX = " fusionné"
+
+/** Sépare un nom d'objet de ses suffixes de fusion successifs. */
+internal fun splitFusedName(value: String): Pair<String, Int> {
+    var base = value
+    var fused = 0
+    while (base.endsWith(FUSED_SUFFIX, ignoreCase = true)) {
+        base = base.dropLast(FUSED_SUFFIX.length)
+        fused++
+    }
+    return base to fused
+}
+
+private fun localizedItemBase(res: Resources, raw: String): String {
+    val (base, fused) = splitFusedName(raw)
+    val localized = itemBaseName(res, base)
+    if (fused == 0) return localized
+    return localized + if (fused > 1) " (fused ×$fused)" else " (fused)"
+}
+
 fun itemNameFrom(res: Resources, raw: String): String {
     if (isFrench(res)) return raw
     val base = raw.substringBefore(" · ")
     val suffix = raw.substringAfter(" · ", "")
-    val localizedBase = itemBaseName(res, base)
+    val localizedBase = localizedItemBase(res, base)
     if (suffix.isBlank()) return localizedBase
     val effect = FRENCH_EFFECTS[suffix]
-    return if (effect != null) localizedBase + " · " + effectLabel(res, effect) else raw
+    return localizedBase + " · " + (effect?.let { effectLabel(res, it) } ?: suffix)
 }
 
 fun itemName(res: Resources, name: String, effect: String): String {
     if (isFrench(res)) return name
-    val localizedBase = itemBaseName(res, name.substringBefore(" · "))
+    val localizedBase = localizedItemBase(res, name.substringBefore(" · "))
     return if (effect.isBlank()) localizedBase else localizedBase + " · " + effectLabel(res, effect)
 }
 
