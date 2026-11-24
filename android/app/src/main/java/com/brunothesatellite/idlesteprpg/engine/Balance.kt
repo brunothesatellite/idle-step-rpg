@@ -163,6 +163,7 @@ object Balance {
         const val FREE_REST_PER_DAY = 2
         const val HOLD_FLOOR_SHARDS = 1
         const val HOLD_FLOOR_RATIONS = 1
+        const val FARM_BOSS_REWARD_CAP = 5
         const val AUTO_RATION_THRESHOLD = 0.40
         const val AUTO_RATION_HEAL = 0.45
         const val VIT_CAP = 4.0

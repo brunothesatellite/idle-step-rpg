@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.5** (lots 1–5, `versionCode 52`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.6** (lots 1–6, `versionCode 53`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -151,7 +151,7 @@ Plafonds et revenus actuels :
 - or : butin de monstre/gardien, camp, marchand, statue ;
 - repos gratuit : **2 fois par jour**, **20 % PV** par repos ;
 - farm : **+10 % PV** par kill ;
-- `holdFloor` (farm de palier) : le gardien vaincu donne du butin, des consommables, **+1 éclat et +1 ration**, sans avancer le palier.
+- `holdFloor` (farm de palier) : le gardien vaincu donne du butin, des consommables, **+1 éclat et +1 ration** (5 gardiens/jour), sans avancer le palier.
 
 La table ci-dessous est la **mesure 0.20.2 avant le lot 4** (auto-ration 30 %/35 %, farm 8 %). Le lot 4 augmente les revenus et le soin automatique ; la consommation réelle doit être re-mesurée au playtest.
 
@@ -169,7 +169,8 @@ Simulation de l'attrition (`reference`) :
 ### 3.8 Ce qui fonctionne déjà
 
 - Le pas comme ressource principale, sans paywall.
-- Le farm de palier : ennemis sans profondeur, niveau `palier−2`, PV ×0,65, ATQ ×0,6 ; le héros ne peut pas mourir en farm (PV remis à 1), et chaque kill rend **+8 % PV**.
+- Le farm de palier : ennemis sans profondeur, niveau `palier−2`, PV ×0,65, ATQ ×0,6 ; le héros ne peut pas mourir en farm (PV remis à 1), et chaque kill rend **+10 % PV**. Un badge **RÉCUPÉRATION** l'affiche.
+- Le farm de gardien donne **+1 éclat et +1 ration**, plafonné à **5 gardiens farmés par jour** ; au-delà, seul le butin continue.
 - Depuis 0.20.0, **aucun soin automatique après un monstre normal** : seuls le farm, le camp, les rations et les éclats rendent des PV. C'est le choix d'attrition assumé.
 - La défaite est bornée : repli de 20 m, 60 % PV, aucune perte d'objet ni d'or.
 - La bénédiction de gardien (+25 %/défaite, cap +75 %) est visible dans la scène.
@@ -189,7 +190,7 @@ Simulation de l'attrition (`reference`) :
 | C6 | VIT morte au-delà de ~2,8 | **corrigé lot 2** : cap 4,0, intervalle 180 ms, affichage MAX | résolu |
 | C7 | Effets empilables sans cap | **corrigé lot 2** : caps 25/40/75/100/50 | résolu |
 | C8 | Gardien auto-déclenché à 100 m | **corrigé lot 5** : portail à 90 m avec choix | résolu |
-| C9 | `holdFloor` sans éclats/rations | farm non rentable | élevée |
+| C9 | `holdFloor` sans éclats/rations | **corrigé lot 6** : +1/+1, cap 5 gardiens/jour | résolu |
 | C10 | Camp/sets plats + or sans sink | **corrigé lot 3** : camp et sets en %, coût indexé, plafond 30 | résolu |
 | C11 | Enrage dans une zone morte | **corrigé lot 5** : enrage après 25 s, phase 2 télégraphiée | résolu |
 | C12 | Fusion 75 %, loot sans pity | frustration et séries sèches | moyenne |
@@ -413,4 +414,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.20.3 / lot 3** : camp et sets en pourcentage, coût de camp indexé sur le palier, plafond 30 niveaux.
 - **0.20.4 / correctif + lot 4** : rotation des gardiens par palier dans chaque biome ; rations cap 30, revenus augmentés, auto-ration 40/45, farm 10 %, repos gratuit 2×20 %, farm de gardien +1/+1.
 - **0.20.5 / lot 5** : niveau palier +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −5 %/défaite cap −25 %, portail à 90 m avec Engager/Farmer/Camper.
+- **0.20.6 / lot 6** : farm +10 % PV avec badge RÉCUPÉRATION, farm de gardien +1/+1 plafonné à 5/jour.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.

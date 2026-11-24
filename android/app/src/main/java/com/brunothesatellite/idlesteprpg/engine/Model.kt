@@ -404,6 +404,7 @@ data class GameState(
     var stepLedger: Map<String, Int> = emptyMap(),
     var offlineReport: OfflineReport? = null,
     var bossesToday: Int = 0,
+    var farmBossesToday: Int = 0,
     var chestsToday: Int = 0,
     var oaths: OathsState = OathsState(),
     var chestQueue: List<ChestData> = emptyList(),

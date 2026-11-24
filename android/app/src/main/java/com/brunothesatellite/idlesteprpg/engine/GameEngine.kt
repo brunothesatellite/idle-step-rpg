@@ -343,6 +343,7 @@ object GameEngine {
             state.genShards = 0
             state.lastAdded = 0
             state.bossesToday = 0
+        state.farmBossesToday = 0
             state.chestsToday = 0
             state.oaths = oathsFor(date)
             state.special = null
@@ -1598,15 +1599,24 @@ object GameEngine {
             state.distance = 0.0
             state.nextFight = 10
             if (state.holdFloor) {
-                state.shards = min(MAX_SHARDS, state.shards + Balance.Target.HOLD_FLOOR_SHARDS)
-                state.rations = min(MAX_RATIONS, state.rations + Balance.Target.HOLD_FLOOR_RATIONS)
+                val canReward = state.farmBossesToday < Balance.Target.FARM_BOSS_REWARD_CAP
+                if (canReward) {
+                    state.farmBossesToday++
+                    state.shards = min(MAX_SHARDS, state.shards + Balance.Target.HOLD_FLOOR_SHARDS)
+                    state.rations = min(MAX_RATIONS, state.rations + Balance.Target.HOLD_FLOOR_RATIONS)
+                }
                 addLoot(state, lootItem(clearedFloor, "rare"))
                 dropConsumables(state, "boss")
                 state.journal = addJournal(
                     state,
-                    "${f.enemyName} vaincu — palier $clearedFloor conservé (farm) · " +
-                        "+${Balance.Target.HOLD_FLOOR_SHARDS} éclat, " +
-                        "+${Balance.Target.HOLD_FLOOR_RATIONS} ration",
+                    if (canReward) {
+                        "${f.enemyName} vaincu — palier $clearedFloor conservé (farm) · " +
+                            "+${Balance.Target.HOLD_FLOOR_SHARDS} éclat, " +
+                            "+${Balance.Target.HOLD_FLOOR_RATIONS} ration"
+                    } else {
+                        "${f.enemyName} vaincu — palier $clearedFloor conservé (farm) · " +
+                            "récompenses de farm du jour épuisées"
+                    },
                     "good"
                 )
             } else {

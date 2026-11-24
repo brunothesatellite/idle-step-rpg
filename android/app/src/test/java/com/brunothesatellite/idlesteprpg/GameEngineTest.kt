@@ -1312,6 +1312,63 @@ class GameEngineTest {
     }
 
     @Test
+    fun farmGuardianRewardsAreCappedPerDay() {
+        val state = GameState().apply {
+            floor = 10
+            holdFloor = true
+            shards = 0
+            rations = 0
+            farmBossesToday = 4
+            oaths.bossesClaimed = true
+        }
+        fun bossFight() = FightData(
+            enemyName = "Roi des Cryptes",
+            enemyIcon = "mon/lich.png",
+            enemyLevel = 12,
+            enemyHp = 1.0,
+            enemyMaxHp = 100.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 1250,
+            gold = 0,
+            xp = 0,
+            isBoss = true
+        )
+        GameEngine.victory(state, bossFight())
+        assertEquals(5, state.farmBossesToday)
+        assertEquals(1, state.shards)
+        assertEquals(1, state.rations)
+        GameEngine.victory(state, bossFight())
+        assertEquals(5, state.farmBossesToday)
+        assertEquals(1, state.shards)
+        assertEquals(1, state.rations)
+    }
+
+    @Test
+    fun farmKillHealsTenPercentOfMaxHp() {
+        val state = GameState().apply {
+            floor = 5
+            level = 10
+            hp = 100.0
+            mode = "fight"
+        }
+        val maxHp = statsOf(state).maxHp
+        val fight = FightData(
+            enemyName = "Cible de farm",
+            enemyIcon = "x",
+            enemyLevel = 1,
+            enemyHp = 1.0,
+            enemyMaxHp = 1.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 60_000L,
+            gold = 0,
+            xp = 0,
+            farm = true
+        )
+        GameEngine.victory(state, fight)
+        assertEquals(100.0 + maxHp * 0.10, state.hp, 0.01)
+    }
+
+    @Test
     fun guardianGateStopsBeforeBossAndAllowsChoice() {
         val state = GameState().apply {
             floor = 5

@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.20.6
+- **Lot 6 — farm** : chaque victoire de farm rend **+10 % PV max** ; un badge **RÉCUPÉRATION** l'affiche dans la scène.
+- **Farm de gardien** : **+1 éclat et +1 ration**, plafonnés à **5 gardiens farmés par jour** ; au-delà, le butin continue mais les ressources du jour sont épuisées.
+- **Interface** : la carte Biome rappelle le soin de farm quand le mode est actif.
+- **Tests** : **137 / 137**, lint OK.
+- **Build** : `versionCode 53`, `versionName 0.20.6`. Aucune release GitHub.
+
 ## v0.20.5
 - **Lot 5 — gardiens, pitié, portail** : niveau **palier + 1**, bouclier **35 % / 3 s / 8 s**, phase 2 télégraphiée sans accélération permanente, enrage après **25 s** (+15 %/5 s, cap +60 %).
 - **Pitié** : **−5 % PV/ATQ du gardien par défaite**, cap **−25 %**, visible au portail et en combat.

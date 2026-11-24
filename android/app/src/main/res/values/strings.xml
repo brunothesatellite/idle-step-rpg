@@ -183,6 +183,7 @@
     <string name="dashboard_farm_active">FARM ACTIF · PALIER VERROUILLÉ</string>
     <string name="dashboard_farm_inactive">FARM INACTIF</string>
     <string name="dashboard_farm_active_desc">Le gardien revient sans faire avancer le palier. Les jalons sont désactivés.</string>
+    <string name="dashboard_farm_recovery" formatted="false">Récupération : +%1$d %% PV par victoire de farm.</string>
     <string name="dashboard_farm_inactive_desc">Verrouille ce palier pour farmer sans passer au biome suivant.</string>
     <string name="dashboard_deactivate">DÉSACTIVER</string>
     <string name="dashboard_activate">ACTIVER</string>
@@ -984,6 +985,7 @@
     <string name="scene_phase2">PHASE 2 · EMBRASÉ</string>
     <string name="scene_blessing">BÉNÉDICTION +%1$d %%</string>
     <string name="scene_pity" formatted="false">GARDIEN AFFAIBLI −%1$d %%</string>
+    <string name="scene_farm_recovery" formatted="false">RÉCUPÉRATION · +%1$d %% PV PAR VICTOIRE</string>
     <string name="gate_title">PORTAIL DU GARDIEN</string>
     <string name="gate_level">Palier %1$d · Niv. %2$d</string>
     <string name="gate_ability">CAPACITÉ · %1$s</string>

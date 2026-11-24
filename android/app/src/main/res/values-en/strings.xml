@@ -181,6 +181,7 @@
     <string name="dashboard_farm_active">FARM ACTIVE · FLOOR LOCKED</string>
     <string name="dashboard_farm_inactive">FARM INACTIVE</string>
     <string name="dashboard_farm_active_desc">The guardian returns without advancing the floor. Milestones are disabled.</string>
+    <string name="dashboard_farm_recovery" formatted="false">Recovery: +%1$d%% HP per farm win.</string>
     <string name="dashboard_farm_inactive_desc">Locks this floor for farming without moving to the next biome.</string>
     <string name="dashboard_deactivate">DISABLE</string>
     <string name="dashboard_activate">ENABLE</string>
@@ -982,6 +983,7 @@
     <string name="scene_phase2">PHASE 2 · ABLAZE</string>
     <string name="scene_blessing">BLESSING +%1$d%%</string>
     <string name="scene_pity" formatted="false">GUARDIAN WEAKENED −%1$d %%</string>
+    <string name="scene_farm_recovery" formatted="false">RECOVERY · +%1$d%% HP PER WIN</string>
     <string name="gate_title">GUARDIAN GATE</string>
     <string name="gate_level">Floor %1$d · Lv. %2$d</string>
     <string name="gate_ability">ABILITY · %1$s</string>

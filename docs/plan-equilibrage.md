@@ -1,7 +1,7 @@
 # Plan d'implémentation — équilibrage 1 → 100
 
 > **Statut : proposition, en attente de validation.** Aucun code n'est modifié par ce document.
-> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.5** (lots 1–5, `versionCode 52`), sauvegarde **v7**.
+> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.6** (lots 1–6, `versionCode 53`), sauvegarde **v7**.
 > Objectif : rendre le palier 100 **exigeant, lisible et non frustrant**, sans paywall ni barrière définitive.
 
 ## 1. Principes directeurs
@@ -228,6 +228,8 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 
 ### Lot 6 — Farm et `holdFloor`
 
+**Statut : livré en 0.20.6.** Farm +10 % PV avec badge, farm de gardien +1/+1 plafonné à 5/jour.
+
 **Objectif** : faire du farm un vrai filet de sécurité.
 
 **Modifications** :
@@ -378,8 +380,9 @@ Tests unitaires à ajouter :
 5. ~~Lot 3 — camp, sets, or.~~ **Livré en 0.20.3.**
 6. ~~Lot 4 — rations, attrition.~~ **Livré en 0.20.4.**
 7. ~~Lot 5 — gardiens, pitié, portail.~~ **Livré en 0.20.5.**
-8. Dérouler le lot 6 (farm et `holdFloor`).
+8. ~~Lot 6 — farm et `holdFloor`.~~ **Livré en 0.20.6.**
+9. Dérouler le lot 7 (pity de butin, fusion, identification).
 4. Calibrer les gardiens (lot 5) seulement après.
 5. Playtest 7 jours, puis 14 jours.
 
-**Lots 0 à 5 livrés. En attente du go pour le lot 6.**
+**Lots 0 à 6 livrés. En attente du go pour le lot 7.**

@@ -102,6 +102,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.floor
+import com.brunothesatellite.idlesteprpg.engine.Balance
 import kotlin.math.roundToInt
 
 internal data class BiomePalette(
@@ -471,6 +472,14 @@ fun Scene(
                 stringResource(R.string.scene_farm_zone, step),
                 Blood,
                 Modifier.align(Alignment.TopCenter).padding(top = 58.dp)
+            )
+            SceneTag(
+                stringResource(
+                    R.string.scene_farm_recovery,
+                    (Balance.Target.FARM_HEAL_RATIO * 100).roundToInt()
+                ),
+                Green,
+                Modifier.align(Alignment.TopCenter).padding(top = 80.dp)
             )
         }
         if (state.mode == "chest") {

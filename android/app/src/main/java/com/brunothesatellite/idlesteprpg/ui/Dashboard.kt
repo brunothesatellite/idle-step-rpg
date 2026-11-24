@@ -474,6 +474,17 @@ private fun BiomeCard(state: GameState, onToggleFarm: (Boolean) -> Unit) {
                     color = Muted,
                     lineHeight = 8.sp
                 )
+                if (state.holdFloor) {
+                    Text(
+                        stringResource(
+                            R.string.dashboard_farm_recovery,
+                            (Balance.Target.FARM_HEAL_RATIO * 100).roundToInt()
+                        ),
+                        fontSize = 5.9.sp,
+                        color = Green,
+                        lineHeight = 8.sp
+                    )
+                }
             }
             Spacer(Modifier.width(8.dp))
             SmallAction(
