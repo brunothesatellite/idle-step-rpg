@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.20.1
+- **Lot 1 — courbe d'XP** : `xpNext = 120 × 1,09^(niveau−1)`, récompenses linéaires par palier (`1 + 0,12 × (palier−1)`), gardien ×10. Total 1 → 100 : **~6,8 M XP**, soit ~2 500–4 000 kills.
+- **Rattrapage** : si le niveau est à plus de 4 paliers sous le palier courant, l'XP gagnée est majorée de 25 % jusqu'au retour à `palier − 4`.
+- **Source de vérité** : `Balance.kt` + miroir `balance_constants.py` + vérification CI (`check_constants.py`).
+- **Tests** : **125 / 125**, lint OK.
+- **Build** : `versionCode 48`, `versionName 0.20.1`. Aucune release GitHub.
+
 ## v0.20.0
 - **Courbe cible** : courbe des monstres et gardiens (combat ~18 s, ≥ 30 coups portés), interpolation entre l’ancienne courbe (≤ palier 20) et la cible (≥ palier 35), **ATQ recalibrée sur le build réel (~3 700 PV au palier 36)** : le build actuel gagne 59 % sans potion, 100 % avec.
 - **Gardiens** : bouclier 40 % / 3 s, **enrage** après 15 s (+25 % ATQ toutes les 5 s, cap +75 %), bénédiction de défaite cumulative (+25 % par échec, cap +75 %).

@@ -221,8 +221,13 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
         CURRENT["ELITE_INTERVAL_MS"] if elite else CURRENT["MOB_INTERVAL_MS"]
     ) / 1000.0
             mult = 1.0 + 0.15 * (floor - 1)
+            xp_mult = 1.0 + TARGET["XP_FLOOR_MULT"] * (floor - 1)
             gold = (6 + 3 * level) * (1.6 if elite else 1.0) * mult * 0.5
-            xp = (12 + 5 * level) * (1.8 if elite else 1.0) * mult
+            xp = (
+                (CURRENT["XP_MOB_BASE"] + CURRENT["XP_MOB_PER_LEVEL"] * level)
+                * (CURRENT["XP_ELITE_MULT"] if elite else 1.0)
+                * xp_mult
+            )
         else:
             hp = (55 + 34 * (level - 1)) * (1.8 if elite else 1.0) * _mob_depth_proposed(floor, tuning)
             atk = (6 + 2.2 * (level - 1)) * (1.15 if elite else 1.0) * _atk_depth_proposed(floor, tuning)
@@ -230,8 +235,13 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
         CURRENT["ELITE_INTERVAL_MS"] if elite else CURRENT["MOB_INTERVAL_MS"]
     ) / 1000.0
             mult = 1.0 + 0.15 * (floor - 1)
+            xp_mult = 1.0 + TARGET["XP_FLOOR_MULT"] * (floor - 1)
             gold = (6 + 3 * level) * (1.6 if elite else 1.0) * mult * 0.5
-            xp = (12 + 5 * level) * (1.8 if elite else 1.0) * mult
+            xp = (
+                (CURRENT["XP_MOB_BASE"] + CURRENT["XP_MOB_PER_LEVEL"] * level)
+                * (CURRENT["XP_ELITE_MULT"] if elite else 1.0)
+                * xp_mult
+            )
     return Enemy(
         name="élite" if elite else "monstre",
         hp=hp * rule.enemy_hp,
@@ -274,8 +284,13 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shiel
         shield_period = tuning.shield_period
         ability_mult = 1.5
         mult = 1.0 + 0.15 * (floor - 1)
+        xp_mult = 1.0 + TARGET["XP_FLOOR_MULT"] * (floor - 1)
         gold = 6 * (6 + 3 * level) * mult * 0.5
-        xp = 10 * (12 + 5 * level) * mult
+        xp = (
+            CURRENT["XP_BOSS_MULT"]
+            * (CURRENT["XP_MOB_BASE"] + CURRENT["XP_MOB_PER_LEVEL"] * level)
+            * xp_mult
+        )
     return Enemy(
         name="gardien",
         hp=hp * rule.enemy_hp,

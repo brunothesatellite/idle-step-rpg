@@ -1,7 +1,7 @@
 # Plan d'implémentation — équilibrage 1 → 100
 
 > **Statut : proposition, en attente de validation.** Aucun code n'est modifié par ce document.
-> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.0** (`versionCode 47`), sauvegarde **v7**.
+> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.1** (lot 1, `versionCode 48`), sauvegarde **v7**.
 > Objectif : rendre le palier 100 **exigeant, lisible et non frustrant**, sans paywall ni barrière définitive.
 
 ## 1. Principes directeurs
@@ -74,6 +74,8 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 ---
 
 ### Lot 1 — Courbe d'XP
+
+**Statut : livré en 0.20.1.** `xpNext` 1,09, récompenses linéaires, rattrapage ×1,25.
 
 **Objectif** : rendre le niveau 100 atteignable en 2 500–4 000 kills.
 
@@ -363,8 +365,9 @@ Tests unitaires à ajouter :
 
 1. ~~Valider les sept décisions du §2.~~ **Fait le 24/11/2026.**
 2. ~~Exécuter le lot 0 (constantes + simulateur + doc).~~ **Socle livré : `Balance.kt`, miroir Python, check CI, tests.**
-3. Dérouler les lots 1 à 4.
+3. ~~Lot 1 — courbe d'XP.~~ **Livré en 0.20.1.**
+4. Dérouler les lots 2 à 4.
 4. Calibrer les gardiens (lot 5) seulement après.
 5. Playtest 7 jours, puis 14 jours.
 
-**Décisions validées. En attente du feu vert pour démarrer le lot 0.**
+**Lots 0 et 1 livrés. En attente du go pour le lot 2.**

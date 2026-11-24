@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.0** (`versionCode 47`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.1** (lot 1 XP, `versionCode 48`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -9,7 +9,7 @@
 
 Le rythme de marche est sain : 1 000 pas par palier, 100 paliers = 100 000 pas. Le problème n'est pas le pas, ni le farm, ni l'absence de paywall. Le problème est un empilement de **quatre systèmes qui ne suivent pas la même échelle** :
 
-1. **L'XP** reste en `1,2^niveau` : le niveau 100 demande ~41 milliards d'XP, soit des millions de monstres. Il est hors d'atteinte.
+1. **L'XP** était en `1,2^niveau` : le niveau 100 demandait ~41 milliards d'XP, soit des millions de monstres. **Corrigé par le lot 1** : `1,09`, ~6,8 M XP, 2 500–4 000 kills.
 2. **Les objets** ont des drops plats (un rare du palier 100 vaut presque un rare du palier 36) mais des améliorations **exponentielles** (+8 % composés, sans plafond). Le butin de haut palier est décevant, et l'upgrade d'un objet ancien peut trivialiser le jeu.
 3. **Les gardiens** sont un interrupteur : le build de référence gagne 100 % des monstres normaux mais 0 à 8 % des gardiens ; le build au-dessus gagne 100 % des gardiens. Il n'y a presque pas de zone 35–65 %.
 4. **L'attrition**, rétablie récemment, consomme **5 à 9 rations par palier**, alors que l'économie cible en produit 3 à 6 par jour. La ration devient la vraie barrière.
@@ -108,19 +108,25 @@ Ce tableau dit trois choses :
 
 Une variation de 3 % de stats peut faire basculer 59 % → 0 % : c'est le propre d'un système à seuil. Il faut viser des **bandes de victoire**, pas des seuils.
 
-### 3.5 XP
+### 3.5 XP — lot 1 appliqué
 
 ```kotlin
-xpNext(level) = round(120 × 1,2^(level−1))
+xpNext(level) = round(120 × 1,09^(level−1))
+xpMult(palier) = 1 + 0,12 × (palier−1)
+xpMonstre = round((12 + 5 × niveau) × xpMult(palier))
+xpGardien = 10 × xpMonstre
 ```
 
 | Niveau | XP pour le suivant | Total depuis 1 |
 |---:|---:|---:|
-| 34 | 49 222 | 245 515 |
-| 50 | 910 044 | 4 549 622 |
-| 100 | 8 281 797 452 | **41 408 986 666** |
+| 34 | 2 062 | ~21 600 |
+| 50 | 8 186 | ~89 600 |
+| 100 | 608 702 | **~6 762 000** |
 
-Au palier 100, un monstre donne au mieux **~3 072 XP** (plafond `sqrt(depth)` × 6). Il faudrait **~2,7 millions de monstres** pour le seul niveau 99 → 100. Le niveau 100 est mathématiquement hors d'atteinte.
+- Au palier 36 : **~998 XP** par monstre, **~10 500** par gardien.
+- Au palier 100 : **~6 600 XP** par monstre, **~66 000** par gardien.
+- **Rattrapage** : si `niveau < palier − 4`, l'XP gagnée est majorée de **25 %** jusqu'au retour à `palier − 4`.
+- L'ancienne courbe `1,2^niveau` (41,4 Md XP) est conservée en historique au §8.4 ; elle n'est plus utilisée.
 
 ### 3.6 Butin et objets
 
@@ -174,7 +180,7 @@ Simulation de l'attrition (`reference`) :
 
 | # | Faille | Effet | Priorité |
 |---|---|---|---|
-| C1 | XP `1,2^n` | niveau 100 impossible, 41 Md XP | **critique** |
+| C1 | XP `1,2^n` | **corrigé lot 1** : 1,09, ~6,8 M XP, 2 500–4 000 kills | résolu |
 | C2 | Drops plats + upgrades composés | butin inutile, croissance exponentielle incontrôlable | **critique** |
 | C3 | Gardien à seuil 0/100 | blocage ou trivialisation, pas de zone 35–65 % | **critique** |
 | C4 | Attrition sans rations suffisantes | famine de rations, farm forcé | **critique** |
@@ -399,4 +405,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.19.1** : rapport initial ; diagnostic du mur du palier 36 (ATQ ennemie exponentielle, XP, économie).
 - **0.20.0 / Phase A** : interpolation des courbes, bouclier 40 %, enrage, élites 6 %, pitié +25 %, éclats/rations revus, score d'objet PV ×0,6.
 - **0.20.0 / attrition** : suppression du soin complet après les monstres normaux ; l'attrition est conservée. Conséquence : l'économie des rations doit être recalibrée (§5.4).
+- **0.20.1 / lot 1** : XP 1,09, récompenses linéaires par palier, rattrapage ×1,25, source de vérité `Balance.kt`. Ancienne courbe 1,2 : 41,4 Md XP, conservée ici comme historique.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.

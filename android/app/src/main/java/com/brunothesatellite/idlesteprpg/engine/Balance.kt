@@ -15,6 +15,11 @@ object Balance {
     // --- Comportement courant (0.20.0) ---
     const val XP_BASE = 120.0
     const val XP_GROWTH = 1.2
+    const val XP_MOB_BASE = 12
+    const val XP_MOB_PER_LEVEL = 5
+    const val XP_ELITE_MULT = 1.8
+    const val XP_BOSS_MULT = 10
+    const val FARM_XP_MULT = 0.5
 
     const val HERO_ATK_BASE = 18
     const val HERO_ATK_PER_LEVEL = 3
@@ -128,6 +133,8 @@ object Balance {
     object Target {
         const val XP_GROWTH = 1.09
         const val XP_FLOOR_MULT = 0.12
+        const val XP_CATCHUP_LEVEL_GAP = 4
+        const val XP_CATCHUP_MULT = 1.25
         const val LOOT_FLOOR_SCALE = 0.055
         const val LOOT_SCALE_CAP = 6.0
         const val ITEM_MAX_LEVELS = 20

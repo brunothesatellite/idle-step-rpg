@@ -7,6 +7,11 @@ Source de vérité : `android/app/src/main/java/com/brunothesatellite/idlesteprp
 CURRENT = {
     "XP_BASE": 120.0,
     "XP_GROWTH": 1.2,
+    "XP_MOB_BASE": 12.0,
+    "XP_MOB_PER_LEVEL": 5.0,
+    "XP_ELITE_MULT": 1.8,
+    "XP_BOSS_MULT": 10.0,
+    "FARM_XP_MULT": 0.5,
     "HERO_ATK_BASE": 18.0,
     "HERO_ATK_PER_LEVEL": 3.0,
     "HERO_ATK_PER_CAMP": 3.0,
@@ -107,6 +112,8 @@ CURRENT = {
 TARGET = {
     "XP_GROWTH": 1.09,
     "XP_FLOOR_MULT": 0.12,
+    "XP_CATCHUP_LEVEL_GAP": 4.0,
+    "XP_CATCHUP_MULT": 1.25,
     "LOOT_FLOOR_SCALE": 0.055,
     "LOOT_SCALE_CAP": 6.0,
     "ITEM_MAX_LEVELS": 20.0,

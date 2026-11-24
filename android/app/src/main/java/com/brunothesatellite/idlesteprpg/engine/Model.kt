@@ -1341,7 +1341,34 @@ fun statsOf(state: GameState): Stats {
     )
 }
 
-fun xpNext(level: Int): Int = (Balance.XP_BASE * Balance.XP_GROWTH.pow(level - 1)).roundToInt()
+fun xpNext(level: Int): Int =
+    (Balance.XP_BASE * Balance.Target.XP_GROWTH.pow(level - 1)).roundToInt()
+
+fun xpFloorMultiplier(floor: Int): Double =
+    1.0 + Balance.Target.XP_FLOOR_MULT * (floor - 1).coerceAtLeast(0)
+
+fun xpCatchUpMultiplier(playerLevel: Int, floor: Int): Double =
+    if (playerLevel < floor - Balance.Target.XP_CATCHUP_LEVEL_GAP) {
+        Balance.Target.XP_CATCHUP_MULT
+    } else {
+        1.0
+    }
+
+fun mobXpReward(enemyLevel: Int, floor: Int, playerLevel: Int, elite: Boolean): Int =
+    (
+        (Balance.XP_MOB_BASE + Balance.XP_MOB_PER_LEVEL * enemyLevel) *
+            (if (elite) Balance.XP_ELITE_MULT else 1.0) *
+            xpFloorMultiplier(floor) *
+            xpCatchUpMultiplier(playerLevel, floor)
+        ).roundToInt()
+
+fun bossXpReward(enemyLevel: Int, floor: Int, playerLevel: Int): Int =
+    (
+        Balance.XP_BOSS_MULT *
+            (Balance.XP_MOB_BASE + Balance.XP_MOB_PER_LEVEL * enemyLevel) *
+            xpFloorMultiplier(floor) *
+            xpCatchUpMultiplier(playerLevel, floor)
+        ).roundToInt()
 
 fun powerOf(state: GameState): Int = statsOf(state).power
 

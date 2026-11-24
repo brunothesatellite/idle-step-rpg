@@ -1252,7 +1252,7 @@ object GameEngine {
             (if (elite) Balance.ELITE_ATK_MULT else 1.0)
         val reward = min(Balance.REWARD_MOB_CAP, sqrt(depthMultiplier(state.floor)))
         val gold = ((6 + 3 * level) * (if (elite) 1.6 else 1.0) * reward).roundToInt()
-        val xp = ((12 + 5 * level) * (if (elite) 1.8 else 1.0) * reward).roundToInt()
+        val xp = mobXpReward(level, state.floor, state.level, elite)
         return FightData(
             enemyName = t.name,
             enemyIcon = t.icon,
@@ -1307,7 +1307,7 @@ object GameEngine {
             enemyAtk = atk * rule.enemyAtkMult,
             enemyIntervalMs = (interval * rule.enemyIntervalMult).roundToLong(),
             gold = (12 * (6 + 3 * level) * reward).roundToInt(),
-            xp = (10 * (12 + 5 * level) * reward).roundToInt(),
+            xp = bossXpReward(level, state.floor, state.level),
             isBoss = true,
             ability = ability.id,
             abilityLabel = ability.label,
@@ -1342,7 +1342,7 @@ object GameEngine {
             enemyAtk = atk,
             enemyIntervalMs = (Balance.MOB_INTERVAL_MS * rule.enemyIntervalMult).roundToLong(),
             gold = ((6 + 3 * level) * 0.5).roundToInt(),
-            xp = ((12 + 5 * level) * 0.5).roundToInt(),
+            xp = (mobXpReward(level, state.floor, state.level, false) * Balance.FARM_XP_MULT).roundToInt(),
             farm = true,
             tier = "farm"
         )

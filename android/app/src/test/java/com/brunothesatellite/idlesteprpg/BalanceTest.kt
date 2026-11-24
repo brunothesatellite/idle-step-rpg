@@ -4,8 +4,12 @@ import com.brunothesatellite.idlesteprpg.engine.Balance
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.MAX_RATIONS
 import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
+import com.brunothesatellite.idlesteprpg.engine.bossXpReward
+import com.brunothesatellite.idlesteprpg.engine.mobXpReward
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.upgradeCost
+import com.brunothesatellite.idlesteprpg.engine.xpCatchUpMultiplier
+import com.brunothesatellite.idlesteprpg.engine.xpFloorMultiplier
 import com.brunothesatellite.idlesteprpg.engine.xpNext
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -13,9 +17,21 @@ import org.junit.Test
 class BalanceTest {
 
     @Test
-    fun currentXpCurveMatchesDocumentedValues() {
+    fun xpCurveMatchesTarget() {
         assertEquals(120, xpNext(1))
-        assertEquals(49_222, xpNext(34))
+        assertEquals(2_062, xpNext(34))
+        assertEquals(608_702, xpNext(100))
+    }
+
+    @Test
+    fun xpRewardsScaleWithFloorAndCatchUp() {
+        assertEquals(1.0, xpFloorMultiplier(1), 0.0001)
+        assertEquals(5.2, xpFloorMultiplier(36), 0.0001)
+        assertEquals(1.0, xpCatchUpMultiplier(34, 36), 0.0001)
+        assertEquals(1.25, xpCatchUpMultiplier(20, 36), 0.0001)
+        assertEquals(998, mobXpReward(enemyLevel = 36, floor = 36, playerLevel = 34, elite = false))
+        assertEquals(1_248, mobXpReward(enemyLevel = 36, floor = 36, playerLevel = 20, elite = false))
+        assertEquals(10_504, bossXpReward(enemyLevel = 38, floor = 36, playerLevel = 34))
     }
 
     @Test
@@ -45,6 +61,8 @@ class BalanceTest {
     fun targetDecisionsAreLocked() {
         assertEquals(1.09, Balance.Target.XP_GROWTH, 0.0001)
         assertEquals(0.12, Balance.Target.XP_FLOOR_MULT, 0.0001)
+        assertEquals(4, Balance.Target.XP_CATCHUP_LEVEL_GAP)
+        assertEquals(1.25, Balance.Target.XP_CATCHUP_MULT, 0.0001)
         assertEquals(0.04, Balance.Target.ITEM_GROWTH, 0.0001)
         assertEquals(20, Balance.Target.ITEM_MAX_LEVELS)
         assertEquals(30, Balance.Target.RATIONS_CAP)
