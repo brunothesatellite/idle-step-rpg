@@ -5,7 +5,7 @@
 > le widget et la Phase A d’équilibrage sont désormais livrés.
 >
 > Rappels à jour : absence = **30 % des pas du jour** (réglable 0–30 % ou 0–5 000 pas),
-> **4 min simulées** ; tests = **117 unitaires** + 7 tests UI existants ; lint OK.
+> **4 min simulées** ; tests = **118 unitaires** + 7 tests UI existants ; lint OK.
 > Équilibrage : [`equilibrage.md`](equilibrage.md) et [`validation-equilibrage.md`](validation-equilibrage.md).
 > Localisation : [`langue.md`](langue.md).
 
@@ -173,6 +173,6 @@ Restant :
 - L’app reste utilisable hors ligne et sans clé Garmin.
 - Aucune notification si l’utilisateur les a désactivées.
 - Aucune régression des données lors d’une mise à jour d’APK.
-- Tests verts (**117 unitaires**, 7 UI existants) et lint OK avant chaque release.
+- Tests verts (**118 unitaires**, 7 UI existants) et lint OK avant chaque release.
 - FR et EN restent cohérents : aucune chaîne française résiduelle en mode EN.
 - Un gardien ne doit jamais tomber en 2-3 coups ; les potions accélèrent sans garantir la victoire.

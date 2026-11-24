@@ -7,7 +7,8 @@
 - **Éclats** : plafond **24**, gardien +3, jalon +8, coffre +2, démontage 2/3/6/10, reforge **1** éclat, élite 20 % +1.
 - **Rations** : gardien +2, coffre +2, monstre 10 % +1, auto-ration à 30 %, veillée gratuite 25 %.
 - **Score d’objet** : PV pondérés ×0,6 pour que « Équiper le meilleur » ne privilégie plus un build glass cannon.
-- **Tests** : **117 / 117**, lint OK.
+- **Correctif** : une distance ou un prochain combat incohérents (sauvegarde/debug) ne bloquent plus le gardien ; la progression est normalisée au tick.
+- **Tests** : **118 / 118**, lint OK.
 - **Build** : `versionCode 47`, `versionName 0.20.0`.
 
 ## v0.19.1

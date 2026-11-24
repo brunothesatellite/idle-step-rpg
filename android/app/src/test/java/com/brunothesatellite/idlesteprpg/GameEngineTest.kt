@@ -32,6 +32,22 @@ class GameEngineTest {
     }
 
     @Test
+    fun inconsistentNextFightStartsBossAtGate() {
+        val state = GameState().apply {
+            floor = 11
+            distance = 690.0
+            nextFight = 999
+            stepBank = 100.0
+            mode = "walk"
+        }
+        GameEngine.tick(state, 100.0)
+        assertEquals(11, state.floor)
+        assertEquals(100.0, state.distance, 0.01)
+        assertEquals("boss", state.mode)
+        assertNotNull(state.fight)
+    }
+
+    @Test
     fun holdFloorKeepsFloorAfterBoss() {
         val state = GameState().apply {
             floor = 10

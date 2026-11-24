@@ -22,7 +22,7 @@
   existantes restent en place et passent au backlog de rafraîchissement.
 - **README unique bilingue** (FR puis EN), `android/README.md` réduit à un renvoi.
 - **Aucune migration de sauvegarde** : la v7 est conservée, aucun champ n’a été ajouté.
-- 117 tests, lint OK, build `assembleGithubDebug` OK, passe FR/EN sur appareil.
+- 118 tests, lint OK, build `assembleGithubDebug` OK, passe FR/EN sur appareil.
 
 ## 2. Décisions verrouillées
 
@@ -140,7 +140,7 @@ Un contenu inconnu du catalogue **retombe en français** : aucun crash, aucune p
 
 ## 6. Validation
 
-- **117 tests** unitaires, lint, `assembleGithubDebug`.
+- **118 tests** unitaires, lint, `assembleGithubDebug`.
 - Passe sur appareil FR puis EN : Dashboard, inventaire, fiche d’objet, atelier, camp,
   journal, Codex, réglages (haut et bas), diagnostic, mise à jour, manuel.
 - Vérification visuelle des captures : nombres `7,464`, `2,441`, `18k`, dates et heures.

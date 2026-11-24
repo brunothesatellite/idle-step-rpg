@@ -597,6 +597,7 @@ object GameEngine {
 
     fun tick(state: GameState, dtMs: Double) {
         ensureDay(state)
+        normalizeProgress(state)
         expireChests(state)
         val now = System.currentTimeMillis()
         if (state.buffs.any { it.expiresAt <= now }) {
@@ -655,6 +656,23 @@ object GameEngine {
             state.ferveurDecayMs = total
         }
         state.ferveurDecayAt = now
+    }
+
+    /**
+     * Répare un état de marche incohérent (sauvegarde ancienne, état de debug) :
+     * une distance ou un prochain combat au-delà du palier bloquait le gardien.
+     */
+    private fun normalizeProgress(state: GameState) {
+        if (state.mode != "walk") return
+        if (state.nextFight <= 0 || state.nextFight > FLOOR_METERS) {
+            state.nextFight = min(
+                FLOOR_METERS,
+                max(10, ((state.distance / 10.0).toInt() + 1) * 10)
+            )
+        }
+        if (state.distance > FLOOR_METERS) {
+            state.distance = FLOOR_METERS.toDouble()
+        }
     }
 
     private fun tickWalk(state: GameState, dtMs: Double) {
