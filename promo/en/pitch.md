@@ -16,7 +16,7 @@ It is partly an "idle" game in the sense that you don't need to stare at it: you
 
 What I wanted, and what I want to keep:
 
-- **No advertising.** (though Franck Leboeuf trying to sell your car would have made me laugh in the game)
+- **No advertising.** (I really hate that!)
 - **No in-app purchases.** Everything is free, and everything will stay free. I'm an (almost) old fool who saw the dawn of the internet and still believes in sharing without payment.
 - **No AI-generated content.** The texts are written by hand; I do write part of my code and docs with AI help (VS Code / GitHub Copilot / Opencode) — like every developer in 2026, right? The visuals are pixel art, not generated images.
 - **No data collection.** The app has no server of its own, no account with me, no analytics. Steps are read locally on your phone (Health Connect), or through your Garmin source (your own Garmin API key, which you provide to the app) if you choose that option. Nothing is resold.
