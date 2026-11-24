@@ -721,7 +721,11 @@ object GameEngine {
                 rewardText = "PV complets"
             )
             "marchand" -> {
-                val offer = lootItem(max(1, state.floor), if (rnd.nextDouble() < 0.3) "epic" else "rare")
+                val offer = lootItem(
+            state,
+            max(1, state.floor),
+            if (rnd.nextDouble() < 0.3) "epic" else "rare"
+        )
                 SpecialData(
                     type = type,
                     title = "MARCHAND ERRANT",
@@ -1158,7 +1162,7 @@ object GameEngine {
             o.chestsClaimed = true
             state.gold += 100
             state.goldEarned += 100
-            addLoot(state, lootItem(state.floor, "uncommon"))
+            addLoot(state, lootItem(state, state.floor, "uncommon"))
             gainXp(state, 60)
             state.journal = addJournal(state, "Serment de curiosité accompli · +100 or, objet inhabituel", "good")
         }
@@ -1605,7 +1609,7 @@ object GameEngine {
                     state.shards = min(MAX_SHARDS, state.shards + Balance.Target.HOLD_FLOOR_SHARDS)
                     state.rations = min(MAX_RATIONS, state.rations + Balance.Target.HOLD_FLOOR_RATIONS)
                 }
-                addLoot(state, lootItem(clearedFloor, "rare"))
+                grantBossLoot(state, clearedFloor)
                 dropConsumables(state, "boss")
                 state.journal = addJournal(
                     state,
@@ -1623,7 +1627,7 @@ object GameEngine {
                 state.shards = min(MAX_SHARDS, state.shards + Balance.BOSS_SHARDS)
                 state.rations = min(MAX_RATIONS, state.rations + Balance.Target.BOSS_RATIONS)
                 state.floor++
-                addLoot(state, lootItem(state.floor, "rare"))
+                grantBossLoot(state, state.floor)
                 dropConsumables(state, "boss")
                 state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
                 if (clearedFloor % 10 == 0) {
@@ -1676,6 +1680,12 @@ object GameEngine {
                 }
             }
             if (rnd.nextDouble() < Balance.CHEST_CHANCE) spawnChest(state)
+            state.mobsSinceRare++
+            if (state.mobsSinceRare >= Balance.Target.LOOT_PITY_RARE_KILLS) {
+                state.mobsSinceRare = 0
+                addLoot(state, lootItem(state, state.floor, "rare"))
+                state.journal = addJournal(state, "Butin garanti — objet rare après 5 victoires", "good")
+            }
         }
     }
 
@@ -1740,7 +1750,7 @@ object GameEngine {
         state.shards = min(MAX_SHARDS, state.shards + 2)
         state.chestsToday++
         state.chestsOpened++
-        addLoot(state, lootItem(state.floor, c.rarity))
+        addLoot(state, lootItem(state, state.floor, c.rarity))
         val extra = when (c.type) {
             "bois" -> 1
             "fer" -> rnd.nextInt(1, 3)
@@ -2062,10 +2072,10 @@ object GameEngine {
             next == "legendary" -> ITEM_EFFECTS.random(rnd)
             else -> chosen.firstNotNullOfOrNull { it.effect.ifBlank { null } } ?: ""
         }
-        val atk = chosen.sumOf { it.atk } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR
-        val hp = chosen.sumOf { it.hp } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR
-        val vit = chosen.sumOf { it.vitPct } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR
-        val crit = chosen.sumOf { it.critPct } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR
+        val atk = (chosen.sumOf { it.atk } * Balance.Target.FUSION_RATIO).roundToInt()
+        val hp = (chosen.sumOf { it.hp } * Balance.Target.FUSION_RATIO).roundToInt()
+        val vit = (chosen.sumOf { it.vitPct } * Balance.Target.FUSION_RATIO).roundToInt()
+        val crit = (chosen.sumOf { it.critPct } * Balance.Target.FUSION_RATIO).roundToInt()
         val level = chosen.maxOf { it.level }
         val fused = item.copy(
             id = "fused_${System.nanoTime()}",
@@ -2076,7 +2086,7 @@ object GameEngine {
             hp = hp,
             vitPct = vit,
             critPct = crit,
-            regen = (chosen.sumOf { it.regen } * Balance.FUSION_RATIO * 10).roundToInt() / 10.0,
+            regen = (chosen.sumOf { it.regen } * Balance.Target.FUSION_RATIO * 10).roundToInt() / 10.0,
             value = chosen.sumOf { it.value } + 120,
             effect = effect,
             locked = false,
@@ -2187,7 +2197,23 @@ object GameEngine {
         return true
     }
 
-    private fun lootItem(floor: Int, rarity: String): Item {
+    private fun grantBossLoot(state: GameState, floor: Int) {
+        val forceSet = state.bossesSinceSet >= Balance.Target.LOOT_PITY_SET_BOSSES
+        val item = lootItem(state, floor, "rare", forceSet = forceSet)
+        if (item.setName.isNotBlank()) {
+            state.bossesSinceSet = 0
+        } else {
+            state.bossesSinceSet++
+        }
+        addLoot(state, item)
+    }
+
+    private fun lootItem(
+        state: GameState,
+        floor: Int,
+        rarity: String,
+        forceSet: Boolean = false
+    ): Item {
         var finalRarity = rarity
         if (rarity == "epic" && rnd.nextDouble() < Balance.LOOT_EPIC_LEGENDARY_CHANCE) {
             finalRarity = "legendary"
@@ -2207,14 +2233,28 @@ object GameEngine {
         }
         val setPool = BIOME_SETS[biomeKeyFor(floor)] ?: ITEM_SETS
         val setName = when {
-            finalRarity in setOf("rare", "epic", "legendary") &&
-                rnd.nextDouble() < Balance.LOOT_SET_CHANCE -> setPool.random(rnd)
+            forceSet || (
+                finalRarity in setOf("rare", "epic", "legendary") &&
+                    rnd.nextDouble() < Balance.LOOT_SET_CHANCE
+                ) -> setPool.random(rnd)
             else -> ""
         }
-        val identified = !(
-            finalRarity in setOf("rare", "epic", "legendary") &&
-                rnd.nextDouble() < Balance.LOOT_UNIDENTIFIED_CHANCE
-            )
+        val rarePlus = finalRarity in setOf("rare", "epic", "legendary")
+        val identified = if (!rarePlus) {
+            true
+        } else {
+            val forceIdentified = state.lootSinceUnidentified >= 9
+            val dropIdentified = forceIdentified ||
+                rnd.nextDouble() >= Balance.LOOT_UNIDENTIFIED_CHANCE
+            if (!dropIdentified) {
+                state.lootSinceUnidentified = 0
+            } else if (forceIdentified) {
+                state.lootSinceUnidentified = 0
+            } else {
+                state.lootSinceUnidentified++
+            }
+            dropIdentified
+        }
         fun scaled(v: Int): Int = max(1, (v * mult * floorScale).roundToInt())
         val atk = scaled(base.atk)
         val hp = scaled(base.hp)

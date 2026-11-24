@@ -1,5 +1,13 @@
 # Journal des versions
 
+## v0.20.7
+- **Lot 7 — butin, fusion, identification** : un objet **rare garanti toutes les 5 victoires** contre un monstre normal (hors farm).
+- **Pity de set** : une pièce d'ensemble garantie tous les **10 gardiens** vaincus.
+- **Identification** : au maximum **1 objet non identifié sur 10** drops rares ou mieux.
+- **Fusion** : le résultat vaut désormais **90 %** de la somme des trois objets (au lieu de 75 %), en conservant effet et ensemble.
+- **Tests** : **137 / 137**, lint OK.
+- **Build** : `versionCode 54`, `versionName 0.20.7`. Aucune release GitHub.
+
 ## v0.20.6
 - **Lot 6 — farm** : chaque victoire de farm rend **+10 % PV max** ; un badge **RÉCUPÉRATION** l'affiche dans la scène.
 - **Farm de gardien** : **+1 éclat et +1 ration**, plafonnés à **5 gardiens farmés par jour** ; au-delà, le butin continue mais les ressources du jour sont épuisées.

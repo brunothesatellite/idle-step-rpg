@@ -932,6 +932,7 @@ class GameEngineTest {
         val fused = GameEngine.fuseItem(state, "rare_1")
         assertNotNull(fused)
         assertEquals("epic", fused!!.rarity)
+        assertEquals(32, fused.atk)
         assertEquals(1, state.inventory.size)
         assertEquals(fused.id, state.inventory.first().id)
     }

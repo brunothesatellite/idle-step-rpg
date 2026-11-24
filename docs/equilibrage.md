@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.6** (lots 1–6, `versionCode 53`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.7** (lots 1–7, `versionCode 54`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -138,7 +138,8 @@ xpGardien = 10 × xpMonstre
 - `growStat()` est **additif** : `+4 % de la statistique de base` par niveau, avec un minimum de +1.
 - Chaque objet neuf porte `maxLevel = palier du drop + 20` ; les anciens objets sont plafonnés à leur niveau actuel +20 lors de leur première amélioration.
 - Coût d'amélioration : `30 × niveau + 20` or + 1 éclat.
-- Fusion : **75 %** de la somme (le lot 7 passera à 90 %).
+- Fusion : **90 %** de la somme des trois objets (au lieu de 75 %).
+- **Pity de butin** : rare garanti toutes les **5 victoires** contre un monstre normal (hors farm) ; pièce de set garantie tous les **10 gardiens** ; au plus **1 objet non identifié sur 10** drops rares ou mieux.
 - Effets plafonnés : vol de vie 25 %, réduction de dégâts 40 %, critique 75 %, dégâts critiques +100 %, dégâts gardiens +50 %.
 - Les anciens objets gardent leurs statistiques ; seuls les nouveaux drops et les upgrades futurs utilisent le barème.
 
@@ -193,7 +194,7 @@ Simulation de l'attrition (`reference`) :
 | C9 | `holdFloor` sans éclats/rations | **corrigé lot 6** : +1/+1, cap 5 gardiens/jour | résolu |
 | C10 | Camp/sets plats + or sans sink | **corrigé lot 3** : camp et sets en %, coût indexé, plafond 30 | résolu |
 | C11 | Enrage dans une zone morte | **corrigé lot 5** : enrage après 25 s, phase 2 télégraphiée | résolu |
-| C12 | Fusion 75 %, loot sans pity | frustration et séries sèches | moyenne |
+| C12 | Fusion 75 %, loot sans pity | **corrigé lot 7** : fusion 90 %, rare/5 kills, set/10 gardiens, 1 non identifié max/10 | résolu |
 | C13 | Biomes/modificateurs non budgétés | pics imprévisibles | moyenne |
 | C14 | Fin de jeu 81–100 répétitive | lassitude avant le palier 100 | moyenne |
 
@@ -415,4 +416,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.20.4 / correctif + lot 4** : rotation des gardiens par palier dans chaque biome ; rations cap 30, revenus augmentés, auto-ration 40/45, farm 10 %, repos gratuit 2×20 %, farm de gardien +1/+1.
 - **0.20.5 / lot 5** : niveau palier +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −5 %/défaite cap −25 %, portail à 90 m avec Engager/Farmer/Camper.
 - **0.20.6 / lot 6** : farm +10 % PV avec badge RÉCUPÉRATION, farm de gardien +1/+1 plafonné à 5/jour.
+- **0.20.7 / lot 7** : rare garanti tous les 5 kills hors farm, set garanti tous les 10 gardiens, 1 non identifié max/10, fusion 90 %.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.
