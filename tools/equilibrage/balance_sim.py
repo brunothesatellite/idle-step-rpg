@@ -132,7 +132,7 @@ class Tuning:
     shield_reduction: float = 0.40
     shield_duration: float = 3.0
     shield_period: float = 8.0
-    target_mob_atk_div: float = 7.0
+    target_mob_atk_div: float = 8.0
     target_boss_atk_div: float = 16.0
     enrage_after: float = 15.0
     enrage_step: float = 5.0
@@ -588,7 +588,7 @@ def main() -> None:
     parser.add_argument("--shield-reduction", type=float, default=0.40)
     parser.add_argument("--shield-duration", type=float, default=3.0)
     parser.add_argument("--shield-period", type=float, default=8.0)
-    parser.add_argument("--target-mob-atk-div", type=float, default=7.0)
+    parser.add_argument("--target-mob-atk-div", type=float, default=8.0)
     parser.add_argument("--target-boss-atk-div", type=float, default=16.0)
     parser.add_argument("--enrage-after", type=float, default=15.0)
     parser.add_argument("--enrage-step", type=float, default=5.0)
