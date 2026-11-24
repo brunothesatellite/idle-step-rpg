@@ -49,6 +49,7 @@ import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.Balance
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
 import com.brunothesatellite.idlesteprpg.engine.ITEM_SETS
@@ -367,7 +368,12 @@ private fun StatsTab(
         StatTile(
             "item/boots4_green.png",
             stringResource(R.string.dashboard_vit),
-            decimalRes(stats.vit * (1.0 + 0.004 * state.ferveur), 2),
+            decimalRes(stats.vit * (1.0 + 0.004 * state.ferveur), 2) +
+                if (stats.vit >= Balance.Target.VIT_CAP) {
+                    " " + stringResource(R.string.dashboard_vit_max)
+                } else {
+                    ""
+                },
             Modifier.weight(1f)
         )
     }

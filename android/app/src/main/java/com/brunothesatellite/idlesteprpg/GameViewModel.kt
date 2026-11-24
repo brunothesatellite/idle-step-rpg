@@ -1104,6 +1104,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         ForgeOutcome.NotFound -> tr(R.string.toast_not_found)
         ForgeOutcome.NotIdentified -> tr(R.string.toast_not_identified)
         ForgeOutcome.Locked -> tr(R.string.toast_locked)
+        ForgeOutcome.MaxLevel -> tr(R.string.toast_max_level)
         is ForgeOutcome.Missing -> {
             val missing = buildList {
                 if (outcome.gold > 0) add(tr(R.string.toast_missing_gold, formatInt(outcome.gold)))

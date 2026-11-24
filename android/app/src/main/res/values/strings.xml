@@ -176,6 +176,7 @@
     <string name="dashboard_atk">ATQ</string>
     <string name="dashboard_hp">PV</string>
     <string name="dashboard_vit">VIT</string>
+    <string name="dashboard_vit_max">MAX</string>
     <string name="dashboard_biome">BIOME · %1$s</string>
     <string name="dashboard_floor">PALIER
 %1$s</string>
@@ -858,6 +859,7 @@
     <string name="overlay_bag_title">SAC DE CONSOMMABLES</string>
     <string name="overlay_bag_use">UTILISER</string>
     <string name="overlay_forge_hint">Forge · %1$s or + 1 éclat</string>
+    <string name="overlay_upgrade_max">Niveau maximum atteint.</string>
     <string name="overlay_missing_gold">%1$s or</string>
     <string name="overlay_missing_shards">%1$d éclat(s)</string>
     <string name="overlay_and"> et </string>
@@ -1085,6 +1087,7 @@
     <string name="toast_not_found">Objet introuvable.</string>
     <string name="toast_not_identified">Objet non identifié.</string>
     <string name="toast_locked">Objet verrouillé.</string>
+    <string name="toast_max_level">Niveau maximum atteint.</string>
     <string name="toast_missing">Il manque %1$s.</string>
     <string name="toast_missing_gold">%1$s or</string>
     <string name="toast_missing_shards">%1$d éclats</string>

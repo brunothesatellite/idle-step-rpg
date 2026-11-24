@@ -1,5 +1,13 @@
 # Journal des versions
 
+## v0.20.2
+- **Lot 2 — objets et caps** : butin scalable par palier (`1 + 0,055 × (palier−1)`, cap ×6), raretés 1,15 / 1,5 / 1,9 / 2,4.
+- **Amélioration additive** : +4 % de la statistique de base par niveau, plafond **+20 niveaux** au-dessus du drop ; les anciens objets restent compatibles et sont plafonnés à leur niveau actuel +20.
+- **Caps** : vol de vie 25 %, réduction de dégâts 40 %, critique 75 %, dégâts critiques +100 %, dégâts gardiens +50 %, VIT 4,0.
+- **VIT** : intervalle minimum 180 ms ; la fiche Stats affiche « MAX » quand la VIT est plafonnée.
+- **Tests** : **128 / 128**, lint OK.
+- **Build** : `versionCode 49`, `versionName 0.20.2`. Aucune release GitHub.
+
 ## v0.20.1
 - **Lot 1 — courbe d'XP** : `xpNext = 120 × 1,09^(niveau−1)`, récompenses linéaires par palier (`1 + 0,12 × (palier−1)`), gardien ×10. Total 1 → 100 : **~6,8 M XP**, soit ~2 500–4 000 kills.
 - **Rattrapage** : si le niveau est à plus de 4 paliers sous le palier courant, l'XP gagnée est majorée de 25 % jusqu'au retour à `palier − 4`.

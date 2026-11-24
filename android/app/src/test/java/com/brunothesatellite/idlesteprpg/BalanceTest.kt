@@ -1,17 +1,25 @@
 package com.brunothesatellite.idlesteprpg
 
 import com.brunothesatellite.idlesteprpg.engine.Balance
+import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_RATIONS
 import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
 import com.brunothesatellite.idlesteprpg.engine.bossXpReward
+import com.brunothesatellite.idlesteprpg.engine.isMaxLevel
+import com.brunothesatellite.idlesteprpg.engine.lootFloorScale
+import com.brunothesatellite.idlesteprpg.engine.maxUpgradeLevel
 import com.brunothesatellite.idlesteprpg.engine.mobXpReward
+import com.brunothesatellite.idlesteprpg.engine.rarityMultiplier
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.upgradeCost
 import com.brunothesatellite.idlesteprpg.engine.xpCatchUpMultiplier
 import com.brunothesatellite.idlesteprpg.engine.xpFloorMultiplier
 import com.brunothesatellite.idlesteprpg.engine.xpNext
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BalanceTest {
@@ -55,6 +63,68 @@ class BalanceTest {
         assertEquals(18, stats.atk)
         assertEquals(150, stats.maxHp)
         assertEquals(1.0, stats.vit, 0.0001)
+    }
+
+    @Test
+    fun lootScalingAndRarityFollowTarget() {
+        assertEquals(1.0, lootFloorScale(1), 0.0001)
+        assertEquals(2.925, lootFloorScale(36), 0.0001)
+        assertEquals(6.0, lootFloorScale(100), 0.0001)
+        assertEquals(2.4, rarityMultiplier("legendary"), 0.0001)
+        assertEquals(1.15, rarityMultiplier("uncommon"), 0.0001)
+    }
+
+    @Test
+    fun upgradeIsAdditiveAndCapped() {
+        val item = Item(
+            id = "test",
+            name = "Test",
+            slot = "weapon",
+            rarity = "rare",
+            icon = "item/long_sword3.png",
+            level = 10,
+            atk = 100,
+            hp = 50,
+            baseAtk = 100,
+            baseHp = 50,
+            maxLevel = 30
+        )
+        val next = GameEngine.upgradedItem(item)
+        assertEquals(11, next.level)
+        assertEquals(104, next.atk)
+        assertEquals(52, next.hp)
+        assertEquals(30, maxUpgradeLevel(item))
+        assertFalse(isMaxLevel(next))
+        assertTrue(isMaxLevel(item.copy(level = 30)))
+        assertEquals(30, maxUpgradeLevel(item.copy(maxLevel = 0)))
+    }
+
+    @Test
+    fun effectAndSpeedCapsAreApplied() {
+        fun gear(effect: String, vit: Int = 0, crit: Int = 0): GameState = GameState().copy(
+            level = 1,
+            floor = 1,
+            equipment = List(6) { index ->
+                Item(
+                    id = "cap-$effect-$index",
+                    name = "Cap",
+                    slot = "weapon",
+                    rarity = "rare",
+                    icon = "item/long_sword3.png",
+                    level = 1,
+                    vitPct = vit,
+                    critPct = crit,
+                    effect = effect
+                )
+            }
+        )
+
+        assertEquals(0.40, statsOf(gear("rempart")).damageReduction, 0.0001)
+        assertEquals(0.25, statsOf(gear("vampirisme")).lifesteal, 0.0001)
+        assertEquals(1.0, statsOf(gear("frenesie")).critDamage, 0.0001)
+        assertEquals(0.5, statsOf(gear("chasse")).bossDamage, 0.0001)
+        assertEquals(75, statsOf(gear("", vit = 100, crit = 20)).crit)
+        assertEquals(4.0, statsOf(gear("", vit = 100)).vit, 0.0001)
     }
 
     @Test

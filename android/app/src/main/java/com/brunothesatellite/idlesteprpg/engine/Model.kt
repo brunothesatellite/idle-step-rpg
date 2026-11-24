@@ -107,7 +107,13 @@ data class Item(
     val effect: String = "",
     val locked: Boolean = false,
     val identified: Boolean = true,
-    val setName: String = ""
+    val setName: String = "",
+    /** Niveau maximal d'amélioration ; 0 = valeur historique. */
+    val maxLevel: Int = 0,
+    val baseAtk: Int = 0,
+    val baseHp: Int = 0,
+    val baseVitPct: Int = 0,
+    val baseCritPct: Int = 0
 )
 
 @Serializable
@@ -1327,6 +1333,11 @@ fun statsOf(state: GameState): Stats {
     regen += rule.regen
     damageReduction += rule.damageReduction
     bossDamage += rule.bossDamage
+    vit = vit.coerceAtMost(Balance.Target.VIT_CAP)
+    crit = crit.coerceAtMost(Balance.Target.CRIT_CAP.toInt())
+    lifesteal = lifesteal.coerceAtMost(Balance.Target.LIFESTEAL_CAP)
+    critDamage = critDamage.coerceAtMost(Balance.Target.CRIT_DAMAGE_CAP)
+    bossDamage = bossDamage.coerceAtMost(Balance.Target.BOSS_DAMAGE_CAP)
     return Stats(
         atk = atk,
         maxHp = maxHp,
@@ -1334,7 +1345,7 @@ fun statsOf(state: GameState): Stats {
         crit = crit,
         regen = regen,
         lifesteal = lifesteal,
-        damageReduction = damageReduction.coerceIn(0.0, 0.7),
+        damageReduction = damageReduction.coerceIn(0.0, Balance.Target.DAMAGE_REDUCTION_CAP),
         critDamage = critDamage,
         bossDamage = bossDamage,
         damageTaken = damageTaken
@@ -1369,6 +1380,25 @@ fun bossXpReward(enemyLevel: Int, floor: Int, playerLevel: Int): Int =
             xpFloorMultiplier(floor) *
             xpCatchUpMultiplier(playerLevel, floor)
         ).roundToInt()
+
+fun lootFloorScale(floor: Int): Double =
+    min(
+        Balance.Target.LOOT_SCALE_CAP,
+        1.0 + Balance.Target.LOOT_FLOOR_SCALE * (floor - 1).coerceAtLeast(0)
+    )
+
+fun rarityMultiplier(rarity: String): Double = when (rarity) {
+    "uncommon" -> Balance.Target.RARITY_UNCOMMON
+    "rare" -> Balance.Target.RARITY_RARE
+    "epic" -> Balance.Target.RARITY_EPIC
+    "legendary" -> Balance.Target.RARITY_LEGENDARY
+    else -> 1.0
+}
+
+fun maxUpgradeLevel(item: Item): Int =
+    if (item.maxLevel > 0) item.maxLevel else item.level + Balance.Target.ITEM_MAX_LEVELS
+
+fun isMaxLevel(item: Item): Boolean = item.level >= maxUpgradeLevel(item)
 
 fun powerOf(state: GameState): Int = statsOf(state).power
 

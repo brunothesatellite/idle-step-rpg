@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.1** (lot 1 XP, `versionCode 48`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.2** (lots 1–2, `versionCode 49`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -10,7 +10,7 @@
 Le rythme de marche est sain : 1 000 pas par palier, 100 paliers = 100 000 pas. Le problème n'est pas le pas, ni le farm, ni l'absence de paywall. Le problème est un empilement de **quatre systèmes qui ne suivent pas la même échelle** :
 
 1. **L'XP** était en `1,2^niveau` : le niveau 100 demandait ~41 milliards d'XP, soit des millions de monstres. **Corrigé par le lot 1** : `1,09`, ~6,8 M XP, 2 500–4 000 kills.
-2. **Les objets** ont des drops plats (un rare du palier 100 vaut presque un rare du palier 36) mais des améliorations **exponentielles** (+8 % composés, sans plafond). Le butin de haut palier est décevant, et l'upgrade d'un objet ancien peut trivialiser le jeu.
+2. **Les objets** avaient des drops plats et des améliorations exponentielles. **Corrigé par le lot 2** : butin ×1 à ×6 selon le palier, croissance additive +4 % de la base, +20 niveaux max.
 3. **Les gardiens** sont un interrupteur : le build de référence gagne 100 % des monstres normaux mais 0 à 8 % des gardiens ; le build au-dessus gagne 100 % des gardiens. Il n'y a presque pas de zone 35–65 %.
 4. **L'attrition**, rétablie récemment, consomme **5 à 9 rations par palier**, alors que l'économie cible en produit 3 à 6 par jour. La ration devient la vraie barrière.
 
@@ -55,7 +55,7 @@ VIT  = 1 + 0,01 × (niveau − 1) + 0,025 × camp_pas + équipement
 - Les gains de niveau sont **linéaires et faibles** (+3 ATQ, +18 PV, +1 % VIT).
 - Les améliorations de camp sont **plates** (+3 ATQ, +30 PV, +2,5 % VIT).
 - Le stuff représente l'essentiel de la puissance.
-- **La VIT est plafonnée par le rythme d'attaque** : `intervalle = 1000 / (VIT × (1 + 0,004 × ferveur))`, minimum **300 ms**. À ferveur 45, tout ce qui dépasse **VIT ≈ 2,82** est perdu ; à ferveur 100, **VIT ≈ 2,38**.
+- **La VIT est plafonnée par le rythme d'attaque** : `intervalle = 1000 / (VIT × (1 + 0,004 × ferveur))`, minimum **180 ms** depuis le lot 2. La VIT utile est plafonnée à **4,0** ; au-delà, la fiche Stats affiche « MAX » et la valeur n'est plus prise en compte.
 
 ### 3.3 Ennemis
 
@@ -128,22 +128,17 @@ xpGardien = 10 × xpMonstre
 - **Rattrapage** : si `niveau < palier − 4`, l'XP gagnée est majorée de **25 %** jusqu'au retour à `palier − 4`.
 - L'ancienne courbe `1,2^niveau` (41,4 Md XP) est conservée en historique au §8.4 ; elle n'est plus utilisée.
 
-### 3.6 Butin et objets
+### 3.6 Butin et objets — lot 2 appliqué
 
-- `lootItem()` fixe `level = palier` mais **ne scale pas les statistiques** : un rare du palier 100 vaut presque un rare du palier 36.
-- Multiplicateurs de rareté actuels : 1,25 / 1,6 / 2,0 / 2,4.
-- `growStat()` applique **+8 % composés** à chaque amélioration. Multiplicateur après n niveaux : 10 niveaux ≈ ×2,2 ; 30 ≈ ×10 ; 50 ≈ ×47 ; 100 ≈ **×2 199**.
+- `lootItem()` applique un **facteur de palier** : `floorScale = min(6,0, 1 + 0,055 × (palier−1))`.
+- Raretés cibles : **1,15 / 1,5 / 1,9 / 2,4**.
+- Un rare du palier 100 vaut donc environ **×9** sa base (1,5 × 6), contre ×1,5 avant le lot 2.
+- `growStat()` est **additif** : `+4 % de la statistique de base` par niveau, avec un minimum de +1.
+- Chaque objet neuf porte `maxLevel = palier du drop + 20` ; les anciens objets sont plafonnés à leur niveau actuel +20 lors de leur première amélioration.
 - Coût d'amélioration : `30 × niveau + 20` or + 1 éclat.
-- Fusion : **75 %** de la somme des trois objets.
-- Sets : bonus **plats** (+30 ATQ / +90 PV au 6/6, etc.).
-- Effets : Rempart (−10 % dégâts), Vampirisme (+8 % vol de vie), Frénésie, Chasse, Vitalité, Précision. Ils s'empilent sans plafond.
-
-Conséquences :
-
-- les drops de haut palier sont **décevants** ;
-- la vraie progression est « acheter des niveaux sur un objet ancien », pas « trouver du meilleur butin » ;
-- avec ~450 k or et ~100 éclats, une pièce peut être multipliée par ~2 200 en une à deux semaines ;
-- à l'inverse, un joueur qui n'investit pas dans l'upgrade reste bloqué : le système est à la fois trop faible tôt et trop fort tard.
+- Fusion : **75 %** de la somme (le lot 7 passera à 90 %).
+- Effets plafonnés : vol de vie 25 %, réduction de dégâts 40 %, critique 75 %, dégâts critiques +100 %, dégâts gardiens +50 %.
+- Les anciens objets gardent leurs statistiques ; seuls les nouveaux drops et les upgrades futurs utilisent le barème.
 
 ### 3.7 Économie
 
@@ -181,12 +176,12 @@ Simulation de l'attrition (`reference`) :
 | # | Faille | Effet | Priorité |
 |---|---|---|---|
 | C1 | XP `1,2^n` | **corrigé lot 1** : 1,09, ~6,8 M XP, 2 500–4 000 kills | résolu |
-| C2 | Drops plats + upgrades composés | butin inutile, croissance exponentielle incontrôlable | **critique** |
+| C2 | Drops plats + upgrades composés | **corrigé lot 2** : butin ×6, upgrades additifs +4 %/+20 | résolu |
 | C3 | Gardien à seuil 0/100 | blocage ou trivialisation, pas de zone 35–65 % | **critique** |
 | C4 | Attrition sans rations suffisantes | famine de rations, farm forcé | **critique** |
 | C5 | Trois courbes cibles dans l'ancien rapport | playtest non interprétable | **critique** |
-| C6 | VIT morte au-delà de ~2,8 | stats et objets piégés | élevée |
-| C7 | Effets empilables sans cap | builds immortels, dominance | élevée |
+| C6 | VIT morte au-delà de ~2,8 | **corrigé lot 2** : cap 4,0, intervalle 180 ms, affichage MAX | résolu |
+| C7 | Effets empilables sans cap | **corrigé lot 2** : caps 25/40/75/100/50 | résolu |
 | C8 | Gardien auto-déclenché à 100 m | mort avant de pouvoir se préparer | élevée |
 | C9 | `holdFloor` sans éclats/rations | farm non rentable | élevée |
 | C10 | Camp/sets plats + or sans sink | économie obsolète à haut palier | moyenne |
@@ -365,16 +360,18 @@ coût = 30 × niveau + 20 // or, +1 éclat
 
 ## 8. Annexes
 
-### 8.1 Formules actuelles (référence code 0.20.0)
+### 8.1 Formules actuelles (référence code 0.20.2)
 
 ```kotlin
-xpNext(l) = round(120 * 1.2^(l-1))
+xpNext(l) = round(120 * 1.09^(l-1))
 upgradeCost(item) = 30 * item.level + 20
-growStat(v) = v + max(1, round(v * 0.08))
+growStat(v, base) = v + max(1, round(base * 0.04))
+maxLevel(item) = niveau du drop + 20
+floorScale = min(6.0, 1 + 0.055 * (palier-1))
 fusion = 0.75 * somme(3 objets)
 depthMob = min(1.12^(palier-10), 40)
 depthBoss = min(1.08^(palier-10), 40)
-intervalleHéros = max(300 ms, 1000 / (VIT * (1 + 0.004 * ferveur)))
+intervalleHéros = max(180 ms, 1000 / (VIT * (1 + 0.004 * ferveur)))
 autoRation = PV < 30 % max, +35 %, 1 fois/combat
 ```
 
@@ -406,4 +403,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.20.0 / Phase A** : interpolation des courbes, bouclier 40 %, enrage, élites 6 %, pitié +25 %, éclats/rations revus, score d'objet PV ×0,6.
 - **0.20.0 / attrition** : suppression du soin complet après les monstres normaux ; l'attrition est conservée. Conséquence : l'économie des rations doit être recalibrée (§5.4).
 - **0.20.1 / lot 1** : XP 1,09, récompenses linéaires par palier, rattrapage ×1,25, source de vérité `Balance.kt`. Ancienne courbe 1,2 : 41,4 Md XP, conservée ici comme historique.
+- **0.20.2 / lot 2** : butin ×1 à ×6, raretés cibles, upgrades additifs +4 %/+20, caps VIT/effets. Ancien upgrade composé ×2 199 et anciens drops plats conservés en historique.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.

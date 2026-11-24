@@ -139,6 +139,15 @@ object Balance {
         const val LOOT_SCALE_CAP = 6.0
         const val ITEM_MAX_LEVELS = 20
         const val ITEM_GROWTH = 0.04
+        const val RARITY_UNCOMMON = 1.15
+        const val RARITY_RARE = 1.5
+        const val RARITY_EPIC = 1.9
+        const val RARITY_LEGENDARY = 2.4
+        const val LIFESTEAL_CAP = 0.25
+        const val DAMAGE_REDUCTION_CAP = 0.40
+        const val CRIT_CAP = 75.0
+        const val CRIT_DAMAGE_CAP = 1.0
+        const val BOSS_DAMAGE_CAP = 0.5
         const val RATIONS_CAP = 30
         const val AUTO_RATION_THRESHOLD = 0.40
         const val AUTO_RATION_HEAL = 0.45

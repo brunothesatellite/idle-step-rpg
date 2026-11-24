@@ -28,6 +28,7 @@ sealed interface ForgeOutcome {
     data object NotFound : ForgeOutcome
     data object NotIdentified : ForgeOutcome
     data object Locked : ForgeOutcome
+    data object MaxLevel : ForgeOutcome
 
     /** [gold] et [shards] valent 0 quand la ressource est suffisante. */
     data class Missing(val gold: Int, val shards: Int) : ForgeOutcome
@@ -1465,7 +1466,8 @@ object GameEngine {
         }
         var dmg = atk * (0.9 + rnd.nextDouble() * 0.2)
         if (f.isBoss) dmg *= 1.0 + s.bossDamage
-        val critChance = (s.crit + state.ferveur * 0.02) / 100.0
+        val critChance = ((s.crit + state.ferveur * 0.02) / 100.0)
+            .coerceAtMost(Balance.Target.CRIT_CAP / 100.0)
         val crit = rnd.nextDouble() < critChance
         f.lastCrit = crit
         if (crit) dmg *= 1.6 + s.critDamage
@@ -1873,22 +1875,34 @@ object GameEngine {
     fun upgradeCost(item: Item): Int = 30 * item.level + 20
 
     /**
-     * Version niveau +1 d'un objet. Chaque statistique non nulle progresse de 8 %
-     * avec un gain minimal de +1 : sans ce plancher, 8 % de 2 PV ou de 6 % crit.
-     * s'arrondissaient à zéro et le niveau n'apportait rien.
+     * Version niveau +1 d'un objet. Chaque statistique non nulle progresse de
+     * [Balance.Target.ITEM_GROWTH] de sa valeur de base, avec un gain minimal de +1.
+     * La croissance est additive et plafonnée par [maxUpgradeLevel].
      */
-    fun upgradedItem(item: Item): Item = item.copy(
-        level = item.level + 1,
-        atk = growStat(item.atk),
-        hp = growStat(item.hp),
-        vitPct = growStat(item.vitPct),
-        critPct = growStat(item.critPct),
-        regen = if (item.regen > 0) ((item.regen + 0.1) * 10).roundToInt() / 10.0 else item.regen,
-        value = (item.value * 1.2).roundToInt()
-    )
+    fun upgradedItem(item: Item): Item {
+        val baseAtk = if (item.baseAtk > 0) item.baseAtk else item.atk
+        val baseHp = if (item.baseHp > 0) item.baseHp else item.hp
+        val baseVit = if (item.baseVitPct > 0) item.baseVitPct else item.vitPct
+        val baseCrit = if (item.baseCritPct > 0) item.baseCritPct else item.critPct
+        return item.copy(
+            level = item.level + 1,
+            atk = growStat(item.atk, baseAtk),
+            hp = growStat(item.hp, baseHp),
+            vitPct = growStat(item.vitPct, baseVit),
+            critPct = growStat(item.critPct, baseCrit),
+            regen = if (item.regen > 0) ((item.regen + 0.1) * 10).roundToInt() / 10.0 else item.regen,
+            value = (item.value * 1.2).roundToInt(),
+            maxLevel = maxUpgradeLevel(item),
+            baseAtk = baseAtk,
+            baseHp = baseHp,
+            baseVitPct = baseVit,
+            baseCritPct = baseCrit
+        )
+    }
 
-    private fun growStat(value: Int): Int =
-        if (value <= 0) value else value + max(1, (value * Balance.ITEM_GROWTH).roundToInt())
+    private fun growStat(current: Int, base: Int): Int =
+        if (current <= 0) current
+        else current + max(1, (base * Balance.Target.ITEM_GROWTH).roundToInt())
 
     fun upgradeItem(state: GameState, itemId: String): Boolean =
         upgradeItemDetailed(state, itemId) == ForgeOutcome.Success
@@ -1896,6 +1910,7 @@ object GameEngine {
     fun upgradeItemDetailed(state: GameState, itemId: String): ForgeOutcome {
         val item = findItem(state, itemId) ?: return ForgeOutcome.NotFound
         if (!item.identified) return ForgeOutcome.NotIdentified
+        if (isMaxLevel(item)) return ForgeOutcome.MaxLevel
         val cost = upgradeCost(item)
         val missingGold = (cost - state.gold).coerceAtLeast(0)
         val missingShards = (1 - state.shards).coerceAtLeast(0)
@@ -1985,19 +2000,29 @@ object GameEngine {
             next == "legendary" -> ITEM_EFFECTS.random(rnd)
             else -> chosen.firstNotNullOfOrNull { it.effect.ifBlank { null } } ?: ""
         }
+        val atk = chosen.sumOf { it.atk } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR
+        val hp = chosen.sumOf { it.hp } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR
+        val vit = chosen.sumOf { it.vitPct } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR
+        val crit = chosen.sumOf { it.critPct } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR
+        val level = chosen.maxOf { it.level }
         val fused = item.copy(
             id = "fused_${System.nanoTime()}",
             name = "${item.name} fusionné",
             rarity = next,
-            level = chosen.maxOf { it.level },
-            atk = chosen.sumOf { it.atk } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR,
-            hp = chosen.sumOf { it.hp } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR,
-            vitPct = chosen.sumOf { it.vitPct } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR,
-            critPct = chosen.sumOf { it.critPct } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR,
+            level = level,
+            atk = atk,
+            hp = hp,
+            vitPct = vit,
+            critPct = crit,
             regen = (chosen.sumOf { it.regen } * Balance.FUSION_RATIO * 10).roundToInt() / 10.0,
             value = chosen.sumOf { it.value } + 120,
             effect = effect,
-            locked = false
+            locked = false,
+            maxLevel = level + Balance.Target.ITEM_MAX_LEVELS,
+            baseAtk = atk,
+            baseHp = hp,
+            baseVitPct = vit,
+            baseCritPct = crit
         )
         state.inventory = state.inventory.filterNot { it.id in chosen.map { c -> c.id } }
         addLoot(state, fused)
@@ -2106,13 +2131,8 @@ object GameEngine {
         }
         val templates = lootTemplatesFor(floor)
         val base = templates[rnd.nextInt(templates.size)]
-        val mult = when (finalRarity) {
-            "uncommon" -> Balance.RARITY_UNCOMMON
-            "rare" -> Balance.RARITY_RARE
-            "epic" -> Balance.RARITY_EPIC
-            "legendary" -> Balance.RARITY_LEGENDARY
-            else -> 1.0
-        }
+        val mult = rarityMultiplier(finalRarity)
+        val floorScale = lootFloorScale(floor)
         val effect = when {
             finalRarity == "legendary" -> ITEM_EFFECTS.random(rnd)
             (finalRarity == "epic" || finalRarity == "rare") &&
@@ -2129,21 +2149,31 @@ object GameEngine {
             finalRarity in setOf("rare", "epic", "legendary") &&
                 rnd.nextDouble() < Balance.LOOT_UNIDENTIFIED_CHANCE
             )
-        fun scaled(v: Int): Int = max(1, (v * mult).roundToInt())
+        fun scaled(v: Int): Int = max(1, (v * mult * floorScale).roundToInt())
+        val atk = scaled(base.atk)
+        val hp = scaled(base.hp)
+        val vit = scaled(base.vitPct)
+        val crit = scaled(base.critPct)
+        val level = max(1, floor)
         return base.copy(
             id = "loot_${System.nanoTime()}",
             name = if (effect.isEmpty()) base.name else "${base.name} · ${effectLabel(effect)}",
-            level = max(1, floor),
+            level = level,
             rarity = finalRarity,
-            atk = scaled(base.atk),
-            hp = scaled(base.hp),
-            vitPct = scaled(base.vitPct),
-            critPct = scaled(base.critPct),
-            regen = (base.regen * mult * 10).roundToInt() / 10.0,
+            atk = atk,
+            hp = hp,
+            vitPct = vit,
+            critPct = crit,
+            regen = (base.regen * mult * floorScale * 10).roundToInt() / 10.0,
             value = scaled(base.value),
             effect = effect,
             identified = identified,
-            setName = setName
+            setName = setName,
+            maxLevel = level + Balance.Target.ITEM_MAX_LEVELS,
+            baseAtk = atk,
+            baseHp = hp,
+            baseVitPct = vit,
+            baseCritPct = crit
         )
     }
 

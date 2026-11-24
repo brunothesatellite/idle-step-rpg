@@ -112,6 +112,7 @@ import com.brunothesatellite.idlesteprpg.engine.slotLabel
 import com.brunothesatellite.idlesteprpg.engine.statLine
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.engine.upgradeCost
+import com.brunothesatellite.idlesteprpg.engine.isMaxLevel
 import com.brunothesatellite.idlesteprpg.engine.upgradeLevel
 import com.brunothesatellite.idlesteprpg.engine.upgradeName
 import java.time.LocalDate
@@ -150,9 +151,11 @@ fun ItemDialog(
     val upgradePrice = GameEngine.upgradeCost(item)
     val missingGold = (upgradePrice - state.gold).coerceAtLeast(0)
     val missingShards = (1 - state.shards).coerceAtLeast(0)
-    val canUpgrade = item.identified && missingGold == 0 && missingShards == 0
+    val maxed = isMaxLevel(item)
+    val canUpgrade = item.identified && !maxed && missingGold == 0 && missingShards == 0
     val upgradeHint = when {
         !item.identified -> stringResource(R.string.overlay_item_unidentified_hint)
+        maxed -> stringResource(R.string.overlay_upgrade_max)
         canUpgrade -> stringResource(R.string.overlay_forge_hint, formatCompact(upgradePrice))
         else -> {
             val missing = buildList {

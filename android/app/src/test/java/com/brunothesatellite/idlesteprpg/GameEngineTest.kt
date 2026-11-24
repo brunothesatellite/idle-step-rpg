@@ -1272,7 +1272,7 @@ class GameEngineTest {
         )
         val next = GameEngine.upgradedItem(axe)
         assertEquals(18, next.level)
-        assertEquals(39, next.atk)
+        assertEquals(37, next.atk)
         assertEquals(3, next.hp)
         assertEquals(3, next.vitPct)
         assertEquals(7, next.critPct)
