@@ -992,6 +992,7 @@
     <string name="gate_engage">ENGAGER</string>
     <string name="gate_farm">FARMER CE PALIER</string>
     <string name="gate_camp">CAMPER</string>
+    <string name="gate_hero_stats">Héros · PV %1$s / %2$s · ATQ %3$s</string>
     <string name="gate_hint">Le choix est libre : engagez, farmez ou campez avant le gardien.</string>
     <string name="scene_chest_force">FORÇAGE DU COFFRE</string>
     <string name="scene_elite">ÉLITE</string>

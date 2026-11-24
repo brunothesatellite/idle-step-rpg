@@ -990,6 +990,7 @@
     <string name="gate_engage">ENGAGE</string>
     <string name="gate_farm">FARM THIS FLOOR</string>
     <string name="gate_camp">CAMP</string>
+    <string name="gate_hero_stats">Hero · HP %1$s / %2$s · ATK %3$s</string>
     <string name="gate_hint">Your choice: engage, farm or camp before the guardian.</string>
     <string name="scene_chest_force">FORCING CHEST</string>
     <string name="scene_elite">ELITE</string>

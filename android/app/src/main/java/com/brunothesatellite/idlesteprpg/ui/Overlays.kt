@@ -1134,6 +1134,19 @@ fun GuardianGateDialog(
                     Modifier.weight(1f)
                 )
             }
+            val hero = statsOf(state)
+            Spacer(Modifier.height(5.dp))
+            Text(
+                stringResource(
+                    R.string.gate_hero_stats,
+                    formatCompact(state.hp.roundToInt()),
+                    formatCompact(hero.maxHp),
+                    formatCompact(hero.atk)
+                ),
+                fontSize = 6.3.sp,
+                color = Blue,
+                lineHeight = 9.sp
+            )
             if (boss.abilityLabel.isNotBlank()) {
                 Spacer(Modifier.height(5.dp))
                 Text(
