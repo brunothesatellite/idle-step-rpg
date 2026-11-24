@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.21.0
+- **Lot 10 — écran de fin enrichi** : diorama avec la vraie statue du palier 100, l'aura dorée du héros et le gardien final déchu ; dossier du héros, progression, télémétrie, gardiens 81–100, économie, équipement porté, collections et jalons.
+- **Export HTML** : rapport autonome (mêmes données, fonte pixel embarquée) enregistré via le sélecteur de fichiers Android.
+- **Aperçu debug** : bouton **Aperçu de la fin** dans les réglages des builds debug, pour relire l'écran sans attendre le palier 100.
+- **Tests** : **148 / 148**, lint OK.
+- **Build** : `versionCode 58`, `versionName 0.21.0`. Aucune release GitHub.
+
 ## v0.20.10
 - **Correctif VIT** : l'intervalle d'attaque respecte enfin le minimum de **180 ms** décidé au lot 2 (`Target.HERO_MIN_INTERVAL_MS`). Le code utilisait encore l'ancienne valeur de 300 ms, ce qui rendait la VIT inutile au-delà de ~2,4 et le plafond 4,0 inatteignable.
 - **Portail** : `GATE_METERS` (90 m) pointe désormais sur l'unique constante de `Balance.Target`, au lieu d'être dupliqué dans `Model.kt`.

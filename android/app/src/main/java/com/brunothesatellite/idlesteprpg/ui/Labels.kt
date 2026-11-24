@@ -1,7 +1,9 @@
 package com.brunothesatellite.idlesteprpg.ui
 
+import android.content.res.Resources
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.brunothesatellite.idlesteprpg.R
 import java.util.Locale
@@ -10,25 +12,33 @@ import java.util.Locale
  * de vérité pour les identifiants et les règles ; ces helpers fournissent
  * uniquement le texte visible en français ou en anglais. */
 
-@Composable
-fun slotLabelRes(slot: String): String = when (slot) {
-    "weapon" -> stringResource(R.string.dashboard_slot_weapon)
-    "head" -> stringResource(R.string.dashboard_slot_head)
-    "body" -> stringResource(R.string.dashboard_slot_body)
-    "hands" -> stringResource(R.string.dashboard_slot_hands)
-    "feet" -> stringResource(R.string.dashboard_slot_feet)
-    "talisman" -> stringResource(R.string.dashboard_slot_talisman)
-    else -> stringResource(R.string.dashboard_item_generic)
-}
+fun slotLabelRes(res: Resources, slot: String): String = res.getString(
+    when (slot) {
+        "weapon" -> R.string.dashboard_slot_weapon
+        "head" -> R.string.dashboard_slot_head
+        "body" -> R.string.dashboard_slot_body
+        "hands" -> R.string.dashboard_slot_hands
+        "feet" -> R.string.dashboard_slot_feet
+        "talisman" -> R.string.dashboard_slot_talisman
+        else -> R.string.dashboard_item_generic
+    }
+)
 
 @Composable
-fun rarityLabelRes(rarity: String): String = when (rarity) {
-    "uncommon" -> stringResource(R.string.dashboard_rarity_uncommon)
-    "rare" -> stringResource(R.string.dashboard_rarity_rare)
-    "epic" -> stringResource(R.string.dashboard_rarity_epic)
-    "legendary" -> stringResource(R.string.dashboard_rarity_legendary)
-    else -> stringResource(R.string.dashboard_rarity_common)
-}
+fun slotLabelRes(slot: String): String = slotLabelRes(LocalContext.current.resources, slot)
+
+fun rarityLabelRes(res: Resources, rarity: String): String = res.getString(
+    when (rarity) {
+        "uncommon" -> R.string.dashboard_rarity_uncommon
+        "rare" -> R.string.dashboard_rarity_rare
+        "epic" -> R.string.dashboard_rarity_epic
+        "legendary" -> R.string.dashboard_rarity_legendary
+        else -> R.string.dashboard_rarity_common
+    }
+)
+
+@Composable
+fun rarityLabelRes(rarity: String): String = rarityLabelRes(LocalContext.current.resources, rarity)
 
 @Composable
 fun setLabelRes(name: String): String = when (name) {
@@ -144,6 +154,11 @@ fun contextLabelRes(context: String): String = when (context) {
 }
 
 /** Nombre formaté selon la langue de l'application (virgule ou point décimal). */
+fun decimalRes(res: Resources, value: Double, digits: Int = 1): String {
+    val locale: Locale = res.configuration.locales[0]
+    return String.format(locale, "%.${digits}f", value)
+}
+
 @Composable
 fun decimalRes(value: Double, digits: Int = 1): String {
     val locale: Locale = LocalConfiguration.current.locales[0]

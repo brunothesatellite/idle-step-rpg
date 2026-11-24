@@ -788,6 +788,12 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     Modifier.fillMaxWidth(),
                     onClick = { vm.debugAddReserveSteps(1000) }
                 )
+                Spacer(Modifier.height(6.dp))
+                OverlayAction(
+                    stringResource(R.string.settings_debug_ending),
+                    Modifier.fillMaxWidth(),
+                    onClick = { vm.openEndingPreview() }
+                )
             }
             Spacer(Modifier.height(24.dp))
         }

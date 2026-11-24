@@ -46,6 +46,7 @@ import com.brunothesatellite.idlesteprpg.ui.CodexOverlay
 import com.brunothesatellite.idlesteprpg.ui.Dashboard
 import com.brunothesatellite.idlesteprpg.ui.DayBanner
 import com.brunothesatellite.idlesteprpg.ui.EndingOverlay
+import com.brunothesatellite.idlesteprpg.ui.endingPreviewState
 import com.brunothesatellite.idlesteprpg.ui.GarminScreen
 import com.brunothesatellite.idlesteprpg.ui.GuardianGateDialog
 import com.brunothesatellite.idlesteprpg.ui.ImportPreviewDialog
@@ -327,7 +328,7 @@ private fun GameRoot(vm: GameViewModel) {
             if (state.mode == "gate" && state.pendingBoss != null &&
                 !ui.campOpen && !ui.settingsOpen && !ui.prefsOpen &&
                 !ui.codexOpen && !ui.journalOpen && !ui.chestOpen &&
-                ui.selectedItem == null && !state.endingPending
+                ui.selectedItem == null && !state.endingPending && !ui.endingPreview
             ) {
                 GuardianGateDialog(
                     state = state,
@@ -336,10 +337,12 @@ private fun GameRoot(vm: GameViewModel) {
                     onCamp = vm::openCamp
                 )
             }
-            if (state.endingPending) {
+            if (state.endingPending || ui.endingPreview) {
                 EndingOverlay(
-                    state = state,
-                    onContinue = vm::dismissEnding,
+                    state = if (ui.endingPreview) endingPreviewState(state) else state,
+                    onContinue = {
+                        if (ui.endingPreview) vm.closeEndingPreview() else vm.dismissEnding()
+                    },
                     reducedMotion = ui.reducedMotion
                 )
             }

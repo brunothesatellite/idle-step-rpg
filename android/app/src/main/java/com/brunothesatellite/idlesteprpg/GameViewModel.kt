@@ -70,6 +70,7 @@ data class UiState(
     val prefsOpen: Boolean = false,
     val journalOpen: Boolean = false,
     val codexOpen: Boolean = false,
+    val endingPreview: Boolean = false,
     val selectedItem: Item? = null,
     val chestOpen: Boolean = false,
     val syncing: Boolean = false,
@@ -193,7 +194,8 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 if (visible && !resuming && !_ui.value.paused && !_ui.value.campOpen &&
                     !_ui.value.settingsOpen &&
                     !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen &&
-                    !_ui.value.consumablesOpen && !game.value.endingPending
+                    !_ui.value.consumablesOpen && !_ui.value.endingPreview &&
+                    !game.value.endingPending
                 ) {
                     val snapshot = game.value
                     // Cadence adaptative : 10 Hz quand quelque chose peut bouger,
@@ -613,6 +615,14 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             container.gameRepository.mutate { it.endingPending = false }
         }
+    }
+
+    fun openEndingPreview() {
+        _ui.update { it.copy(endingPreview = true) }
+    }
+
+    fun closeEndingPreview() {
+        _ui.update { it.copy(endingPreview = false) }
     }
 
     fun setHoldFloor(value: Boolean) {
