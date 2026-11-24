@@ -338,9 +338,9 @@
     <string name="dashboard_rule_throne_label">Soul pressure</string>
     <string name="dashboard_rule_throne_desc" formatted="false">+12% guardian damage, -8% max HP, empowered enemies</string>
     <string name="dashboard_upgrade_blade_name">Honed blade</string>
-    <string name="dashboard_upgrade_blade_desc">+1.5% ATK per level</string>
+    <string name="dashboard_upgrade_blade_desc" formatted="false">+1.5% ATK per level</string>
     <string name="dashboard_upgrade_breath_name">Ancient breath</string>
-    <string name="dashboard_upgrade_breath_desc">+1.5% max HP per level</string>
+    <string name="dashboard_upgrade_breath_desc" formatted="false">+1.5% max HP per level</string>
     <string name="dashboard_upgrade_swift_name">Swift steps</string>
     <string name="dashboard_upgrade_swift_desc" formatted="false">+1% SPD per level</string>
     <string name="dashboard_upgrade_generic_name">Upgrade</string>

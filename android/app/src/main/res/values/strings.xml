@@ -340,9 +340,9 @@
     <string name="dashboard_rule_throne_label">Pression des âmes</string>
     <string name="dashboard_rule_throne_desc" formatted="false">+12 % dégâts gardiens à -8 % PV max à ennemis renforcés</string>
     <string name="dashboard_upgrade_blade_name">Lame affûtée</string>
-    <string name="dashboard_upgrade_blade_desc">+1,5 % ATQ par niveau</string>
+    <string name="dashboard_upgrade_blade_desc" formatted="false">+1,5 % ATQ par niveau</string>
     <string name="dashboard_upgrade_breath_name">Souffle ancien</string>
-    <string name="dashboard_upgrade_breath_desc">+1,5 % PV max par niveau</string>
+    <string name="dashboard_upgrade_breath_desc" formatted="false">+1,5 % PV max par niveau</string>
     <string name="dashboard_upgrade_swift_name">Pas vifs</string>
     <string name="dashboard_upgrade_swift_desc" formatted="false">+1 % VIT par niveau</string>
     <string name="dashboard_upgrade_generic_name">Amélioration</string>
