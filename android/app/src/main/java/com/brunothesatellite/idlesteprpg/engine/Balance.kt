@@ -177,6 +177,14 @@ object Balance {
         const val BOSS_ENRAGE_AFTER_MS = 25_000.0
         const val BOSS_ENRAGE_STEP = 0.15
         const val BOSS_ENRAGE_CAP = 0.60
+        const val ENDGAME_FLOOR = 81
+        const val ENDGAME_FINAL_FLOOR = 100
+        const val ENDGAME_ENEMY_MULT_START = 1.15
+        const val ENDGAME_ENEMY_MULT_END = 1.35
+        const val ENDGAME_BOSS_HP_MULT = 1.10
+        const val ENDGAME_BOSS_ATK_MULT = 1.05
+        const val FINAL_BOSS_HP_MULT = 1.40
+        const val FINAL_BOSS_ATK_MULT = 1.15
         const val PITY_HP_STEP = 0.05
         const val PITY_CAP = 0.25
         const val FUSION_RATIO = 0.90

@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.8** (lots 1–8, `versionCode 55`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.9** (lots 1–9, `versionCode 56`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -196,6 +196,7 @@ Simulation de l'attrition (`reference`) :
 | C11 | Enrage dans une zone morte | **corrigé lot 5** : enrage après 25 s, phase 2 télégraphiée | résolu |
 | C12 | Fusion 75 %, loot sans pity | **corrigé lot 7** : fusion 90 %, rare/5 kills, set/10 gardiens, 1 non identifié max/10 | résolu |
 | C13 | Biomes/modificateurs non budgétés | **corrigé lot 8** : RAPIDE/BERSERK exclus avec capacités lourdes | résolu |
+| C14 | Pas de fin de jeu, palier 81 plus doux que 80 | **corrigé lot 9** : rampe +15 → +35 %, gardiens renforcés, boss final et fin au palier 100 | résolu |
 | C14 | Fin de jeu 81–100 répétitive | lassitude avant le palier 100 | moyenne |
 
 ### 4.2 Failles de frustration
@@ -340,9 +341,10 @@ coût = 30 × niveau + 20 // or, +1 éclat
 
 ### 5.7 Fin de jeu 81–100
 
-- Éviter 20 paliers identiques dans le même biome.
-- Après le palier 80 : **Trône brisé** avec modificateurs de biome, ou NG+ avec conservation des collections.
-- Les jalons 90 et 100 doivent être des **événements**, pas seulement des multiplicateurs.
+- Après le palier 80 : **Trône brisé**, une règle unique qui monte de **+15 %** (palier 81) à **+35 %** (palier 100) de PV et ATQ ennemis, puis reste plafonnée au-delà.
+- Les gardiens du Trône reçoivent en plus **+10 % PV** et **+5 % ATQ**. La règle est donc strictement plus dure que « Pression des âmes » (palier 80), qui donnait +10 %/+10 % mais rendait 8 % de PV max au héros.
+- **Palier 100** : L'Âme Première devient un boss final (PV ×1,40, ATQ ×1,15) avec **RUPTURE DU TRÔNE** (230 % ATQ, −20 ferveur, soin 3 %). Une **fin** s'affiche une seule fois, puis le **mode sans fin** reprend au palier 101. Les jalons 90 et 100 restent des événements (éclats, légende, titre, aura et statue au camp).
+- La télémétrie locale mesure les combats normaux (hors farm), les tentatives et victoires de gardiens par palier, la durée moyenne et la progression.
 
 ## 6. Décisions validées (24 novembre 2026)
 
@@ -353,7 +355,7 @@ coût = 30 × niveau + 20 // or, +1 éclat
 | Rations | **Drops + repos gratuit + auto-ration 40 %/45 %** | Drops seuls, repos seul |
 | Lissage gardien | **Courbe + pitié en debuff visible** | Pitié en dégâts héros |
 | Pitié | **−5 % PV/ATQ par défaite, cap −25 %** | +15 % dégâts, cap +60 % |
-| Fin de jeu | **NG+ / Trône brisé** | Nouveaux biomes |
+| Fin de jeu | **Fin au palier 100 puis mode sans fin** | NG+ ou nouveaux biomes |
 | Cap de butin | **×6 au palier 100** | ×8 |
 
 > Ces choix sont la référence pour la Phase B. Les alternatives ne sont conservées que comme historique ; toute modification devra être justifiée par un playtest.
@@ -418,4 +420,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.20.6 / lot 6** : farm +10 % PV avec badge RÉCUPÉRATION, farm de gardien +1/+1 plafonné à 5/jour.
 - **0.20.7 / lot 7** : rare garanti tous les 5 kills hors farm, set garanti tous les 10 gardiens, 1 non identifié max/10, fusion 90 %.
 - **0.20.8 / lot 8** : budget de menace, RAPIDE/BERSERK exclus avec les capacités de gardien lourdes.
+- **0.20.9 / lot 9** : Trône brisé +15 → +35 %, gardiens renforcés, boss final et fin au palier 100, mode sans fin, télémétrie locale.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.

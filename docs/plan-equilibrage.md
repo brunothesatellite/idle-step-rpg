@@ -1,7 +1,7 @@
 # Plan d'implémentation — équilibrage 1 → 100
 
 > **Statut : proposition, en attente de validation.** Aucun code n'est modifié par ce document.
-> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.8** (lots 1–8, `versionCode 55`), sauvegarde **v7**.
+> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.9** (lots 1–9, `versionCode 56`), sauvegarde **v7**.
 > Objectif : rendre le palier 100 **exigeant, lisible et non frustrant**, sans paywall ni barrière définitive.
 
 ## 1. Principes directeurs
@@ -294,23 +294,21 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 
 ### Lot 9 — Fin de jeu et télémétrie
 
+**Statut : livré en 0.20.9.** Trône brisé +15 → +35 %, gardiens renforcés, boss final et fin unique au palier 100, mode sans fin, télémétrie locale dans les réglages.
+
 **Objectif** : donner une raison de finir 81–100.
 
 **Modifications** :
 
-- « Trône brisé » après 80 : modificateurs, événements, variantes de gardiens.
-- Ou NG+ avec conservation des collections.
-- Télémétrie locale (sans réseau) :
-  - tentatives/palier, win rate, TTK/TTD ;
-  - rations/éclats gagnés et dépensés ;
-  - temps par niveau, kills par niveau ;
-  - export `balance_report.json` ou écran debug.
-- Tableau de bord debug : puissance recommandée, pronostic, DPS/EHP estimés.
+- ~~« Trône brisé » après 80 : modificateurs, événements, variantes de gardiens.~~ Rampe de difficulté + boss final + fin.
+- ~~Ou NG+ avec conservation des collections.~~ Écarté au profit d'une fin au palier 100 puis mode sans fin.
+- Télémétrie locale (sans réseau) : tentatives/palier, victoires, durée moyenne, progression, ressources dans l'écran Réglages (les gains/dépenses détaillés et l'export JSON restent à faire).
+- ~~Tableau de bord debug : puissance recommandée, pronostic, DPS/EHP estimés.~~ Reporté.
 
 **Tests** :
 
-- aucun crash sur 1 → 100 simulé ;
-- les métriques sont cohérentes avec le simulateur ;
+- ~~aucun crash sur 1 → 100 simulé~~ : règles et multiplicateurs vérifiés de 1 à 200 ;
+- ~~les métriques sont cohérentes avec le simulateur~~ : compteurs vérifiés par test ;
 - le joueur peut lire sa progression.
 
 ---
@@ -386,9 +384,10 @@ Tests unitaires à ajouter :
 7. ~~Lot 5 — gardiens, pitié, portail.~~ **Livré en 0.20.5.**
 8. ~~Lot 6 — farm et `holdFloor`.~~ **Livré en 0.20.6.**
 9. ~~Lot 7 — pity de butin, fusion, identification.~~ **Livré en 0.20.7.**
-10. ~~Lot 8 — biomes et modificateurs.~~ **Livré en 0.20.8.**
-11. Dérouler le lot 9 (fin de jeu et télémétrie).
+10. ~~Lot 8 - biomes et modificateurs.~~ **Livré en 0.20.8.**
+11. ~~Lot 9 - fin de jeu et télémétrie.~~ **Livré en 0.20.9.**
+12. Lot 10 - écran de fin enrichi (proposition HTML), export des stats, pixel art dédié.
 4. Calibrer les gardiens (lot 5) seulement après.
 5. Playtest 7 jours, puis 14 jours.
 
-**Lots 0 à 8 livrés. En attente du go pour le lot 9.**
+**Lots 0 à 9 livrés. En attente du go pour le lot 10 (écran de fin enrichi).**

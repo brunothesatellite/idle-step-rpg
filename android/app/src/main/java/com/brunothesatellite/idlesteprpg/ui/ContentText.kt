@@ -609,6 +609,7 @@ fun localizedAbility(raw: String): String {
         "SOUFFLE" -> R.string.dashboard_ability_breath
         "BLINDAGE" -> R.string.dashboard_ability_shield
         "PRESSION" -> R.string.dashboard_ability_pressure
+        "RUPTURE DU TRÔNE" -> R.string.dashboard_ability_rupture
         "FRAPPE LOURDE" -> R.string.dashboard_ability_slam
         else -> null
     }

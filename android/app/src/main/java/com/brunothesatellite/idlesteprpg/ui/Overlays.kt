@@ -1,4 +1,4 @@
-package com.brunothesatellite.idlesteprpg.ui
+﻿package com.brunothesatellite.idlesteprpg.ui
 
 import android.app.DatePickerDialog
 import android.content.Intent
@@ -563,7 +563,7 @@ private fun ForgePanel(
         Modifier.fillMaxWidth().clickable(onClick = onBack).padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("←", fontSize = 15.sp, color = Gold)
+        Text("â†", fontSize = 15.sp, color = Gold)
         Spacer(Modifier.width(7.dp))
         Text(
             if (mode == ForgeMode.UPGRADE) stringResource(R.string.overlay_workshop_upgrade) else stringResource(R.string.overlay_workshop_reforge),
@@ -750,7 +750,7 @@ private fun CompareLine(
     ) {
         Text(label, Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
         Text(
-            left?.let { statText(it, percent) } ?: "—",
+            left?.let { statText(it, percent) } ?: "â€”",
             Modifier.weight(1f),
             fontSize = 6.3.sp,
             color = Muted,
@@ -787,7 +787,7 @@ private fun CompareRegenLine(left: Double?, right: Double) {
     ) {
         Text(stringResource(R.string.overlay_regeneration), Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
         Text(
-            left?.let { regenText(it) } ?: "—",
+            left?.let { regenText(it) } ?: "â€”",
             Modifier.weight(1f),
             fontSize = 6.3.sp,
             color = Muted,
@@ -931,13 +931,13 @@ private fun UpgradeRegenLine(reference: Double?, before: Double, after: Double) 
 }
 
 private fun statText(value: Int, percent: Boolean): String = when {
-    value == 0 -> "—"
+    value == 0 -> "â€”"
     percent -> "+$value %"
     else -> "+$value"
 }
 
 private fun regenText(value: Double): String =
-    if (value == 0.0) "—" else "+${"%.1f".format(value)}"
+    if (value == 0.0) "â€”" else "+${"%.1f".format(value)}"
 
 @Composable
 private fun CostRow(label: String, value: String) {
@@ -1110,7 +1110,7 @@ fun GuardianGateDialog(
             SectionLabel(stringResource(R.string.gate_title), color = Gold)
             Spacer(Modifier.height(5.dp))
             Text(
-                localizedCreature(boss.enemyName.substringBefore(" · ")),
+                localizedCreature(boss.enemyName.substringBefore(" Â· ")),
                 fontFamily = Press,
                 fontSize = 12.sp,
                 color = GoldLight,
@@ -1412,8 +1412,8 @@ fun CampOverlay(
             val w = size.width
             val h = size.height
             // Le panneau d'actions a une hauteur variable (taille du texte choisie) :
-            // tente, sapins et feu sont ancrés sur sa ligne de sol, comme le héros,
-            // pour rester visibles à toutes les tailles.
+            // tente, sapins et feu sont ancrÃ©s sur sa ligne de sol, comme le hÃ©ros,
+            // pour rester visibles Ã  toutes les tailles.
             val panel = if (cardHeight > 0) cardHeight.toFloat() else h * 0.45f
             val ground = (h - panel - 16.dp.toPx()).coerceIn(h * 0.30f, h * 0.86f)
             val sceneTop = 120.dp.toPx()
@@ -1937,7 +1937,7 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(10.dp))
             GoldButton(
-                text = if (ui.syncing) "VALIDATION…" else stringResource(R.string.overlay_garmin_test_save),
+                text = if (ui.syncing) "VALIDATIONâ€¦" else stringResource(R.string.overlay_garmin_test_save),
                 subtitle = stringResource(R.string.overlay_garmin_exchange),
                 enabled = key.isNotBlank() && !ui.syncing,
                 onClick = {
@@ -2135,7 +2135,7 @@ fun JournalOverlay(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(creatureNameRes(name), fontSize = 8.sp, color = Parchment)
-                                Text("× $kills", fontFamily = Press, fontSize = 7.sp, color = Gold)
+                                Text("Ã— $kills", fontFamily = Press, fontSize = 7.sp, color = Gold)
                             }
                             DividerLine()
                         }
@@ -2322,10 +2322,10 @@ fun OfflineOverlay(
                             if (report.shards > 0) add(stringResource(R.string.overlay_report_shards, report.shards))
                         }
                         if (counts.isNotEmpty()) {
-                            Text(counts.joinToString(" · "), fontSize = 6.5.sp, color = Parchment)
+                            Text(counts.joinToString(" Â· "), fontSize = 6.5.sp, color = Parchment)
                         }
                         report.lootItems.take(8).forEach { name ->
-                            Text("• ${localizedItemName(name)}", fontSize = 6.2.sp, color = Green, maxLines = 1)
+                            Text("â€¢ ${localizedItemName(name)}", fontSize = 6.2.sp, color = Green, maxLines = 1)
                         }
                         if (report.lootItems.size > 8) {
                             Text(stringResource(R.string.overlay_report_more, report.lootItems.size - 8), fontSize = 6.sp, color = Muted)
@@ -2374,7 +2374,7 @@ fun OfflineOverlay(
 private fun formatAbsence(minutes: Int): String =
     if (minutes >= 60) "${minutes / 60} h ${minutes % 60}" else "$minutes min"
 
-/** Phrase de défaite : nombre explicite et recul total (20 m par défaite). */
+/** Phrase de dÃ©faite : nombre explicite et recul total (20 m par dÃ©faite). */
 @Composable
 private fun defeatSummary(report: OfflineReport): String {
     val defeats = report.defeats
@@ -2415,8 +2415,8 @@ private fun RecapTile(value: String, label: String, modifier: Modifier = Modifie
 }
 
 /**
- * Écran d'attente de la reprise : simulation d'absence puis récupération des
- * pas. Il n'apparaît qu'après 350 ms pour ne pas clignoter sur un retour rapide.
+ * Ã‰cran d'attente de la reprise : simulation d'absence puis rÃ©cupÃ©ration des
+ * pas. Il n'apparaÃ®t qu'aprÃ¨s 350 ms pour ne pas clignoter sur un retour rapide.
  */
 @Composable
 fun ResumeOverlay(
@@ -2568,7 +2568,7 @@ fun ImportPreviewDialog(
                 ImportRow(stringResource(R.string.overlay_import_level), summary.level.toString())
                 ImportRow(stringResource(R.string.overlay_import_floor), summary.floor.toString())
                 ImportRow(stringResource(R.string.overlay_import_gold), formatCompact(summary.gold))
-                ImportRow(stringResource(R.string.overlay_import_day), summary.day.ifBlank { "—" })
+                ImportRow(stringResource(R.string.overlay_import_day), summary.day.ifBlank { "â€”" })
                 ImportRow(stringResource(R.string.overlay_import_items), summary.items.toString())
                 ImportRow(stringResource(R.string.overlay_import_version), "v${summary.version}")
                 Spacer(Modifier.height(8.dp))
@@ -2653,7 +2653,7 @@ fun SpecialDialog(
                         Spacer(Modifier.width(7.dp))
                         Column(Modifier.weight(1f)) {
                             Text(localizedItem(offer), fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Parchment)
-                            Text(rarityLabelRes(offer.rarity) + " · " + statLineRes(offer), fontSize = 6.sp, color = Muted, maxLines = 2)
+                            Text(rarityLabelRes(offer.rarity) + " Â· " + statLineRes(offer), fontSize = 6.sp, color = Muted, maxLines = 2)
                         }
                     }
                 }
@@ -2861,7 +2861,7 @@ fun ConsumablesOverlay(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Spacer(Modifier.width(4.dp))
-                                Text("×$quantity", fontFamily = Press, fontSize = 6.sp, color = Gold)
+                                Text("Ã—$quantity", fontFamily = Press, fontSize = 6.sp, color = Gold)
                             }
                             Text(consumableDescRes(template.id), fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
                             Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -2968,4 +2968,109 @@ fun OverlayAction(
     }
 }
 
-
+/**
+ * Écran de fin : affiché une seule fois quand L'Âme Première tombe au palier 100.
+ * Le mode sans fin s'ouvre ensuite ; la statue et l'aura restent au camp.
+ */
+@Composable
+fun EndingOverlay(
+    state: GameState,
+    onContinue: () -> Unit,
+    reducedMotion: Boolean = false
+) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xFF050308), Color(0xFF120A1E), Color(0xFF2A1608))
+                )
+            )
+            .clickable { }
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 22.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                stringResource(R.string.ending_title),
+                fontFamily = Pixel,
+                fontSize = 19.sp,
+                lineHeight = 25.sp,
+                color = GoldLight,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.ending_subtitle),
+                fontSize = 7.sp,
+                fontWeight = FontWeight.Bold,
+                color = Gold,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(18.dp))
+            Box(Modifier.size(180.dp), contentAlignment = Alignment.Center) {
+                GoldenAura(Modifier.size(200.dp), animate = !reducedMotion)
+                AssetImage("hero/human.png", Modifier.size(118.dp))
+            }
+            Spacer(Modifier.height(12.dp))
+            Text(
+                stringResource(R.string.ending_body),
+                fontSize = 7.sp,
+                lineHeight = 11.sp,
+                color = Parchment,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(14.dp))
+            PixelCard(Modifier.fillMaxWidth(), borderColor = Gold.copy(alpha = 0.45f)) {
+                SectionLabel(stringResource(R.string.dashboard_title_soul_legend), color = Gold)
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    stringResource(R.string.ending_stat_floors, state.floor - 1),
+                    fontSize = 6.6.sp,
+                    color = Parchment
+                )
+                Text(
+                    stringResource(R.string.ending_stat_guardians, state.bosses),
+                    fontSize = 6.6.sp,
+                    color = Parchment
+                )
+                Text(
+                    stringResource(R.string.ending_stat_kills, state.kills),
+                    fontSize = 6.6.sp,
+                    color = Parchment
+                )
+                Text(
+                    stringResource(
+                        R.string.ending_stat_level,
+                        state.level,
+                        titleLabelRes(state.floor)
+                    ),
+                    fontSize = 6.6.sp,
+                    color = Muted
+                )
+                Text(
+                    stringResource(
+                        R.string.settings_telemetry_normal,
+                        state.telemetry.normalWins,
+                        state.telemetry.normalFights
+                    ),
+                    fontSize = 6.6.sp,
+                    color = Muted
+                )
+            }
+            Spacer(Modifier.height(16.dp))
+            OverlayAction(
+                stringResource(R.string.ending_continue),
+                Modifier.fillMaxWidth(),
+                onClick = onContinue,
+                primary = true
+            )
+        }
+    }
+}

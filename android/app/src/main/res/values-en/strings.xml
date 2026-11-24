@@ -134,6 +134,23 @@
     <string name="settings_licenses">LICENSES</string>
     <string name="settings_privacy">PRIVACY</string>
     <string name="settings_license_note">Code under MIT license · CC0/OFL assets</string>
+    <string name="settings_balance_telemetry">BALANCE TELEMETRY</string>
+    <string name="settings_telemetry_normal" formatted="false">Normal fights: %1$d wins / %2$d</string>
+    <string name="settings_telemetry_boss" formatted="false">Guardians: %1$d wins / %2$d attempts</string>
+    <string name="settings_telemetry_floor" formatted="false">Floor %1$d: %2$d attempt(s) · %3$d win(s)</string>
+    <string name="settings_telemetry_time" formatted="false">Average duration: %1$s s · %2$d fights</string>
+    <string name="settings_telemetry_progress" formatted="false">Progress: %1$d floors · %2$d enemies defeated</string>
+    <string name="settings_telemetry_resources" formatted="false">Rations %1$d · shards %2$d · gold %3$s</string>
+    <string name="settings_telemetry_note">Local data, farm excluded, no network.</string>
+    <string name="ending_title">THE THRONE IS BROKEN</string>
+    <string name="ending_subtitle">THE FIRST SOUL HAS FALLEN</string>
+    <string name="ending_body" formatted="false">One hundred floors, a first soul, a cracked throne. The statue rises at camp and the path goes on — endless.</string>
+    <string name="ending_stat_floors" formatted="false">Floors cleared: %1$d</string>
+    <string name="ending_stat_guardians" formatted="false">Guardians defeated: %1$d</string>
+    <string name="ending_stat_kills" formatted="false">Enemies defeated: %1$d</string>
+    <string name="ending_stat_level" formatted="false">Level %1$d · %2$s</string>
+    <string name="ending_continue">CONTINUE ENDLESS</string>
+    <string name="dashboard_ability_rupture">THRONE RUPTURE</string>
     <string name="settings_debug_add_steps">Debug +1000 steps</string>
     <string name="toast_debug_steps_added">Debug: +%1$s steps added to the reserve.</string>
     <string name="settings_clear_title">Clear progress?</string>
@@ -338,6 +355,8 @@
     <string name="dashboard_rule_abyss_desc" formatted="false">+12% ATK, -5% max HP, fragile but violent enemies</string>
     <string name="dashboard_rule_throne_label">Soul pressure</string>
     <string name="dashboard_rule_throne_desc" formatted="false">+12% guardian damage, -8% max HP, empowered enemies</string>
+    <string name="dashboard_rule_trone_broken_label">Broken Throne</string>
+    <string name="dashboard_rule_trone_broken_desc" formatted="false">+15% to +35% enemy HP and ATK, reinforced Throne guardians</string>
     <string name="dashboard_upgrade_blade_name">Honed blade</string>
     <string name="dashboard_upgrade_blade_desc" formatted="false">+1.5% ATK per level</string>
     <string name="dashboard_upgrade_breath_name">Ancient breath</string>
@@ -947,6 +966,7 @@
     <string name="codex_ability_roots" formatted="false">Roots: deals 120% of ATK and applies ROOTS (-25% SPD, 5 s).</string>
     <string name="codex_ability_acid" formatted="false">Acid: deals 140% of ATK and applies ACID (+15% damage taken, 6 s).</string>
     <string name="codex_ability_pressure" formatted="false">Pressure: deals 180% of ATK and removes 10 fervour.</string>
+    <string name="codex_ability_rupture" formatted="false">Throne rupture: deals 230% of ATK, removes 20 fervour and heals the guardian for 3% HP.</string>
     <string name="codex_ability_hit" formatted="false">Strike: deals 180% of ATK.</string>
     <string name="codex_set_note1">The collection is permanent: a discovered piece stays owned even if you sell it. </string>
     <string name="codex_set_note2">Bonuses activate at 2, 4 and 6 equipped pieces.</string>

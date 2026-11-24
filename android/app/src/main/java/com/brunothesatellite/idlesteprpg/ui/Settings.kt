@@ -779,6 +779,8 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     color = Muted2
                 )
             }
+            Spacer(Modifier.height(10.dp))
+            BalanceTelemetryCard(state)
             if (BuildConfig.DEBUG) {
                 Spacer(Modifier.height(10.dp))
                 OverlayAction(
@@ -1041,5 +1043,74 @@ private fun offlineDurationLabel(seconds: Int): String {
         value < 60 -> "$value s"
         value % 60 == 0 -> "${value / 60} min"
         else -> "${value / 60} min ${value % 60} s"
+    }
+}
+
+@Composable
+private fun BalanceTelemetryCard(state: GameState) {
+    val telemetry = state.telemetry
+    val focusFloor = telemetry.bossAttempts.keys.maxOrNull() ?: state.floor
+    val attempts = telemetry.bossAttempts[focusFloor] ?: 0
+    val wins = telemetry.bossWinsByFloor[focusFloor] ?: 0
+    val average = if (telemetry.combatCount > 0) {
+        telemetry.combatMs / 1000.0 / telemetry.combatCount
+    } else {
+        0.0
+    }
+    PixelCard(Modifier.fillMaxWidth(), borderColor = Blue.copy(alpha = 0.3f)) {
+        SectionLabel(stringResource(R.string.settings_balance_telemetry), color = Blue)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            stringResource(
+                R.string.settings_telemetry_normal,
+                telemetry.normalFights,
+                telemetry.normalWins
+            ),
+            fontSize = 6.4.sp,
+            color = Parchment
+        )
+        Text(
+            stringResource(
+                R.string.settings_telemetry_boss,
+                telemetry.bossFights,
+                telemetry.bossWins
+            ),
+            fontSize = 6.4.sp,
+            color = Parchment
+        )
+        Text(
+            stringResource(R.string.settings_telemetry_floor, focusFloor, attempts, wins),
+            fontSize = 6.4.sp,
+            color = Parchment
+        )
+        Text(
+            stringResource(
+                R.string.settings_telemetry_time,
+                decimalRes(average, 1),
+                telemetry.combatCount
+            ),
+            fontSize = 6.4.sp,
+            color = Muted
+        )
+        Text(
+            stringResource(R.string.settings_telemetry_progress, state.floor - 1, state.kills),
+            fontSize = 6.4.sp,
+            color = Muted
+        )
+        Text(
+            stringResource(
+                R.string.settings_telemetry_resources,
+                state.rations,
+                state.shards,
+                formatCompact(state.gold)
+            ),
+            fontSize = 6.4.sp,
+            color = Muted
+        )
+        Text(
+            stringResource(R.string.settings_telemetry_note),
+            fontSize = 5.9.sp,
+            color = Muted2
+        )
     }
 }

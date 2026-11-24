@@ -207,7 +207,7 @@
   <h1>THE MARCH OF SOULS</h1>
   <p>Complete user manual — a walking RPG where your steps become your progress.</p>
   <p class="lang"><a href="../index.html">Français</a> · <strong>English</strong></p>
-  <span class="badge">Version 0.20.8 · Android 14+ · Garmin or Health Connect</span>
+  <span class="badge">Version 0.20.9 · Android 14+ · Garmin or Health Connect</span>
 </header>
 
 <nav class="toc">
@@ -720,6 +720,7 @@
     <tr><td>Wood</td><td>Ancient sap</td><td>+0.5 HP/s · sturdy enemies.</td></tr>
     <tr><td>Abyss</td><td>Acidity</td><td>+12% ATK · −5% max HP · fragile but violent enemies.</td></tr>
     <tr><td>Throne</td><td>Soul pressure</td><td>+12% guardian damage · −8% max HP · empowered enemies.</td></tr>
+    <tr><td>Throne (81+)</td><td>Broken Throne</td><td>+15% to +35% enemy HP and ATK · reinforced guardians · final boss on floor 100.</td></tr>
   </table>
   <h3>Farm mode</h3>
   <figure class="shot">
@@ -736,7 +737,7 @@
     <li>The setting is kept in the save and survives a restart.</li>
   </ul>
   <h3>Estimated play time</h3>
-  <p>The dungeon is <strong>endless</strong>: there is no ending screen. “Finishing” here means crossing the <strong>8 biomes</strong> (floor 71), then completing the <strong>Codex</strong> (110 monsters, 35 guardians, 11 sets). The calculation starts from <strong>1,000 steps per floor</strong> (10 steps = 1 m, 100 m per floor) and applies a <strong>farm coefficient of 3 to 5</strong> (up to 6 for the Codex) for retreats, retried guardians, chests and gear hunting.</p>
+  <p>The dungeon goes on <strong>endlessly</strong> after floor 100, but it now has an <strong>ending</strong>: floor 100 closes with a fight against <strong>The First Soul</strong>, then an ending screen appears once. “Finishing” here means reaching that ending, then completing the <strong>Codex</strong> (110 monsters, 35 guardians, 11 sets). The calculation starts from <strong>1,000 steps per floor</strong> (10 steps = 1 m, 100 m per floor) and applies a <strong>farm coefficient of 3 to 5</strong> (up to 6 for the Codex) for retreats, retried guardians, chests and gear hunting.</p>
   <table>
     <tr><th>Goal</th><th>Steps (pure distance)</th><th>5,000 steps/day</th><th>8,000 steps/day</th><th>10,000 steps/day</th></tr>
     <tr><td>8 biomes · floor 71</td><td>70,000</td><td>6 to 10 weeks</td><td>4 to 6 weeks</td><td>3 to 5 weeks</td></tr>
@@ -745,6 +746,14 @@
   </table>
   <p>In <strong>effective walking time</strong> (≈ 100 steps/minute), that is about <strong>12 h</strong> for the 8 biomes, <strong>17 h</strong> for floor 100 and <strong>25 h</strong> for the Codex. The rest is farming, not walking.</p>
   <div class="note"><strong>Assumptions:</strong> a player who syncs every day, without hitting the daily cap (60,000 steps) or the suspicious rate (250 steps/min). With no farming at all, the raw path through 70 floors would take only <strong>14 days</strong> at 5,000 steps/day, <strong>9 days</strong> at 8,000 and <strong>7 days</strong> at 10,000: that is the theoretical floor, not a realistic duration. Floors 60+ are endgame and their balance is still being tuned; the high ranges are design targets.</div>
+  <h3>End of the path · floor 100</h3>
+  <p>From floor <strong>81</strong> to floor <strong>100</strong>, the <strong>Broken Throne</strong> rule replaces Soul pressure. Pressure rises gradually: <strong>+15%</strong> enemy HP and ATK on floor 81, <strong>+35%</strong> on floor 100, then caps. Throne guardians also get <strong>+10% HP</strong> and <strong>+5% ATK</strong>.</p>
+  <ul>
+    <li><strong>Floor 100:</strong> <strong>The First Soul</strong> becomes a final boss (HP ×1.40, ATK ×1.15) and casts <strong>THRONE RUPTURE</strong>: 230% of its ATK, −20 fervour and 3% HP restored.</li>
+    <li><strong>Victory:</strong> an ending screen appears <strong>once</strong>, with floors cleared, guardians and enemies defeated, level and title. A legend entry is added to the journal.</li>
+    <li><strong>CONTINUE ENDLESS:</strong> play resumes on floor 101. Difficulty stays capped; guardians and milestones continue (125, 150, 200…).</li>
+    <li><strong>At camp:</strong> the golden aura and the hero statue remain visible after floor 100.</li>
+  </ul>
   <h3>Biome gallery</h3>
   <p>Each biome has its decor, weather and creatures. The hero's paper doll reflects worn equipment.</p>
   <div class="grid">
@@ -879,6 +888,7 @@
     <li><strong>Sell commons automatically:</strong> converts commons on pickup.</li>
     <li><strong>Step source:</strong> Garmin or Health Connect, with permission, manual sync and sync log.</li>
     <li><strong>Sync diagnostic:</strong> active source, day-by-day import window with each day's state, safeguards (7 days, 60,000 steps/day, 100,000 steps per import, 250 steps/min) and a sync button.</li>
+    <li><strong>Balance telemetry:</strong> normal fight wins and fights (farm excluded), guardian wins and attempts, attempts and wins for the floor, average fight duration, floors and enemies defeated, rations, shards and gold. Local data, no network.</li>
     <li><strong>Save:</strong> export, import with preview, clear progress.</li>
     <li><strong>Sync log:</strong> latest results of the active source, timestamped by day and time.</li>
     <li><strong>Check for updates:</strong> dedicated card, with an optional daily automatic check.</li>
@@ -1071,7 +1081,7 @@
 </section>
 
 <footer>
-  The March of Souls · manual v0.20.8 · <a href="#top">Back to contents</a><br>
+  The March of Souls · manual v0.20.9 · <a href="#top">Back to contents</a><br>
   Garmin or Health Connect · no data sent to a publisher server.
 </footer>
 

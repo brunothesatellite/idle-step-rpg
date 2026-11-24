@@ -395,6 +395,12 @@ object GameEngine {
         state.bestiary = state.bestiary + (id to ((state.bestiary[id] ?: 0) + 1))
     }
 
+    private fun recordCombat(state: GameState, f: FightData) {
+        if (f.elapsedMs <= 0.0) return
+        state.telemetry.combatMs += f.elapsedMs.toLong()
+        state.telemetry.combatCount++
+    }
+
     fun simulateOffline(
         state: GameState,
         maxIterations: Int = 900,
@@ -1174,12 +1180,17 @@ object GameEngine {
         state.fight = f
         state.mode = if (farm) "fight" else "fight"
         state.farmWaitMs = 0.0
+        if (!farm) state.telemetry.normalFights++
     }
 
     fun startBoss(state: GameState) {
         state.fight = state.pendingBoss ?: makeBoss(state)
         state.pendingBoss = null
         state.mode = "boss"
+        state.telemetry.bossFights++
+        state.telemetry.bossAttempts = state.telemetry.bossAttempts + (
+            state.floor to ((state.telemetry.bossAttempts[state.floor] ?: 0) + 1)
+            )
     }
 
     /** Prépare le portail à 90 m : aperçu du gardien et choix du joueur. */
@@ -1317,7 +1328,7 @@ object GameEngine {
      * réaction et la gate reste lisible.
      */
     internal fun bossModifierPool(abilityId: String): List<String> {
-        val heavy = abilityId in setOf("slam", "breath", "drain", "pressure")
+        val heavy = abilityId in setOf("slam", "breath", "drain", "pressure", "rupture")
         return buildList {
             add("")
             add("")
@@ -1338,8 +1349,14 @@ object GameEngine {
         val level = state.floor + Balance.Target.BOSS_LEVEL_OFFSET
         val hpScale = bossHpScale(state.floor)
         val atkScale = bossAtkScale(state.floor)
-        var hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) * hpScale
-        var atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) * atkScale
+        var hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) *
+            hpScale * rule.bossHpMult
+        var atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) *
+            atkScale * rule.bossAtkMult
+        if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) {
+            hp *= Balance.Target.FINAL_BOSS_HP_MULT
+            atk *= Balance.Target.FINAL_BOSS_ATK_MULT
+        }
         var interval = Balance.MOB_INTERVAL_MS.toLong()
         val modifier = bossModifierPool(ability.id).random(rnd)
         when (modifier) {
@@ -1493,6 +1510,11 @@ object GameEngine {
                 damage(1.8)
                 state.ferveur = max(0, state.ferveur - 10)
             }
+            "rupture" -> {
+                damage(2.3)
+                state.ferveur = max(0, state.ferveur - 20)
+                f.enemyHp = min(f.enemyMaxHp, f.enemyHp + f.enemyMaxHp * 0.03)
+            }
             else -> damage(1.8)
         }
         f.abilityFlashMs = 1_400.0
@@ -1571,6 +1593,7 @@ object GameEngine {
     }
 
     internal fun victory(state: GameState, f: FightData) {
+        recordCombat(state, f)
         val earned = goldGain(state, f.gold)
         state.gold += earned
         state.goldEarned += earned
@@ -1612,6 +1635,10 @@ object GameEngine {
         if (f.isBoss) {
             state.bosses++
             state.bossesToday++
+            state.telemetry.bossWins++
+            state.telemetry.bossWinsByFloor = state.telemetry.bossWinsByFloor + (
+                clearedFloor to ((state.telemetry.bossWinsByFloor[clearedFloor] ?: 0) + 1)
+                )
             val baseBoss = killedId
             state.bossKills = state.bossKills + (
                 baseBoss to ((state.bossKills[baseBoss] ?: 0) + 1)
@@ -1650,6 +1677,16 @@ object GameEngine {
                 grantBossLoot(state, state.floor)
                 dropConsumables(state, "boss")
                 state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
+                if (clearedFloor == Balance.Target.ENDGAME_FINAL_FLOOR && !state.endingSeen) {
+                    state.endingSeen = true
+                    state.endingPending = true
+                    addLegend(state, "Le Trône est brisé — L'Âme Première est tombée")
+                    state.journal = addJournal(
+                        state,
+                        "Fin du sentier — le Trône est brisé · mode sans fin débloqué",
+                        "good"
+                    )
+                }
                 if (clearedFloor % 10 == 0) {
                     state.shards = min(MAX_SHARDS, state.shards + Balance.MILESTONE_SHARDS)
                     addLegend(state, "Jalon · palier $clearedFloor — ${titleFor(state.floor)}")
@@ -1685,6 +1722,7 @@ object GameEngine {
         } else {
             state.mode = "walk"
             state.nextFight += 10
+            state.telemetry.normalWins++
             state.journal = addJournal(state, "${f.enemyName} vaincu · +$earned or", "good")
             dropConsumables(state, "mob")
             if (rnd.nextDouble() < Balance.Target.MOB_RATION_CHANCE) {
@@ -1710,6 +1748,7 @@ object GameEngine {
     }
 
     private fun defeat(state: GameState, f: FightData) {
+        recordCombat(state, f)
         state.fight = null
         state.retreats++
         state.distance = max(0.0, floor((state.distance - 20.0) / 10.0) * 10.0)

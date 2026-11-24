@@ -124,6 +124,18 @@ data class JournalEntry(
 )
 
 @Serializable
+data class BalanceTelemetry(
+    var normalFights: Int = 0,
+    var normalWins: Int = 0,
+    var bossFights: Int = 0,
+    var bossWins: Int = 0,
+    var combatMs: Long = 0,
+    var combatCount: Int = 0,
+    var bossAttempts: Map<Int, Int> = emptyMap(),
+    var bossWinsByFloor: Map<Int, Int> = emptyMap()
+)
+
+@Serializable
 data class FightData(
     var enemyName: String,
     var enemyIcon: String,
@@ -418,6 +430,9 @@ data class GameState(
     var ferveurDecayAt: Long = 0L,
     var totalSteps: Int = 0,
     var kills: Int = 0,
+    var telemetry: BalanceTelemetry = BalanceTelemetry(),
+    var endingSeen: Boolean = false,
+    var endingPending: Boolean = false,
     var mobsSinceRare: Int = 0,
     var bossesSinceSet: Int = 0,
     var lootSinceUnidentified: Int = 0,
@@ -521,10 +536,37 @@ data class BiomeRule(
     val bossDamage: Double = 0.0,
     val enemyHpMult: Double = 1.0,
     val enemyAtkMult: Double = 1.0,
-    val enemyIntervalMult: Double = 1.0
+    val enemyIntervalMult: Double = 1.0,
+    val bossHpMult: Double = 1.0,
+    val bossAtkMult: Double = 1.0
 )
 
-fun biomeRuleFor(floor: Int): BiomeRule = when (biomeKeyFor(floor)) {
+/**
+ * Pression du Trône brisé : 1,10 au palier 81, 1,30 au palier 100, puis plafonnée.
+ * La montée progressive évite que les vingt derniers paliers soient plus doux
+ * que le pic de « Pression des âmes » au palier 80.
+ */
+fun endgameEnemyMult(floor: Int): Double {
+    val span = (Balance.Target.ENDGAME_FINAL_FLOOR - Balance.Target.ENDGAME_FLOOR).toDouble()
+    val t = ((floor - Balance.Target.ENDGAME_FLOOR) / span).coerceIn(0.0, 1.0)
+    return Balance.Target.ENDGAME_ENEMY_MULT_START +
+        (Balance.Target.ENDGAME_ENEMY_MULT_END - Balance.Target.ENDGAME_ENEMY_MULT_START) * t
+}
+
+fun biomeRuleFor(floor: Int): BiomeRule =
+    if (floor >= Balance.Target.ENDGAME_FLOOR) {
+        val mult = endgameEnemyMult(floor)
+        val pct = ((mult - 1.0) * 100).roundToInt()
+        BiomeRule(
+            "trone_broken",
+            "Trône brisé",
+            "+$pct % PV et ATQ ennemis · gardiens du Trône renforcés",
+            enemyHpMult = mult,
+            enemyAtkMult = mult,
+            bossHpMult = Balance.Target.ENDGAME_BOSS_HP_MULT,
+            bossAtkMult = Balance.Target.ENDGAME_BOSS_ATK_MULT
+        )
+    } else when (biomeKeyFor(floor)) {
     "crypts" -> BiomeRule(
         "crypts", "Veillée des cryptes", "+3 % critique · ennemis fragilisés",
         crit = 3, enemyHpMult = 0.95
@@ -564,6 +606,8 @@ data class BossAbility(val id: String, val label: String)
 fun bossAbilityFor(name: String, floor: Int): BossAbility {
     val n = name.lowercase()
     return when {
+        floor >= Balance.Target.ENDGAME_FINAL_FLOOR && n.contains("âme première") ->
+            BossAbility("rupture", "RUPTURE DU TRÔNE")
         n.contains("liche") || n.contains("roi des cryptes") ->
             BossAbility("drain", "DRAIN D'ÂME")
         n.contains("hydre") -> BossAbility("regen", "RÉGÉNÉRATION")

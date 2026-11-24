@@ -608,6 +608,7 @@ private fun bossAbilityDescription(id: String): String = when (id) {
     "roots" -> stringResource(R.string.codex_ability_roots)
     "acid" -> stringResource(R.string.codex_ability_acid)
     "pressure" -> stringResource(R.string.codex_ability_pressure)
+    "rupture" -> stringResource(R.string.codex_ability_rupture)
     else -> stringResource(R.string.codex_ability_hit)
 }
 

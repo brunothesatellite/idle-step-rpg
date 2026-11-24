@@ -90,6 +90,7 @@ fun biomeRuleLabelRes(id: String): String = when (id) {
     "peaks" -> stringResource(R.string.dashboard_rule_peaks_label)
     "woods" -> stringResource(R.string.dashboard_rule_woods_label)
     "abyss" -> stringResource(R.string.dashboard_rule_abyss_label)
+    "trone_broken" -> stringResource(R.string.dashboard_rule_trone_broken_label)
     else -> stringResource(R.string.dashboard_rule_throne_label)
 }
 
@@ -102,6 +103,7 @@ fun biomeRuleDescRes(id: String): String = when (id) {
     "peaks" -> stringResource(R.string.dashboard_rule_peaks_desc)
     "woods" -> stringResource(R.string.dashboard_rule_woods_desc)
     "abyss" -> stringResource(R.string.dashboard_rule_abyss_desc)
+    "trone_broken" -> stringResource(R.string.dashboard_rule_trone_broken_desc)
     else -> stringResource(R.string.dashboard_rule_throne_desc)
 }
 
@@ -130,6 +132,7 @@ fun abilityLabelRes(id: String): String = when (id) {
     "breath" -> stringResource(R.string.dashboard_ability_breath)
     "shield" -> stringResource(R.string.dashboard_ability_shield)
     "pressure" -> stringResource(R.string.dashboard_ability_pressure)
+    "rupture" -> stringResource(R.string.dashboard_ability_rupture)
     else -> stringResource(R.string.dashboard_ability_slam)
 }
 

@@ -1493,6 +1493,55 @@ class GameEngineTest {
     }
 
     @Test
+    fun telemetryCountsNormalAndGuardianFights() {
+        val state = GameState()
+        GameEngine.startFight(state)
+        assertEquals(1, state.telemetry.normalFights)
+        val fight = state.fight!!
+        fight.enemyHp = 0.0
+        fight.elapsedMs = 4_000.0
+        GameEngine.victory(state, fight)
+        assertEquals(1, state.telemetry.normalWins)
+        assertEquals(1, state.telemetry.combatCount)
+        assertEquals(4_000L, state.telemetry.combatMs)
+
+        state.floor = 81
+        state.mode = "walk"
+        GameEngine.startBoss(state)
+        assertEquals(1, state.telemetry.bossFights)
+        assertEquals(1, state.telemetry.bossAttempts[81])
+    }
+
+    @Test
+    fun finalVictoryOpensEndingOnlyOnce() {
+        val state = GameState()
+        state.floor = 100
+        state.mode = "boss"
+        val finalFight = FightData(
+            enemyName = "L'Âme Première",
+            enemyIcon = "mon/cerebov.png",
+            enemyLevel = 101,
+            enemyHp = 0.0,
+            enemyMaxHp = 200_000.0,
+            enemyAtk = 600.0,
+            enemyIntervalMs = 1_250L,
+            gold = 500,
+            xp = 5_000,
+            isBoss = true,
+            enemyId = "cerebov"
+        )
+        GameEngine.victory(state, finalFight)
+        assertEquals(101, state.floor)
+        assertTrue(state.endingSeen)
+        assertTrue(state.endingPending)
+
+        state.endingPending = false
+        GameEngine.victory(state, finalFight.copy())
+        assertEquals(102, state.floor)
+        assertEquals(false, state.endingPending)
+    }
+
+    @Test
     fun lockedItemsAreNeverDisplaced() {
         val state = GameState()
         state.inventory = (1..24).map {

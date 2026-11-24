@@ -207,7 +207,7 @@
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas deviennent votre progression.</p>
   <p class="lang"><strong>Français</strong> · <a href="en/index.html">English</a></p>
-  <span class="badge">Version 0.20.8 · Android 14+ · Garmin ou Santé Connect</span>
+  <span class="badge">Version 0.20.9 · Android 14+ · Garmin ou Santé Connect</span>
 </header>
 
 <nav class="toc">
@@ -720,6 +720,7 @@
     <tr><td>Bois</td><td>Sève ancienne</td><td>+0,5 PV/s · ennemis coriaces.</td></tr>
     <tr><td>Abîme</td><td>Acidité</td><td>+12 % ATQ · −5 % PV max · ennemis fragiles mais violents.</td></tr>
     <tr><td>Trône</td><td>Pression des âmes</td><td>+12 % dégâts gardiens · −8 % PV max · ennemis renforcés.</td></tr>
+    <tr><td>Trône (81+)</td><td>Trône brisé</td><td>+15 à +35 % PV et ATQ ennemis · gardiens renforcés · boss final au palier 100.</td></tr>
   </table>
   <h3>Mode farm</h3>
   <figure class="shot">
@@ -736,7 +737,7 @@
     <li>Le réglage est conservé dans la sauvegarde et survit au redémarrage.</li>
   </ul>
   <h3>Durée de vie estimée</h3>
-  <p>Le donjon est <strong>infini</strong> : il n'y a pas d'écran de fin. « Finir » signifie ici parcourir les <strong>8 biomes</strong> (palier 71), puis compléter le <strong>Codex</strong> (110 monstres, 35 gardiens, 11 ensembles). Le calcul part de <strong>1 000 pas par palier</strong> (10 pas = 1 m, 100 m par palier) et applique un <strong>coefficient de farm de 3 à 5</strong> (jusqu'à 6 pour le Codex) pour les retraites, les gardiens réessayés, les coffres et la recherche d'équipement.</p>
+  <p>Le donjon continue <strong>sans fin</strong> après le palier 100, mais il a désormais une <strong>fin</strong> : le palier 100 se termine par un combat contre <strong>L'Âme Première</strong>, puis un écran de fin s'affiche une seule fois. « Finir » signifie ici atteindre cette fin, puis compléter le <strong>Codex</strong> (110 monstres, 35 gardiens, 11 ensembles). Le calcul part de <strong>1 000 pas par palier</strong> (10 pas = 1 m, 100 m par palier) et applique un <strong>coefficient de farm de 3 à 5</strong> (jusqu'à 6 pour le Codex) pour les retraites, les gardiens réessayés, les coffres et la recherche d'équipement.</p>
   <table>
     <tr><th>Objectif</th><th>Pas (distance pure)</th><th>5 000 pas/jour</th><th>8 000 pas/jour</th><th>10 000 pas/jour</th></tr>
     <tr><td>8 biomes · palier 71</td><td>70 000</td><td>6 à 10 semaines</td><td>4 à 6 semaines</td><td>3 à 5 semaines</td></tr>
@@ -745,6 +746,14 @@
   </table>
   <p>En <strong>temps de marche effectif</strong> (≈ 100 pas/minute), cela représente environ <strong>12 h</strong> pour les 8 biomes, <strong>17 h</strong> pour le palier 100 et <strong>25 h</strong> pour le Codex. Le reste du temps est du farm, pas de la marche.</p>
   <div class="note"><strong>Hypothèses :</strong> un joueur qui synchronise chaque jour, sans plafond journalier atteint (60 000 pas) ni rythme suspect (250 pas/min). Sans aucun farm, le parcours brut des 70 paliers ne prendrait que <strong>14 jours</strong> à 5 000 pas/jour, <strong>9 jours</strong> à 8 000 et <strong>7 jours</strong> à 10 000 : c'est le plancher théorique, pas une durée réaliste. Les paliers 60+ relèvent de l'endgame et leur équilibrage est encore en ajustement ; les fourchettes hautes sont des cibles de conception.</div>
+  <h3>Fin du sentier · palier 100</h3>
+  <p>Du palier <strong>81</strong> au palier <strong>100</strong>, la règle <strong>Trône brisé</strong> remplace Pression des âmes. La pression monte progressivement : <strong>+15 %</strong> de PV et ATQ ennemis au palier 81, <strong>+35 %</strong> au palier 100, puis plafond. Les gardiens du Trône reçoivent en plus <strong>+10 % PV</strong> et <strong>+5 % ATQ</strong>.</p>
+  <ul>
+    <li><strong>Palier 100 :</strong> <strong>L'Âme Première</strong> devient un boss final (PV ×1,40, ATQ ×1,15) et lance <strong>RUPTURE DU TRÔNE</strong> : 230 % de son ATQ, −20 ferveur et 3 % de PV rendus.</li>
+    <li><strong>Victoire :</strong> un écran de fin s'affiche <strong>une seule fois</strong>, avec les paliers franchis, les gardiens et ennemis vaincus, le niveau et le titre. Une entrée de légende est ajoutée au journal.</li>
+    <li><strong>CONTINUER SANS FIN :</strong> le jeu reprend au palier 101. La difficulté reste plafonnée, les gardiens et les jalons continuent (125, 150, 200…).</li>
+    <li><strong>Au camp :</strong> l'aura dorée et la statue du héros restent visibles après le palier 100.</li>
+  </ul>
   <h3>Galerie des biomes</h3>
   <p>Chaque biome possède son décor, sa météo et ses créatures. Le paper doll du héros reflète l'équipement porté.</p>
   <div class="grid">
@@ -879,6 +888,7 @@
     <li><strong>Vendre les communs automatiquement :</strong> convertit les communs au ramassage.</li>
     <li><strong>Source de pas :</strong> Garmin ou Santé Connect, avec autorisation, synchronisation manuelle et journal de synchronisation.</li>
     <li><strong>Diagnostic de synchronisation :</strong> source active, fenêtre d'import jour par jour avec l'état de chaque journée, garde-fous (7 jours, 60 000 pas/jour, 100 000 pas par import, 250 pas/min) et bouton de synchronisation.</li>
+    <li><strong>Télémétrie d'équilibrage :</strong> victoires et combats normaux (hors farm), victoires et tentatives de gardiens, essais et victoires du palier, durée moyenne des combats, paliers et ennemis vaincus, rations, éclats et or. Données locales, sans réseau.</li>
     <li><strong>Sauvegarde :</strong> exporter, importer avec aperçu, effacer la progression.</li>
     <li><strong>Journal de synchronisation :</strong> derniers résultats de la source active, horodatés au jour et à l'heure.</li>
     <li><strong>Vérifier les mises à jour :</strong> carte dédiée, avec vérification automatique quotidienne facultative.</li>
@@ -1071,7 +1081,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.20.8 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.20.9 · <a href="#top">Retour au sommaire</a><br>
   Garmin ou Santé Connect · aucune donnée envoyée à un serveur éditeur.
 </footer>
 

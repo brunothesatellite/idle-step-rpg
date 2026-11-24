@@ -193,7 +193,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 if (visible && !resuming && !_ui.value.paused && !_ui.value.campOpen &&
                     !_ui.value.settingsOpen &&
                     !_ui.value.prefsOpen && !_ui.value.journalOpen && !reportOpen &&
-                    !_ui.value.consumablesOpen
+                    !_ui.value.consumablesOpen && !game.value.endingPending
                 ) {
                     val snapshot = game.value
                     // Cadence adaptative : 10 Hz quand quelque chose peut bouger,
@@ -608,6 +608,12 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun openCodex() { _ui.update { it.copy(codexOpen = true) } }
 
     fun closeCodex() { _ui.update { it.copy(codexOpen = false) } }
+
+    fun dismissEnding() {
+        viewModelScope.launch {
+            container.gameRepository.mutate { it.endingPending = false }
+        }
+    }
 
     fun setHoldFloor(value: Boolean) {
         viewModelScope.launch {

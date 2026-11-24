@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.20.9
+- **Lot 9 — Trône brisé et télémétrie** : à partir du **palier 81**, les ennemis gagnent de **+15 % à +35 % PV/ATQ** jusqu’au palier 100, et les gardiens du Trône sont renforcés (+10 % PV, +5 % ATQ).
+- **Fin de jeu** : **L’Âme Première** devient un boss final au palier 100 (PV ×1,40, ATQ ×1,15) avec la capacité **RUPTURE DU TRÔNE** (230 % ATQ, −20 ferveur, soin 3 %). Une **fin** s’affiche une seule fois, puis le **mode sans fin** continue au-delà du palier 100.
+- **Télémétrie locale** : victoires/combats normaux, victoires/tentatives de gardiens, essais et victoires par palier, durée moyenne, progression, ressources. Données locales, hors farm.
+- **Tests** : **144 / 144**, lint OK.
+- **Build** : `versionCode 56`, `versionName 0.20.9`. Aucune release GitHub.
+
 ## v0.20.8
 - **Lot 8 — biomes et modificateurs** : budget de menace sur les gardiens. Les capacités lourdes (frappe, souffle, drain, pression) ne peuvent plus être combinées avec **RAPIDE** ou **BERSERK**, pour éviter les pics imprévisibles.
 - **Gate** : capacité et modificateur restent affichés avant l'engagement.

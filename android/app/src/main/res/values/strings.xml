@@ -136,6 +136,23 @@
     <string name="settings_licenses">LICENCES</string>
     <string name="settings_privacy">CONFIDENTIALITÉ</string>
     <string name="settings_license_note">Code sous licence MIT · ressources CC0/OFL</string>
+    <string name="settings_balance_telemetry">TÉLÉMÉTRIE D\'ÉQUILIBRAGE</string>
+    <string name="settings_telemetry_normal" formatted="false">Combats normaux : %1$d victoires / %2$d</string>
+    <string name="settings_telemetry_boss" formatted="false">Gardiens : %1$d victoires / %2$d tentatives</string>
+    <string name="settings_telemetry_floor" formatted="false">Palier %1$d : %2$d tentative(s) · %3$d victoire(s)</string>
+    <string name="settings_telemetry_time" formatted="false">Durée moyenne : %1$s s · %2$d combats</string>
+    <string name="settings_telemetry_progress" formatted="false">Progression : %1$d paliers · %2$d ennemis vaincus</string>
+    <string name="settings_telemetry_resources" formatted="false">Rations %1$d · éclats %2$d · or %3$s</string>
+    <string name="settings_telemetry_note">Données locales, hors farm, sans réseau.</string>
+    <string name="ending_title">LE TRÔNE EST BRISÉ</string>
+    <string name="ending_subtitle">L\'ÂME PREMIÈRE EST TOMBÉE</string>
+    <string name="ending_body" formatted="false">Cent paliers, une âme première, un trône fissuré. La statue s\'élève au camp et le sentier continue — sans fin.</string>
+    <string name="ending_stat_floors" formatted="false">Paliers franchis : %1$d</string>
+    <string name="ending_stat_guardians" formatted="false">Gardiens vaincus : %1$d</string>
+    <string name="ending_stat_kills" formatted="false">Ennemis vaincus : %1$d</string>
+    <string name="ending_stat_level" formatted="false">Niveau %1$d · %2$s</string>
+    <string name="ending_continue">CONTINUER SANS FIN</string>
+    <string name="dashboard_ability_rupture">RUPTURE DU TRÔNE</string>
     <string name="settings_debug_add_steps">Debug +1000 pas</string>
     <string name="toast_debug_steps_added">Debug : +%1$s pas ajoutés à la réserve.</string>
     <string name="settings_clear_title">Effacer la progression ?</string>
@@ -340,6 +357,8 @@
     <string name="dashboard_rule_abyss_desc" formatted="false">+12 % ATQ à -5 % PV max à ennemis fragiles mais violents</string>
     <string name="dashboard_rule_throne_label">Pression des âmes</string>
     <string name="dashboard_rule_throne_desc" formatted="false">+12 % dégâts gardiens à -8 % PV max à ennemis renforcés</string>
+    <string name="dashboard_rule_trone_broken_label">Trône brisé</string>
+    <string name="dashboard_rule_trone_broken_desc" formatted="false">+15 à +35 % PV et ATQ ennemis à gardiens du Trône renforcés</string>
     <string name="dashboard_upgrade_blade_name">Lame affûtée</string>
     <string name="dashboard_upgrade_blade_desc" formatted="false">+1,5 % ATQ par niveau</string>
     <string name="dashboard_upgrade_breath_name">Souffle ancien</string>
@@ -949,6 +968,7 @@
     <string name="codex_ability_roots" formatted="false">Racines : inflige 120 % de l\'ATQ et applique RACINES (-25 % VIT, 5 s).</string>
     <string name="codex_ability_acid" formatted="false">Acide : inflige 140 % de l\'ATQ et applique ACIDE (+15 % de dégâts subis, 6 s).</string>
     <string name="codex_ability_pressure" formatted="false">Pression : inflige 180 % de l\'ATQ et retire 10 points de ferveur.</string>
+    <string name="codex_ability_rupture" formatted="false">Rupture du Trône : inflige 230 % de l\'ATQ, retire 20 points de ferveur et rend 3 % de PV au gardien.</string>
     <string name="codex_ability_hit" formatted="false">Frappe : inflige 180 % de l\'ATQ.</string>
     <string name="codex_set_note1">La collection est permanente : une pièce découverte reste acquise même si vous la vendez. </string>
     <string name="codex_set_note2">Les bonus s\'activent à 2, 4 et 6 pièces équipées.</string>

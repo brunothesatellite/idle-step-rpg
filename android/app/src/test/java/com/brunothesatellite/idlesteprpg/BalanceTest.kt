@@ -7,7 +7,10 @@ import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_RATIONS
 import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
 import com.brunothesatellite.idlesteprpg.engine.bossXpReward
+import com.brunothesatellite.idlesteprpg.engine.bossAbilityFor
 import com.brunothesatellite.idlesteprpg.engine.biomeBossFor
+import com.brunothesatellite.idlesteprpg.engine.biomeRuleFor
+import com.brunothesatellite.idlesteprpg.engine.endgameEnemyMult
 import com.brunothesatellite.idlesteprpg.engine.isMaxLevel
 import com.brunothesatellite.idlesteprpg.engine.lootFloorScale
 import com.brunothesatellite.idlesteprpg.engine.maxUpgradeLevel
@@ -186,6 +189,48 @@ class BalanceTest {
         val light = com.brunothesatellite.idlesteprpg.engine.GameEngine.bossModifierPool("shield")
         assertTrue(light.contains("rapide"))
         assertTrue(light.contains("berserk"))
+    }
+
+    @Test
+    fun endgameRampRisesFromEightyOneToHundred() {
+        assertEquals(1.15, endgameEnemyMult(81), 0.0001)
+        assertEquals(1.15, endgameEnemyMult(50), 0.0001)
+        assertEquals(1.25, endgameEnemyMult(90), 0.01)
+        assertEquals(1.35, endgameEnemyMult(100), 0.0001)
+        assertEquals(1.35, endgameEnemyMult(160), 0.0001)
+        assertTrue(endgameEnemyMult(100) > endgameEnemyMult(81))
+    }
+
+    @Test
+    fun brokenThroneRuleIsHarderThanSoulPressure() {
+        val throne = biomeRuleFor(80)
+        val broken = biomeRuleFor(81)
+        assertEquals("trone_broken", broken.id)
+        assertTrue(broken.enemyHpMult > throne.enemyHpMult)
+        assertTrue(broken.enemyAtkMult > throne.enemyAtkMult)
+        assertTrue(broken.bossHpMult > 1.0)
+        assertTrue(broken.bossAtkMult > 1.0)
+        assertEquals(1.0, throne.bossHpMult, 0.0001)
+        assertTrue(biomeRuleFor(100).enemyHpMult > broken.enemyHpMult)
+    }
+
+    @Test
+    fun finalGuardianUsesThroneRupture() {
+        assertEquals("pressure", bossAbilityFor("L'Âme Première", 99).id)
+        assertEquals("rupture", bossAbilityFor("L'Âme Première", 100).id)
+    }
+
+    @Test
+    fun everyEndgameFloorHasFiniteRule() {
+        for (floor in 1..200) {
+            val rule = biomeRuleFor(floor)
+            assertTrue(rule.enemyHpMult.isFinite())
+            assertTrue(rule.enemyAtkMult.isFinite())
+            assertTrue(rule.bossHpMult.isFinite())
+            assertTrue(rule.bossAtkMult.isFinite())
+            assertTrue(rule.enemyHpMult >= 0.9)
+            assertTrue(rule.enemyAtkMult >= 0.9)
+        }
     }
 
     @Test
