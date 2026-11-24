@@ -386,7 +386,7 @@ Tests unitaires à ajouter :
 9. ~~Lot 7 — pity de butin, fusion, identification.~~ **Livré en 0.20.7.**
 10. ~~Lot 8 - biomes et modificateurs.~~ **Livré en 0.20.8.**
 11. ~~Lot 9 - fin de jeu et télémétrie.~~ **Livré en 0.20.9.**
-12. Lot 10 - écran de fin enrichi (proposition HTML), export des stats, pixel art dédié.
+12. Lot 10 - écran de fin enrichi (proposition HTML), export des stats, pixel art dédié. **Proposition visuelle : [ecran-fin.html](ecran-fin.html).**
 4. Calibrer les gardiens (lot 5) seulement après.
 5. Playtest 7 jours, puis 14 jours.
 

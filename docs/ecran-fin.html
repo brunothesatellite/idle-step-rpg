@@ -1,0 +1,2081 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07060b">
+<title>Marche — Écran de fin · proposition</title>
+<style>
+  :root {
+    --ink: #07060b;
+    --ink-2: #0d0a14;
+    --ink-3: #14101d;
+    --panel: rgba(16, 12, 22, .78);
+    --panel-2: rgba(24, 18, 32, .7);
+    --line: rgba(216, 169, 75, .22);
+    --line-soft: rgba(216, 169, 75, .12);
+    --gold: #d8a94b;
+    --gold-hi: #ffe6a3;
+    --gold-deep: #8a6426;
+    --ember: #ff7a3d;
+    --ember-soft: rgba(255, 122, 61, .18);
+    --blood: #7d2630;
+    --parchment: #ecdfc6;
+    --muted: #a89a86;
+    --muted-2: #7c7162;
+    --green: #7fc98b;
+    --blue: #7db4e8;
+    --violet: #b98cff;
+    --orange: #ffb257;
+    --radius: 6px;
+    --max: 1180px;
+    --display: Georgia, "Times New Roman", serif;
+    --ui: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Mono", Consolas, "Courier New", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--parchment);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(120, 74, 22, .22), transparent 62%),
+      radial-gradient(900px 500px at 92% 18%, rgba(78, 30, 44, .18), transparent 60%),
+      radial-gradient(800px 600px at 6% 78%, rgba(30, 40, 66, .16), transparent 60%),
+      linear-gradient(180deg, #050409 0%, #0a0810 45%, #07060b 100%);
+    font-family: var(--ui);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 40;
+    opacity: .16;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .only-mobile { display: none; }
+
+  .ending {
+    position: relative;
+    width: min(100%, var(--max));
+    margin: 0 auto;
+    padding: 0 clamp(14px, 3vw, 30px) 120px;
+  }
+
+  /* ---------- Scène ---------- */
+
+  .scene {
+    position: relative;
+    height: clamp(340px, 52vh, 560px);
+    margin: 0 calc(clamp(14px, 3vw, 30px) * -1);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .scene::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(460px 260px at 50% 64%, rgba(255, 196, 80, .13), transparent 70%),
+      linear-gradient(180deg, rgba(5, 4, 9, .9) 0%, transparent 26%),
+      linear-gradient(0deg, var(--ink) 0%, rgba(7, 6, 11, .78) 12%, transparent 42%);
+  }
+
+  .scene::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    box-shadow:
+      inset 0 0 120px 34px rgba(3, 2, 6, .8),
+      inset 0 -40px 80px rgba(3, 2, 6, .8);
+  }
+
+  #sky {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    object-fit: cover;
+  }
+
+  .figures {
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    bottom: clamp(4px, 1.4vh, 14px);
+    transform: translateX(-50%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: clamp(2px, 3vw, 54px);
+    width: 100%;
+    max-width: 980px;
+    padding: 0 8px;
+  }
+
+  .figure {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    filter: drop-shadow(0 18px 22px rgba(0, 0, 0, .65));
+  }
+
+  .figure canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+
+  .figure.statue { width: clamp(62px, 15vw, 240px); opacity: .84; }
+  .figure.boss { width: clamp(148px, 32vw, 430px); }
+  .figure.hero {
+    width: clamp(116px, 24vw, 300px);
+    z-index: 2;
+  }
+
+  .figure .caption {
+    display: none;
+  }
+
+  .figure.boss .caption { display: none; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 22px;
+    margin: 10px 0 0;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .18em;
+    color: var(--muted-2);
+    text-transform: uppercase;
+  }
+
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .legend span::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    opacity: .55;
+  }
+
+  .legend span:last-child::before {
+    background: var(--ember);
+  }
+
+  .halo {
+    position: absolute;
+    left: 50%;
+    top: 12%;
+    width: 96%;
+    aspect-ratio: 1;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, rgba(255, 236, 174, .5) 0%, rgba(255, 214, 112, .2) 26%, rgba(255, 196, 80, .08) 46%, transparent 68%);
+    filter: blur(8px);
+    z-index: -1;
+    animation: halo 5.5s ease-in-out infinite;
+  }
+
+  .halo::before {
+    content: "";
+    position: absolute;
+    inset: 34%;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 230, 163, .38);
+    box-shadow:
+      0 0 16px rgba(255, 214, 112, .55),
+      inset 0 0 18px rgba(255, 214, 112, .25);
+  }
+
+  @keyframes halo {
+    0%, 100% { opacity: .72; transform: translateX(-50%) scale(.98); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+  }
+
+  .scene-badge {
+    position: absolute;
+    z-index: 5;
+    top: clamp(12px, 2.4vh, 24px);
+    right: clamp(12px, 2.6vw, 28px);
+    padding: 5px 8px;
+    border: 1px solid var(--line);
+    background: rgba(7, 6, 11, .55);
+    backdrop-filter: blur(6px);
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .18em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .scene-note {
+    display: none;
+  }
+
+  /* ---------- Titre ---------- */
+
+  .hero-copy {
+    position: relative;
+    z-index: 5;
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  .eyebrow {
+    margin: 0 0 10px;
+    font-family: var(--mono);
+    font-size: clamp(8px, 1.1vw, 10px);
+    letter-spacing: .34em;
+    color: var(--gold);
+    text-transform: uppercase;
+    text-shadow: 0 0 18px rgba(216, 169, 75, .35);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(34px, 7.4vw, 82px);
+    line-height: .96;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #fff4d0 0%, var(--gold-hi) 26%, var(--gold) 62%, #8b6122 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, .55)) drop-shadow(0 0 34px rgba(216, 169, 75, .28));
+    animation: shimmer 9s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { filter: drop-shadow(0 4px 0 rgba(0, 0, 0, .55)) drop-shadow(0 0 24px rgba(216, 169, 75, .22)); }
+    50% { filter: drop-shadow(0 4px 0 rgba(0, 0, 0, .55)) drop-shadow(0 0 46px rgba(255, 213, 115, .4)); }
+  }
+
+  .divider {
+    display: flex;    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 14px auto 10px;
+    width: min(420px, 80%);
+    color: var(--gold);
+  }
+
+  .divider::before,
+  .divider::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, var(--line), transparent);
+  }
+
+  .divider i {
+    width: 7px;
+    height: 7px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 14px rgba(216, 169, 75, .8);
+  }
+
+  .sub {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: clamp(9px, 1.35vw, 12px);
+    letter-spacing: .30em;
+    color: #ffcf9a;
+    text-transform: uppercase;
+  }
+
+  .epilogue {
+    max-width: 68ch;
+    margin: 16px auto 0;
+    font-family: var(--display);
+    font-size: clamp(14px, 1.65vw, 18px);
+    line-height: 1.62;
+    color: rgba(236, 223, 198, .8);
+    text-wrap: pretty;
+  }
+
+  .epilogue em {
+    color: var(--gold-hi);
+    font-style: normal;
+  }
+
+  /* ---------- Contenu ---------- */
+
+  .content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(270px, .88fr);
+    gap: clamp(12px, 2vw, 20px);
+    margin-top: clamp(20px, 4vh, 38px);
+    align-items: start;
+  }
+
+  .col { display: grid; gap: clamp(12px, 2vw, 20px); }
+
+  .panel {
+    position: relative;
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, .025), transparent 18%),
+      var(--panel);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .34), inset 0 1px 0 rgba(255, 255, 255, .035);
+  }
+
+  .panel::before,
+  .panel::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-color: var(--gold);
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  .panel::before {
+    top: -1px;
+    left: -1px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+
+  .panel::after {
+    right: -1px;
+    bottom: -1px;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .panel-kicker {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .24em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .panel-meta {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .1em;
+    color: var(--muted-2);
+    text-align: right;
+  }
+
+  /* ---------- Stats ---------- */
+
+  .stats {
+    position: relative;
+    max-height: min(64vh, 700px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(216, 169, 75, .55) rgba(255, 255, 255, .04);
+    padding: 0 16px 84px;
+  }
+
+  .stats::-webkit-scrollbar { width: 8px; }
+  .stats::-webkit-scrollbar-track { background: rgba(255, 255, 255, .035); }
+  .stats::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+    border-radius: 8px;
+    border: 2px solid #0d0a14;
+  }
+
+  .stats:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .stat-hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 0 12px;
+  }
+
+  .level {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+    background:
+      radial-gradient(circle at 50% 30%, rgba(255, 230, 163, .22), transparent 62%),
+      rgba(0, 0, 0, .25);
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    font-family: var(--display);
+    font-size: 28px;
+    color: var(--gold-hi);
+    text-shadow: 0 0 18px rgba(255, 214, 112, .5);
+  }
+
+  .stat-hero .name {
+    font-family: var(--display);
+    font-size: clamp(19px, 2.4vw, 25px);
+    line-height: 1.1;
+    color: var(--parchment);
+  }
+
+  .stat-hero .muted { margin-top: 4px; font-size: 11px; color: var(--muted); }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+
+  .stat {
+    padding: 9px 10px;
+    border: 1px solid rgba(255, 255, 255, .055);
+    background: rgba(0, 0, 0, .18);
+    border-radius: 4px;
+  }
+
+  .stat span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .16em;
+    color: var(--muted-2);
+    text-transform: uppercase;
+  }
+
+  .stat b {
+    display: block;
+    margin-top: 3px;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-hi);
+  }
+
+  .stat b small { font-size: 9px; color: var(--muted); font-weight: 400; }
+
+  h3 {
+    margin: 18px 0 9px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .24em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  h3:first-of-type { margin-top: 14px; }
+
+  .lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 7px;
+  }
+
+  .lines li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .lines li b {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--parchment);
+    text-align: right;
+  }
+
+  .meter { margin-bottom: 12px; }
+  .meter:last-child { margin-bottom: 0; }
+
+  .meter-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .meter-head b {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gold-hi);
+  }
+
+  .bar {
+    position: relative;
+    height: 6px;
+    margin: 5px 0 4px;
+    background: rgba(255, 255, 255, .06);
+    overflow: hidden;
+    border-radius: 1px;
+  }
+
+  .bar i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--v, 0%);
+    background: linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-hi));
+    box-shadow: 0 0 12px rgba(216, 169, 75, .35);
+  }
+
+  .bar.ember i { background: linear-gradient(90deg, #7a2c1a, var(--ember), #ffd09a); }
+  .bar.blue i { background: linear-gradient(90deg, #244a6b, var(--blue), #c7e5ff); }
+
+  .meter small { font-family: var(--mono); font-size: 9px; color: var(--muted-2); }
+
+  .guardians {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(216, 169, 75, .4) transparent;
+  }
+
+  .guardians::-webkit-scrollbar { width: 6px; }
+  .guardians::-webkit-scrollbar-thumb { background: rgba(216, 169, 75, .4); border-radius: 4px; }
+
+  .guardian {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 86px 74px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, .04);
+    font-size: 11px;
+  }
+
+  .guardian:last-child { border-bottom: 0; }
+
+  .guardian .floor {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted-2);
+  }
+
+  .guardian .gname {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--parchment);
+  }
+
+  .guardian .gbar {
+    height: 4px;
+    background: rgba(255, 255, 255, .06);
+  }
+
+  .guardian .gbar i {
+    display: block;
+    height: 100%;
+    width: var(--v, 0%);
+    background: linear-gradient(90deg, #6b4a16, var(--gold));
+  }
+
+  .guardian .score {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .guardian.final .gname { color: var(--gold-hi); }
+  .guardian.final .gbar i { background: linear-gradient(90deg, #7a2c1a, var(--ember)); }
+
+  .economy {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .coin {
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, .055);
+    background: rgba(0, 0, 0, .18);
+    text-align: center;
+    border-radius: 4px;
+  }
+
+  .coin span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .14em;
+    color: var(--muted-2);
+    text-transform: uppercase;
+  }
+
+  .coin b {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--gold-hi);
+  }
+
+  .scroll-hint {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    margin: 0 -16px -84px;
+    background: linear-gradient(0deg, rgba(13, 10, 20, .98) 30%, transparent);
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .2em;
+    color: var(--muted-2);
+    pointer-events: none;
+    transition: opacity .3s ease;
+  }
+
+  .scroll-hint.hidden { opacity: 0; }
+
+  /* ---------- Équipement ---------- */
+
+  .gear { padding: 6px 16px 16px; }
+
+  .gear-item {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr) auto;
+    gap: 9px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, .045);
+  }
+
+  .gear-item:last-child { border-bottom: 0; }
+
+  .rarity {
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor;
+  }
+
+  .r-common { color: #9aa0a6; }
+  .r-uncommon { color: #6fbf73; }
+  .r-rare { color: #4f9cff; }
+  .r-epic { color: #b06bff; }
+  .r-legendary { color: #ffb347; }
+
+  .gear-item .slot {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .13em;
+    color: var(--muted-2);
+    text-transform: uppercase;
+  }
+
+  .gear-item .item-name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--parchment);
+  }
+
+  .gear-item .item-stat {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+
+  .gear-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line-soft);
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted-2);
+    letter-spacing: .08em;
+  }
+
+  .gear-total b { color: var(--gold-hi); font-weight: 500; }
+
+  /* ---------- Codex ---------- */
+
+  .codex { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 14px 16px 16px; }
+
+  .ring {
+    --v: 0;
+    --ring: var(--gold);
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: conic-gradient(var(--ring) calc(var(--v) * 1%), rgba(255, 255, 255, .07) 0);
+    position: relative;
+  }
+
+  .ring::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: #0d0a14;
+  }
+
+  .ring b {
+    position: relative;
+    z-index: 1;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold-hi);
+  }
+
+  .ring-label {
+    display: block;
+    margin-top: 6px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 7px;
+    letter-spacing: .1em;
+    color: var(--muted-2);
+    text-transform: uppercase;
+  }
+
+  .milestones { padding: 4px 16px 16px; }
+
+  .milestone {
+    position: relative;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 10px;
+    padding: 7px 0 7px 14px;
+    border-left: 1px solid rgba(216, 169, 75, .25);
+    margin-left: 2px;
+  }
+
+  .milestone::before {
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: 13px;
+    width: 5px;
+    height: 5px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 8px rgba(216, 169, 75, .6);
+  }
+
+  .milestone .floor {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--gold);
+  }
+
+  .milestone .what { font-size: 11px; color: var(--muted); line-height: 1.45; }
+
+  .milestone.final::before { background: var(--ember); box-shadow: 0 0 10px var(--ember); }
+  .milestone.final .floor { color: #ffb08a; }
+
+  /* ---------- Actions ---------- */
+
+  .actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 26px calc(clamp(14px, 3vw, 30px) * -1) 0;
+    padding: 14px clamp(14px, 3vw, 30px) calc(14px + env(safe-area-inset-bottom));
+    background: linear-gradient(0deg, rgba(7, 6, 11, .98) 32%, rgba(7, 6, 11, .86) 68%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .btn {
+    position: relative;
+    min-height: 44px;
+    padding: 12px 20px;
+    border: 1px solid var(--line);
+    background: rgba(24, 18, 32, .72);
+    color: var(--parchment);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+  }
+
+  .btn:hover { border-color: var(--gold); background: rgba(46, 33, 20, .72); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--gold-hi);
+    outline-offset: 3px;
+  }
+
+  .btn.primary {
+    border-color: rgba(255, 230, 163, .7);
+    background: linear-gradient(180deg, #ffe6a3, #d8a94b 55%, #a97b2e);
+    color: #1a1206;
+    box-shadow: 0 0 26px rgba(216, 169, 75, .28), inset 0 1px 0 rgba(255, 255, 255, .55);
+  }
+
+  .btn.primary:hover {
+    background: linear-gradient(180deg, #fff2c8, #e6b95b 55%, #b88734);
+    box-shadow: 0 0 38px rgba(255, 214, 112, .45), inset 0 1px 0 rgba(255, 255, 255, .65);
+  }
+
+  .hint {
+    flex-basis: 100%;
+    margin: 2px 0 0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .12em;
+    color: var(--muted-2);
+  }
+
+  /* ---------- Mode sans fin ---------- */
+
+  .endless {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+      radial-gradient(700px 420px at 50% 38%, rgba(216, 169, 75, .13), transparent 66%),
+      rgba(5, 4, 9, .96);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease, visibility .5s;
+  }
+
+  .endless.open { opacity: 1; visibility: visible; }
+
+  .endless-inner { max-width: 620px; text-align: center; }
+
+  .endless h2 {
+    margin: 0;
+    font-family: var(--display);
+    font-size: clamp(30px, 6vw, 56px);
+    line-height: 1;
+    letter-spacing: .04em;
+    color: var(--gold-hi);
+    text-shadow: 0 0 36px rgba(216, 169, 75, .35);
+  }
+
+  .endless p {
+    margin: 16px auto 24px;
+    max-width: 54ch;
+    font-family: var(--display);
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(236, 223, 198, .75);
+  }
+
+  /* ---------- Toast ---------- */
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 92px;
+    z-index: 60;
+    transform: translate(-50%, 16px);
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    background: rgba(13, 10, 20, .96);
+    color: var(--gold-hi);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s ease, transform .3s ease, visibility .3s;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+  }
+
+  .toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+
+  /* ---------- Responsive ---------- */
+
+  @media (max-width: 900px) {
+    .content { grid-template-columns: 1fr; }
+    .stats { max-height: 58vh; }
+    .figure.statue { width: clamp(58px, 14vw, 110px); }
+    .figure.hero { width: clamp(112px, 30vw, 230px); }
+    .figure.boss { width: clamp(140px, 36vw, 340px); }
+  }
+
+  @media (max-width: 560px) {
+    .ending { padding-bottom: 96px; }
+    .scene { height: clamp(360px, 50vh, 420px); }
+    .figures {
+      display: block;
+      height: 0;
+      max-width: none;
+      padding: 0;
+    }
+    .figure { position: absolute; bottom: 0; }
+    .figure.statue {
+      left: 2vw;
+      width: 22vw;
+      z-index: 1;
+      opacity: .6;
+    }
+    .figure.hero {
+      left: 50%;
+      width: 38vw;
+      z-index: 2;
+      transform: translateX(-50%);
+    }
+    .figure.boss {
+      right: 0;
+      width: 47vw;
+      z-index: 1;
+    }
+    .hero-copy { margin-top: 2px; }
+    .epilogue { font-size: 13px; }
+    .stats {
+      max-height: none;
+      overflow: visible;
+      padding-bottom: 18px;
+    }
+    .scroll-hint { display: none; }
+    .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .guardians { max-height: none; overflow: visible; }
+    .guardian { grid-template-columns: 28px minmax(0, 1fr) 52px 62px; gap: 6px; }
+    .actions {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: 8px;
+      padding-top: 10px;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+    .btn {
+      width: auto;
+      flex: 1;
+      min-height: 42px;
+      padding: 10px 6px;
+      font-size: 8.5px;
+      letter-spacing: .06em;
+    }
+    .hint { display: none; }
+    .scene-badge { font-size: 6px; }
+    .scene-note { display: none; }
+    .only-mobile { display: inline; }
+    .legend { gap: 4px 12px; font-size: 6.5px; letter-spacing: .1em; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<main class="ending" id="ending">
+  <div class="scene" aria-hidden="true">
+    <canvas id="sky" width="480" height="240"></canvas>
+    <div class="figures">
+      <div class="figure statue">
+        <canvas id="statue" width="80" height="140" aria-hidden="true"></canvas>
+      </div>
+      <div class="figure hero">
+        <div class="halo"></div>
+        <canvas id="hero" width="112" height="160" aria-hidden="true"></canvas>
+      </div>
+      <div class="figure boss">
+        <canvas id="boss" width="160" height="120" aria-hidden="true"></canvas>
+      </div>
+    </div>
+    <span class="scene-badge">Proposition · 0.21</span>
+    <span class="scene-note">Diorama pixel art · données d'exemple</span>
+  </div>
+
+  <p class="sr-only">Illustration : le héros auréolé se tient entre sa statue et le gardien final déchu, devant un trône brisé.</p>
+
+  <p class="legend" aria-hidden="true">
+    <span>Statue · palier 100</span>
+    <span>Le Marcheur</span>
+    <span>L'Âme Première · déchue</span>
+  </p>
+
+  <header class="hero-copy">
+    <p class="eyebrow">Fin du sentier · palier 100</p>
+    <h1>Le Trône<br class="only-mobile"> est brisé</h1>
+    <div class="divider" aria-hidden="true"><i></i></div>
+    <p class="sub">L'Âme Première est tombée</p>
+    <p class="epilogue">
+      Cent paliers, huit biomes, une âme première. La statue s'élève au camp,
+      le halo ne s'éteint plus, et le sentier <em>continue</em>.
+    </p>
+  </header>
+
+  <section class="content" aria-label="Statistiques de fin de partie">
+    <div class="col">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-kicker">Dossier du héros</span>
+          <span class="panel-meta">Sauvegarde v7 · 0.20.9</span>
+        </div>
+
+        <div class="stats" id="stats" tabindex="0" aria-label="Statistiques du héros, zone défilante">
+          <div class="stat-hero">
+            <div class="level">100</div>
+            <div>
+              <div class="name">Le Marcheur</div>
+              <div class="muted">Légende des âmes · 42 jours · 1 284 000 pas</div>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat"><span>PV max</span><b>48 200</b></div>
+            <div class="stat"><span>ATQ</span><b>6 840</b></div>
+            <div class="stat"><span>VIT</span><b>142</b></div>
+            <div class="stat"><span>Critique</span><b>37 <small>%</small></b></div>
+            <div class="stat"><span>Régén.</span><b>18,4 <small>PV/s</small></b></div>
+            <div class="stat"><span>Ferveur</span><b>100</b></div>
+          </div>
+
+          <h3>Progression</h3>
+          <ul class="lines">
+            <li><span>Paliers franchis</span><b>100</b></li>
+            <li><span>Biomes traversés</span><b>8 / 8</b></li>
+            <li><span>Ennemis vaincus</span><b>3 482</b></li>
+            <li><span>Gardiens vaincus</span><b>124</b></li>
+            <li><span>Série active</span><b>17 jours</b></li>
+          </ul>
+
+          <h3>Télémétrie</h3>
+          <div class="meter">
+            <div class="meter-head"><span>Combats normaux</span><b>98 %</b></div>
+            <div class="bar"><i style="--v:98%"></i></div>
+            <small>3 356 victoires / 3 412 combats · hors farm</small>
+          </div>
+          <div class="meter">
+            <div class="meter-head"><span>Gardiens</span><b>82 %</b></div>
+            <div class="bar ember"><i style="--v:82%"></i></div>
+            <small>124 victoires / 151 tentatives</small>
+          </div>
+          <div class="meter">
+            <div class="meter-head"><span>Palier 100</span><b>1 / 3</b></div>
+            <div class="bar blue"><i style="--v:33%"></i></div>
+            <small>3 tentatives · 1 victoire · L'Âme Première</small>
+          </div>
+          <div class="meter">
+            <div class="meter-head"><span>Durée moyenne</span><b>38,4 s</b></div>
+            <div class="bar"><i style="--v:64%"></i></div>
+            <small>3 563 combats enregistrés · local, sans réseau</small>
+          </div>
+
+          <h3>Gardiens · paliers 81–100</h3>
+          <div class="guardians" id="guardians" aria-label="Tentatives et victoires par gardien"></div>
+
+          <h3>Économie</h3>
+          <div class="economy">
+            <div class="coin"><span>Or</span><b>1 284 500</b></div>
+            <div class="coin"><span>Éclats</span><b>24 / 24</b></div>
+            <div class="coin"><span>Rations</span><b>18 / 30</b></div>
+          </div>
+
+          <div class="scroll-hint" id="scrollHint">Défiler · statistiques complètes ↓</div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="col">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-kicker">Équipement porté</span>
+          <span class="panel-meta">6 pièces · 4 légendaires</span>
+        </div>
+        <div class="gear" id="gear"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-kicker">Collections</span>
+          <span class="panel-meta">Codex</span>
+        </div>
+        <div class="codex">
+          <div>
+            <div class="ring" style="--v:100"><b>110</b></div>
+            <span class="ring-label">Créatures</span>
+          </div>
+          <div>
+            <div class="ring" style="--v:100; --ring:#ffb257"><b>35</b></div>
+            <span class="ring-label">Gardiens</span>
+          </div>
+          <div>
+            <div class="ring" style="--v:100; --ring:#b98cff"><b>6</b></div>
+            <span class="ring-label">Ensembles</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-kicker">Derniers jalons</span>
+          <span class="panel-meta">Journal</span>
+        </div>
+        <div class="milestones">
+          <div class="milestone">
+            <span class="floor">90</span>
+            <span class="what">Jalon franchi · +8 éclats · Légende des âmes</span>
+          </div>
+          <div class="milestone">
+            <span class="floor">100</span>
+            <span class="what">L'Âme Première tombe · titre, aura et statue</span>
+          </div>
+          <div class="milestone final">
+            <span class="floor">Fin</span>
+            <span class="what">Le Trône est brisé · mode sans fin débloqué au palier 101</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <footer class="actions">
+    <button class="btn primary" id="continue">Continuer sans fin</button>
+    <button class="btn" id="export">Exporter les stats · HTML</button>
+    <p class="hint">Écran unique · récompense permanente · export local, sans réseau</p>
+  </footer>
+</main>
+
+<section class="endless" id="endless" aria-hidden="true">
+  <div class="endless-inner">
+    <p class="eyebrow">Mode sans fin</p>
+    <h2>Le sentier continue</h2>
+    <p>
+      Palier <strong>101</strong>. La pression du Trône reste plafonnée à +35 %,
+      les gardiens reviennent, les jalons 125, 150 et 200 approchent.
+      La statue et le halo restent au camp.
+    </p>
+    <button class="btn primary" id="returnEnding">Revoir l'écran de fin</button>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const COLORS = {
+    ink: "#07060b",
+    skyTop: "#05040a",
+    skyMid: "#0c0915",
+    skyLow: "#1a1120",
+    moon: "#f7e7bd",
+    star: "#d9cfb6",
+    stone: "#2a2433",
+    stoneHi: "#3b3249",
+    stoneLo: "#15111c",
+    gold: "#d8a94b",
+    goldHi: "#ffe6a3",
+    goldDeep: "#8a6426",
+    ember: "#ff7a3d",
+    emberHi: "#ffb15c",
+    blood: "#5a1f2a",
+    skin: "#e8d9bd",
+    skinShade: "#c5b191",
+    hair: "#2b2020",
+    steel: "#9aa3b2",
+    steelDark: "#5d6676",
+    leather: "#6b4a2f",
+    boss: "#18121c",
+    bossHi: "#2a2030",
+    bossLo: "#0e0b12",
+    eye: "#ff6a3d"
+  };
+
+  const equipment = [
+    { slot: "Arme", name: "Lame du trône", rarity: "legendary", stat: "+1 240 ATQ · +6 % crit" },
+    { slot: "Tête", name: "Couronne des âmes", rarity: "legendary", stat: "+1 180 PV · +6 % crit" },
+    { slot: "Corps", name: "Harnois du trône", rarity: "legendary", stat: "+3 200 PV · +260 ATQ" },
+    { slot: "Mains", name: "Gantelets de braise", rarity: "epic", stat: "+420 ATQ · +3 % crit" },
+    { slot: "Pieds", name: "Bottes de cime", rarity: "rare", stat: "+12 % VIT" },
+    { slot: "Talisman", name: "Anneau des âmes", rarity: "legendary", stat: "+620 ATQ · +6 % crit" }
+  ];
+
+  const guardians = [
+    [81, "Mnoleg", 2, 1], [82, "L'Âme Première", 3, 1], [83, "Dispater", 1, 1],
+    [84, "Asmodée", 2, 2], [85, "Éreshkigal", 4, 1], [86, "Gloorx Vloq", 1, 1],
+    [87, "Mnoleg", 3, 2], [88, "L'Âme Première", 2, 1], [89, "Dispater", 1, 1],
+    [90, "Asmodée", 2, 1], [91, "Éreshkigal", 3, 1], [92, "Gloorx Vloq", 2, 2],
+    [93, "Mnoleg", 4, 1], [94, "L'Âme Première", 3, 1], [95, "Dispater", 2, 1],
+    [96, "Asmodée", 3, 2], [97, "Éreshkigal", 2, 1], [98, "Gloorx Vloq", 1, 1],
+    [99, "Mnoleg", 4, 2], [100, "L'Âme Première", 3, 1]
+  ];
+
+  const heroGear = {
+    weapon: "legendary",
+    head: "legendary",
+    body: "legendary",
+    hands: "epic",
+    feet: "rare",
+    talisman: "legendary"
+  };
+
+  /* ---------- Helpers ---------- */
+
+  const px = (ctx, x, y, w, h, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  };
+
+  const rarityColor = (r) => ({
+    common: "#9aa0a6",
+    uncommon: "#6fbf73",
+    rare: "#4f9cff",
+    epic: "#b06bff",
+    legendary: "#ffb347"
+  }[r] || "#9aa0a6");
+
+  const rarityLabel = (r) => ({
+    common: "commun",
+    uncommon: "inhabituel",
+    rare: "rare",
+    epic: "épique",
+    legendary: "légendaire"
+  }[r] || r);
+
+  const seeded = (seed) => {
+    let s = seed >>> 0;
+    return () => {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  };
+
+  const pixelCircle = (ctx, cx, cy, r, color) => {
+    ctx.fillStyle = color;
+    for (let y = -r; y <= r; y++) {
+      const span = Math.floor(Math.sqrt(r * r - y * y));
+      ctx.fillRect(Math.round(cx - span), Math.round(cy + y), span * 2 + 1, 1);
+    }
+  };
+
+  const pixelRing = (ctx, cx, cy, r, color, step = 0.045) => {
+    ctx.fillStyle = color;
+    for (let a = 0; a < Math.PI * 2; a += step) {
+      ctx.fillRect(
+        Math.round(cx + Math.cos(a) * r),
+        Math.round(cy + Math.sin(a) * r),
+        1,
+        1
+      );
+    }
+  };
+
+  /* ---------- Décor ---------- */
+
+  const sky = document.getElementById("sky");
+  const skyCtx = sky.getContext("2d");
+  skyCtx.imageSmoothingEnabled = false;
+
+  const stars = (() => {
+    const rnd = seeded(4217);
+    return Array.from({ length: 54 }, () => ({
+      x: Math.floor(rnd() * 480),
+      y: Math.floor(rnd() * 150),
+      a: 0.18 + rnd() * 0.5,
+      s: rnd() < 0.16 ? 2 : 1
+    }));
+  })();
+
+  const embers = (() => {
+    const rnd = seeded(991);
+    return Array.from({ length: 34 }, () => ({
+      x: rnd() * 480,
+      y: 150 + rnd() * 90,
+      vy: 8 + rnd() * 16,
+      sway: 4 + rnd() * 10,
+      phase: rnd() * Math.PI * 2,
+      size: rnd() < 0.24 ? 2 : 1,
+      hot: rnd() < 0.3
+    }));
+  })();
+
+  const drawSkyBase = () => {
+    const bands = [
+      [0, 42, "#030208"],
+      [42, 30, "#05040c"],
+      [72, 28, "#080610"],
+      [100, 26, "#0b0815"],
+      [126, 24, "#100b19"],
+      [150, 24, "#171020"],
+      [174, 30, "#1e1426"],
+      [204, 36, "#241828"]
+    ];
+    bands.forEach(([y, h, c]) => px(skyCtx, 0, y, 480, h, c));
+
+    // Lune pixel et halo diffus.
+    const glow = skyCtx.createRadialGradient(386, 52, 6, 386, 52, 62);
+    glow.addColorStop(0, "rgba(247, 231, 189, .20)");
+    glow.addColorStop(.45, "rgba(247, 231, 189, .07)");
+    glow.addColorStop(1, "rgba(247, 231, 189, 0)");
+    skyCtx.fillStyle = glow;
+    skyCtx.fillRect(314, -10, 144, 124);
+
+    pixelCircle(skyCtx, 386, 52, 15, "#e9d9b0");
+    pixelCircle(skyCtx, 386, 52, 12, COLORS.moon);
+    px(skyCtx, 380, 45, 4, 3, "#e0cfa4");
+    px(skyCtx, 389, 53, 3, 3, "#e0cfa4");
+    px(skyCtx, 386, 58, 5, 2, "#d6c496");
+    px(skyCtx, 382, 50, 2, 2, "#f9edcb");
+
+    stars.forEach((st) => {
+      const twinkle = st.a * (0.8 + Math.sin(st.x) * 0.2);
+      skyCtx.fillStyle = `rgba(217, 207, 182, ${twinkle})`;
+      skyCtx.fillRect(st.x, st.y, st.s, st.s);
+    });
+
+    // Brume basse.
+    for (let i = 0; i < 5; i++) {
+      px(skyCtx, 0, 168 + i * 7, 480, 2, `rgba(120, 96, 120, ${0.028 + i * 0.008})`);
+    }
+  };
+
+  const drawRuins = () => {
+    const column = (x, top) => {
+      let y = top;
+      let i = 0;
+      while (y < 202) {
+        const h = 9 + (i % 3) * 3;
+        const w = 24 - (i % 4) * 2;
+        px(skyCtx, x, y, w, h - 1, i % 2 ? COLORS.stone : COLORS.stoneLo);
+        px(skyCtx, x + 2, y + 1, w - 5, 2, COLORS.stoneHi);
+        if (i === 2) px(skyCtx, x + 4, y + 4, 2, 7, "rgba(0, 0, 0, .35)");
+        y += h;
+        i++;
+      }
+      px(skyCtx, x - 4, top - 4, 30, 5, COLORS.stoneHi);
+      px(skyCtx, x + 5, top - 10, 10, 7, COLORS.stoneLo);
+      px(skyCtx, x + 16, top - 14, 6, 5, COLORS.stone);
+    };
+    column(8, 70);
+    column(448, 62);
+
+    // Rosace brisée au fond.
+    pixelRing(skyCtx, 240, 92, 58, "#2a2433", 0.03);
+    pixelRing(skyCtx, 240, 92, 55, "#1a1523", 0.05);
+    pixelRing(skyCtx, 240, 92, 40, "rgba(216, 169, 75, .10)", 0.06);
+    px(skyCtx, 238, 36, 4, 112, "#1a1523");
+    px(skyCtx, 184, 90, 112, 4, "#1a1523");
+    px(skyCtx, 196, 48, 88, 3, "rgba(216, 169, 75, .12)");
+    // Éclats manquants.
+    px(skyCtx, 188, 44, 14, 10, "#05040c");
+    px(skyCtx, 278, 62, 12, 8, "#05040c");
+    px(skyCtx, 300, 120, 16, 9, "#080610");
+
+    // Trône brisé.
+    px(skyCtx, 204, 126, 72, 10, COLORS.stoneLo);
+    px(skyCtx, 210, 70, 12, 58, COLORS.stone);
+    px(skyCtx, 258, 70, 12, 58, COLORS.stone);
+    px(skyCtx, 222, 68, 36, 6, COLORS.stoneHi);
+    px(skyCtx, 222, 78, 36, 5, COLORS.stoneLo);
+    px(skyCtx, 228, 62, 6, 8, COLORS.stone);
+    px(skyCtx, 242, 54, 6, 16, COLORS.stone);
+    px(skyCtx, 258, 60, 6, 10, COLORS.stone);
+    px(skyCtx, 236, 58, 7, 4, COLORS.goldDeep);
+    px(skyCtx, 252, 54, 7, 4, COLORS.goldDeep);
+    px(skyCtx, 210, 104, 2, 22, "rgba(216, 169, 75, .38)");
+    px(skyCtx, 222, 112, 2, 12, "rgba(216, 169, 75, .24)");
+    px(skyCtx, 266, 96, 2, 30, "rgba(216, 169, 75, .3)");
+
+    // Sol.
+    px(skyCtx, 0, 200, 480, 40, "#110d16");
+    px(skyCtx, 0, 200, 480, 3, "#2a1e2c");
+    for (let i = 0; i < 20; i++) {
+      const x = i * 25 + 3;
+      px(skyCtx, x, 206 + (i % 3) * 7, 19, 2, "#19131f");
+      px(skyCtx, x + 9, 214 + (i % 2) * 6, 9, 2, "#0b0810");
+    }
+
+    // Décombres.
+    px(skyCtx, 34, 192, 14, 8, COLORS.stoneLo);
+    px(skyCtx, 48, 196, 10, 4, COLORS.stone);
+    px(skyCtx, 420, 194, 16, 6, COLORS.stoneLo);
+    px(skyCtx, 400, 197, 8, 3, COLORS.stone);
+
+    // Fissures de lave.
+    const cracks = [
+      [[180, 204], [174, 214], [178, 226], [168, 236]],
+      [[276, 204], [286, 214], [282, 228], [292, 238]],
+      [[120, 208], [112, 220], [118, 232]],
+      [[340, 206], [348, 218], [344, 230]]
+    ];
+    cracks.forEach((line) => {
+      line.forEach(([x, y], i) => {
+        if (i === 0) return;
+        const [px0, py0] = line[i - 1];
+        skyCtx.strokeStyle = "rgba(255, 122, 61, .3)";
+        skyCtx.lineWidth = 1;
+        skyCtx.beginPath();
+        skyCtx.moveTo(px0 + 0.5, py0 + 0.5);
+        skyCtx.lineTo(x + 0.5, y + 0.5);
+        skyCtx.stroke();
+      });
+    });
+  };
+
+  const drawSky = (t) => {
+    drawSkyBase();
+    drawRuins();
+
+    embers.forEach((e) => {
+      const y = ((e.y - t * e.vy) % 110 + 110) % 110 + 140;
+      const x = e.x + Math.sin(t * 0.7 + e.phase) * e.sway;
+      const alpha = Math.max(0.08, 1 - (y - 140) / 110);
+      skyCtx.fillStyle = e.hot
+        ? `rgba(255, 177, 92, ${alpha * 0.85})`
+        : `rgba(255, 122, 61, ${alpha * 0.55})`;
+      skyCtx.fillRect(Math.round(x), Math.round(y), e.size, e.size);
+    });
+  };
+
+  /* ---------- Héros ---------- */
+
+  const hero = document.getElementById("hero");
+  const hctx = hero.getContext("2d");
+  hctx.imageSmoothingEnabled = false;
+
+  const drawHero = (t) => {
+    hctx.clearRect(0, 0, 112, 160);
+
+    // Ombre au sol.
+    hctx.fillStyle = "rgba(0, 0, 0, .5)";
+    hctx.beginPath();
+    hctx.ellipse(56, 152, 34, 5, 0, 0, Math.PI * 2);
+    hctx.fill();
+
+    // Cape.
+    px(hctx, 34, 90, 44, 10, COLORS.blood);
+    px(hctx, 30, 100, 52, 34, COLORS.blood);
+    px(hctx, 34, 134, 44, 12, "#451722");
+    px(hctx, 38, 104, 5, 32, "#7a2a36");
+    px(hctx, 70, 104, 5, 32, "#7a2a36");
+    px(hctx, 32, 138, 10, 6, "#3a121c");
+    px(hctx, 70, 138, 10, 6, "#3a121c");
+
+    // Jambes.
+    px(hctx, 44, 118, 10, 28, COLORS.steelDark);
+    px(hctx, 58, 118, 10, 28, COLORS.steelDark);
+    px(hctx, 46, 122, 3, 18, "#8b95a6");
+    px(hctx, 60, 122, 3, 18, "#8b95a6");
+
+    // Bottes.
+    const bootColor = rarityColor(heroGear.feet);
+    px(hctx, 40, 144, 14, 8, bootColor);
+    px(hctx, 58, 144, 14, 8, bootColor);
+    px(hctx, 39, 150, 17, 3, COLORS.goldDeep);
+    px(hctx, 57, 150, 17, 3, COLORS.goldDeep);
+
+    // Torse et armure.
+    const bodyColor = rarityColor(heroGear.body);
+    px(hctx, 40, 90, 32, 30, bodyColor);
+    px(hctx, 43, 93, 7, 22, "#f3d685");
+    px(hctx, 66, 95, 3, 20, COLORS.goldDeep);
+    px(hctx, 48, 102, 16, 3, COLORS.goldDeep);
+    px(hctx, 52, 108, 8, 8, COLORS.goldHi);
+    px(hctx, 55, 110, 2, 4, "#7a4d13");
+
+    // Ceinture.
+    px(hctx, 40, 116, 32, 5, "#26170f");
+    px(hctx, 52, 116, 8, 5, COLORS.gold);
+    px(hctx, 54, 118, 4, 2, "#5e3d0f");
+
+    // Épaulières.
+    const armor = rarityColor(heroGear.head);
+    px(hctx, 28, 86, 13, 11, armor);
+    px(hctx, 71, 86, 13, 11, armor);
+    px(hctx, 29, 86, 10, 3, COLORS.goldHi);
+    px(hctx, 72, 86, 10, 3, COLORS.goldHi);
+    px(hctx, 30, 94, 9, 2, COLORS.goldDeep);
+    px(hctx, 73, 94, 9, 2, COLORS.goldDeep);
+
+    // Bras et gantelets.
+    px(hctx, 30, 96, 7, 24, COLORS.steelDark);
+    px(hctx, 75, 96, 7, 24, COLORS.steelDark);
+    px(hctx, 30, 118, 7, 6, COLORS.leather);
+    px(hctx, 75, 118, 7, 6, COLORS.leather);
+
+    // Tête.
+    px(hctx, 46, 66, 20, 18, COLORS.skin);
+    px(hctx, 46, 78, 20, 4, COLORS.skinShade);
+    px(hctx, 45, 62, 22, 6, COLORS.hair);
+    px(hctx, 45, 68, 2, 10, COLORS.hair);
+    px(hctx, 65, 68, 2, 10, COLORS.hair);
+    px(hctx, 50, 72, 5, 3, "#2a1d1a");
+    px(hctx, 58, 72, 5, 3, "#2a1d1a");
+    px(hctx, 51, 73, 2, 1, "#f5e9cf");
+    px(hctx, 59, 73, 2, 1, "#f5e9cf");
+    px(hctx, 54, 80, 6, 2, "#a38570");
+    px(hctx, 49, 76, 2, 2, COLORS.skinShade);
+
+    // Couronne.
+    const headR = heroGear.head;
+    if (headR === "legendary" || headR === "epic") {
+      px(hctx, 44, 58, 24, 5, rarityColor(headR));
+      px(hctx, 46, 51, 3, 8, COLORS.goldHi);
+      px(hctx, 53, 48, 3, 11, COLORS.goldHi);
+      px(hctx, 60, 50, 3, 9, COLORS.goldHi);
+      px(hctx, 65, 54, 2, 5, COLORS.goldHi);
+      px(hctx, 53, 46, 3, 3, "#fff3c8");
+    }
+
+    // Épée.
+    const blade = rarityColor(heroGear.weapon);
+    px(hctx, 88, 74, 4, 76, blade);
+    px(hctx, 89, 78, 1, 68, "#f6f9ff");
+    px(hctx, 86, 104, 8, 3, COLORS.gold);
+    px(hctx, 84, 146, 12, 4, COLORS.goldDeep);
+    px(hctx, 87, 138, 6, 7, COLORS.leather);
+    px(hctx, 88, 133, 4, 5, COLORS.gold);
+
+    // Lueur de lame.
+    const glow = 0.16 + Math.sin(t * 1.4) * 0.05;
+    hctx.fillStyle = `rgba(255, 230, 163, ${glow})`;
+    hctx.fillRect(84, 72, 12, 80);
+
+    // Poussière dorée.
+    for (let i = 0; i < 7; i++) {
+      const yy = 80 + ((t * 10 + i * 12) % 68);
+      const xx = 34 + Math.sin(t + i * 1.7) * 5 + i * 7;
+      hctx.fillStyle = "rgba(255, 214, 112, .55)";
+      hctx.fillRect(Math.round(xx), Math.round(yy), 1, 1);
+    }
+  };
+
+  /* ---------- Statue ---------- */
+
+  const statue = document.getElementById("statue");
+  const sctx = statue.getContext("2d");
+  sctx.imageSmoothingEnabled = false;
+
+  const drawStatue = () => {
+    sctx.clearRect(0, 0, 80, 140);
+
+    // Socle.
+    px(sctx, 14, 118, 52, 12, COLORS.stone);
+    px(sctx, 9, 130, 62, 8, COLORS.stoneLo);
+    px(sctx, 14, 118, 52, 2, COLORS.stoneHi);
+    px(sctx, 16, 124, 48, 2, COLORS.goldDeep);
+    px(sctx, 8, 137, 64, 3, "#0d0a12");
+
+    // Plaque et chiffres 100.
+    px(sctx, 28, 125, 24, 5, "#1a1522");
+    px(sctx, 31, 126, 1, 3, COLORS.goldDeep);
+    px(sctx, 35, 126, 3, 1, COLORS.goldDeep);
+    px(sctx, 35, 126, 1, 3, COLORS.goldDeep);
+    px(sctx, 35, 128, 3, 1, COLORS.goldDeep);
+    px(sctx, 38, 126, 1, 3, COLORS.goldDeep);
+    px(sctx, 41, 126, 3, 1, COLORS.goldDeep);
+    px(sctx, 41, 126, 1, 3, COLORS.goldDeep);
+    px(sctx, 41, 128, 3, 1, COLORS.goldDeep);
+    px(sctx, 44, 126, 1, 3, COLORS.goldDeep);
+    px(sctx, 47, 126, 3, 1, COLORS.goldDeep);
+    px(sctx, 47, 126, 1, 3, COLORS.goldDeep);
+    px(sctx, 47, 128, 3, 1, COLORS.goldDeep);
+    px(sctx, 50, 126, 1, 3, COLORS.goldDeep);
+
+    // Jambes.
+    px(sctx, 33, 94, 8, 24, COLORS.stone);
+    px(sctx, 44, 94, 8, 24, COLORS.stone);
+    px(sctx, 31, 116, 12, 4, COLORS.stoneLo);
+    px(sctx, 43, 116, 12, 4, COLORS.stoneLo);
+    px(sctx, 35, 98, 2, 16, "#4a4058");
+    px(sctx, 46, 98, 2, 16, "#4a4058");
+
+    // Torso.
+    px(sctx, 30, 72, 26, 24, COLORS.stoneHi);
+    px(sctx, 33, 76, 20, 3, "#4a4058");
+    px(sctx, 38, 82, 10, 9, COLORS.stone);
+    px(sctx, 41, 85, 4, 4, COLORS.goldDeep);
+    px(sctx, 31, 88, 24, 2, COLORS.stoneLo);
+    px(sctx, 31, 74, 2, 26, "rgba(255, 230, 163, .16)");
+    px(sctx, 35, 56, 1, 16, "rgba(255, 230, 163, .20)");
+
+    // Bras.
+    px(sctx, 23, 76, 7, 22, COLORS.stone);
+    px(sctx, 56, 76, 7, 22, COLORS.stone);
+    px(sctx, 24, 94, 6, 6, COLORS.stoneLo);
+    px(sctx, 56, 94, 6, 6, COLORS.stoneLo);
+
+    // Épée pointée vers le sol.
+    px(sctx, 61, 62, 4, 58, COLORS.stoneHi);
+    px(sctx, 62, 66, 1, 50, "#4a4058");
+    px(sctx, 58, 74, 10, 3, COLORS.stoneLo);
+    px(sctx, 61, 116, 4, 5, COLORS.stone);
+    px(sctx, 59, 120, 8, 3, COLORS.stoneLo);
+
+    // Tête.
+    px(sctx, 34, 54, 15, 16, COLORS.stoneHi);
+    px(sctx, 34, 64, 15, 4, COLORS.stone);
+    px(sctx, 36, 58, 3, 3, "#0e0b12");
+    px(sctx, 44, 58, 3, 3, "#0e0b12");
+    px(sctx, 39, 66, 5, 2, "#4a4058");
+    px(sctx, 33, 50, 17, 5, COLORS.stoneLo);
+
+    // Halo gravé.
+    pixelRing(sctx, 41, 62, 16, "rgba(216, 169, 75, .22)", 0.09);
+    pixelRing(sctx, 41, 62, 17, "rgba(216, 169, 75, .12)", 0.12);
+
+    // Mousse et fissures.
+    px(sctx, 18, 128, 9, 2, "#3c4a35");
+    px(sctx, 51, 127, 8, 2, "#3c4a35");
+    px(sctx, 30, 20, 2, 10, "rgba(255, 255, 255, .04)");
+    px(sctx, 52, 30, 1, 14, "rgba(0, 0, 0, .35)");
+    px(sctx, 40, 108, 1, 10, "rgba(0, 0, 0, .3)");
+  };
+
+  /* ---------- Boss déchu ---------- */
+
+  const boss = document.getElementById("boss");
+  const bctx = boss.getContext("2d");
+  bctx.imageSmoothingEnabled = false;
+
+  const drawBoss = (t) => {
+    bctx.clearRect(0, 0, 160, 120);
+
+    // Ombre.
+    bctx.fillStyle = "rgba(0, 0, 0, .55)";
+    bctx.beginPath();
+    bctx.ellipse(80, 112, 68, 7, 0, 0, Math.PI * 2);
+    bctx.fill();
+
+    // Ailes brisées.
+    const wing = (flip) => {
+      const base = flip ? 160 : 0;
+      const dir = flip ? -1 : 1;
+      for (let i = 0; i < 6; i++) {
+        const x = base + dir * (4 + i * 7);
+        const y = 54 + i * 5;
+        const w = 7 + i * 2;
+        const h = 30 - i * 3;
+        px(bctx, x, y, w, h, i % 2 ? "#221828" : "#1a1320");
+        px(bctx, x + dir * 2, y + 3, 2, h - 8, "#33253d");
+      }
+      px(bctx, base + dir * 2, 86, 40, 4, "#120e17");
+      px(bctx, base + dir * 10, 90, 30, 3, "#0e0b12");
+    };
+    wing(false);
+    wing(true);
+
+    // Halo brisé.
+    pixelRing(bctx, 118, 44, 32, "rgba(216, 169, 75, .16)", 0.12);
+    px(bctx, 88, 12, 10, 2, "rgba(216, 169, 75, .12)");
+
+    // Corps affaissé.
+    px(bctx, 18, 78, 124, 28, COLORS.boss);
+    px(bctx, 14, 88, 130, 20, COLORS.bossLo);
+    px(bctx, 26, 64, 94, 18, COLORS.bossHi);
+    px(bctx, 34, 56, 70, 12, COLORS.boss);
+    px(bctx, 34, 84, 5, 18, "#241a28");
+    px(bctx, 52, 92, 4, 12, "#241a28");
+    px(bctx, 70, 94, 4, 10, "#241a28");
+    px(bctx, 88, 92, 4, 12, "#241a28");
+    px(bctx, 108, 96, 4, 8, "#241a28");
+
+    // Bras cassé.
+    px(bctx, 18, 84, 40, 9, COLORS.bossHi);
+    px(bctx, 10, 90, 12, 6, COLORS.boss);
+    px(bctx, 4, 94, 8, 4, "#3a2c42");
+    px(bctx, 0, 96, 6, 3, "#56425f");
+    px(bctx, 2, 99, 4, 2, "#56425f");
+
+    // Tête massive.
+    px(bctx, 96, 42, 44, 28, COLORS.bossHi);
+    px(bctx, 99, 40, 38, 5, COLORS.boss);
+    px(bctx, 100, 50, 12, 6, "#0a070d");
+    px(bctx, 124, 50, 12, 6, "#0a070d");
+    px(bctx, 103, 52, 6, 3, COLORS.eye);
+    px(bctx, 127, 52, 6, 3, COLORS.eye);
+    px(bctx, 104, 60, 28, 8, "#241a28");
+    px(bctx, 108, 64, 4, 2, "#0a070d");
+    px(bctx, 116, 64, 4, 2, "#0a070d");
+    px(bctx, 124, 64, 4, 2, "#0a070d");
+    px(bctx, 108, 62, 20, 1, "#56425f");
+    px(bctx, 98, 66, 3, 5, "#3a2c42");
+    px(bctx, 134, 66, 3, 5, "#3a2c42");
+
+    // Cornes longues et brisées.
+    const horn = (x, y, dir) => {
+      for (let i = 0; i < 13; i++) {
+        const tone = i < 3 ? "#56425f" : i < 8 ? "#3a2c42" : "#241a28";
+        px(bctx, x + dir * i * 2.2, y - i * 2.6, 5 - Math.floor(i / 5), 5, tone);
+      }
+      px(bctx, x + dir * 24, y - 32, 3, 3, "#6b5375");
+    };
+    horn(100, 44, -1);
+    horn(136, 44, 1);
+
+    // Couronne brisée.
+    px(bctx, 104, 38, 30, 5, COLORS.goldDeep);
+    px(bctx, 106, 32, 4, 7, COLORS.gold);
+    px(bctx, 114, 28, 4, 11, COLORS.gold);
+    px(bctx, 123, 33, 4, 6, COLORS.gold);
+    px(bctx, 132, 36, 3, 3, COLORS.goldDeep);
+    px(bctx, 138, 30, 3, 9, COLORS.goldDeep);
+    px(bctx, 140, 34, 3, 4, "#5a3a13");
+
+    // Épée brisée plantée.
+    px(bctx, 146, 10, 4, 62, COLORS.steelDark);
+    px(bctx, 147, 14, 1, 52, COLORS.steel);
+    px(bctx, 140, 70, 16, 4, COLORS.goldDeep);
+    px(bctx, 143, 38, 3, 12, "#3d1f24");
+    px(bctx, 136, 6, 3, 12, COLORS.steelDark);
+
+    // Fissures lumineuses.
+    const pulse = 0.3 + Math.sin(t * 1.2) * 0.12;
+    bctx.fillStyle = `rgba(255, 122, 61, ${pulse})`;
+    bctx.fillRect(54, 86, 3, 16);
+    bctx.fillRect(74, 82, 2, 18);
+    bctx.fillRect(94, 88, 3, 14);
+    bctx.fillRect(120, 72, 2, 10);
+    px(bctx, 40, 68, 2, 10, "rgba(216, 169, 75, .32)");
+    px(bctx, 60, 62, 2, 8, "rgba(216, 169, 75, .24)");
+
+    // Fumée.
+    for (let i = 0; i < 5; i++) {
+      const yy = 50 - ((t * 6 + i * 12) % 40);
+      const xx = 96 + i * 10 + Math.sin(t * 0.8 + i) * 5;
+      bctx.fillStyle = `rgba(90, 70, 105, ${0.15 - i * 0.02})`;
+      bctx.fillRect(Math.round(xx), Math.round(yy), 7, 3);
+    }
+  };
+
+  /* ---------- Listes ---------- */
+
+  const gearRoot = document.getElementById("gear");
+  equipment.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "gear-item";
+    row.innerHTML = `
+      <span class="rarity r-${item.rarity}" aria-hidden="true"></span>
+      <span>
+        <span class="slot">${item.slot}</span>
+        <span class="item-name">${item.name}</span>
+      </span>
+      <span class="item-stat">${item.stat}</span>
+    `;
+    gearRoot.appendChild(row);
+  });
+
+  const total = document.createElement("div");
+  total.className = "gear-total";
+  total.innerHTML = `<span>Valeur totale</span><b>4 318 or</b>`;
+  gearRoot.appendChild(total);
+
+  const guardiansRoot = document.getElementById("guardians");
+  guardians.forEach(([floor, name, attempts, wins]) => {
+    const rate = Math.round((wins / attempts) * 100);
+    const row = document.createElement("div");
+    row.className = "guardian" + (floor === 100 ? " final" : "");
+    row.innerHTML = `
+      <span class="floor">${floor}</span>
+      <span class="gname">${name}</span>
+      <span class="gbar" aria-hidden="true"><i style="--v:${rate}%"></i></span>
+      <span class="score">${wins} / ${attempts}</span>
+    `;
+    guardiansRoot.appendChild(row);
+  });
+
+  /* ---------- Animation ---------- */
+
+  let raf = 0;
+  let start = 0;
+
+  const frame = (now) => {
+    if (!start) start = now;
+    const t = (now - start) / 1000;
+    drawSky(t);
+    drawHero(t);
+    drawBoss(t);
+    raf = requestAnimationFrame(frame);
+  };
+
+  const drawStatic = () => {
+    drawSky(0);
+    drawHero(0);
+    drawStatue();
+    drawBoss(0);
+  };
+
+  if (reduced) {
+    drawStatic();
+  } else {
+    drawStatue();
+    requestAnimationFrame(frame);
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (reduced) return;
+    if (document.hidden) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    } else if (!raf) {
+      start = 0;
+      raf = requestAnimationFrame(frame);
+    }
+  });
+
+  /* ---------- Scroll hint ---------- */
+
+  const statsPanel = document.getElementById("stats");
+  const hint = document.getElementById("scrollHint");
+
+  const updateHint = () => {
+    const atEnd = statsPanel.scrollTop + statsPanel.clientHeight >= statsPanel.scrollHeight - 8;
+    hint.classList.toggle("hidden", atEnd);
+  };
+
+  statsPanel.addEventListener("scroll", updateHint, { passive: true });
+  updateHint();
+
+  /* ---------- Toast ---------- */
+
+  const toastRoot = document.getElementById("toast");
+  let toastTimer = 0;
+
+  const toast = (message) => {
+    toastRoot.textContent = message;
+    toastRoot.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastRoot.classList.remove("show"), 3200);
+  };
+
+  /* ---------- Export HTML ---------- */
+
+  const nowLabel = () => new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "long",
+    timeStyle: "short"
+  }).format(new Date());
+
+  const reportHtml = () => {
+    const rows = guardians.map(([floor, name, attempts, wins]) => `
+      <tr class="${floor === 100 ? "final" : ""}">
+        <td>${floor}</td><td>${name}</td><td>${wins} / ${attempts}</td>
+        <td>${Math.round((wins / attempts) * 100)} %</td>
+      </tr>`).join("");
+
+    const gearRows = equipment.map((item) => `
+      <tr>
+        <td>${item.slot}</td><td>${item.name}</td>
+        <td><span class="dot ${item.rarity}"></span>${rarityLabel(item.rarity)}</td>
+        <td>${item.stat}</td>
+      </tr>`).join("");
+
+    return `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marche — Rapport de fin · palier 100</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 18px;
+    background: radial-gradient(900px 500px at 50% -10%, #2a1b0d, transparent 60%), #08070c;
+    color: #ecdfc6;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  main { max-width: 900px; margin: 0 auto; }
+  .eyebrow { margin: 0; font: 10px/1.4 Consolas, monospace; letter-spacing: .28em; color: #d8a94b; text-transform: uppercase; }
+  h1 { margin: 10px 0 4px; font-size: clamp(30px, 6vw, 54px); line-height: 1; color: #ffe6a3; letter-spacing: .03em; text-transform: uppercase; }
+  .sub { margin: 0 0 24px; font: 11px/1.6 Consolas, monospace; letter-spacing: .18em; color: #a89a86; text-transform: uppercase; }
+  h2 { margin: 30px 0 10px; font: 11px/1.4 Consolas, monospace; letter-spacing: .24em; color: #d8a94b; text-transform: uppercase; }
+  table { width: 100%; border-collapse: collapse; font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; }
+  th, td { padding: 8px 9px; border-bottom: 1px solid rgba(216, 169, 75, .16); text-align: left; vertical-align: top; }
+  th { font: 9px/1.4 Consolas, monospace; letter-spacing: .16em; color: #7c7162; text-transform: uppercase; }
+  td:first-child { color: #a89a86; white-space: nowrap; }
+  tr.final td { color: #ffd09a; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .card { padding: 12px; border: 1px solid rgba(216, 169, 75, .18); background: rgba(255, 255, 255, .025); }
+  .card span { display: block; font: 9px/1.4 Consolas, monospace; letter-spacing: .12em; color: #7c7162; text-transform: uppercase; }
+  .card b { display: block; margin-top: 4px; font: 600 17px/1.2 Consolas, monospace; color: #ffe6a3; }
+  .dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; transform: rotate(45deg); background: #9aa0a6; }
+  .dot.rare { background: #4f9cff; } .dot.epic { background: #b06bff; } .dot.legendary { background: #ffb347; }
+  footer { margin-top: 34px; padding-top: 14px; border-top: 1px solid rgba(216, 169, 75, .16); font: 10px/1.6 Consolas, monospace; color: #7c7162; }
+  @media (max-width: 620px) { .grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Marche · fin du sentier · palier 100</p>
+  <h1>Le Trône est brisé</h1>
+  <p class="sub">L'Âme Première est tombée · rapport généré le ${nowLabel()}</p>
+
+  <h2>Héros</h2>
+  <div class="grid">
+    <div class="card"><span>Niveau</span><b>100</b></div>
+    <div class="card"><span>Titre</span><b>Légende des âmes</b></div>
+    <div class="card"><span>PV max</span><b>48 200</b></div>
+    <div class="card"><span>ATQ</span><b>6 840</b></div>
+    <div class="card"><span>VIT</span><b>142</b></div>
+    <div class="card"><span>Critique</span><b>37 %</b></div>
+  </div>
+
+  <h2>Progression</h2>
+  <table>
+    <tr><td>Paliers franchis</td><td>100</td></tr>
+    <tr><td>Biomes</td><td>8 / 8</td></tr>
+    <tr><td>Ennemis vaincus</td><td>3 482</td></tr>
+    <tr><td>Gardiens vaincus</td><td>124</td></tr>
+    <tr><td>Jours de marche</td><td>42</td></tr>
+    <tr><td>Pas totaux</td><td>1 284 000</td></tr>
+  </table>
+
+  <h2>Télémétrie locale</h2>
+  <table>
+    <tr><td>Combats normaux</td><td>3 356 victoires / 3 412 · 98 %</td></tr>
+    <tr><td>Gardiens</td><td>124 victoires / 151 tentatives · 82 %</td></tr>
+    <tr><td>Palier 100</td><td>3 tentatives · 1 victoire</td></tr>
+    <tr><td>Durée moyenne</td><td>38,4 s · 3 563 combats</td></tr>
+  </table>
+
+  <h2>Équipement porté</h2>
+  <table>
+    <thead><tr><th>Emplacement</th><th>Objet</th><th>Rareté</th><th>Statistiques</th></tr></thead>
+    <tbody>${gearRows}</tbody>
+  </table>
+
+  <h2>Gardiens · paliers 81–100</h2>
+  <table>
+    <thead><tr><th>Palier</th><th>Gardien</th><th>Victoires</th><th>Taux</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  <h2>Collections</h2>
+  <div class="grid">
+    <div class="card"><span>Créatures</span><b>110 / 110</b></div>
+    <div class="card"><span>Gardiens</span><b>35 / 35</b></div>
+    <div class="card"><span>Ensembles</span><b>6 / 6</b></div>
+  </div>
+
+  <footer>
+    Marche · version 0.20.9 · sauvegarde v7 · export local généré depuis l'écran de fin.
+    Aucune donnée n'a quitté l'appareil.
+  </footer>
+</main>
+</body>
+</html>`;
+  };
+
+  document.getElementById("export").addEventListener("click", () => {
+    const blob = new Blob([reportHtml()], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "marche-fin-palier-100.html";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast("Rapport HTML téléchargé · marche-fin-palier-100.html");
+  });
+
+  /* ---------- Mode sans fin ---------- */
+
+  const endless = document.getElementById("endless");
+  const ending = document.getElementById("ending");
+
+  document.getElementById("continue").addEventListener("click", () => {
+    endless.classList.add("open");
+    endless.setAttribute("aria-hidden", "false");
+    ending.setAttribute("aria-hidden", "true");
+    endless.querySelector("button").focus();
+  });
+
+  document.getElementById("returnEnding").addEventListener("click", () => {
+    endless.classList.remove("open");
+    endless.setAttribute("aria-hidden", "true");
+    ending.removeAttribute("aria-hidden");
+    document.getElementById("continue").focus();
+  });
+
+  endless.addEventListener("click", (event) => {
+    if (event.target === endless) document.getElementById("returnEnding").click();
+  });
+})();
+</script>
+</body>
+</html>
