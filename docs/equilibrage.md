@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.3** (lots 1–3, `versionCode 50`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.4** (lots 1–4, `versionCode 51`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -80,7 +80,7 @@ Valeurs au palier 36 (cible Phase A) :
 | Monstre normal | ~30,6 k | ~670 |
 | Gardien | ~87,7 k | ~286 |
 
-Le gardien est au **niveau palier + 2**. Les monstres ont **6 % de chance d'être élites** (1,8× PV, 1,15× ATQ). Le gardien dispose de :
+Le gardien est au **niveau palier + 2**. Les monstres ont **6 % de chance d'être élites** (1,8× PV, 1,15× ATQ). Le gardien est choisi par rotation dans le pool du biome : `(palier − début du biome) % nombre de gardiens`; les gros jalons 25/50/100 gardent leurs gardiens spéciaux. Il dispose de :
 
 - un bouclier de **40 % / 3 s / 8 s** ;
 - une **phase 2** sous 50 % de PV : intervalle d'attaque réduit de 1 250 à **950 ms** ;
@@ -145,9 +145,13 @@ xpGardien = 10 × xpMonstre
 Plafonds et revenus actuels :
 
 - éclats : **24** max ; gardien +3, jalon +8, coffre +2, élite 20 % +1, démontage 2/3/6/10 ; amélioration et reforge 1 éclat ;
-- rations : **24** max (le rapport parlait de 30, le code est resté à 24) ; gardien +2, coffre +2, monstre 10 %, auto-ration sous **30 %** des PV pour +35 % ;
+- rations : **30** max ; gardien +3, coffre +3, monstre **20 %**, élite **+1 garanti** ; auto-ration sous **40 %** des PV pour **+45 %** ;
 - or : butin de monstre/gardien, camp, marchand, statue ;
-- `holdFloor` (farm de palier) : le gardien vaincu donne du butin et des consommables, mais **aucun éclat ni aucune ration**.
+- repos gratuit : **2 fois par jour**, **20 % PV** par repos ;
+- farm : **+10 % PV** par kill ;
+- `holdFloor` (farm de palier) : le gardien vaincu donne du butin, des consommables, **+1 éclat et +1 ration**, sans avancer le palier.
+
+La table ci-dessous est la **mesure 0.20.2 avant le lot 4** (auto-ration 30 %/35 %, farm 8 %). Le lot 4 augmente les revenus et le soin automatique ; la consommation réelle doit être re-mesurée au playtest.
 
 Simulation de l'attrition (`reference`) :
 
@@ -178,7 +182,7 @@ Simulation de l'attrition (`reference`) :
 | C1 | XP `1,2^n` | **corrigé lot 1** : 1,09, ~6,8 M XP, 2 500–4 000 kills | résolu |
 | C2 | Drops plats + upgrades composés | **corrigé lot 2** : butin ×6, upgrades additifs +4 %/+20 | résolu |
 | C3 | Gardien à seuil 0/100 | blocage ou trivialisation, pas de zone 35–65 % | **critique** |
-| C4 | Attrition sans rations suffisantes | famine de rations, farm forcé | **critique** |
+| C4 | Attrition sans rations suffisantes | **corrigé lot 4** : cap 30, revenus +, auto-ration 40/45, repos 2×20 %, farm 10 % | résolu |
 | C5 | Trois courbes cibles dans l'ancien rapport | playtest non interprétable | **critique** |
 | C6 | VIT morte au-delà de ~2,8 | **corrigé lot 2** : cap 4,0, intervalle 180 ms, affichage MAX | résolu |
 | C7 | Effets empilables sans cap | **corrigé lot 2** : caps 25/40/75/100/50 | résolu |
@@ -405,4 +409,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.20.1 / lot 1** : XP 1,09, récompenses linéaires par palier, rattrapage ×1,25, source de vérité `Balance.kt`. Ancienne courbe 1,2 : 41,4 Md XP, conservée ici comme historique.
 - **0.20.2 / lot 2** : butin ×1 à ×6, raretés cibles, upgrades additifs +4 %/+20, caps VIT/effets. Ancien upgrade composé ×2 199 et anciens drops plats conservés en historique.
 - **0.20.3 / lot 3** : camp et sets en pourcentage, coût de camp indexé sur le palier, plafond 30 niveaux.
+- **0.20.4 / correctif + lot 4** : rotation des gardiens par palier dans chaque biome ; rations cap 30, revenus augmentés, auto-ration 40/45, farm 10 %, repos gratuit 2×20 %, farm de gardien +1/+1.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.

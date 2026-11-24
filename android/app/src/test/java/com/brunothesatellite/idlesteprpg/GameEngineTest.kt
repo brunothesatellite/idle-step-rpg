@@ -15,6 +15,7 @@ import com.brunothesatellite.idlesteprpg.engine.OfflinePolicy
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
 import com.brunothesatellite.idlesteprpg.engine.fireTier
+import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.oathsFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import org.junit.Assert.assertEquals
@@ -53,6 +54,7 @@ class GameEngineTest {
             floor = 10
             holdFloor = true
             shards = 0
+            rations = 0
             oaths.bossesClaimed = true
         }
         val fight = FightData(
@@ -69,10 +71,11 @@ class GameEngineTest {
         )
         GameEngine.victory(state, fight)
         assertEquals(10, state.floor)
-        assertEquals(0, state.shards)
+        assertEquals(1, state.shards)
+        assertEquals(1, state.rations)
         assertEquals(0.0, state.distance, 0.001)
         assertEquals(10, state.nextFight)
-        assertEquals(1, state.bossKills["lich"])
+        assertEquals(1, state.bossKills[bossFor(10).id])
         assertEquals("walk", state.mode)
     }
 
@@ -122,7 +125,7 @@ class GameEngineTest {
         GameEngine.victory(state, fight)
         assertEquals(11, state.floor)
         assertEquals(11, state.shards)
-        assertEquals(1, state.bossKills["lich"])
+        assertEquals(1, state.bossKills[bossFor(10).id])
     }
 
     @Test
@@ -409,10 +412,10 @@ class GameEngineTest {
             tier = "boss"
         )
         GameEngine.victory(state, fight)
-        assertEquals(1, state.bestiary["balrug"])
+        assertEquals(1, state.bestiary[bossFor(30).id])
         assertTrue(state.bestiary.keys.none { it.contains(" · ") })
-        assertEquals(1, state.bossKills["balrug"])
-        assertEquals(FirstSeen("ash", 30, "boss", 32), state.bossFirstSeen["balrug"])
+        assertEquals(1, state.bossKills[bossFor(30).id])
+        assertEquals(FirstSeen("ash", 30, "boss", 32), state.bossFirstSeen[bossFor(30).id])
     }
 
     @Test

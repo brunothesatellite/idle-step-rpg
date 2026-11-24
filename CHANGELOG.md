@@ -1,5 +1,16 @@
 # Journal des versions
 
+## v0.20.4
+- **Correctif gardiens** : rotation réelle dans chaque biome (`index = (palier − début du biome) % nombre de gardiens`). L'Hydre de Lerne ne revient plus à chaque palier ; les 4 gardiens de chaque biome alternent.
+- **Lot 4 — rations et attrition** : plafond **30**, gardien +3, coffre +3, monstre 20 %, élite +1 garanti.
+- **Auto-ration** : seuil **40 %**, soin **45 %**.
+- **Farm** : **+10 % PV** par kill.
+- **Repos gratuit** : **2 fois par jour**, **20 % PV** par repos.
+- **Farm de gardien** : +1 éclat et +1 ration, sans avancer le palier.
+- **Codex local** : généré dans `codex-complet.html`, ignoré par Git.
+- **Tests** : **133 / 133**, lint OK.
+- **Build** : `versionCode 51`, `versionName 0.20.4`. Aucune release GitHub.
+
 ## v0.20.3
 - **Lot 3 — camp, sets et or** : camp en pourcentage (+1,5 % ATQ, +1,5 % PV, +1 % VIT par niveau), plafond **30 niveaux**, coût indexé sur le palier.
 - **Sets en pourcentage** : 2/4/6 pièces donnent +4/8/12 % (ATQ/PV ou effet thématique), au lieu de valeurs plates.

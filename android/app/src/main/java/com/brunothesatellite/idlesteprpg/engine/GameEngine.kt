@@ -1498,10 +1498,10 @@ object GameEngine {
                 return
             }
         }
-        if (!f.usedRation && !f.farm && state.hp < s.maxHp * Balance.AUTO_RATION_THRESHOLD && state.rations > 0) {
+        if (!f.usedRation && !f.farm && state.hp < s.maxHp * Balance.Target.AUTO_RATION_THRESHOLD && state.rations > 0) {
             f.usedRation = true
             state.rations--
-            val heal = s.maxHp * Balance.AUTO_RATION_HEAL
+            val heal = s.maxHp * Balance.Target.AUTO_RATION_HEAL
             state.hp = min(s.maxHp.toDouble(), state.hp + heal)
             state.journal = addJournal(state, "Ration consommée (+${heal.roundToInt()} PV)", "neutral")
         }
@@ -1558,16 +1558,20 @@ object GameEngine {
             state.distance = 0.0
             state.nextFight = 10
             if (state.holdFloor) {
+                state.shards = min(MAX_SHARDS, state.shards + Balance.Target.HOLD_FLOOR_SHARDS)
+                state.rations = min(MAX_RATIONS, state.rations + Balance.Target.HOLD_FLOOR_RATIONS)
                 addLoot(state, lootItem(clearedFloor, "rare"))
                 dropConsumables(state, "boss")
                 state.journal = addJournal(
                     state,
-                    "${f.enemyName} vaincu — palier $clearedFloor conservé (farm)",
+                    "${f.enemyName} vaincu — palier $clearedFloor conservé (farm) · " +
+                        "+${Balance.Target.HOLD_FLOOR_SHARDS} éclat, " +
+                        "+${Balance.Target.HOLD_FLOOR_RATIONS} ration",
                     "good"
                 )
             } else {
                 state.shards = min(MAX_SHARDS, state.shards + Balance.BOSS_SHARDS)
-                state.rations = min(MAX_RATIONS, state.rations + Balance.BOSS_RATIONS)
+                state.rations = min(MAX_RATIONS, state.rations + Balance.Target.BOSS_RATIONS)
                 state.floor++
                 addLoot(state, lootItem(state.floor, "rare"))
                 dropConsumables(state, "boss")
@@ -1588,7 +1592,7 @@ object GameEngine {
             state.farmKills++
             val s = statsOf(state)
             val beforeHeal = state.hp
-            state.hp = min(s.maxHp.toDouble(), state.hp + s.maxHp * Balance.FARM_HEAL_RATIO)
+            state.hp = min(s.maxHp.toDouble(), state.hp + s.maxHp * Balance.Target.FARM_HEAL_RATIO)
             val healed = (state.hp - beforeHeal).roundToInt().coerceAtLeast(0)
             state.journal = addJournal(
                 state,
@@ -1609,11 +1613,17 @@ object GameEngine {
             state.nextFight += 10
             state.journal = addJournal(state, "${f.enemyName} vaincu · +$earned or", "good")
             dropConsumables(state, "mob")
-            if (rnd.nextDouble() < Balance.MOB_RATION_CHANCE) {
+            if (rnd.nextDouble() < Balance.Target.MOB_RATION_CHANCE) {
                 state.rations = min(MAX_RATIONS, state.rations + 1)
             }
-            if (f.elite && rnd.nextDouble() < Balance.ELITE_SHARD_CHANCE) {
-                state.shards = min(MAX_SHARDS, state.shards + 1)
+            if (f.elite) {
+                state.rations = min(
+                    MAX_RATIONS,
+                    state.rations + Balance.Target.ELITE_RATION_GUARANTEED
+                )
+                if (rnd.nextDouble() < Balance.ELITE_SHARD_CHANCE) {
+                    state.shards = min(MAX_SHARDS, state.shards + 1)
+                }
             }
             if (rnd.nextDouble() < Balance.CHEST_CHANCE) spawnChest(state)
         }
@@ -1675,7 +1685,7 @@ object GameEngine {
         state.gold += gold
         state.goldEarned += gold
         state.chestFlashGold = gold
-        state.rations = min(MAX_RATIONS, state.rations + 2)
+        state.rations = min(MAX_RATIONS, state.rations + Balance.Target.CHEST_RATIONS)
         state.shards = min(MAX_SHARDS, state.shards + 2)
         state.chestsToday++
         state.chestsOpened++
@@ -2079,11 +2089,15 @@ object GameEngine {
     }
 
     fun freeRest(state: GameState): Boolean {
-        if (state.freeRestDay == state.day) return false
+        if (state.freeRestDay != state.day) {
+            state.freeRestDay = state.day
+            state.freeRestUses = 0
+        }
+        if (state.freeRestUses >= Balance.Target.FREE_REST_PER_DAY) return false
         val s = statsOf(state)
         if (state.hp >= s.maxHp) return false
-        state.freeRestDay = state.day
-        val heal = s.maxHp * 0.25
+        state.freeRestUses++
+        val heal = s.maxHp * Balance.Target.FREE_REST_HEAL
         state.hp = min(s.maxHp.toDouble(), state.hp + heal)
         state.journal = addJournal(state, "Veillée gratuite (+${heal.roundToInt()} PV)", "good")
         return true

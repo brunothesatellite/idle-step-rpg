@@ -60,14 +60,14 @@ class ModelTest {
 
     @Test
     fun bossesFollowBiomeAndMilestones() {
-        assertEquals("Roi des Cryptes", bossFor(10).name)
-        assertEquals("Hydre de Lerne", bossFor(20).name)
-        assertEquals("Balrug", bossFor(30).name)
-        assertEquals("Seigneur de la Forge", bossFor(40).name)
+        assertEquals(mobPoolFor(10).bosses[1].name, bossFor(10).name)
+        assertEquals(mobPoolFor(20).bosses[1].name, bossFor(20).name)
+        assertEquals(mobPoolFor(30).bosses[1].name, bossFor(30).name)
+        assertEquals(mobPoolFor(40).bosses[1].name, bossFor(40).name)
         assertEquals("Dragon de givre", bossFor(50).name)
-        assertEquals("Tréant", bossFor(60).name)
-        assertEquals("Vase mortelle", bossFor(70).name)
-        assertEquals("Dispater", bossFor(80).name)
+        assertEquals(mobPoolFor(60).bosses[1].name, bossFor(60).name)
+        assertEquals(mobPoolFor(70).bosses[1].name, bossFor(70).name)
+        assertEquals(mobPoolFor(80).bosses[3].name, bossFor(80).name)
         assertEquals("L'Âme Première", bossFor(100).name)
     }
 

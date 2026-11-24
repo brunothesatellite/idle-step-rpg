@@ -154,6 +154,15 @@ object Balance {
         const val CRIT_DAMAGE_CAP = 1.0
         const val BOSS_DAMAGE_CAP = 0.5
         const val RATIONS_CAP = 30
+        const val BOSS_RATIONS = 3
+        const val CHEST_RATIONS = 3
+        const val MOB_RATION_CHANCE = 0.20
+        const val ELITE_RATION_GUARANTEED = 1
+        const val FARM_HEAL_RATIO = 0.10
+        const val FREE_REST_HEAL = 0.20
+        const val FREE_REST_PER_DAY = 2
+        const val HOLD_FLOOR_SHARDS = 1
+        const val HOLD_FLOOR_RATIONS = 1
         const val AUTO_RATION_THRESHOLD = 0.40
         const val AUTO_RATION_HEAL = 0.45
         const val VIT_CAP = 4.0

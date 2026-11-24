@@ -77,7 +77,7 @@ const val CHEST_WARNING_MS = 3L * 60L * 60L * 1000L
 const val MAX_PENDING_CHESTS = 2
 const val INVENTORY_CAP = 24
 const val MAX_SHARDS = Balance.SHARDS_CAP
-const val MAX_RATIONS = Balance.RATIONS_CAP
+const val MAX_RATIONS = Balance.Target.RATIONS_CAP
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250
@@ -407,6 +407,7 @@ data class GameState(
     var stash: List<Item> = emptyList(),
     var special: SpecialData? = null,
     var freeRestDay: String = "",
+    var freeRestUses: Int = 0,
     var lastStepAt: Long = 0L,
     var lastActiveAt: Long = 0L,
     var ferveurDecayMs: Double = 0.0,
@@ -1432,7 +1433,7 @@ fun tierIndex(ferveur: Int): Int = when {
 fun biomeBossFor(floor: Int): BossTemplate {
     val pool = mobPoolFor(floor)
     val def = biomeDefFor(floor)
-    val index = ((floor - def.fromFloor) / 10).coerceAtLeast(0) % pool.bosses.size
+    val index = ((floor - def.fromFloor) % pool.bosses.size).coerceAtLeast(0)
     return pool.bosses[index]
 }
 

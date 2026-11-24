@@ -52,6 +52,7 @@ import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.Balance
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
+import com.brunothesatellite.idlesteprpg.engine.MAX_RATIONS
 import com.brunothesatellite.idlesteprpg.engine.ITEM_SETS
 import com.brunothesatellite.idlesteprpg.engine.BIOMES
 import com.brunothesatellite.idlesteprpg.engine.allBossTemplates
@@ -546,7 +547,7 @@ private fun ResourcesCard(state: GameState) {
             ResourceStat(
                 "item/meat_ration.png",
                 stringResource(R.string.dashboard_rations),
-                "${state.rations} / 24",
+                "${state.rations} / $MAX_RATIONS",
                 Modifier.weight(1f)
             )
             ResourceStat(

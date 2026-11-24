@@ -1,7 +1,7 @@
 # Plan d'implémentation — équilibrage 1 → 100
 
 > **Statut : proposition, en attente de validation.** Aucun code n'est modifié par ce document.
-> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.3** (lots 1–3, `versionCode 50`), sauvegarde **v7**.
+> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.4** (lots 1–4, `versionCode 51`), sauvegarde **v7**.
 > Objectif : rendre le palier 100 **exigeant, lisible et non frustrant**, sans paywall ni barrière définitive.
 
 ## 1. Principes directeurs
@@ -169,6 +169,8 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 ---
 
 ### Lot 4 — Rations, attrition, récupération
+
+**Statut : livré en 0.20.4.** Cap 30, revenus renforcés, auto-ration 40/45, farm 10 %, repos gratuit 2×20 %, farm de gardien +1/+1.
 
 **Objectif** : garder l'attrition sans famine.
 
@@ -372,8 +374,9 @@ Tests unitaires à ajouter :
 3. ~~Lot 1 — courbe d'XP.~~ **Livré en 0.20.1.**
 4. ~~Lot 2 — objets, upgrades, butin, caps.~~ **Livré en 0.20.2.**
 5. ~~Lot 3 — camp, sets, or.~~ **Livré en 0.20.3.**
-6. Dérouler le lot 4 (rations, attrition).
+6. ~~Lot 4 — rations, attrition.~~ **Livré en 0.20.4.**
+7. Dérouler le lot 5 (gardiens, pitié, portail).
 4. Calibrer les gardiens (lot 5) seulement après.
 5. Playtest 7 jours, puis 14 jours.
 
-**Lots 0, 1, 2 et 3 livrés. En attente du go pour le lot 4.**
+**Lots 0 à 4 livrés. En attente du go pour le lot 5.**

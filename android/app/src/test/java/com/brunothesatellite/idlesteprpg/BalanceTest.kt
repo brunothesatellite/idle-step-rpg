@@ -7,6 +7,7 @@ import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_RATIONS
 import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
 import com.brunothesatellite.idlesteprpg.engine.bossXpReward
+import com.brunothesatellite.idlesteprpg.engine.biomeBossFor
 import com.brunothesatellite.idlesteprpg.engine.isMaxLevel
 import com.brunothesatellite.idlesteprpg.engine.lootFloorScale
 import com.brunothesatellite.idlesteprpg.engine.maxUpgradeLevel
@@ -54,7 +55,7 @@ class BalanceTest {
     @Test
     fun currentCapsAreExposedThroughModelConstants() {
         assertEquals(24, MAX_SHARDS)
-        assertEquals(24, MAX_RATIONS)
+        assertEquals(30, MAX_RATIONS)
     }
 
     @Test
@@ -156,6 +157,25 @@ class BalanceTest {
         val after = statsOf(setState)
         assertEquals((before.atk * 1.12).roundToInt(), after.atk)
         assertEquals((before.maxHp * 1.12).roundToInt(), after.maxHp)
+    }
+
+    @Test
+    fun biomeBossRotatesWithinEachBiome() {
+        assertEquals("Hydre de Lerne", biomeBossFor(11).name)
+        assertEquals("Grande naga", biomeBossFor(12).name)
+        assertEquals("Manticore", biomeBossFor(13).name)
+        assertEquals("Hydre mineure", biomeBossFor(14).name)
+        assertEquals("Hydre de Lerne", biomeBossFor(15).name)
+        assertEquals("Roi des Cryptes", biomeBossFor(1).name)
+        assertEquals("Dragon d'os", biomeBossFor(2).name)
+    }
+
+    @Test
+    fun freeRestAllowsTwoUsesPerDay() {
+        val state = GameState().copy(level = 1, floor = 1, day = "2026-11-24", hp = 1.0)
+        assertTrue(GameEngine.freeRest(state))
+        assertTrue(GameEngine.freeRest(state))
+        assertFalse(GameEngine.freeRest(state))
     }
 
     @Test

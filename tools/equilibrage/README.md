@@ -6,7 +6,7 @@ Outil autonome pour rejouer les combats de **La Marche des Âmes** avec les cour
 - Python 3.10+, **aucune dépendance externe**.
 - Les formules sont recopiées depuis `GameEngine.kt` / `Model.kt` ; elles doivent rester synchronisées avec le code.
 
-> **Référence de courbe** : `docs/equilibrage.md` (version 0.20.3) et `docs/plan-equilibrage.md`. Les résultats chiffrés de la section « Premiers résultats » sont **historiques (0.19.1)** et ne servent plus de cible.
+> **Référence de courbe** : `docs/equilibrage.md` (version 0.20.4) et `docs/plan-equilibrage.md`. Les résultats chiffrés de la section « Premiers résultats » sont **historiques (0.19.1)** et ne servent plus de cible.
 
 ## Source de vérité
 

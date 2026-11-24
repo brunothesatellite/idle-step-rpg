@@ -10,6 +10,7 @@ android_*.png
 ui*.xml
 *.apk
 *.log
+codex-complet.html
 
 # Outillage local
 node_modules/
