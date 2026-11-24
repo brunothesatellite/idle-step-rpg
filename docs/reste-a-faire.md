@@ -18,8 +18,8 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 
 | # | Sujet | Détail | Effort |
 |---|---|---|---|
-| 1 | **Playtest 0.21.2** | Vérifier l'écran de fin via **Aperçu de la fin** (build debug), l'export HTML, les gardiens aux paliers 36/50/75/100, la pitié et les potions à risque. | S |
-| 2 | **Publier** | Release GitHub + APK (et AAB Play si validé). La dernière release publiée est `v0.19.1` ; 0.20.0 à 0.21.2 ne sont pas publiées. | S–M |
+| 1 | **Playtest 0.21.2** | Fiche : [`playtest-0.21.2.md`](playtest-0.21.2.md). Vérifier l'écran de fin, l'export HTML, les gardiens 36/50/75/100, la pitié et les potions à risque. | 7–14 j |
+| 2 | **Release publiée** | `v0.21.2` sur GitHub avec APK + AAB ; APK release et debug installés sur le téléphone. | fait |
 
 ---
 
@@ -41,7 +41,7 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 ### Reste
 
 - **Porte A** : franchie. La courbe `code` reproduit `makeMob`/`makeBoss` (biome, bouclier, enrage, pitié, capacités, modificateurs, Trône brisé).
-- **Porte D** : `reference` 44–60 % et TTK 16–20 s aux paliers 36/50/75/100. Écarts connus : `under` 0–37 %, `reference_high` 100 % (sur-stuff assumé), pitié 15 % et potion d'ATQ à 100 %. Ces deux derniers points sont à arbitrer au playtest.
+- **Porte D** : `reference` 44–60 % et TTK 16–20 s aux paliers 36/50/75/100. Pitié (−3 % max) et potions à risque arbitrées en 0.21.2 (56–79 %, jamais 100 %). Écarts connus : `under` 0–37 %, `reference_high` 100 % (sur-stuff assumé).
 - **Portes E/F** : playtest 7 jours (Phase A), puis 14 jours (Phase B) avec journal quotidien.
 - Aucune famine ni dead-end : vérifier depuis 0 ration/0 éclat sur plusieurs jours.
 
@@ -139,13 +139,15 @@ Restant :
 | Sujet | État |
 |---|---|
 | README bilingue | À jour (0.21.2, FR puis EN) |
-| Manuel FR/EN | Généré au build, en ligne 0.20.0 |
+| Manuel FR/EN | Généré au build (0.21.2), en ligne 0.20.0 |
 | `langue.md` | État i18n finalisé |
 | `plan-equilibrage.md` | Lots 0-10 livrés ; lot 5 calibré |
 | `equilibrage.md` | Analyse + cibles 1 → 100 (base 0.20.9) |
 | `validation-equilibrage.md` | Plan de validation et portes A–F |
 | `ecran-fin-v2.html` | Base visuelle validée du lot 10 (implémentée en 0.21.0) |
 | `CHANGELOG.md` | v0.21.2 ajouté |
+| `playtest-0.21.2.md` | Fiche de suivi du playtest (journal, exports, critères) |
+| `release-notes-v0.21.2.md` | Notes de la release GitHub v0.21.2 |
 | Spécification vs écarts | À resynchroniser |
 | Guide de récupération | À compléter (clé perdue, téléphone changé, sauvegarde corrompue) |
 
@@ -153,13 +155,11 @@ Restant :
 
 ## 8. Ordre recommandé
 
-1. **Playtest 0.21.1** : écran de fin, export HTML, gardiens 36/50/75/100.
-2. **Arbitrer** la pitié et la potion d'ATQ (aujourd'hui victoire à 100 %).
-3. **Publier** (GitHub + AAB Play) si validé.
-5. **Playtests 7 puis 14 jours** (portes E/F).
-6. **Qualité** : tests UI, R8, Gradle/JDK, perf, accessibilité.
-7. **Backlog produit** : inventaire, combat, endgame, tutoriel.
-8. **Localisation** : captures FR Play/manuel, décisions dates/pluriels.
+1. **Playtest 0.21.2** : suivre [`playtest-0.21.2.md`](playtest-0.21.2.md), exports J+3/J+7/J+14.
+2. **Bilan porte E** : 7 jours, puis décision pour les 14 jours (porte F).
+3. **Qualité** : tests UI, R8, Gradle/JDK, perf, accessibilité.
+4. **Backlog produit** : inventaire, combat, endgame, tutoriel.
+5. **Localisation** : captures FR Play/manuel, décisions dates/pluriels.
 
 ---
 

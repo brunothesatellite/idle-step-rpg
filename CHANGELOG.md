@@ -5,7 +5,7 @@
 - **Potions d'ATQ à risque** : Potion de force **+40 % ATQ / +40 % dégâts subis**, Fiole de rage **+50 % / +50 %** pendant 20 s. Le combat est accéléré (11–14 s) sans devenir automatique : 58–78 % de victoires.
 - **Simulateur** : `--potion atk`/`rage` modélisent la fragilité ; `--potion atk_pure` reste l'hypothèse sans risque.
 - **Tests** : **151 / 151**, lint OK.
-- **Build** : `versionCode 60`, `versionName 0.21.2`. Aucune release GitHub.
+- **Build** : `versionCode 60`, `versionName 0.21.2`. Release GitHub **v0.21.2** avec APK et AAB.
 
 ## v0.21.1
 - **Calibration des gardiens (lot 5)** : la courbe cible vise **18 s de TTK** avec le stuff attendu ; l'ATQ est calibrée par capacité (diviseurs 14,5 à 20,5 selon bouclier, souffle, pression, rupture…). Le Trône brisé et le boss final restent appliqués.
