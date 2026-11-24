@@ -1,7 +1,7 @@
 # Journal des versions
 
 ## v0.20.0
-- **Équilibrage Phase A** : courbe cible des monstres et gardiens (combat ~18 s, ≥ 30 coups portés), interpolation entre l’ancienne courbe (≤ palier 20) et la cible (≥ palier 35).
+- **Courbe cible** : courbe des monstres et gardiens (combat ~18 s, ≥ 30 coups portés), interpolation entre l’ancienne courbe (≤ palier 20) et la cible (≥ palier 35), **ATQ recalibrée sur le build réel (~3 700 PV au palier 36)** : le build actuel gagne 59 % sans potion, 100 % avec.
 - **Gardiens** : bouclier 40 % / 3 s, **enrage** après 15 s (+25 % ATQ toutes les 5 s, cap +75 %), bénédiction de défaite cumulative (+25 % par échec, cap +75 %).
 - **Élites** : 6 % de chance, 1,8× PV, 1,15× ATQ.
 - **Éclats** : plafond **24**, gardien +3, jalon +8, coffre +2, démontage 2/3/6/10, reforge **1** éclat, élite 20 % +1.

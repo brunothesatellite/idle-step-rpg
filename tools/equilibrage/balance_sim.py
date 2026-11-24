@@ -201,7 +201,7 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
     else:
         if curve == "target":
             ref_atk = 650 + 24 * floor
-            ref_hp = 2600 + 110 * floor
+            ref_hp = 1800 + 55 * floor
             ref_vit = 1.8 + 0.02 * floor
             ref_interval = max(0.30, 1.0 / (ref_vit * 1.4))
             ref_dps = ref_atk * 1.18 / ref_interval
@@ -246,7 +246,7 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shiel
         level = floor + 1
         if curve == "target":
             ref_atk = 650 + 24 * floor
-            ref_hp = 2600 + 110 * floor
+            ref_hp = 1800 + 55 * floor
             ref_vit = 1.8 + 0.02 * floor
             ref_interval = max(0.30, 1.0 / (ref_vit * 1.4))
             ref_dps = ref_atk * 1.18 / ref_interval
@@ -310,9 +310,9 @@ def build_preset(name: str, floor: int) -> Build:
             ferveur=100, rations=1,
         )
 
-    low = profile("reference_low", 500, 18, 2200, 70, 1.70, 0.015)
-    mid = profile("reference", 650, 24, 2600, 110, 1.80, 0.020)
-    high = profile("reference_high", 800, 30, 3000, 160, 1.90, 0.025)
+    low = profile("reference_low", 500, 16, 1500, 40, 1.65, 0.015)
+    mid = profile("reference", 650, 20, 1800, 55, 1.80, 0.020)
+    high = profile("reference_high", 800, 24, 2200, 70, 1.90, 0.022)
     if name == "reference_low":
         return low
     if name == "reference":

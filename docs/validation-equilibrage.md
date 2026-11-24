@@ -135,7 +135,7 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 
 **Sortie** : simulateur de confiance, tableau de calibration.
 
-**Écart connu** : sur la courbe `target` finale (ATQ gardien = EHP/16, enrage après 15 s), `reference` sans potion est à ~1 % aux 75/100, `reference` + potion à 100 % (13,8 s / 47 coups), `reference_high` à 100 % (15,8 s / 54 coups). Le point restant est le 100 % du meilleur stuff : soit l’accepter comme récompense du sur-stuff, soit renforcer l’enrage (par exemple après 12 s) et vérifier que le stuff moyen + potion reste à 40-70 %.
+**Écart connu** : sur la courbe `target` recalibrée (ATQ gardien ~EHP/19), `player36` gagne 59 % au 36 et 100 % avec potion ; `reference` gagne 36-50, puis 0-1 % aux 75/100 ; `reference_high` gagne 100 % partout en 17-19 s. Le point restant est le 100 % du meilleur stuff : soit l’accepter comme récompense du sur-stuff, soit renforcer l’enrage et vérifier que le stuff moyen + potion reste à 40-70 %.
 
 ### Phase A — Débloquer le palier 36
 

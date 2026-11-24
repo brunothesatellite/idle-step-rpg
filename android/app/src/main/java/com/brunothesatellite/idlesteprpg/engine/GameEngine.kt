@@ -1193,7 +1193,7 @@ object GameEngine {
     }
 
     private fun mobAtkScale(floor: Int): Double {
-        val target = max(1.0, 16.6 - 0.045 * (floor - 10))
+        val target = max(1.0, 10.0 - 0.03 * (floor - 10))
         return lerp(depthMultiplier(floor), target, targetWeight(floor))
     }
 
@@ -1203,7 +1203,7 @@ object GameEngine {
     }
 
     private fun bossAtkScale(floor: Int): Double {
-        val target = max(1.0, 7.2 - 0.024 * (floor - 10))
+        val target = max(1.0, 3.6 - 0.012 * (floor - 10))
         return lerp(1.6 * depthMultiplier(floor, boss = true), target, targetWeight(floor))
     }
 

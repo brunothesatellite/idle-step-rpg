@@ -102,12 +102,12 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 
 La courbe `target` dérive les PV/ATQ ennemis du build de référence pour viser **monstre ~5 s** et **gardien ~18 s** à tous les paliers :
 
-- `reference_high` : gardiens 36/50/75/100 en **14-16 s**, **48-59 coups portés**, 100 % de victoires.
-- `reference` (stuff moyen) : **99 % au 36**, **34 % au 50**, puis **~1 % aux 75/100** sans potion.
-- `reference` + potion d’ATQ : **13,8 s**, **47 coups**, 100 % aux 75/100 : la potion permet de finir avant l’enrage.
-- `player36` (glass cannon) : perd, car ses PV sont trop bas pour la cible.
+- `reference_high` : gardiens 36/50/75/100 en **17-19 s**, **57-65 coups portés**, 100 % de victoires.
+- `reference` (stuff moyen) : **100 % au 36**, **98 % au 50**, puis **~0-1 % aux 75/100** sans potion.
+- `player36` (build réel) : **59 % au 36** sans potion, **100 % avec potion** (16,9 s / 55 coups).
+- `player36` aux paliers 50+ : 0 %, il faut d’abord du stuff/farm.
 
-Aucun gardien ne tombe en 2-3 coups : le combat dure 14-20 s et demande 47-68 coups. La courbe `target` (ATQ gardien = EHP/16, enrage après 15 s) est la meilleure base pour la Phase A/B : le stuff haut gagne sans consommable, le stuff moyen doit utiliser une potion pour les gardiens 75-100.
+Aucun gardien ne tombe en 2-3 coups : le combat dure 17-23 s et demande 55-75 coups. La courbe `target` (ATQ gardien ~EHP/19, enrage après 15 s) débloque le 36 pour le build réel, tout en gardant 75-100 comme objectif de stuff.
 
 ## Prochaines étapes
 
