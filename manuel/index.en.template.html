@@ -326,12 +326,12 @@
     <li><strong>Daily cap:</strong> 60,000 steps.</li>
     <li><strong>Suspicious rate:</strong> above 250 steps/minute on average since the last sync, excess steps are ignored and reported in the journal.</li>
     <li><strong>Reserve at zero:</strong> the hero stops. He sets off again as soon as a sync brings new steps.</li>
-    <li><strong>Encounters:</strong> every 10 m. <strong>Guardian:</strong> at 100 m.</li>
+    <li><strong>Encounters:</strong> every 10 m. <strong>Guardian gate:</strong> at 90 m; the fight starts at 100 m if you engage.</li>
   </ul>
   <h3>Reset at 00:00</h3>
   <p>At local midnight: the daily counter, fervour, ration/shard quotas and oaths reset. Distance already travelled, gold, equipment and floors are kept.</p>
   <div class="ok"><strong>Tip:</strong> sync after a walk rather than every five minutes. The reserve then drains automatically in the background.</div>
-  <div class="note"><strong>Absence:</strong> if you close the app with a reserve, it keeps draining on your behalf, within <strong>30% of the day's steps</strong> (adjustable in <a href="#reglages">Advanced settings</a>) and 4 simulated minutes. The simulation stops on a special encounter, a new chest or a camp visit. In front of the guardian it only stops if less than one floor of budget remains; with one floor or more, the fight is simulated and the guardian can be defeated. See <a href="#absence">Absence summary</a>.</div>
+  <div class="note"><strong>Absence:</strong> if you close the app with a reserve, it keeps draining on your behalf, within <strong>30% of the day's steps</strong> (adjustable in <a href="#reglages">Advanced settings</a>) and 4 simulated minutes. The simulation stops on a special encounter, a new chest, a camp visit or the <strong>guardian gate at 90 m</strong>. The guardian is never engaged automatically: the Engage / Farm / Camp choice waits for you on return, and the remaining reserve is kept. See <a href="#absence">Absence summary</a>.</div>
 </section>
 
 <section id="interface">
@@ -349,7 +349,7 @@
     <li><strong>Floor</strong> — current level. One floor is 100 m; 8 biomes of 10 floors.</li>
     <li><strong>Biome</strong> — name of the biome you are crossing, with its active rule below.</li>
     <li><strong>Gold</strong> — game currency (forge, camp, merchant).</li>
-    <li><strong>Distance</strong> — progress within the floor (0 to 100 m). The guardian waits at 100 m.</li>
+    <li><strong>Distance</strong> — progress within the floor (0 to 100 m). The guardian gate appears at 90 m; the fight starts at 100 m if you engage.</li>
     <li><strong>BAG</strong> — stored consumables; tap to open them.</li>
     <li><strong>Scene</strong> — the biome corridor: arches, torches, floor props, hero on the left, enemy or waiting silhouette on the right.</li>
     <li><strong>Fervour</strong> — 0 to 100, gained with steps, decaying after 2 h without steps; it speeds up SPD and regeneration.</li>
@@ -359,7 +359,7 @@
     <li><strong>Power</strong> — overall indicator of the hero's strength (equipment, level, upgrades).</li>
     <li><strong>Rank</strong> — rank tier reached (I, II, III…), computed from depth.</li>
     <li><strong>Stats</strong> — ATK (damage per attack), maximum HP, SPD (attack speed).</li>
-    <li><strong>Resources</strong> — rations (cap 24), soul shards (cap 24), gold and consumables.</li>
+    <li><strong>Resources</strong> — rations (cap 30), soul shards (cap 24), gold and consumables.</li>
     <li><strong>Biome and farm</strong> — biome rule and <strong>FARM</strong> button to lock the current floor.</li>
     <li><strong>Codex</strong> — bestiary, sets and discovered biomes, with direct access.</li>
     <li><strong>Step reserve</strong> — available steps the hero spends (walking, fights, chests). The bar is full at 4,000 steps.</li>
@@ -368,7 +368,7 @@
   <ul>
     <li><strong>Floor</strong> and biome name.</li>
     <li><strong>Gold</strong> and <strong>campfire</strong> button.</li>
-    <li><strong>Floor gauge</strong>: 0 to 100 m, with the guardian door in the last 15 metres.</li>
+    <li><strong>Floor gauge</strong>: 0 to 100 m, with the guardian gate in the last 10 metres.</li>
     <li><strong>BAG</strong>: consumables, healing and buffs.</li>
     <li><strong>CHEST</strong>: number of waiting chests and remaining time. A chest never blocks the walk.</li>
     <li><strong>Sync button</strong>: small square top-left, aligned with the BAG. ↻ icon and status dot (green = recent, amber = old, red = error). Tap to sync; if the source is not ready (Garmin key missing, Health Connect permission denied), it opens <strong>Settings → Step source</strong>.</li>
@@ -412,11 +412,19 @@
   </table>
   <h3>Guardians</h3>
   <ul>
-    <li>About <strong>6× the HP</strong> of a monster of the same level.</li>
-    <li><strong>Phase 2</strong> below 50% HP: faster attacks, blazing aura.</li>
-    <li><strong>Blessing +25%</strong> after a defeat against a guardian: helps on the next attempt.</li>
+    <li><strong>Gate at 90 m</strong>: the walk stops and the guardian is revealed with its HP, ATK, ability and modifier.</li>
+    <li>The panel also shows the hero's <strong>current / max HP</strong> and <strong>ATK</strong> to help you prepare.</li>
+    <li>Choice: <strong>ENGAGE</strong>, <strong>FARM THIS FLOOR</strong> or <strong>CAMP</strong>. The fight only starts after ENGAGE, at 100 m.</li>
+    <li><strong>Phase 2</strong> below 50% HP: telegraphed ability, with no permanent speed-up.</li>
+    <li><strong>Pity</strong>: each defeat weakens the guardian by <strong>−5% HP/ATK</strong>, up to <strong>−25%</strong>, reset on victory.</li>
     <li>Possible modifiers: <strong>Fast</strong>, <strong>Armored</strong>, <strong>Berserk</strong>, <strong>Regenerating</strong>, <strong>Thief</strong>.</li>
   </ul>
+  <h3>Guardian gate</h3>
+  <figure class="shot">
+    <img src="images/guardian_gate.jpg" alt="Guardian gate with guardian HP and ATK, hero HP and ATK, ability, modifier and Engage, Farm this floor and Camp buttons">
+    <figcaption>The gate: compare guardian and hero HP/ATK, then engage, farm or camp.</figcaption>
+  </figure>
+  <p>The gate is a choice, not a forced fight. <strong>ENGAGE</strong> starts the guardian, <strong>FARM THIS FLOOR</strong> locks the floor and returns to the start for farming, <strong>CAMP</strong> opens the camp. During offline progression, the simulation stops at the gate and never chooses for you.</p>
   <h3>Guardian abilities</h3>
   <figure class="shot">
     <img src="images/combat_boss.jpg" alt="Fight against the Lernaean Hydra with the Regeneration ability displayed">
@@ -427,7 +435,7 @@
     <tr><td>Soul drain</td><td>Lich, Crypt King</td><td>Drains the hero's HP and heals the guardian.</td></tr>
     <tr><td>Regeneration</td><td>Hydra</td><td>Restores about 7% of the guardian's max HP.</td></tr>
     <tr><td>Heavy blow</td><td>Balrug, demons, executioners</td><td>Very powerful attack.</td></tr>
-    <tr><td>Armor</td><td>Golems, Forge guardians</td><td>Strongly reduces damage taken for 4.5 s.</td></tr>
+    <tr><td>Armor</td><td>Golems, Forge guardians</td><td>Strongly reduces damage taken for 3 s.</td></tr>
     <tr><td>Breath</td><td>Dragons</td><td>High damage and temporary vulnerability.</td></tr>
     <tr><td>Roots</td><td>Treant, dryads</td><td>Slows the hero's SPD.</td></tr>
     <tr><td>Acid</td><td>Oozes, zymes, horrors</td><td>Damage and temporary vulnerability.</td></tr>
@@ -473,7 +481,7 @@
     <li><strong>Rations:</strong> camp healing, automatic emergency healing in combat, waybread.</li>
     <li><strong>Shards:</strong> full heal, identification, forge, altars.</li>
     <li><strong>Gold:</strong> upgrades, merchant, statue, forge, wager.</li>
-    <li><strong>Loot:</strong> guardians give 3 shards and 2 rations; chests give 2 of each.</li>
+    <li><strong>Loot:</strong> guardians give 3 shards and 3 rations; chests give 2 shards and 3 rations.</li>
   </ul>
 </section>
 
@@ -996,7 +1004,7 @@
   <h2>20. Frequently asked questions</h2>
   <details>
     <summary>Why did the game advance while I was away?</summary>
-    <p>That is the absence summary: the step reserve drains while the app is closed, within the absence budget (30% of the day's steps by default, adjustable in Advanced settings) and 4 simulated minutes. The remaining reserve is kept. Guardians can be defeated if the remaining budget covers one floor; otherwise the simulation stops in front of the gate. See <a href="#absence">Absence summary</a>.</p>
+    <p>That is the absence summary: the step reserve drains while the app is closed, within the absence budget (30% of the day's steps by default, adjustable in Advanced settings) and 4 simulated minutes. The remaining reserve is kept. The simulation stops at the <strong>guardian gate at 90 m</strong>; the guardian is never engaged automatically. See <a href="#absence">Absence summary</a>.</p>
   </details>
   <details>
     <summary>The hero is stuck and no longer advances.</summary>
@@ -1004,7 +1012,7 @@
   </details>
   <details>
     <summary>I am in front of the guardian door but there is no monster.</summary>
-    <p>The door appears from 85 m, the guardian only appears at 100 m. If 2 m are missing, that is 20 steps. The “WAITING FOR STEPS” label shows when the reserve is empty.</p>
+    <p>The gate appears from 90 m. The guardian only appears after <strong>ENGAGE</strong>; the fight then takes place at 100 m. If a few metres are missing, that is 10 steps per metre. The "WAITING FOR STEPS" label shows when the reserve is empty.</p>
   </details>
   <details>
     <summary>The chest is blocking me.</summary>

@@ -326,12 +326,12 @@
     <li><strong>Plafond journalier :</strong> 60 000 pas.</li>
     <li><strong>Rythme suspect :</strong> au-delà de 250 pas/minute en moyenne depuis la dernière synchronisation, les pas excédentaires sont ignorés et signalés dans le journal.</li>
     <li><strong>Réserve à zéro :</strong> le héros s'arrête. Il repart dès qu'une synchronisation apporte de nouveaux pas.</li>
-    <li><strong>Rencontres :</strong> tous les 10 m. <strong>Gardien :</strong> à 100 m.</li>
+    <li><strong>Rencontres :</strong> tous les 10 m. <strong>Portail du gardien :</strong> à 90 m ; le combat se déclenche à 100 m si vous engagez.</li>
   </ul>
   <h3>Reset à 00:00</h3>
   <p>À minuit local : le compteur du jour, la ferveur, les quotas de rations/éclats et les serments repartent à zéro. La distance déjà parcourue, l'or, l'équipement et les paliers sont conservés.</p>
   <div class="ok"><strong>Astuce :</strong> synchronisez après une marche plutôt que toutes les cinq minutes. La réserve s'écoule ensuite automatiquement en arrière-plan.</div>
-  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de <strong>30 % des pas du jour</strong> (réglable dans <a href="#reglages">Réglages avancés</a>) et de 4 minutes simulées. La simulation s'arrête sur une rencontre spéciale, un nouveau coffre ou un passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un palier de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. Voir <a href="#absence">Résumé d'absence</a>.</div>
+  <div class="note"><strong>Absence :</strong> si vous fermez l'application avec de la réserve, elle continue de s'écouler à votre place, dans la limite de <strong>30 % des pas du jour</strong> (réglable dans <a href="#reglages">Réglages avancés</a>) et de 4 minutes simulées. La simulation s'arrête sur une rencontre spéciale, un nouveau coffre, un passage au camp ou au <strong>portail du gardien à 90 m</strong>. Le gardien n'est jamais engagé automatiquement : le choix Engager / Farmer / Camper vous attend à la reprise, et la réserve restante est conservée. Voir <a href="#absence">Résumé d'absence</a>.</div>
 </section>
 
 <section id="interface">
@@ -349,7 +349,7 @@
     <li><strong>Palier</strong> — étage courant. Un palier fait 100 m ; 8 biomes de 10 paliers.</li>
     <li><strong>Biome</strong> — nom du biome traversé, avec sa règle active plus bas.</li>
     <li><strong>Or</strong> — monnaie du jeu (forge, camp, marchand).</li>
-    <li><strong>Distance</strong> — progression dans le palier (0 à 100 m). Le gardien attend à 100 m.</li>
+    <li><strong>Distance</strong> — progression dans le palier (0 à 100 m). Le portail du gardien apparaît à 90 m ; le combat se déclenche à 100 m si vous engagez.</li>
     <li><strong>SAC</strong> — consommables en réserve ; appuyez pour les ouvrir.</li>
     <li><strong>Scène</strong> — le couloir du biome : arches, torches, props au sol, héros à gauche, ennemi ou silhouette d'attente à droite.</li>
     <li><strong>Ferveur</strong> — 0 à 100, gagnée avec les pas, décroissante après 2 h sans pas ; elle accélère la VIT et la régénération.</li>
@@ -359,7 +359,7 @@
     <li><strong>Puissance</strong> — indicateur global de la force du héros (équipement, niveau, améliorations).</li>
     <li><strong>Rang</strong> — palier de rang atteint (I, II, III…), calculé d'après la profondeur.</li>
     <li><strong>Statistiques</strong> — ATQ (dégâts par attaque), PV maximum, VIT (vitesse d'attaque).</li>
-    <li><strong>Ressources</strong> — rations (plafond 24), éclats d'âme (plafond 24), or et consommables.</li>
+    <li><strong>Ressources</strong> — rations (plafond 30), éclats d'âme (plafond 24), or et consommables.</li>
     <li><strong>Biome et farm</strong> — règle du biome et bouton <strong>FARM</strong> pour verrouiller le palier courant.</li>
     <li><strong>Codex</strong> — bestiaire, ensembles et biomes découverts, avec accès direct.</li>
     <li><strong>Réserve de pas</strong> — pas disponibles que le héros consomme (marche, combats, coffres). La barre est pleine à 4 000 pas.</li>
@@ -368,7 +368,7 @@
   <ul>
     <li><strong>Palier</strong> et nom du biome.</li>
     <li><strong>Or</strong> et bouton <strong>feu de camp</strong>.</li>
-    <li><strong>Jauge de palier</strong> : 0 à 100 m, avec la porte du gardien dans les 15 derniers mètres.</li>
+    <li><strong>Jauge de palier</strong> : 0 à 100 m, avec le portail du gardien dans les 10 derniers mètres.</li>
     <li><strong>SAC</strong> : consommables, soins et buffs.</li>
     <li><strong>COFFRE</strong> : nombre de coffres en attente et temps restant. Un coffre ne bloque jamais la marche.</li>
     <li><strong>Bouton de synchronisation</strong> : petit carré en haut à gauche, aligné avec le SAC. Icône ↻ et point d'état (vert = récent, ambre = ancien, rouge = erreur). Appuyez pour synchroniser ; si la source n'est pas prête (clé Garmin absente, autorisation Santé Connect refusée), il ouvre <strong>Réglages → Source de pas</strong>.</li>
@@ -412,11 +412,19 @@
   </table>
   <h3>Gardiens</h3>
   <ul>
-    <li>Environ <strong>6× les PV</strong> d'un monstre du même niveau.</li>
-    <li><strong>Phase 2</strong> sous 50 % de PV : attaques plus rapides, aura embrasée.</li>
-    <li><strong>Bénédiction +25 %</strong> après une défaite contre un gardien : aide à la tentative suivante.</li>
+    <li><strong>Portail à 90 m</strong> : la marche s'arrête, le gardien est révélé avec ses PV, son ATQ, sa capacité et son modificateur.</li>
+    <li>La fiche compare aussi les <strong>PV actuels / PV max</strong> et l'<strong>ATQ du héros</strong> pour préparer l'engagement.</li>
+    <li>Choix : <strong>ENGAGER</strong>, <strong>FARMER CE PALIER</strong> ou <strong>CAMPER</strong>. Le combat ne démarre qu'après ENGAGER, à 100 m.</li>
+    <li><strong>Phase 2</strong> sous 50 % de PV : capacité télégraphiée, sans accélération permanente.</li>
+    <li><strong>Pitié</strong> : chaque défaite affaiblit le gardien de <strong>−5 % PV/ATQ</strong>, cumulable jusqu'à <strong>−25 %</strong>, remis à zéro à la victoire.</li>
     <li>Modificateurs possibles : <strong>Rapide</strong>, <strong>Blindé</strong>, <strong>Berserk</strong>, <strong>Régénérant</strong>, <strong>Voleur</strong>.</li>
   </ul>
+  <h3>Portail du gardien</h3>
+  <figure class="shot">
+    <img src="images/guardian_gate.jpg" alt="Portail du gardien avec PV et ATQ du gardien, PV et ATQ du héros, capacité, modificateur et boutons Engager, Farmer ce palier et Camper">
+    <figcaption>Le portail : comparez les PV/ATQ du gardien et du héros, puis engagez, farmez ou campez.</figcaption>
+  </figure>
+  <p>Le portail est un choix, pas un combat forcé. <strong>ENGAGER</strong> lance le gardien, <strong>FARMER CE PALIER</strong> verrouille le palier et renvoie au début pour farmer, <strong>CAMPER</strong> ouvre le camp. En progression hors ligne, la simulation s'arrête au portail et ne choisit jamais à votre place.</p>
   <h3>Capacités de gardien</h3>
   <figure class="shot">
     <img src="images/combat_boss.jpg" alt="Combat contre l'Hydre de Lerne avec la capacité Régénération affichée">
@@ -427,7 +435,7 @@
     <tr><td>Drain d'âme</td><td>Liche, Roi des Cryptes</td><td>Draine les PV du héros et soigne le gardien.</td></tr>
     <tr><td>Régénération</td><td>Hydre</td><td>Rend environ 7 % des PV max du gardien.</td></tr>
     <tr><td>Frappe lourde</td><td>Balrug, démons, bourreaux</td><td>Attaque très puissante.</td></tr>
-    <tr><td>Blindage</td><td>Golems, gardiens de la Forge</td><td>Réduit fortement les dégâts subis pendant 4,5 s.</td></tr>
+    <tr><td>Blindage</td><td>Golems, gardiens de la Forge</td><td>Réduit fortement les dégâts subis pendant 3 s.</td></tr>
     <tr><td>Souffle</td><td>Dragons</td><td>Gros dégâts et vulnérabilité temporaire.</td></tr>
     <tr><td>Racines</td><td>Tréant, dryades</td><td>Ralentit la VIT du héros.</td></tr>
     <tr><td>Acide</td><td>Vases, zymes, horreurs</td><td>Dégâts et vulnérabilité temporaire.</td></tr>
@@ -473,7 +481,7 @@
     <li><strong>Rations :</strong> soin au camp, soin automatique d'urgence en combat, pain de route.</li>
     <li><strong>Éclats :</strong> soin complet, identification, forge, autels.</li>
     <li><strong>Or :</strong> améliorations, marchand, statue, forge, pari.</li>
-    <li><strong>Butin :</strong> les gardiens donnent 3 éclats et 2 rations ; les coffres donnent 2 de chaque.</li>
+    <li><strong>Butin :</strong> les gardiens donnent 3 éclats et 3 rations ; les coffres donnent 2 éclats et 3 rations.</li>
   </ul>
 </section>
 
@@ -970,7 +978,7 @@
     <div><b>100 %</b><span>du rythme actif</span></div>
     <div><b>7 jours</b><span>absence maximale comptée</span></div>
   </div>
-  <p>La première limite atteinte arrête la simulation. Le budget est <strong>journalier</strong> : deux absences dans la même journée partagent la même enveloppe. Elle s'arrête aussi sur un <strong>événement</strong> : rencontre spéciale, nouveau coffre ou passage au camp. Devant le gardien, elle ne s'arrête que s'il reste moins d'un <strong>palier</strong> de budget ; avec un palier ou plus, le combat est simulé et le gardien peut être vaincu. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
+  <p>La première limite atteinte arrête la simulation. Le budget est <strong>journalier</strong> : deux absences dans la même journée partagent la même enveloppe. Elle s'arrête aussi sur un <strong>événement</strong> : rencontre spéciale, nouveau coffre, passage au camp ou <strong>portail du gardien à 90 m</strong>. Le gardien n'est jamais engagé automatiquement : le choix Engager / Farmer / Camper vous attend à la reprise. <strong>La réserve restante n'est pas détruite</strong> : elle vous attend et sera consommée normalement à votre retour.</p>
   <h3>Contenu du résumé</h3>
   <ul>
     <li>durée de l'absence ;</li>
@@ -996,7 +1004,7 @@
   <h2>20. Questions fréquentes</h2>
   <details>
     <summary>Pourquoi le jeu a-t-il avancé pendant que j'étais absent ?</summary>
-    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite du budget d'absence (30 % des pas du jour par défaut, réglable dans Réglages avancés) et de 4 minutes simulées. La réserve restante est conservée. Les gardiens peuvent être vaincus si le budget restant couvre un palier ; sinon la simulation s'arrête devant le portail. Voir <a href="#absence">Résumé d'absence</a>.</p>
+    <p>C'est le résumé d'absence : la réserve de pas s'écoule pendant la fermeture de l'application, dans la limite du budget d'absence (30 % des pas du jour par défaut, réglable dans Réglages avancés) et de 4 minutes simulées. La réserve restante est conservée. La simulation s'arrête au <strong>portail du gardien à 90 m</strong> ; le gardien n'est jamais engagé automatiquement. Voir <a href="#absence">Résumé d'absence</a>.</p>
   </details>
   <details>
     <summary>Le héros est bloqué et n'avance plus.</summary>
@@ -1004,7 +1012,7 @@
   </details>
   <details>
     <summary>Je suis devant la porte du gardien mais il n'y a pas de monstre.</summary>
-    <p>La porte apparaît dès 85 m, le gardien n'apparaît qu'à 100 m. S'il manque 2 m, il faut 20 pas. Le libellé « EN ATTENTE DE PAS » s'affiche quand la réserve est vide.</p>
+    <p>Le portail apparaît dès 90 m. Le gardien n'apparaît qu'après <strong>ENGAGER</strong> ; le combat se déroule alors à 100 m. S'il manque quelques mètres, il faut 10 pas par mètre. Le libellé « EN ATTENTE DE PAS » s'affiche quand la réserve est vide.</p>
   </details>
   <details>
     <summary>Le coffre me bloque.</summary>
