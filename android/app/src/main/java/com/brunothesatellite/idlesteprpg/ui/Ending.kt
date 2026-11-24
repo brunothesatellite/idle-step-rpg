@@ -252,13 +252,17 @@ fun EndingOverlay(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     stringResource(R.string.ending_title),
-                    fontFamily = Pixel,
-                    fontSize = 23.sp,
-                    lineHeight = 26.sp,
-                    letterSpacing = 1.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = GoldLight,
-                    textAlign = TextAlign.Center
+                    style = androidx.compose.ui.text.TextStyle(
+                        brush = Brush.verticalGradient(
+                            listOf(Color(0xFFFFF4D0), GoldLight, Gold, Color(0xFF8B6122))
+                        ),
+                        fontFamily = Pixel,
+                        fontSize = 23.sp,
+                        lineHeight = 26.sp,
+                        letterSpacing = 1.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
