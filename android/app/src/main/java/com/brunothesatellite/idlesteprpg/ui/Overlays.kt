@@ -1092,6 +1092,112 @@ private fun ReforgePool(currentEffect: String) {
 }
 
 @Composable
+fun GuardianGateDialog(
+    state: GameState,
+    onEngage: () -> Unit,
+    onFarm: () -> Unit,
+    onCamp: () -> Unit
+) {
+    val boss = state.pendingBoss ?: return
+    Box(
+        Modifier.fillMaxSize().background(Ink.copy(alpha = 0.88f)),
+        contentAlignment = Alignment.Center
+    ) {
+        PixelCard(
+            Modifier.fillMaxWidth().padding(horizontal = 18.dp),
+            borderColor = Gold.copy(alpha = 0.55f)
+        ) {
+            SectionLabel(stringResource(R.string.gate_title), color = Gold)
+            Spacer(Modifier.height(5.dp))
+            Text(
+                boss.enemyName,
+                fontFamily = Press,
+                fontSize = 12.sp,
+                color = GoldLight,
+                lineHeight = 18.sp
+            )
+            Text(
+                stringResource(R.string.gate_level, state.floor, boss.enemyLevel),
+                fontSize = 6.5.sp,
+                color = Muted
+            )
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                GateStat(
+                    stringResource(R.string.dashboard_hp),
+                    formatCompact(boss.enemyMaxHp.roundToInt()),
+                    Modifier.weight(1f)
+                )
+                GateStat(
+                    stringResource(R.string.dashboard_atk),
+                    formatCompact(boss.enemyAtk.roundToInt()),
+                    Modifier.weight(1f)
+                )
+            }
+            if (boss.abilityLabel.isNotBlank()) {
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    stringResource(R.string.gate_ability, boss.abilityLabel),
+                    fontSize = 6.4.sp,
+                    color = Ember
+                )
+            }
+            if (boss.modifier.isNotBlank()) {
+                Text(
+                    stringResource(R.string.gate_modifier, boss.modifier),
+                    fontSize = 6.4.sp,
+                    color = Blood
+                )
+            }
+            if (state.bossPity > 0) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(R.string.gate_pity, (state.bossPity * 100).roundToInt()),
+                    fontSize = 6.4.sp,
+                    color = Green
+                )
+            }
+            Spacer(Modifier.height(9.dp))
+            GoldButton(stringResource(R.string.gate_engage), onClick = onEngage)
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                OverlayAction(
+                    stringResource(R.string.gate_farm),
+                    Modifier.weight(1f),
+                    onFarm
+                )
+                OverlayAction(
+                    stringResource(R.string.gate_camp),
+                    Modifier.weight(1f),
+                    onCamp
+                )
+            }
+            Spacer(Modifier.height(5.dp))
+            Text(
+                stringResource(R.string.gate_hint),
+                fontSize = 6.sp,
+                color = Muted2,
+                lineHeight = 9.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun GateStat(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(Panel2)
+            .border(1.dp, Line, RoundedCornerShape(4.dp))
+            .padding(6.dp)
+    ) {
+        Text(label, fontSize = 5.5.sp, color = Muted2)
+        Text(value, fontFamily = Press, fontSize = 8.sp, color = GoldLight)
+    }
+}
+
+@Composable
 private fun StatRow(label: String, value: String) {
     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, fontSize = 8.sp, color = Muted, modifier = Modifier.weight(1f))

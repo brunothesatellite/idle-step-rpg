@@ -981,6 +981,16 @@
     <string name="codex_ability_line">ABILITY · %1$s</string>
     <string name="scene_phase2">PHASE 2 · ABLAZE</string>
     <string name="scene_blessing">BLESSING +%1$d%%</string>
+    <string name="scene_pity" formatted="false">GUARDIAN WEAKENED −%1$d %%</string>
+    <string name="gate_title">GUARDIAN GATE</string>
+    <string name="gate_level">Floor %1$d · Lv. %2$d</string>
+    <string name="gate_ability">ABILITY · %1$s</string>
+    <string name="gate_modifier">MODIFIER · %1$s</string>
+    <string name="gate_pity" formatted="false">WEAKENED −%1$d %%</string>
+    <string name="gate_engage">ENGAGE</string>
+    <string name="gate_farm">FARM THIS FLOOR</string>
+    <string name="gate_camp">CAMP</string>
+    <string name="gate_hint">Your choice: engage, farm or camp before the guardian.</string>
     <string name="scene_chest_force">FORCING CHEST</string>
     <string name="scene_elite">ELITE</string>
     <string name="scene_level_note">Kaelen grows stronger</string>

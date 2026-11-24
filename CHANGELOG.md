@@ -1,5 +1,14 @@
 # Journal des versions
 
+## v0.20.5
+- **Lot 5 — gardiens, pitié, portail** : niveau **palier + 1**, bouclier **35 % / 3 s / 8 s**, phase 2 télégraphiée sans accélération permanente, enrage après **25 s** (+15 %/5 s, cap +60 %).
+- **Pitié** : **−5 % PV/ATQ du gardien par défaite**, cap **−25 %**, visible au portail et en combat.
+- **Portail à 90 m** : arrêt avant le gardien, aperçu PV/ATQ/capacité/modificateur, choix **Engager / Farmer ce palier / Camper**.
+- **Rotation des gardiens** confirmée par palier dans chaque biome ; gardiens spéciaux 25/50/100 conservés.
+- **Codex HTML local** : `codex-complet.html`, ignoré par Git.
+- **Tests** : **135 / 135**, lint OK.
+- **Build** : `versionCode 52`, `versionName 0.20.5`. Aucune release GitHub.
+
 ## v0.20.4
 - **Correctif gardiens** : rotation réelle dans chaque biome (`index = (palier − début du biome) % nombre de gardiens`). L'Hydre de Lerne ne revient plus à chaque palier ; les 4 gardiens de chaque biome alternent.
 - **Lot 4 — rations et attrition** : plafond **30**, gardien +3, coffre +3, monstre 20 %, élite +1 garanti.

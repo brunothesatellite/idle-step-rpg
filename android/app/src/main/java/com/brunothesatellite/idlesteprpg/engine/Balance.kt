@@ -169,6 +169,10 @@ object Balance {
         const val HERO_MIN_INTERVAL_MS = 180.0
         const val BOSS_LEVEL_OFFSET = 1
         const val SHIELD_REDUCTION = 0.35
+        const val SHIELD_DURATION_MS = 3_000.0
+        const val SHIELD_PERIOD_MS = 8_000.0
+        const val BOSS_ABILITY_INTERVAL_MS = 7_000.0
+        const val GATE_METERS = 90.0
         const val BOSS_ENRAGE_AFTER_MS = 25_000.0
         const val BOSS_ENRAGE_STEP = 0.15
         const val BOSS_ENRAGE_CAP = 0.60

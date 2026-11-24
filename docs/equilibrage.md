@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.4** (lots 1–4, `versionCode 51`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.5** (lots 1–5, `versionCode 52`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -80,18 +80,20 @@ Valeurs au palier 36 (cible Phase A) :
 | Monstre normal | ~30,6 k | ~670 |
 | Gardien | ~87,7 k | ~286 |
 
-Le gardien est au **niveau palier + 2**. Les monstres ont **6 % de chance d'être élites** (1,8× PV, 1,15× ATQ). Le gardien est choisi par rotation dans le pool du biome : `(palier − début du biome) % nombre de gardiens`; les gros jalons 25/50/100 gardent leurs gardiens spéciaux. Il dispose de :
+Le gardien est au **niveau palier + 1**. Les monstres ont **6 % de chance d'être élites** (1,8× PV, 1,15× ATQ). Le gardien est choisi par rotation dans le pool du biome : `(palier − début du biome) % nombre de gardiens`; les gros jalons 25/50/100 gardent leurs gardiens spéciaux. Il dispose de :
 
-- un bouclier de **40 % / 3 s / 8 s** ;
-- une **phase 2** sous 50 % de PV : intervalle d'attaque réduit de 1 250 à **950 ms** ;
-- un **enrage** après 15 s : +25 % ATQ toutes les 5 s, plafond +75 % ;
+- un bouclier de **35 % / 3 s / 8 s** ;
+- une **phase 2** sous 50 % de PV : capacité télégraphiée, sans accélération permanente à 950 ms ;
+- un **enrage** après 25 s : +15 % ATQ toutes les 5 s, plafond +60 % ;
 - un modificateur aléatoire parmi RAPIDE, BLINDÉ, BERSERK, RÉGÉNÉRANT, VOLEUR ;
 - une capacité de gardien (slam 2,4×, souffle 2,0×, drain 1,5×, etc.) ;
-- une **bénédiction** cumulative de +25 % de dégâts par défaite, plafond +75 %, remise à zéro à la victoire.
+- une **pitié** de −5 % PV/ATQ par défaite, plafond −25 %, remise à zéro à la victoire.
+
+Le gardien est précédé d'un **portail à 90 m** : le joueur voit ses PV, son ATQ, sa capacité, son modificateur et peut choisir **Engager / Farmer ce palier / Camper**.
 
 ### 3.4 Combat : le seuil binaire
 
-Simulation `--curve target`, 300 runs, biome auto :
+Simulation `--curve target`, 300 runs, biome auto (mesure **avant le lot 5** ; le portail, la pitié et l'enrage 25 s modifient les résultats) :
 
 | Palier | `reference` monstre | `reference` gardien | `reference_high` gardien | `player36` gardien |
 |---:|---:|---:|---:|---:|
@@ -181,15 +183,15 @@ Simulation de l'attrition (`reference`) :
 |---|---|---|---|
 | C1 | XP `1,2^n` | **corrigé lot 1** : 1,09, ~6,8 M XP, 2 500–4 000 kills | résolu |
 | C2 | Drops plats + upgrades composés | **corrigé lot 2** : butin ×6, upgrades additifs +4 %/+20 | résolu |
-| C3 | Gardien à seuil 0/100 | blocage ou trivialisation, pas de zone 35–65 % | **critique** |
+| C3 | Gardien à seuil 0/100 | **corrigé lot 5** : courbe, pitié visible, portail à 90 m | résolu |
 | C4 | Attrition sans rations suffisantes | **corrigé lot 4** : cap 30, revenus +, auto-ration 40/45, repos 2×20 %, farm 10 % | résolu |
 | C5 | Trois courbes cibles dans l'ancien rapport | playtest non interprétable | **critique** |
 | C6 | VIT morte au-delà de ~2,8 | **corrigé lot 2** : cap 4,0, intervalle 180 ms, affichage MAX | résolu |
 | C7 | Effets empilables sans cap | **corrigé lot 2** : caps 25/40/75/100/50 | résolu |
-| C8 | Gardien auto-déclenché à 100 m | mort avant de pouvoir se préparer | élevée |
+| C8 | Gardien auto-déclenché à 100 m | **corrigé lot 5** : portail à 90 m avec choix | résolu |
 | C9 | `holdFloor` sans éclats/rations | farm non rentable | élevée |
 | C10 | Camp/sets plats + or sans sink | **corrigé lot 3** : camp et sets en %, coût indexé, plafond 30 | résolu |
-| C11 | Enrage dans une zone morte | inutile pour les faibles, trop tard pour les forts | moyenne |
+| C11 | Enrage dans une zone morte | **corrigé lot 5** : enrage après 25 s, phase 2 télégraphiée | résolu |
 | C12 | Fusion 75 %, loot sans pity | frustration et séries sèches | moyenne |
 | C13 | Biomes/modificateurs non budgétés | pics imprévisibles | moyenne |
 | C14 | Fin de jeu 81–100 répétitive | lassitude avant le palier 100 | moyenne |
@@ -410,4 +412,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.20.2 / lot 2** : butin ×1 à ×6, raretés cibles, upgrades additifs +4 %/+20, caps VIT/effets. Ancien upgrade composé ×2 199 et anciens drops plats conservés en historique.
 - **0.20.3 / lot 3** : camp et sets en pourcentage, coût de camp indexé sur le palier, plafond 30 niveaux.
 - **0.20.4 / correctif + lot 4** : rotation des gardiens par palier dans chaque biome ; rations cap 30, revenus augmentés, auto-ration 40/45, farm 10 %, repos gratuit 2×20 %, farm de gardien +1/+1.
+- **0.20.5 / lot 5** : niveau palier +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −5 %/défaite cap −25 %, portail à 90 m avec Engager/Farmer/Camper.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.

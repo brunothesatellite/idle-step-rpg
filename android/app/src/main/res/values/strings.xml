@@ -983,6 +983,16 @@
     <string name="codex_ability_line">CAPACITÉ · %1$s</string>
     <string name="scene_phase2">PHASE 2 · EMBRASÉ</string>
     <string name="scene_blessing">BÉNÉDICTION +%1$d %%</string>
+    <string name="scene_pity" formatted="false">GARDIEN AFFAIBLI −%1$d %%</string>
+    <string name="gate_title">PORTAIL DU GARDIEN</string>
+    <string name="gate_level">Palier %1$d · Niv. %2$d</string>
+    <string name="gate_ability">CAPACITÉ · %1$s</string>
+    <string name="gate_modifier">MODIFICATEUR · %1$s</string>
+    <string name="gate_pity" formatted="false">AFFAIBLI −%1$d %%</string>
+    <string name="gate_engage">ENGAGER</string>
+    <string name="gate_farm">FARMER CE PALIER</string>
+    <string name="gate_camp">CAMPER</string>
+    <string name="gate_hint">Le choix est libre : engagez, farmez ou campez avant le gardien.</string>
     <string name="scene_chest_force">FORÇAGE DU COFFRE</string>
     <string name="scene_elite">ÉLITE</string>
     <string name="scene_level_note">Kaelen se renforce</string>

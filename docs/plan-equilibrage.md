@@ -1,7 +1,7 @@
 # Plan d'implémentation — équilibrage 1 → 100
 
 > **Statut : proposition, en attente de validation.** Aucun code n'est modifié par ce document.
-> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.4** (lots 1–4, `versionCode 51`), sauvegarde **v7**.
+> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.5** (lots 1–5, `versionCode 52`), sauvegarde **v7**.
 > Objectif : rendre le palier 100 **exigeant, lisible et non frustrant**, sans paywall ni barrière définitive.
 
 ## 1. Principes directeurs
@@ -197,6 +197,8 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 
 ### Lot 5 — Gardiens, pitié, portail
 
+**Statut : livré en 0.20.5.** Niveau +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −5 %/défaite, portail à 90 m.
+
 **Objectif** : supprimer le seuil 0/100 et rendre le combat lisible.
 
 **Modifications** :
@@ -375,8 +377,9 @@ Tests unitaires à ajouter :
 4. ~~Lot 2 — objets, upgrades, butin, caps.~~ **Livré en 0.20.2.**
 5. ~~Lot 3 — camp, sets, or.~~ **Livré en 0.20.3.**
 6. ~~Lot 4 — rations, attrition.~~ **Livré en 0.20.4.**
-7. Dérouler le lot 5 (gardiens, pitié, portail).
+7. ~~Lot 5 — gardiens, pitié, portail.~~ **Livré en 0.20.5.**
+8. Dérouler le lot 6 (farm et `holdFloor`).
 4. Calibrer les gardiens (lot 5) seulement après.
 5. Playtest 7 jours, puis 14 jours.
 
-**Lots 0 à 4 livrés. En attente du go pour le lot 5.**
+**Lots 0 à 5 livrés. En attente du go pour le lot 6.**

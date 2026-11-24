@@ -4,6 +4,7 @@ import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.FightData
+import com.brunothesatellite.idlesteprpg.engine.GATE_METERS
 import com.brunothesatellite.idlesteprpg.engine.FirstSeen
 import com.brunothesatellite.idlesteprpg.engine.ForgeOutcome
 import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
@@ -33,7 +34,7 @@ class GameEngineTest {
     }
 
     @Test
-    fun inconsistentNextFightStartsBossAtGate() {
+    fun inconsistentNextFightStopsAtGuardianGate() {
         val state = GameState().apply {
             floor = 11
             distance = 690.0
@@ -43,9 +44,9 @@ class GameEngineTest {
         }
         GameEngine.tick(state, 100.0)
         assertEquals(11, state.floor)
-        assertEquals(100.0, state.distance, 0.01)
-        assertEquals("boss", state.mode)
-        assertNotNull(state.fight)
+        assertEquals(GATE_METERS, state.distance, 0.01)
+        assertEquals("gate", state.mode)
+        assertNotNull(state.pendingBoss)
     }
 
     @Test
@@ -1308,6 +1309,44 @@ class GameEngineTest {
         val after = statsOf(state)
         assertTrue(after.atk > before.atk)
         assertTrue(after.maxHp > before.maxHp)
+    }
+
+    @Test
+    fun guardianGateStopsBeforeBossAndAllowsChoice() {
+        val state = GameState().apply {
+            floor = 5
+            level = 10
+            distance = 89.0
+            nextFight = 90
+            stepBank = 500.0
+            mode = "walk"
+        }
+        GameEngine.tick(state, 1_000.0)
+        assertEquals("gate", state.mode)
+        assertEquals(GATE_METERS, state.distance, 0.001)
+        assertNotNull(state.pendingBoss)
+        assertTrue(GameEngine.engageBoss(state))
+        assertEquals("boss", state.mode)
+        assertNotNull(state.fight)
+    }
+
+    @Test
+    fun guardianGateCanReturnToFarm() {
+        val state = GameState().apply {
+            floor = 5
+            level = 10
+            distance = 89.0
+            nextFight = 90
+            stepBank = 500.0
+            mode = "walk"
+        }
+        GameEngine.tick(state, 1_000.0)
+        assertEquals("gate", state.mode)
+        assertTrue(GameEngine.farmFromGate(state))
+        assertEquals("walk", state.mode)
+        assertEquals(0.0, state.distance, 0.001)
+        assertTrue(state.holdFloor)
+        assertNull(state.pendingBoss)
     }
 
     @Test

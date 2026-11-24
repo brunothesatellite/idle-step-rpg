@@ -46,6 +46,7 @@ import com.brunothesatellite.idlesteprpg.ui.CodexOverlay
 import com.brunothesatellite.idlesteprpg.ui.Dashboard
 import com.brunothesatellite.idlesteprpg.ui.DayBanner
 import com.brunothesatellite.idlesteprpg.ui.GarminScreen
+import com.brunothesatellite.idlesteprpg.ui.GuardianGateDialog
 import com.brunothesatellite.idlesteprpg.ui.ImportPreviewDialog
 import com.brunothesatellite.idlesteprpg.ui.Ink
 import com.brunothesatellite.idlesteprpg.ui.ItemDialog
@@ -320,6 +321,18 @@ private fun GameRoot(vm: GameViewModel) {
                     onOpenConsumables = vm::openConsumables,
                     onResume = vm::closeCamp,
                     reducedMotion = ui.reducedMotion
+                )
+            }
+            if (state.mode == "gate" && state.pendingBoss != null &&
+                !ui.campOpen && !ui.settingsOpen && !ui.prefsOpen &&
+                !ui.codexOpen && !ui.journalOpen && !ui.chestOpen &&
+                ui.selectedItem == null
+            ) {
+                GuardianGateDialog(
+                    state = state,
+                    onEngage = vm::engageBoss,
+                    onFarm = vm::farmFromGate,
+                    onCamp = vm::openCamp
                 )
             }
             if (ui.chestOpen && state.chest != null) {

@@ -623,6 +623,7 @@ object GameEngine {
                 if (state.farmWaitMs <= 0) startFarmFight(state)
             }
             "camp", "special" -> Unit
+            "gate" -> Unit
             else -> state.mode = "walk"
         }
         state.hp = state.hp.coerceIn(0.0, statsOf(state).maxHp.toDouble())
@@ -682,6 +683,11 @@ object GameEngine {
         val used = min(state.stepBank, rate * dtMs / 1000.0)
         state.stepBank -= used
         state.distance += used / STEPS_PER_METER
+        if (state.nextFight >= GATE_METERS && state.distance >= GATE_METERS) {
+            state.distance = GATE_METERS
+            prepareGate(state)
+            return
+        }
         if (state.distance >= state.nextFight) {
             state.distance = state.nextFight.toDouble()
             if (state.nextFight >= FLOOR_METERS) {
@@ -1166,8 +1172,37 @@ object GameEngine {
     }
 
     fun startBoss(state: GameState) {
-        state.fight = makeBoss(state)
+        state.fight = state.pendingBoss ?: makeBoss(state)
+        state.pendingBoss = null
         state.mode = "boss"
+    }
+
+    /** Prépare le portail à 90 m : aperçu du gardien et choix du joueur. */
+    fun prepareGate(state: GameState) {
+        if (state.mode != "walk") return
+        state.distance = GATE_METERS
+        state.nextFight = FLOOR_METERS
+        state.pendingBoss = makeBoss(state)
+        state.mode = "gate"
+        state.journal = addJournal(state, "Portail du gardien — ${state.pendingBoss?.enemyName}", "neutral")
+    }
+
+    fun engageBoss(state: GameState): Boolean {
+        if (state.mode != "gate") return false
+        startBoss(state)
+        return true
+    }
+
+    /** Depuis le portail, verrouille le palier et repart au début pour farmer. */
+    fun farmFromGate(state: GameState): Boolean {
+        if (state.mode != "gate") return false
+        state.holdFloor = true
+        state.pendingBoss = null
+        state.distance = 0.0
+        state.nextFight = 10
+        state.mode = "walk"
+        state.journal = addJournal(state, "Farm activé depuis le portail", "neutral")
+        return true
     }
 
     private fun startFarmFight(state: GameState) {
@@ -1275,7 +1310,7 @@ object GameEngine {
         val t = bossFor(state.floor)
         val ability = bossAbilityFor(t.name, state.floor)
         val rule = biomeRuleFor(state.floor)
-        val level = state.floor + Balance.BOSS_LEVEL_OFFSET
+        val level = state.floor + Balance.Target.BOSS_LEVEL_OFFSET
         val hpScale = bossHpScale(state.floor)
         val atkScale = bossAtkScale(state.floor)
         var hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) * hpScale
@@ -1298,14 +1333,15 @@ object GameEngine {
             else -> ""
         }
         val reward = min(Balance.REWARD_BOSS_CAP, sqrt(depthMultiplier(state.floor, boss = true)))
+        val pity = state.bossPity.coerceIn(0.0, Balance.Target.PITY_CAP)
         return FightData(
             enemyName = t.name + suffix,
             enemyIcon = t.icon,
             enemyId = t.id,
             enemyLevel = level,
-            enemyHp = hp * rule.enemyHpMult,
-            enemyMaxHp = hp * rule.enemyHpMult,
-            enemyAtk = atk * rule.enemyAtkMult,
+            enemyHp = hp * rule.enemyHpMult * (1.0 - pity),
+            enemyMaxHp = hp * rule.enemyHpMult * (1.0 - pity),
+            enemyAtk = atk * rule.enemyAtkMult * (1.0 - pity),
             enemyIntervalMs = (interval * rule.enemyIntervalMult).roundToLong(),
             gold = (12 * (6 + 3 * level) * reward).roundToInt(),
             xp = bossXpReward(level, state.floor, state.level),
@@ -1358,9 +1394,11 @@ object GameEngine {
         f.abilityFlashMs = (f.abilityFlashMs - dtMs).coerceAtLeast(0.0)
         f.shieldMs = (f.shieldMs - dtMs).coerceAtLeast(0.0)
 
-        if (f.isBoss && f.enemyHp < f.enemyMaxHp * Balance.BOSS_PHASE_THRESHOLD && f.enemyIntervalMs > 1000) {
-            f.enemyIntervalMs = Balance.BOSS_PHASE_INTERVAL_MS.toLong()
-            state.journal = addJournal(state, "Le gardien s'embrase", "bad")
+        if (f.isBoss && !f.phase2 &&
+            f.enemyHp < f.enemyMaxHp * Balance.BOSS_PHASE_THRESHOLD
+        ) {
+            f.phase2 = true
+            state.journal = addJournal(state, "Le gardien entre en phase 2", "bad")
         }
         if (f.isBoss && f.modifier == "RÉGÉNÉRANT" && f.enemyHp < f.enemyMaxHp) {
             f.enemyHp = min(
@@ -1371,7 +1409,11 @@ object GameEngine {
         if (f.isBoss && f.specialMs <= 0.0) {
             triggerBossAbility(state, f)
             if (state.fight == null) return
-            f.specialMs = Balance.BOSS_ABILITY_INTERVAL_MS
+            f.specialMs = if (f.ability == "shield") {
+                Balance.Target.SHIELD_PERIOD_MS
+            } else {
+                Balance.Target.BOSS_ABILITY_INTERVAL_MS
+            }
         }
 
         if (f.heroTimerMs <= 0) {
@@ -1388,10 +1430,10 @@ object GameEngine {
 
     private fun bossEnrage(f: FightData): Double {
         if (!f.isBoss) return 1.0
-        val after = Balance.BOSS_ENRAGE_AFTER_MS
+        val after = Balance.Target.BOSS_ENRAGE_AFTER_MS
         if (f.elapsedMs < after) return 1.0
         val steps = ((f.elapsedMs - after) / Balance.BOSS_ENRAGE_STEP_MS).toInt() + 1
-        return 1.0 + min(Balance.BOSS_ENRAGE_CAP, steps * Balance.BOSS_ENRAGE_STEP)
+        return 1.0 + min(Balance.Target.BOSS_ENRAGE_CAP, steps * Balance.Target.BOSS_ENRAGE_STEP)
     }
 
     private fun triggerBossAbility(state: GameState, f: FightData) {
@@ -1409,7 +1451,7 @@ object GameEngine {
                 f.enemyHp = min(f.enemyMaxHp, f.enemyHp + dmg * 0.8)
             }
             "regen" -> f.enemyHp = min(f.enemyMaxHp, f.enemyHp + f.enemyMaxHp * 0.07)
-            "shield" -> f.shieldMs = Balance.SHIELD_DURATION_MS
+            "shield" -> f.shieldMs = Balance.Target.SHIELD_DURATION_MS
             "breath" -> {
                 damage(2.0)
                 addBuff(state, "vulnerable", 0.15, 6_000, "GIVRE")
@@ -1459,11 +1501,7 @@ object GameEngine {
 
     private fun heroAttack(state: GameState, f: FightData) {
         val s = statsOf(state)
-        var atk = s.atk * if (f.isBoss && state.bossBlessing > 0) {
-            1.0 + state.bossBlessing
-        } else {
-            1.0
-        }
+        var atk = s.atk
         var dmg = atk * (0.9 + rnd.nextDouble() * 0.2)
         if (f.isBoss) dmg *= 1.0 + s.bossDamage
         val critChance = ((s.crit + state.ferveur * 0.02) / 100.0)
@@ -1471,7 +1509,7 @@ object GameEngine {
         val crit = rnd.nextDouble() < critChance
         f.lastCrit = crit
         if (crit) dmg *= 1.6 + s.critDamage
-        if (f.shieldMs > 0.0) dmg *= 1.0 - Balance.SHIELD_REDUCTION
+        if (f.shieldMs > 0.0) dmg *= 1.0 - Balance.Target.SHIELD_REDUCTION
         f.enemyHp -= dmg
         recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit, onEnemy = true)
         if (s.lifesteal > 0.0) {
@@ -1554,6 +1592,8 @@ object GameEngine {
                 baseBoss to ((state.bossKills[baseBoss] ?: 0) + 1)
                 )
             state.bossBlessing = 0.0
+            state.bossPity = 0.0
+            state.pendingBoss = null
             state.mode = "walk"
             state.distance = 0.0
             state.nextFight = 10
@@ -1639,10 +1679,11 @@ object GameEngine {
         state.farmKills = 0
         state.farmWaitMs = 800.0
         if (f.isBoss) {
-            state.bossBlessing = min(
-                Balance.BOSS_BLESSING_CAP,
-                state.bossBlessing + Balance.BOSS_BLESSING_STEP
+            state.bossPity = min(
+                Balance.Target.PITY_CAP,
+                state.bossPity + Balance.Target.PITY_HP_STEP
             )
+            state.pendingBoss = null
         }
         state.journal = addJournal(state, "Défaite — repli de 20 m dans la zone de farm", "bad")
     }

@@ -532,6 +532,18 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         _toasts.tryEmit(tr(R.string.toast_key_removed))
     }
 
+    fun engageBoss() {
+        viewModelScope.launch {
+            container.gameRepository.mutate { GameEngine.engageBoss(it) }
+        }
+    }
+
+    fun farmFromGate() {
+        viewModelScope.launch {
+            container.gameRepository.mutate { GameEngine.farmFromGate(it) }
+        }
+    }
+
     fun openCamp() {
         viewModelScope.launch {
             container.gameRepository.mutate { GameEngine.prepareCamp(it) }

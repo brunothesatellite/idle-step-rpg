@@ -13,7 +13,7 @@ const val FLOOR_METERS = 100
 const val ENCOUNTER_METERS = 10
 
 /** Distance à laquelle le portail du gardien apparaît. */
-const val GATE_METERS = 85.0
+const val GATE_METERS = 90.0
 
 /** Marche : pas consommés par seconde, et seuil de passage au rythme lent. */
 const val WALK_STEPS_PER_SECOND = 60.0
@@ -148,6 +148,7 @@ data class FightData(
     var abilityLabel: String = "",
     var abilityFlashMs: Double = 0.0,
     var shieldMs: Double = 0.0,
+    var phase2: Boolean = false,
     /** Pool d'apparition : easy, mid, hard ou farm. */
     var tier: String = "easy",
     /** Identifiant stable de la créature, indépendant du nom affiché. */
@@ -380,6 +381,8 @@ data class GameState(
     var journal: List<JournalEntry> = defaultJournal(),
     var mode: String = "walk",
     var fight: FightData? = null,
+    var pendingBoss: FightData? = null,
+    var bossPity: Double = 0.0,
     var chest: ChestData? = null,
     /** Or du dernier coffre ouvert, pour le toast (non sérialisé). */
     @Transient var chestFlashGold: Int = 0,
