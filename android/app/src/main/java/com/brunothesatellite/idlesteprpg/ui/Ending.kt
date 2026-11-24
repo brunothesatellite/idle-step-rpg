@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg.ui
 import android.content.Context
 import android.content.res.Resources
 import android.util.Base64
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -69,7 +70,6 @@ import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -159,7 +159,7 @@ internal fun endingPreviewState(state: GameState): GameState {
     return state.copy(
         floor = 101,
         level = maxOf(state.level, 100),
-        historyStart = state.historyStart.ifBlank { LocalDate.now().minusDays(41).toString() },
+        historyStart = LocalDate.now().minusDays(41).toString(),
         totalSteps = maxOf(state.totalSteps, 1_284_000),
         kills = maxOf(state.kills, 3_482),
         bosses = maxOf(state.bosses, 124),
@@ -198,11 +198,14 @@ fun EndingOverlay(
         ActivityResultContracts.CreateDocument("text/html")
     ) { uri ->
         if (uri != null) {
-            val ok = runCatching {
+            val html = runCatching { endingReportHtml(context, state) }
+                .onFailure { Log.e("EndingExport", "report generation failed", it) }
+                .getOrNull()
+            val ok = html != null && runCatching {
                 context.contentResolver.openOutputStream(uri)?.use { stream ->
-                    stream.write(endingReportHtml(context, state).toByteArray(Charsets.UTF_8))
+                    stream.write(html.toByteArray(Charsets.UTF_8))
                 } ?: error("flux indisponible")
-            }.isSuccess
+            }.onFailure { Log.e("EndingExport", "report write failed", it) }.isSuccess
             Toast.makeText(
                 context,
                 context.getString(if (ok) R.string.ending_export_done else R.string.ending_export_error),
@@ -405,8 +408,8 @@ private fun EndingScene(reducedMotion: Boolean) {
                 .offset(y = (-30).dp)
                 .height(174.dp)
                 .width(116.dp)
-                .alpha(0.52f)
-                .zIndex(0.2f)
+                .alpha(0.62f)
+                .zIndex(1.3f)
         )
 
         // Petit rappel de la statue du camp.
@@ -425,9 +428,9 @@ private fun EndingScene(reducedMotion: Boolean) {
         Box(
             Modifier
                 .align(Alignment.Center)
-                .offset(y = 46.dp)
-                .size(188.dp)
-                .zIndex(1f),
+                .offset(y = 42.dp)
+                .size(172.dp)
+                .zIndex(1.6f),
             contentAlignment = Alignment.Center
         ) {
             GoldenAura(Modifier.fillMaxSize(), animate = !reducedMotion)
@@ -509,9 +512,13 @@ private fun EndHeroCard(state: GameState) {
             ) {
                 Text(
                     state.level.toString(),
-                    fontFamily = Press,
-                    fontSize = 9.sp,
-                    color = Ink
+                    fontFamily = Pixel,
+                    fontSize = 15.sp,
+                    lineHeight = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Ink,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
             Spacer(Modifier.width(9.dp))
@@ -561,7 +568,7 @@ private fun EndHeroCard(state: GameState) {
             EndingStat(stringResource(R.string.ending_stat_crit), "${stats.crit} %", Modifier.weight(1f))
             EndingStat(
                 stringResource(R.string.ending_stat_regen),
-                decimalRes(stats.regen) + " PV/s",
+                stringResource(R.string.ending_regen_value, decimalRes(stats.regen)),
                 Modifier.weight(1f)
             )
             EndingStat(stringResource(R.string.ending_stat_ferveur), state.ferveur.toString(), Modifier.weight(1f))
@@ -690,7 +697,7 @@ private fun EndGuardiansCard(state: GameState) {
                     fontFamily = Pixel,
                     fontSize = 6.5.sp,
                     color = if (last) Gold else Muted2,
-                    modifier = Modifier.width(20.dp)
+                    modifier = Modifier.width(28.dp)
                 )
                 Text(
                     guardian.name,
@@ -787,39 +794,39 @@ private fun EndEquipmentCard(state: GameState) {
         SectionLabel(stringResource(R.string.ending_equipment), color = Gold)
         Spacer(Modifier.height(5.dp))
         state.equipment.forEach { item ->
-            Row(
+            Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 3.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(vertical = 4.dp)
             ) {
-                Box(Modifier.size(4.dp).rotate(45f).background(rarityColor(item.rarity)))
-                Spacer(Modifier.width(6.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        slotLabelRes(item.slot).uppercase(),
-                        fontFamily = Pixel,
-                        fontSize = 5.6.sp,
-                        letterSpacing = 0.6.sp,
-                        color = Muted2
-                    )
-                    Text(
-                        itemName(res, item.name, item.effect),
-                        fontFamily = Pixel,
-                        fontSize = 7.2.sp,
-                        color = Parchment,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(4.dp).rotate(45f).background(rarityColor(item.rarity)))
+                    Spacer(Modifier.width(6.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            slotLabelRes(item.slot).uppercase(),
+                            fontFamily = Pixel,
+                            fontSize = 5.6.sp,
+                            letterSpacing = 0.6.sp,
+                            color = Muted2
+                        )
+                        Text(
+                            itemName(res, item.name, item.effect),
+                            fontFamily = Pixel,
+                            fontSize = 7.2.sp,
+                            color = Parchment,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
                 Text(
                     statLineRes(res, item),
                     fontFamily = Pixel,
-                    fontSize = 6.sp,
+                    fontSize = 6.2.sp,
+                    lineHeight = 9.sp,
                     color = Muted,
-                    textAlign = TextAlign.End,
-                    maxLines = 2,
-                    modifier = Modifier.width(120.dp)
+                    modifier = Modifier.padding(start = 10.dp, top = 1.dp)
                 )
             }
         }
@@ -977,8 +984,12 @@ internal fun endingReportHtml(context: Context, state: GameState): String {
     val summary = endingSummary(state)
     val stats = statsOf(state)
     val guardians = endingGuardians(state, res)
-    val generated = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG)
-        .withLocale(locale)
+    val generatedPattern = if (locale.language == "fr") {
+        "d MMMM yyyy 'à' HH:mm"
+    } else {
+        "MMMM d, yyyy 'at' h:mm a"
+    }
+    val generated = DateTimeFormatter.ofPattern(generatedPattern, locale)
         .format(LocalDateTime.now())
 
     fun n(value: Int): String = number.format(value)

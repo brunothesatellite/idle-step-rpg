@@ -155,9 +155,9 @@
 <string name="ending_eyebrow">Fin du sentier · palier 100</string>
 <string name="ending_badge">FIN · PALIER 100</string>
 <string name="ending_epilogue">Cent paliers, huit biomes, une âme première. La statue s\'élève au camp, le halo ne s\'éteint plus, et le sentier continue.</string>
-<string name="ending_legend_statue">Statue · palier 100</string>
+<string name="ending_legend_statue">Statue · 100</string>
 <string name="ending_legend_hero">Le Marcheur</string>
-<string name="ending_legend_boss">L\'Âme Première · déchue</string>
+<string name="ending_legend_boss">L\'Âme Première</string>
 <string name="ending_dossier">Dossier du héros</string>
 <string name="ending_days_steps">%1$d jours · %2$s pas</string>
 <string name="ending_days_short">%1$d j</string>
@@ -167,6 +167,7 @@
 <string name="ending_stat_vit">VIT</string>
 <string name="ending_stat_crit">Critique</string>
 <string name="ending_stat_regen">Régén.</string>
+<string name="ending_regen_value">%1$s PV/s</string>
 <string name="ending_stat_ferveur">Ferveur</string>
 <string name="ending_progression">Progression</string>
 <string name="ending_floors_cleared">Paliers franchis</string>

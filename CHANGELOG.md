@@ -2,7 +2,8 @@
 
 ## v0.21.0
 - **Lot 10 — écran de fin enrichi** : diorama avec la vraie statue du palier 100, l'aura dorée du héros et le gardien final déchu ; dossier du héros, progression, télémétrie, gardiens 81–100, économie, équipement porté, collections et jalons.
-- **Export HTML** : rapport autonome (mêmes données, fonte pixel embarquée) enregistré via le sélecteur de fichiers Android.
+- **Export HTML** : rapport autonome (mêmes données, fonte pixel embarquée) enregistré via le sélecteur de fichiers Android. Correction du fuseau horaire et de la mise en page de l'équipement ; validé sur appareil.
+- **Captures** : écran de fin FR et EN dans `docs/captures/`, avec le rapport HTML exporté.
 - **Aperçu debug** : bouton **Aperçu de la fin** dans les réglages des builds debug, pour relire l'écran sans attendre le palier 100.
 - **Tests** : **148 / 148**, lint OK.
 - **Build** : `versionCode 58`, `versionName 0.21.0`. Aucune release GitHub.

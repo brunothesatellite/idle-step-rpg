@@ -153,9 +153,9 @@
 <string name="ending_eyebrow">End of the path · floor 100</string>
 <string name="ending_badge">END · FLOOR 100</string>
 <string name="ending_epilogue">One hundred floors, eight biomes, one first soul. The statue rises at camp, the halo never fades, and the path goes on.</string>
-<string name="ending_legend_statue">Statue · floor 100</string>
+<string name="ending_legend_statue">Statue · 100</string>
 <string name="ending_legend_hero">The Walker</string>
-<string name="ending_legend_boss">The First Soul · fallen</string>
+<string name="ending_legend_boss">The First Soul</string>
 <string name="ending_dossier">Hero dossier</string>
 <string name="ending_days_steps">%1$d days · %2$s steps</string>
 <string name="ending_days_short">%1$d d</string>
@@ -165,6 +165,7 @@
 <string name="ending_stat_vit">SPD</string>
 <string name="ending_stat_crit">Critical</string>
 <string name="ending_stat_regen">Regen.</string>
+<string name="ending_regen_value">%1$s HP/s</string>
 <string name="ending_stat_ferveur">Fervour</string>
 <string name="ending_progression">Progression</string>
 <string name="ending_floors_cleared">Floors cleared</string>
