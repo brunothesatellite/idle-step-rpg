@@ -382,7 +382,7 @@ object GameEngine {
     }
 
     fun goldGain(state: GameState, base: Int): Int =
-        (base * (1.0 + 0.05 * milestoneBonus(state.floor))).roundToInt()
+        (base * (1.0 + Balance.GOLD_MILESTONE_BONUS * milestoneBonus(state.floor))).roundToInt()
 
     fun addLegend(state: GameState, text: String, type: String = "good") {
         state.legend = (listOf(JournalEntry(text, nowTime(), type)) + state.legend).take(120)
@@ -874,7 +874,7 @@ object GameEngine {
                 if (state.hp >= maxHp) return SpecialOutcome("PV déjà complets.", false)
                 val heal = maxHp * template.magnitude
                 state.hp = min(maxHp, state.hp + heal)
-                state.rations = min(24, state.rations + template.secondary.toInt())
+                state.rations = min(MAX_RATIONS, state.rations + template.secondary.toInt())
                 message = "+${heal.roundToInt()} PV · +${template.secondary.toInt()} ration"
             }
             "damage" -> {
@@ -1059,10 +1059,10 @@ object GameEngine {
             state.stepBank += accepted
             state.totalSteps += accepted
             state.weeklySteps += accepted
-            val nr = min(24, todayTotal / 200)
+            val nr = min(MAX_RATIONS, todayTotal / 200)
             val ns = min(12, todayTotal / 500)
             if (nr > state.genRations) {
-                state.rations = min(24, state.rations + (nr - state.genRations))
+                state.rations = min(MAX_RATIONS, state.rations + (nr - state.genRations))
                 state.genRations = nr
             }
             if (ns > state.genShards) {
@@ -1088,7 +1088,7 @@ object GameEngine {
             state.stepBank += importedHistory
             state.totalSteps += importedHistory
             state.weeklySteps += importedHistory
-            state.rations = min(24, state.rations + min(12, importedHistory / 800))
+            state.rations = min(MAX_RATIONS, state.rations + min(12, importedHistory / 800))
             state.shards = min(MAX_SHARDS, state.shards + min(6, importedHistory / 2000))
             state.journal = addJournal(
                 state,
@@ -1175,35 +1175,49 @@ object GameEngine {
     }
 
     private fun depthMultiplier(floor: Int, boss: Boolean = false): Double {
-        if (floor <= 10) return 1.0
-        val raw = (if (boss) 1.08 else 1.12).pow((floor - 10).toDouble())
-        return min(raw, 40.0)
+        if (floor <= Balance.DEPTH_START_FLOOR) return 1.0
+        val base = if (boss) Balance.BOSS_DEPTH_BASE else Balance.MOB_DEPTH_BASE
+        val raw = base.pow((floor - Balance.DEPTH_START_FLOOR).toDouble())
+        return min(raw, Balance.DEPTH_CAP)
     }
 
     /** Transition douce entre l'ancienne courbe (≤ 20) et la courbe cible (≥ 35). */
     private fun targetWeight(floor: Int): Double =
-        ((floor - 20) / 15.0).coerceIn(0.0, 1.0)
+        ((floor - Balance.TARGET_WEIGHT_START) /
+            (Balance.TARGET_WEIGHT_FULL - Balance.TARGET_WEIGHT_START)).coerceIn(0.0, 1.0)
 
     private fun lerp(from: Double, to: Double, t: Double): Double =
         from + (to - from) * t
 
     private fun mobHpScale(floor: Int): Double {
-        val target = max(1.0, 26.0 - 0.08 * (floor - 10))
+        val target = max(
+            1.0,
+            Balance.MOB_HP_TARGET_BASE - Balance.MOB_HP_TARGET_STEP * (floor - Balance.DEPTH_START_FLOOR)
+        )
         return lerp(depthMultiplier(floor), target, targetWeight(floor))
     }
 
     private fun mobAtkScale(floor: Int): Double {
-        val target = max(1.0, 9.0 - 0.028 * (floor - 10))
+        val target = max(
+            1.0,
+            Balance.MOB_ATK_TARGET_BASE - Balance.MOB_ATK_TARGET_STEP * (floor - Balance.DEPTH_START_FLOOR)
+        )
         return lerp(depthMultiplier(floor), target, targetWeight(floor))
     }
 
     private fun bossHpScale(floor: Int): Double {
-        val target = max(1.0, 72.0 - 0.20 * (floor - 10))
+        val target = max(
+            1.0,
+            Balance.BOSS_HP_TARGET_BASE - Balance.BOSS_HP_TARGET_STEP * (floor - Balance.DEPTH_START_FLOOR)
+        )
         return lerp(6.0 * depthMultiplier(floor, boss = true), target, targetWeight(floor))
     }
 
     private fun bossAtkScale(floor: Int): Double {
-        val target = max(1.0, 3.6 - 0.012 * (floor - 10))
+        val target = max(
+            1.0,
+            Balance.BOSS_ATK_TARGET_BASE - Balance.BOSS_ATK_TARGET_STEP * (floor - Balance.DEPTH_START_FLOOR)
+        )
         return lerp(1.6 * depthMultiplier(floor, boss = true), target, targetWeight(floor))
     }
 
@@ -1221,20 +1235,22 @@ object GameEngine {
             else -> biomePool.easy
         }
         val t = pool[rnd.nextInt(pool.size)]
-        val elite = rnd.nextDouble() < 0.06
+        val elite = rnd.nextDouble() < Balance.ELITE_CHANCE
         val rule = biomeRuleFor(state.floor)
         var level = state.floor + when {
             pos < 30 -> -1
             pos < 70 -> 0
             else -> 1
         }
-        if (elite) level += 2
+        if (elite) level += Balance.ELITE_LEVEL_BONUS
         level = max(1, level)
         val hpScale = mobHpScale(state.floor)
         val atkScale = mobAtkScale(state.floor)
-        val hp = (55 + 34 * (level - 1)) * (if (elite) 1.8 else 1.0)
-        val atk = (6 + 2.2 * (level - 1)) * (if (elite) 1.15 else 1.0)
-        val reward = min(6.0, sqrt(depthMultiplier(state.floor)))
+        val hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) *
+            (if (elite) Balance.ELITE_HP_MULT else 1.0)
+        val atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) *
+            (if (elite) Balance.ELITE_ATK_MULT else 1.0)
+        val reward = min(Balance.REWARD_MOB_CAP, sqrt(depthMultiplier(state.floor)))
         val gold = ((6 + 3 * level) * (if (elite) 1.6 else 1.0) * reward).roundToInt()
         val xp = ((12 + 5 * level) * (if (elite) 1.8 else 1.0) * reward).roundToInt()
         return FightData(
@@ -1245,7 +1261,8 @@ object GameEngine {
             enemyHp = hp * hpScale * rule.enemyHpMult,
             enemyMaxHp = hp * hpScale * rule.enemyHpMult,
             enemyAtk = atk * atkScale * rule.enemyAtkMult,
-            enemyIntervalMs = ((if (elite) 1100 else 1250) * rule.enemyIntervalMult).roundToLong(),
+            enemyIntervalMs = ((if (elite) Balance.ELITE_INTERVAL_MS else Balance.MOB_INTERVAL_MS) *
+                rule.enemyIntervalMult).roundToLong(),
             gold = gold,
             xp = xp,
             elite = elite,
@@ -1257,19 +1274,19 @@ object GameEngine {
         val t = bossFor(state.floor)
         val ability = bossAbilityFor(t.name, state.floor)
         val rule = biomeRuleFor(state.floor)
-        val level = state.floor + 2
+        val level = state.floor + Balance.BOSS_LEVEL_OFFSET
         val hpScale = bossHpScale(state.floor)
         val atkScale = bossAtkScale(state.floor)
-        var hp = (55 + 34 * (level - 1)) * hpScale
-        var atk = (6 + 2.2 * (level - 1)) * atkScale
-        var interval = 1250L
+        var hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) * hpScale
+        var atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) * atkScale
+        var interval = Balance.MOB_INTERVAL_MS.toLong()
         val modifier = listOf("", "", "rapide", "blinde", "berserk", "regenerant", "voleur").random(rnd)
         when (modifier) {
-            "rapide" -> interval = 900L
-            "blinde" -> hp *= 1.30
-            "berserk" -> atk *= 1.30
-            "regenerant" -> hp *= 1.15
-            "voleur" -> atk *= 1.10
+            "rapide" -> interval = Balance.BOSS_MOD_FAST_INTERVAL_MS.toLong()
+            "blinde" -> hp *= Balance.BOSS_MOD_BLINDED_HP
+            "berserk" -> atk *= Balance.BOSS_MOD_BERSERK_ATK
+            "regenerant" -> hp *= Balance.BOSS_MOD_REGEN_HP
+            "voleur" -> atk *= Balance.BOSS_MOD_THIEF_ATK
         }
         val suffix = when (modifier) {
             "rapide" -> " · RAPIDE"
@@ -1279,7 +1296,7 @@ object GameEngine {
             "voleur" -> " · VOLEUR"
             else -> ""
         }
-        val reward = min(10.0, sqrt(depthMultiplier(state.floor, boss = true)))
+        val reward = min(Balance.REWARD_BOSS_CAP, sqrt(depthMultiplier(state.floor, boss = true)))
         return FightData(
             enemyName = t.name + suffix,
             enemyIcon = t.icon,
@@ -1294,7 +1311,7 @@ object GameEngine {
             isBoss = true,
             ability = ability.id,
             abilityLabel = ability.label,
-            specialMs = 6500.0,
+            specialMs = Balance.BOSS_ABILITY_FIRST_MS,
             modifier = when (modifier) {
                 "rapide" -> "RAPIDE"
                 "blinde" -> "BLINDÉ"
@@ -1310,9 +1327,11 @@ object GameEngine {
         val easy = mobPoolFor(state.floor).easy
         val t = easy[rnd.nextInt(easy.size)]
         val rule = biomeRuleFor(state.floor)
-        val level = max(1, state.floor - 2)
-        val hp = (55 + 34 * (level - 1)) * 0.65 * rule.enemyHpMult
-        val atk = (6 + 2.2 * (level - 1)) * 0.6 * rule.enemyAtkMult
+        val level = max(1, state.floor - Balance.FARM_LEVEL_OFFSET)
+        val hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) *
+            Balance.FARM_HP_MULT * rule.enemyHpMult
+        val atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) *
+            Balance.FARM_ATK_MULT * rule.enemyAtkMult
         return FightData(
             enemyName = t.name,
             enemyIcon = t.icon,
@@ -1321,7 +1340,7 @@ object GameEngine {
             enemyHp = hp,
             enemyMaxHp = hp,
             enemyAtk = atk,
-            enemyIntervalMs = (1250 * rule.enemyIntervalMult).roundToLong(),
+            enemyIntervalMs = (Balance.MOB_INTERVAL_MS * rule.enemyIntervalMult).roundToLong(),
             gold = ((6 + 3 * level) * 0.5).roundToInt(),
             xp = ((12 + 5 * level) * 0.5).roundToInt(),
             farm = true,
@@ -1338,17 +1357,20 @@ object GameEngine {
         f.abilityFlashMs = (f.abilityFlashMs - dtMs).coerceAtLeast(0.0)
         f.shieldMs = (f.shieldMs - dtMs).coerceAtLeast(0.0)
 
-        if (f.isBoss && f.enemyHp < f.enemyMaxHp * 0.5 && f.enemyIntervalMs > 1000) {
-            f.enemyIntervalMs = 950
+        if (f.isBoss && f.enemyHp < f.enemyMaxHp * Balance.BOSS_PHASE_THRESHOLD && f.enemyIntervalMs > 1000) {
+            f.enemyIntervalMs = Balance.BOSS_PHASE_INTERVAL_MS.toLong()
             state.journal = addJournal(state, "Le gardien s'embrase", "bad")
         }
         if (f.isBoss && f.modifier == "RÉGÉNÉRANT" && f.enemyHp < f.enemyMaxHp) {
-            f.enemyHp = min(f.enemyMaxHp, f.enemyHp + f.enemyMaxHp * 0.008 * dtMs / 1000.0)
+            f.enemyHp = min(
+                f.enemyMaxHp,
+                f.enemyHp + f.enemyMaxHp * Balance.BOSS_REGEN_RATE * dtMs / 1000.0
+            )
         }
         if (f.isBoss && f.specialMs <= 0.0) {
             triggerBossAbility(state, f)
             if (state.fight == null) return
-            f.specialMs = 7000.0
+            f.specialMs = Balance.BOSS_ABILITY_INTERVAL_MS
         }
 
         if (f.heroTimerMs <= 0) {
@@ -1365,10 +1387,10 @@ object GameEngine {
 
     private fun bossEnrage(f: FightData): Double {
         if (!f.isBoss) return 1.0
-        val after = 15_000.0
+        val after = Balance.BOSS_ENRAGE_AFTER_MS
         if (f.elapsedMs < after) return 1.0
-        val steps = ((f.elapsedMs - after) / 5_000.0).toInt() + 1
-        return 1.0 + min(0.75, steps * 0.25)
+        val steps = ((f.elapsedMs - after) / Balance.BOSS_ENRAGE_STEP_MS).toInt() + 1
+        return 1.0 + min(Balance.BOSS_ENRAGE_CAP, steps * Balance.BOSS_ENRAGE_STEP)
     }
 
     private fun triggerBossAbility(state: GameState, f: FightData) {
@@ -1386,7 +1408,7 @@ object GameEngine {
                 f.enemyHp = min(f.enemyMaxHp, f.enemyHp + dmg * 0.8)
             }
             "regen" -> f.enemyHp = min(f.enemyMaxHp, f.enemyHp + f.enemyMaxHp * 0.07)
-            "shield" -> f.shieldMs = 3000.0
+            "shield" -> f.shieldMs = Balance.SHIELD_DURATION_MS
             "breath" -> {
                 damage(2.0)
                 addBuff(state, "vulnerable", 0.15, 6_000, "GIVRE")
@@ -1412,7 +1434,8 @@ object GameEngine {
 
     private fun heroInterval(state: GameState): Double {
         val s = statsOf(state)
-        return (1000.0 / (s.vit * (1.0 + 0.004 * state.ferveur))).coerceAtLeast(300.0)
+        return (1000.0 / (s.vit * (1.0 + 0.004 * state.ferveur)))
+            .coerceAtLeast(Balance.HERO_MIN_INTERVAL_MS)
     }
 
     /** Conserve les derniers coups pour que l'interface puisse les afficher. */
@@ -1446,7 +1469,7 @@ object GameEngine {
         val crit = rnd.nextDouble() < critChance
         f.lastCrit = crit
         if (crit) dmg *= 1.6 + s.critDamage
-        if (f.shieldMs > 0.0) dmg *= 0.60
+        if (f.shieldMs > 0.0) dmg *= 1.0 - Balance.SHIELD_REDUCTION
         f.enemyHp -= dmg
         recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit, onEnemy = true)
         if (s.lifesteal > 0.0) {
@@ -1473,10 +1496,10 @@ object GameEngine {
                 return
             }
         }
-        if (!f.usedRation && !f.farm && state.hp < s.maxHp * 0.30 && state.rations > 0) {
+        if (!f.usedRation && !f.farm && state.hp < s.maxHp * Balance.AUTO_RATION_THRESHOLD && state.rations > 0) {
             f.usedRation = true
             state.rations--
-            val heal = s.maxHp * 0.35
+            val heal = s.maxHp * Balance.AUTO_RATION_HEAL
             state.hp = min(s.maxHp.toDouble(), state.hp + heal)
             state.journal = addJournal(state, "Ration consommée (+${heal.roundToInt()} PV)", "neutral")
         }
@@ -1541,18 +1564,19 @@ object GameEngine {
                     "good"
                 )
             } else {
-                state.shards = min(MAX_SHARDS, state.shards + 3)
-                state.rations = min(24, state.rations + 2)
+                state.shards = min(MAX_SHARDS, state.shards + Balance.BOSS_SHARDS)
+                state.rations = min(MAX_RATIONS, state.rations + Balance.BOSS_RATIONS)
                 state.floor++
                 addLoot(state, lootItem(state.floor, "rare"))
                 dropConsumables(state, "boss")
                 state.journal = addJournal(state, "${f.enemyName} vaincu — palier ${state.floor}", "good")
                 if (clearedFloor % 10 == 0) {
-                    state.shards = min(MAX_SHARDS, state.shards + 8)
+                    state.shards = min(MAX_SHARDS, state.shards + Balance.MILESTONE_SHARDS)
                     addLegend(state, "Jalon · palier $clearedFloor — ${titleFor(state.floor)}")
                     state.journal = addJournal(
                         state,
-                        "Jalon · palier $clearedFloor franchi — ${titleFor(state.floor)} · +8 éclats",
+                        "Jalon · palier $clearedFloor franchi — ${titleFor(state.floor)} · " +
+                            "+${Balance.MILESTONE_SHARDS} éclats",
                         "good"
                     )
                 }
@@ -1562,7 +1586,7 @@ object GameEngine {
             state.farmKills++
             val s = statsOf(state)
             val beforeHeal = state.hp
-            state.hp = min(s.maxHp.toDouble(), state.hp + s.maxHp * 0.08)
+            state.hp = min(s.maxHp.toDouble(), state.hp + s.maxHp * Balance.FARM_HEAL_RATIO)
             val healed = (state.hp - beforeHeal).roundToInt().coerceAtLeast(0)
             state.journal = addJournal(
                 state,
@@ -1583,13 +1607,13 @@ object GameEngine {
             state.nextFight += 10
             state.journal = addJournal(state, "${f.enemyName} vaincu · +$earned or", "good")
             dropConsumables(state, "mob")
-            if (rnd.nextDouble() < 0.10) {
-                state.rations = min(24, state.rations + 1)
+            if (rnd.nextDouble() < Balance.MOB_RATION_CHANCE) {
+                state.rations = min(MAX_RATIONS, state.rations + 1)
             }
-            if (f.elite && rnd.nextDouble() < 0.20) {
+            if (f.elite && rnd.nextDouble() < Balance.ELITE_SHARD_CHANCE) {
                 state.shards = min(MAX_SHARDS, state.shards + 1)
             }
-            if (rnd.nextDouble() < 0.18) spawnChest(state)
+            if (rnd.nextDouble() < Balance.CHEST_CHANCE) spawnChest(state)
         }
     }
 
@@ -1598,11 +1622,16 @@ object GameEngine {
         state.retreats++
         state.distance = max(0.0, floor((state.distance - 20.0) / 10.0) * 10.0)
         state.nextFight = (state.distance + 10).toInt()
-        state.hp = statsOf(state).maxHp * 0.6
+        state.hp = statsOf(state).maxHp * Balance.DEFEAT_HP_RATIO
         state.mode = "farmWait"
         state.farmKills = 0
         state.farmWaitMs = 800.0
-        if (f.isBoss) state.bossBlessing = min(0.75, state.bossBlessing + 0.25)
+        if (f.isBoss) {
+            state.bossBlessing = min(
+                Balance.BOSS_BLESSING_CAP,
+                state.bossBlessing + Balance.BOSS_BLESSING_STEP
+            )
+        }
         state.journal = addJournal(state, "Défaite — repli de 20 m dans la zone de farm", "bad")
     }
 
@@ -1613,7 +1642,7 @@ object GameEngine {
             state.xp -= xpNext(state.level)
             state.level++
             val s = statsOf(state)
-            state.hp = min(s.maxHp.toDouble(), state.hp + s.maxHp * 0.5)
+            state.hp = min(s.maxHp.toDouble(), state.hp + s.maxHp * Balance.LEVEL_UP_HEAL)
             state.journal = addJournal(state, "Niveau ${state.level} atteint", "good")
             guard++
         }
@@ -1644,7 +1673,7 @@ object GameEngine {
         state.gold += gold
         state.goldEarned += gold
         state.chestFlashGold = gold
-        state.rations = min(24, state.rations + 2)
+        state.rations = min(MAX_RATIONS, state.rations + 2)
         state.shards = min(MAX_SHARDS, state.shards + 2)
         state.chestsToday++
         state.chestsOpened++
@@ -1859,7 +1888,7 @@ object GameEngine {
     )
 
     private fun growStat(value: Int): Int =
-        if (value <= 0) value else value + max(1, (value * 0.08).roundToInt())
+        if (value <= 0) value else value + max(1, (value * Balance.ITEM_GROWTH).roundToInt())
 
     fun upgradeItem(state: GameState, itemId: String): Boolean =
         upgradeItemDetailed(state, itemId) == ForgeOutcome.Success
@@ -1961,11 +1990,11 @@ object GameEngine {
             name = "${item.name} fusionné",
             rarity = next,
             level = chosen.maxOf { it.level },
-            atk = chosen.sumOf { it.atk } * 3 / 4,
-            hp = chosen.sumOf { it.hp } * 3 / 4,
-            vitPct = chosen.sumOf { it.vitPct } * 3 / 4,
-            critPct = chosen.sumOf { it.critPct } * 3 / 4,
-            regen = (chosen.sumOf { it.regen } * 0.75 * 10).roundToInt() / 10.0,
+            atk = chosen.sumOf { it.atk } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR,
+            hp = chosen.sumOf { it.hp } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR,
+            vitPct = chosen.sumOf { it.vitPct } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR,
+            critPct = chosen.sumOf { it.critPct } * Balance.FUSION_NUMERATOR / Balance.FUSION_DENOMINATOR,
+            regen = (chosen.sumOf { it.regen } * Balance.FUSION_RATIO * 10).roundToInt() / 10.0,
             value = chosen.sumOf { it.value } + 120,
             effect = effect,
             locked = false
@@ -2069,30 +2098,37 @@ object GameEngine {
 
     private fun lootItem(floor: Int, rarity: String): Item {
         var finalRarity = rarity
-        if (rarity == "epic" && rnd.nextDouble() < 0.12) finalRarity = "legendary"
-        if (rarity == "rare" && rnd.nextDouble() < 0.03) finalRarity = "legendary"
+        if (rarity == "epic" && rnd.nextDouble() < Balance.LOOT_EPIC_LEGENDARY_CHANCE) {
+            finalRarity = "legendary"
+        }
+        if (rarity == "rare" && rnd.nextDouble() < Balance.LOOT_RARE_LEGENDARY_CHANCE) {
+            finalRarity = "legendary"
+        }
         val templates = lootTemplatesFor(floor)
         val base = templates[rnd.nextInt(templates.size)]
         val mult = when (finalRarity) {
-            "uncommon" -> 1.25
-            "rare" -> 1.6
-            "epic" -> 2.0
-            "legendary" -> 2.4
+            "uncommon" -> Balance.RARITY_UNCOMMON
+            "rare" -> Balance.RARITY_RARE
+            "epic" -> Balance.RARITY_EPIC
+            "legendary" -> Balance.RARITY_LEGENDARY
             else -> 1.0
         }
         val effect = when {
             finalRarity == "legendary" -> ITEM_EFFECTS.random(rnd)
-            (finalRarity == "epic" || finalRarity == "rare") && rnd.nextDouble() < 0.35 ->
-                ITEM_EFFECTS.random(rnd)
+            (finalRarity == "epic" || finalRarity == "rare") &&
+                rnd.nextDouble() < Balance.LOOT_EFFECT_CHANCE -> ITEM_EFFECTS.random(rnd)
             else -> ""
         }
         val setPool = BIOME_SETS[biomeKeyFor(floor)] ?: ITEM_SETS
         val setName = when {
-            finalRarity in setOf("rare", "epic", "legendary") && rnd.nextDouble() < 0.30 ->
-                setPool.random(rnd)
+            finalRarity in setOf("rare", "epic", "legendary") &&
+                rnd.nextDouble() < Balance.LOOT_SET_CHANCE -> setPool.random(rnd)
             else -> ""
         }
-        val identified = !(finalRarity in setOf("rare", "epic", "legendary") && rnd.nextDouble() < 0.10)
+        val identified = !(
+            finalRarity in setOf("rare", "epic", "legendary") &&
+                rnd.nextDouble() < Balance.LOOT_UNIDENTIFIED_CHANCE
+            )
         fun scaled(v: Int): Int = max(1, (v * mult).roundToInt())
         return base.copy(
             id = "loot_${System.nanoTime()}",

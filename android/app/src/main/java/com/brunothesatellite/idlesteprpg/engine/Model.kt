@@ -76,7 +76,8 @@ const val CHEST_LIFETIME_MS = 24L * 60L * 60L * 1000L
 const val CHEST_WARNING_MS = 3L * 60L * 60L * 1000L
 const val MAX_PENDING_CHESTS = 2
 const val INVENTORY_CAP = 24
-const val MAX_SHARDS = 24
+const val MAX_SHARDS = Balance.SHARDS_CAP
+const val MAX_RATIONS = Balance.RATIONS_CAP
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250
@@ -1220,11 +1221,14 @@ fun equipped(state: GameState, slot: String): Item? = state.equipment.firstOrNul
 
 fun statsOf(state: GameState): Stats {
     val milestone = milestoneBonus(state.floor)
-    var atk = 18 + 3 * (state.level - 1) + 3 * state.upgrades.blade + 2 * milestone
-    var maxHp = 150 + 18 * (state.level - 1) + 30 * state.upgrades.breath + 12 * milestone
-    var vit = 1.0 + 0.01 * (state.level - 1) + 0.025 * state.upgrades.swift
-    var crit = 10
-    var regen = 0.6
+    var atk = Balance.HERO_ATK_BASE + Balance.HERO_ATK_PER_LEVEL * (state.level - 1) +
+        Balance.HERO_ATK_PER_CAMP * state.upgrades.blade + Balance.HERO_ATK_PER_MILESTONE * milestone
+    var maxHp = Balance.HERO_HP_BASE + Balance.HERO_HP_PER_LEVEL * (state.level - 1) +
+        Balance.HERO_HP_PER_CAMP * state.upgrades.breath + Balance.HERO_HP_PER_MILESTONE * milestone
+    var vit = Balance.HERO_VIT_BASE + Balance.HERO_VIT_PER_LEVEL * (state.level - 1) +
+        Balance.HERO_VIT_PER_CAMP * state.upgrades.swift
+    var crit = Balance.HERO_CRIT_BASE
+    var regen = Balance.HERO_REGEN_BASE
     var lifesteal = 0.0
     var damageReduction = 0.0
     var critDamage = 0.0
@@ -1337,7 +1341,7 @@ fun statsOf(state: GameState): Stats {
     )
 }
 
-fun xpNext(level: Int): Int = (120 * 1.2.pow(level - 1)).roundToInt()
+fun xpNext(level: Int): Int = (Balance.XP_BASE * Balance.XP_GROWTH.pow(level - 1)).roundToInt()
 
 fun powerOf(state: GameState): Int = statsOf(state).power
 
@@ -1373,10 +1377,10 @@ fun bossFor(floor: Int): BossTemplate = when {
 
 fun upgradeCost(key: String, currentLevel: Int): Int {
     val (base, mult) = when (key) {
-        "blade" -> 45.0 to 1.20
-        "breath" -> 40.0 to 1.18
-        "swift" -> 70.0 to 1.24
-        else -> 45.0 to 1.20
+        "blade" -> Balance.CAMP_BLADE_COST_BASE to Balance.CAMP_BLADE_COST_MULT
+        "breath" -> Balance.CAMP_BREATH_COST_BASE to Balance.CAMP_BREATH_COST_MULT
+        "swift" -> Balance.CAMP_SWIFT_COST_BASE to Balance.CAMP_SWIFT_COST_MULT
+        else -> Balance.CAMP_BLADE_COST_BASE to Balance.CAMP_BLADE_COST_MULT
     }
     return (Math.ceil(base * mult.pow(currentLevel.toDouble()) / 5.0) * 5).toInt()
 }

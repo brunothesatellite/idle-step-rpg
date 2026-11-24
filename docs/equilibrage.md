@@ -1,465 +1,402 @@
-# Équilibrage de la progression — analyse et recommandations
+# Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> Demande : rapport dans `doc/equilibrage.md`. Le dépôt utilise le dossier `docs/`, ce rapport est donc dans **`docs/equilibrage.md`**.
-> Version analysée : **0.19.1** (`versionCode 46`), sauvegarde **v7**. Aucun code n’a été modifié.
-> Simulateur : **`tools/equilibrage/balance_sim.py`**. Plan de validation : **`docs/validation-equilibrage.md`**.
+> **Document de référence.** Version analysée : **0.20.0** (`versionCode 47`), sauvegarde **v7**, 24 novembre 2026.
+> Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
+>
+> Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
 
 ## 1. Résumé exécutif
 
-Le blocage au **palier 36** n’est pas un problème de pas : 100 m = 1 000 pas, donc 64 paliers ne représentent que **64 000 pas** (6 à 13 jours de marche pure). Le problème est un empilement de trois murs :
+Le rythme de marche est sain : 1 000 pas par palier, 100 paliers = 100 000 pas. Le problème n'est pas le pas, ni le farm, ni l'absence de paywall. Le problème est un empilement de **quatre systèmes qui ne suivent pas la même échelle** :
 
-1. **Mur de survie** : les dégâts ennemis croissent en `1,12^(palier−10)` alors que les PV du héros croissent linéairement. Au palier 36, un monstre normal inflige ~1 500 dégâts toutes les 1,31 s pour 3 699 PV : le héros meurt en **3 coups**. Le gardien inflige ~983 par coup et dispose de **BLINDAGE** : le héros meurt en **5 coups**.
-2. **Mur d’XP** : `xpNext = 120 × 1,2^(niveau−1)`. Le passage 34→35 demande **49 222 XP**, et le total 1→100 atteint **41,4 milliards d’XP**. Au rythme actuel (~838 XP par monstre au palier 36), cela représente **~49 millions de monstres**. Le niveau 100 est mathématiquement hors d’atteinte.
-3. **Mur de ressources** : le joueur est à **0 éclat et 0 ration**. Les éclats sont la monnaie des améliorations d’objets (1 par niveau), les rations la seule source de soin en combat. Sans éclats ni rations, il ne peut ni progresser en équipement ni survivre, donc il ne peut plus gagner d’éclats : **spirale de blocage**.
+1. **L'XP** reste en `1,2^niveau` : le niveau 100 demande ~41 milliards d'XP, soit des millions de monstres. Il est hors d'atteinte.
+2. **Les objets** ont des drops plats (un rare du palier 100 vaut presque un rare du palier 36) mais des améliorations **exponentielles** (+8 % composés, sans plafond). Le butin de haut palier est décevant, et l'upgrade d'un objet ancien peut trivialiser le jeu.
+3. **Les gardiens** sont un interrupteur : le build de référence gagne 100 % des monstres normaux mais 0 à 8 % des gardiens ; le build au-dessus gagne 100 % des gardiens. Il n'y a presque pas de zone 35–65 %.
+4. **L'attrition**, rétablie récemment, consomme **5 à 9 rations par palier**, alors que l'économie cible en produit 3 à 6 par jour. La ration devient la vraie barrière.
 
-Le levier « pas » est sain ; ce sont les courbes de combat, d’XP, de butin et de monnaie qui sont à recalibrer.
+La Phase A a correctement traité le **mur de survie du palier 36**. Pour un palier 100 exigeant mais non frustrant, il faut maintenant traiter l'**XP**, la **croissance des objets**, le **seuil des gardiens** et l'**économie des rations**, puis rendre la difficulté lisible et récupérable.
 
-## 2. Contexte mesuré
+## 2. Méthode et périmètre
 
-Capture du joueur :
+Sources utilisées :
 
-| Élément | Valeur |
-|---|---|
-| Palier | 36 (Forge noyée) |
-| Niveau | 34 |
-| Puissance | 3 992 |
-| ATQ | 1 349 |
-| PV | 3 699 |
-| VIT | 2,27 |
-| Or | 181 k |
-| Rations | 0 / 24 |
-| Éclats | 0 / 12 |
-| Consommables | 2 |
-| Camp | Lame 28, Souffle 27, Pas vifs 19 |
-| Prochain gardien | Seigneur de la Forge, palier 36, niveau 38, 6× PV, phase 2, BLINDAGE |
+- code Android `0.20.0` (`GameEngine.kt`, `Model.kt`, UI) ;
+- simulateur `tools/equilibrage/balance_sim.py`, 300 à 500 runs par cellule ;
+- rapport initial 0.19.1 et playtest en cours de la Phase A ;
+- `docs/validation-equilibrage.md` pour les critères.
 
-Équipement : 6 pièces épiques/rares, dont plusieurs fusionnées ; 12 objets sur 24.
+Limites :
 
-## 3. Courbes actuelles
+- le simulateur ne modélise pas encore la ferveur qui décroît, les sets complets, toutes les capacités de gardien, les coffres et l'économie réelle ;
+- les presets `reference_*` sont des profils moyens, pas des sauvegardes réelles ;
+- le code et le simulateur ne sont pas encore garantis identiques (voir §4.3).
+
+## 3. État mesuré en 0.20.0
 
 ### 3.1 Pas et distance
 
-- `10 pas = 1 m`, `100 m = 1 palier` → **1 000 pas par palier**.
-- 36 → 100 = 64 paliers = **64 000 pas**.
-- À 5 000 pas/jour : 12,8 jours de marche pure ; à 10 000 : 6,4 jours.
-- Avec 2 à 3 tentatives par palier (replis de 20 m), compter **20 à 40 jours**.
-- Simulation hors ligne : 30 % des pas du jour, plafonnée à 4 min simulées. Les coffres forcés consomment 150/400/900 pas.
+- 10 pas = 1 m, 100 m = 1 palier → **1 000 pas par palier**.
+- 1 → 100 = **100 000 pas** de marche pure, plus farm et retries.
+- À 5 000–10 000 pas/jour : 10–20 jours de marche pure, mais **1 à 3 mois** avec progression, farm et apprentissage.
+- Simulation hors ligne : 30 % du budget quotidien, plafonnée à 4 minutes simulées.
 
-**Conclusion** : le rythme de pas est compatible avec un niveau 100 en quelques semaines/mois. Ce n’est pas le goulot.
+**Conclusion : le levier « pas » est sain. Il ne faut pas le durcir.**
 
-### 3.2 Ennemis
+### 3.2 Héros
 
-Formules actuelles :
-
-```kotlin
-depthMob  = min(1.12^(palier−10), 40)
-depthBoss = min(1.08^(palier−10), 40)
-
-PV monstre  = (55 + 34×(niveau−1)) × depthMob × règleBiome
-ATQ monstre = (6 + 2.2×(niveau−1)) × depthMob × règleBiome
-
-PV gardien  = 6 × (55 + 34×(niveau+1)) × depthBoss × règleBiome
-ATQ gardien = 1.6 × (6 + 2.2×(niveau+1)) × depthBoss × règleBiome
-```
-
-| Palier | PV monstre | ATQ monstre | PV gardien | ATQ gardien | depth mob/boss |
-|---:|---:|---:|---:|---:|---:|
-| 10 | 0,4 k | 26 | 2,6 k | 48 | 1,0 / 1,0 |
-| 20 | 2,2 k | 148 | 10,0 k | 180 | 3,1 / 2,2 |
-| 30 | 10,0 k | 673 | 31,0 k | 553 | 9,6 / 4,7 |
-| 34 | 17,9 k | 1 193 | 47,4 k | 842 | 15,2 / 6,3 |
-| **36** | **23,7 k** | **1 580** | **58,3 k** | **1 034** | **19,0 / 7,4** |
-| 40 | 41,4 k | 2 750 | 87,5 k | 1 549 | 30,0 / 10,1 |
-| 45 | 62,0 k | 4 112 | 143,6 k | 2 536 | 40,0 / 14,8 |
-| 50 | 68,8 k | 4 552 | 233,2 k | 4 109 | 40,0 / 21,7 |
-| 100 | 136,8 k | 8 952 | 837,4 k | 14 605 | 40,0 / 40,0 |
-
-Remarques :
-
-- Le multiplicateur `depthMob` est **exponentiel** et s’applique **aux PV et à l’ATQ**. C’est l’ATQ qui casse le jeu.
-- Le `cap 40` crée un plateau : au-delà du palier ~41 pour les monstres (et ~73 pour les gardiens), les ennemis ne progressent plus. L’équilibrage dépend alors uniquement du stuff, ce qui rend la fin de partie incohérente.
-- Le libellé « 6× PV » est trompeur : le gardien n’a que ~2,4× les PV d’un monstre normal au même palier, car son multiplicateur de profondeur est plus faible (1,08 au lieu de 1,12). En revanche, son bouclier et ses capacités le rendent bien plus dangereux.
-- Les élites (10 %) ont **2,2× PV** et **1,3× ATQ** : au palier 36, 52 k PV et 1 950 ATQ. Un élite est un mini-boss.
-
-### 3.3 Héros
+Formules actuelles (`statsOf`) :
 
 ```kotlin
-ATQ  = 18 + 3×(niveau−1) + 3×camp_lame + 2×(palier/10) + équipement
-PV   = 150 + 18×(niveau−1) + 30×camp_souffle + 12×(palier/10) + équipement
-VIT  = 1 + 0,01×(niveau−1) + 0,025×camp_pas + équipement
+ATQ  = 18 + 3 × (niveau − 1) + 3 × camp_lame + 2 × (palier / 10) + équipement
+PV   = 150 + 18 × (niveau − 1) + 30 × camp_souffle + 12 × (palier / 10) + équipement
+VIT  = 1 + 0,01 × (niveau − 1) + 0,025 × camp_pas + équipement
 ```
 
-- Les gains de niveau sont **linéaires et faibles** : +3 ATQ, +18 PV, +1 % VIT.
-- Les améliorations de camp sont **plates** : +3 ATQ, +30 PV, +2,5 % VIT.
-- Les objets gagnent **8 % par niveau d’objet**, mais chaque niveau coûte **1 éclat** + de l’or (`30×niveau + 20`).
-- Le stuff du joueur apporte ~1 142 ATQ et ~2 109 PV, soit l’essentiel de sa puissance.
+- Les gains de niveau sont **linéaires et faibles** (+3 ATQ, +18 PV, +1 % VIT).
+- Les améliorations de camp sont **plates** (+3 ATQ, +30 PV, +2,5 % VIT).
+- Le stuff représente l'essentiel de la puissance.
+- **La VIT est plafonnée par le rythme d'attaque** : `intervalle = 1000 / (VIT × (1 + 0,004 × ferveur))`, minimum **300 ms**. À ferveur 45, tout ce qui dépasse **VIT ≈ 2,82** est perdu ; à ferveur 100, **VIT ≈ 2,38**.
 
-### 3.4 Combat au palier 36
+### 3.3 Ennemis
 
-Estimation avec 1 349 ATQ, 2,27 VIT, ~30-40 % crit :
+```kotlin
+depthMob  = min(1,12^(palier−10), 40)
+depthBoss = min(1,08^(palier−10), 40)
 
-- Intervalle du héros : `1000 / (2,27 × 1,4) ≈ 315 ms`.
-- DPS de base : ~4 300 ; avec crit : ~5 000-5 300.
-- Monstre Forge : 26 020 PV, 1 501 ATQ, 1 312 ms.
-  - **TTK ≈ 5 s** ; le monstre frappe 4 fois → ~6 000 dégâts.
-  - Héros : 3 699 PV + 1 ration automatique (~1 295) = ~5 000 PV effectifs → **mort en ~3,3 coups**.
-  - **TTK > temps de survie** : défaite.
-- Gardien : 64 130 PV (83 k si modificateur blindé), ATQ 983.
-  - **BLINDAGE** : −65 % de dégâts pendant 4,5 s toutes les 6,5 s → multiplicateur moyen ~0,55.
-  - PV effectifs ~116 k → **TTK ~22-27 s**.
-  - Le gardien frappe ~17 fois → ~16 700 dégâts ; le héros meurt en **~5 coups (6,5 s)**.
-  - **TTK ≫ survie** : défaite.
+// Phase A : interpolation entre l'ancienne courbe (≤ 20) et la cible (≥ 35)
+mobHpScale  = lerp(depthMob,  26,0 − 0,08  × (palier−10), poids)
+mobAtkScale = lerp(depthMob,   9,0 − 0,028 × (palier−10), poids)
+bossHpScale = lerp(6 × depthBoss, 72,0 − 0,20 × (palier−10), poids)
+bossAtkScale= lerp(1,6 × depthBoss, 3,6 − 0,012 × (palier−10), poids)
 
-Le mur commence vers le **palier 32-34** : au palier 30, le monstre fait 673 ATQ (2 coups sur 3 699 PV), ce qui reste gérable ; au 34, 1 193 (3 coups), au 36, 1 501 (2,5 coups).
+PV monstre  = (55 + 34 × (niveau−1)) × mobHpScale  × règleBiome
+ATQ monstre = (6 + 2,2 × (niveau−1)) × mobAtkScale × règleBiome
+```
+
+Valeurs au palier 36 (cible Phase A) :
+
+| Élément | PV | ATQ |
+|---|---:|---:|
+| Monstre normal | ~30,6 k | ~670 |
+| Gardien | ~87,7 k | ~286 |
+
+Le gardien est au **niveau palier + 2**. Les monstres ont **6 % de chance d'être élites** (1,8× PV, 1,15× ATQ). Le gardien dispose de :
+
+- un bouclier de **40 % / 3 s / 8 s** ;
+- une **phase 2** sous 50 % de PV : intervalle d'attaque réduit de 1 250 à **950 ms** ;
+- un **enrage** après 15 s : +25 % ATQ toutes les 5 s, plafond +75 % ;
+- un modificateur aléatoire parmi RAPIDE, BLINDÉ, BERSERK, RÉGÉNÉRANT, VOLEUR ;
+- une capacité de gardien (slam 2,4×, souffle 2,0×, drain 1,5×, etc.) ;
+- une **bénédiction** cumulative de +25 % de dégâts par défaite, plafond +75 %, remise à zéro à la victoire.
+
+### 3.4 Combat : le seuil binaire
+
+Simulation `--curve target`, 300 runs, biome auto :
+
+| Palier | `reference` monstre | `reference` gardien | `reference_high` gardien | `player36` gardien |
+|---:|---:|---:|---:|---:|
+| 36 | 100 % | **8 %** | 100 % | **0 %** |
+| 50 | 100 % | **0 %** | 100 % | 0 % |
+| 75 | 100 % | **0 %** | 100 % | 0 % |
+| 100 | 100 % | **0 %** | 100 % | 0 % |
+
+Ce tableau dit trois choses :
+
+- les monstres normaux ne challengent plus le build de référence ;
+- le gardien est un **seuil de stuff**, pas une difficulté progressive ;
+- le rapport initial annonçait `player36` à **59 %** au gardien 36, le simulateur le donne à **0 %**. Le code ajoute encore **+2 niveaux** au gardien, donc le jeu réel est probablement plus dur que la simulation.
+
+Une variation de 3 % de stats peut faire basculer 59 % → 0 % : c'est le propre d'un système à seuil. Il faut viser des **bandes de victoire**, pas des seuils.
 
 ### 3.5 XP
 
-`xpNext(niveau) = 120 × 1,2^(niveau−1)`.
+```kotlin
+xpNext(level) = round(120 × 1,2^(level−1))
+```
 
-| Niveau | XP pour le niveau suivant | XP cumulé depuis 1 |
+| Niveau | XP pour le suivant | Total depuis 1 |
 |---:|---:|---:|
-| 20 | 3 834 | 18 570 |
-| 30 | 23 738 | 118 091 |
 | 34 | 49 222 | 245 515 |
-| 40 | 146 977 | 734 288 |
 | 50 | 910 044 | 4 549 622 |
-| 70 | 34 888 896 | 174 443 883 |
 | 100 | 8 281 797 452 | **41 408 986 666** |
 
-- Au palier 36 : ~838 XP par monstre, ~5 494 par gardien.
-- 34→35 : **59 monstres** ou 9 gardiens.
-- 50→51 : ~1 086 monstres.
-- 1→100 : **~49 millions de monstres** au rythme actuel.
+Au palier 100, un monstre donne au mieux **~3 072 XP** (plafond `sqrt(depth)` × 6). Il faudrait **~2,7 millions de monstres** pour le seul niveau 99 → 100. Le niveau 100 est mathématiquement hors d'atteinte.
 
-La courbe 1,2^ niveau est incompatible avec un objectif niveau 100. En plus, les récompenses d’XP sont plafonnées (`sqrt(depth)` avec cap 6 pour les monstres et 10 pour les gardiens), donc elles ne suivent pas la courbe.
+### 3.6 Butin et objets
+
+- `lootItem()` fixe `level = palier` mais **ne scale pas les statistiques** : un rare du palier 100 vaut presque un rare du palier 36.
+- Multiplicateurs de rareté actuels : 1,25 / 1,6 / 2,0 / 2,4.
+- `growStat()` applique **+8 % composés** à chaque amélioration. Multiplicateur après n niveaux : 10 niveaux ≈ ×2,2 ; 30 ≈ ×10 ; 50 ≈ ×47 ; 100 ≈ **×2 199**.
+- Coût d'amélioration : `30 × niveau + 20` or + 1 éclat.
+- Fusion : **75 %** de la somme des trois objets.
+- Sets : bonus **plats** (+30 ATQ / +90 PV au 6/6, etc.).
+- Effets : Rempart (−10 % dégâts), Vampirisme (+8 % vol de vie), Frénésie, Chasse, Vitalité, Précision. Ils s'empilent sans plafond.
+
+Conséquences :
+
+- les drops de haut palier sont **décevants** ;
+- la vraie progression est « acheter des niveaux sur un objet ancien », pas « trouver du meilleur butin » ;
+- avec ~450 k or et ~100 éclats, une pièce peut être multipliée par ~2 200 en une à deux semaines ;
+- à l'inverse, un joueur qui n'investit pas dans l'upgrade reste bloqué : le système est à la fois trop faible tôt et trop fort tard.
+
+### 3.7 Économie
+
+Plafonds et revenus actuels :
+
+- éclats : **24** max ; gardien +3, jalon +8, coffre +2, élite 20 % +1, démontage 2/3/6/10 ; amélioration et reforge 1 éclat ;
+- rations : **24** max (le rapport parlait de 30, le code est resté à 24) ; gardien +2, coffre +2, monstre 10 %, auto-ration sous **30 %** des PV pour +35 % ;
+- or : butin de monstre/gardien, camp, marchand, statue ;
+- `holdFloor` (farm de palier) : le gardien vaincu donne du butin et des consommables, mais **aucun éclat ni aucune ration**.
+
+Simulation de l'attrition (`reference`) :
+
+| Palier | Rations / monstre | Rations / palier (9 mobs + gardien) |
+|---:|---:|---:|
+| 36 | 0,68 | **~7,1** |
+| 50 | 0,79 | **~8,1** |
+| 75 | 0,93 | **~9,4** |
+| 100 | 0,96 | **~9,6** |
+
+À 5 paliers/jour, il faut **35 à 50 rations/jour**, alors que la cible est **3 à 6**. Même avec les coffres, les gardiens et les 10 % de drop, l'économie ne suit pas.
+
+### 3.8 Ce qui fonctionne déjà
+
+- Le pas comme ressource principale, sans paywall.
+- Le farm de palier : ennemis sans profondeur, niveau `palier−2`, PV ×0,65, ATQ ×0,6 ; le héros ne peut pas mourir en farm (PV remis à 1), et chaque kill rend **+8 % PV**.
+- Depuis 0.20.0, **aucun soin automatique après un monstre normal** : seuls le farm, le camp, les rations et les éclats rendent des PV. C'est le choix d'attrition assumé.
+- La défaite est bornée : repli de 20 m, 60 % PV, aucune perte d'objet ni d'or.
+- La bénédiction de gardien (+25 %/défaite, cap +75 %) est visible dans la scène.
+- La Phase A a déjà amélioré les éclats/rations, les élites, le bouclier et le score d'objet.
 
 ## 4. Diagnostic
 
-| Problème | Effet | Gravité |
-|---|---|---|
-| ATQ ennemie exponentielle (1,12^palier) vs PV héros linéaires | mort en 2-4 coups dès le palier 32 | **critique** |
-| Courbe d’XP 1,2^niveau | niveau 100 irréaliste (41 Md XP) | **critique** |
-| Éclats rares (2/gardien, 1/coffre, cap 12) + 1 éclat/niveau d’objet | améliorations bloquées à 0 éclat | **critique** |
-| Rations rares (1/gardien, 1/coffre) + 1 ration/combat | soin impossible, spirale de mort | **critique** |
-| Butin non scalable avec le palier (stats de base fixes) | un objet de palier 36 vaut presque un objet de palier 5 | **élevée** |
-| Camp : +3 ATQ / +30 PV pour 7 420 or | 181 k d’or inutiles | **élevée** |
-| Gardien : 6× PV + bouclier 65 % + capacités | combat 4-10× plus long que normal | **élevée** |
-| Farm déjà sûr mais peu visible | le farm courant utilise des monstres faciles, sans multiplicateur de profondeur : il permet déjà de récupérer, mais l’interface ne l’explique pas | moyenne |
-| Élites 2,2× PV / 1,3× ATQ à 10 % | gauntlet imprévisible | moyenne |
-| Cap 40 sur la profondeur | plateau de difficulté en fin de jeu | moyenne |
-| Score de puissance (ATQ×2 + PV/4 + …) | ne reflète pas la survie | moyenne |
+### 4.1 Failles critiques (P0)
 
-## 5. Objectifs de design proposés
+| # | Faille | Effet | Priorité |
+|---|---|---|---|
+| C1 | XP `1,2^n` | niveau 100 impossible, 41 Md XP | **critique** |
+| C2 | Drops plats + upgrades composés | butin inutile, croissance exponentielle incontrôlable | **critique** |
+| C3 | Gardien à seuil 0/100 | blocage ou trivialisation, pas de zone 35–65 % | **critique** |
+| C4 | Attrition sans rations suffisantes | famine de rations, farm forcé | **critique** |
+| C5 | Trois courbes cibles dans l'ancien rapport | playtest non interprétable | **critique** |
+| C6 | VIT morte au-delà de ~2,8 | stats et objets piégés | élevée |
+| C7 | Effets empilables sans cap | builds immortels, dominance | élevée |
+| C8 | Gardien auto-déclenché à 100 m | mort avant de pouvoir se préparer | élevée |
+| C9 | `holdFloor` sans éclats/rations | farm non rentable | élevée |
+| C10 | Camp/sets plats + or sans sink | économie obsolète à haut palier | moyenne |
+| C11 | Enrage dans une zone morte | inutile pour les faibles, trop tard pour les forts | moyenne |
+| C12 | Fusion 75 %, loot sans pity | frustration et séries sèches | moyenne |
+| C13 | Biomes/modificateurs non budgétés | pics imprévisibles | moyenne |
+| C14 | Fin de jeu 81–100 répétitive | lassitude avant le palier 100 | moyenne |
 
-1. **Le pas reste la ressource principale** : 1 000 pas/palier, 100 paliers = 100 k pas ; 1 à 3 mois selon l’activité.
-2. **Niveau 100 atteignable** : ~2 500 à 4 000 monstres tués au total, soit ~2 à 4 « runs » de 100 paliers avec farm.
-3. **Combats** :
-   - monstre normal : **4 à 7 s** de combat, 5 à 8 coups encaissés ;
-   - élite : 8 à 12 s ;
-   - gardien : **15 à 22 s** (cible ~18 s), **au moins 30 coups portés**, 8 à 12 coups encaissés avec 1 ration. Un gardien ne doit **jamais** tomber en 2-3 coups.
-4. **Progression** : 1 à 3 tentatives par palier normal, 3 à 6 par gardien ; au-delà de 5 défaites, mécanisme de pitié.
-5. **Économie** : 5 à 10 éclats/jour, 1 à 3 niveaux d’objet/jour ; rations suffisantes pour 3 à 5 combats difficiles/jour.
-6. **Butin** : un objet de palier 100 doit être nettement meilleur qu’un objet de palier 36, à rareté égale.
+### 4.2 Failles de frustration
 
-## 6. Recommandations d’algorithme
+1. **Arriver à 25 % de PV devant un gardien** après 9 monstres, sans possibilité de potion avant l'engagement.
+2. **L'auto-ration se déclenche après le coup** : un coup fatal depuis 35 % de PV passe à travers le filet.
+3. **La pitié est visible mais peu lisible** : le joueur ne sait pas quel sera son prochain essai.
+4. **Les modificateurs de gardien** ne sont pas annoncés avant le combat ; RAPIDE + phase 2 + enrage peut créer un pic brutal.
+5. **Le farm de gardien** ne rend pas les ressources promises, alors qu'il est présenté comme le filet de sécurité.
+6. **Le stuff de haut palier** ne récompense pas la progression ; le joueur ne comprend pas pourquoi un drop du 100 vaut un drop du 36.
+7. **La VIT** continue d'apparaître sur les objets alors qu'elle ne sert plus.
+8. **Les sets plats** ne donnent pas de sentiment de puissance au palier 100.
+9. **L'or** s'accumule sans usage à haut niveau.
+10. **La fusion** à 75 % décourage une mécanique qui devrait être un choix.
 
-> Les valeurs ci-dessous sont des points de départ à valider par simulation. Elles ne sont pas implémentées.
+### 4.3 Dette de documentation
 
-### 6.1 Séparer les multiplicateurs PV et ATQ
+L'ancien document contenait :
 
-Le multiplicateur de profondeur doit être **différent** pour les PV et l’ATQ :
+- §6.1 : monstre 36 à **18,8 k PV / 230 ATQ**, gardien 28,4 k / 307 ;
+- §6.1bis / §6.10 : monstre **30,6 k / 670**, gardien **87,7 k / 286** ;
+- §6.9 : `player36` gardien 36 à **100 %, 6,4 s** ;
+- §6.10 : `player36` gardien 36 à **59 %, 22,9 s** ;
+- simulateur `target` : `player36` à **0 %**.
 
-```kotlin
-fun hpDepth(floor: Int)  = min(1.11^(floor−10), 30.0)
-fun atkDepth(floor: Int) = min(1.04^(floor−10), 6.0)
-fun bossHpDepth(floor)   = min(1.08^(floor−10), 20.0)
-```
+Ces chiffres ne peuvent pas tous être vrais. Cette version du document ne conserve que la **courbe Phase A** (§3.3), qui est celle du code, et fixe une cible unique (§5).
 
-- Les PV gardent une croissance forte (fights qui durent).
-- L’ATQ est plafonnée à **6×** : le héros peut encaisser.
-- Le gardien utilise `bossHpDepth`, **3× PV** (au lieu de 6×), **1,3× ATQ** (au lieu de 1,6×), niveau `palier + 1` (au lieu de +2).
-- Élites : 6 % de chance, **1,8× PV**, **1,15× ATQ**.
+## 5. Modèle cible 1 → 100
 
-Exemple de courbe proposée :
+### 5.1 Principes
 
-| Palier | PV monstre | ATQ monstre | PV gardien | ATQ gardien |
-|---:|---:|---:|---:|---:|
-| 30 | 8,4 k | 153 | 15,0 k | 205 |
-| 36 | 18,8 k | 230 | 28,4 k | 307 |
-| 50 | 51,6 k | 546 | 105,3 k | 724 |
-| 70 | 72,0 k | 947 | 146,1 k | 1 248 |
-| 100 | 102,6 k | 1 343 | 207,3 k | 1 763 |
+1. **Lisible** : le joueur voit sa puissance, le pronostic et ce qui lui manque.
+2. **Progressif** : 35–65 % de victoires pour le stuff attendu, jamais 0/100.
+3. **Récupérable** : chaque échec donne de l'XP/or de consolation et un chemin de farm/camp.
+4. **Sans statistique morte** : VIT, sets, camp et or ont un usage à tous les paliers.
+5. **Sans dead-end** : depuis 0 ration/0 éclat, il existe toujours une action gratuite ou peu coûteuse.
+6. **Sans exécution obligatoire** : le challenge est la préparation (stuff, potions, choix d'engager), pas le timing au pixel.
 
-Au palier 36, avec le stuff actuel : monstre tué en ~3,6 s en encaissant ~620 dégâts ; gardien tué en ~10 s (bouclier inclus) en encaissant ~2 300. Le combat redevient gagnable sans être trivial.
+### 5.2 Bandes de difficulté
 
-### 6.1bis Deuxième itération : viser un TTK constant
-
-La première séparation (6.1) débloque le palier 36, mais le simulateur révèle un défaut : le gardien 36 tombe en **~6 s** alors que le gardien 100 dure **18 s**. La courbe de PV des gardiens est trop raide tôt et trop plate tard.
-
-Cible : **monstre ~5 s**, **gardien ~18 s**, **≥ 30 coups portés**, à tous les paliers, pour le build de référence (`ATQ = 650 + 20×palier`, `PV = 1 800 + 55×palier`, `VIT = 1,8 + 0,02×palier`), soit ~1 370 ATQ / 3 780 PV au palier 36.
-
-| Palier | PV monstre | ATQ monstre | PV gardien | ATQ gardien |
-|---:|---:|---:|---:|---:|
-| 36 | 30,6 k | 670 | 87,7 k | 286 |
-| 50 | 39,2 k | 897 | 112,3 k | 362 |
-| 75 | 53,5 k | 1 212 | 153,7 k | 482 |
-| 100 | 63,7 k | 1 450 | 184,8 k | 570 |
-
-Formules linéaires proposées (à ajuster par simulation) :
-
-```kotlin
-mobHpMult  = 26.0 - 0.08  * (floor - 10)
-mobAtkMult = 9.0 - 0.028 * (floor - 10)
-bossHpMult = 72.0 - 0.20  * (floor - 10)
-bossAtkMult = 3.6 - 0.012 * (floor - 10)
-
-PV  = basePV(level)  * mult * règleBiome
-ATQ = baseATQ(level) * mult * règleBiome
-```
-
-- Bouclier : 40 % / 3 s / 8 s.
-- Élites : 1,8× PV, 1,15× ATQ.
-- Les multiplicateurs **baissent** avec le palier parce que les PV/ATQ de base montent déjà linéairement et que le DPS de référence monte plus vite (ATQ × VIT). Ce n’est pas une erreur.
-
-Simulation de cette cible (ATQ gardien calibrée pour un build de référence ~3 700 PV au palier 36, enrage après 15 s) :
-
-| Build | Gardien 36 | Gardien 50 | Gardien 75 | Gardien 100 |
-|---|---|---|---|---|
-| `player36` (build du joueur) | 22,9 s · 75 coups · **59 %** | 0 % | 0 % | 0 % |
-| `player36` + potion ATQ | 16,9 s · 55 coups · **100 %** | — | — | — |
-| `reference` (mid) | 21,8 s · 74 coups · 100 % | 20,3 s · 69 coups · 98 % | 20,9 s · 71 coups · 1 % | 20,7 s · 71 coups · 0 % |
-| `reference_high` | 18,3 s · 62 coups · 100 % | 16,8 s · 57 coups · 100 % | 19,0 s · 64 coups · 100 % | 19,2 s · 65 coups · 100 % |
-
-Le build du joueur (1 349 ATQ / 3 699 PV) gagne le gardien 36 **59 % sans potion** et **100 % avec une potion**, en 23 s / 17 s. Le build haut gagne 36-100 en 17-19 s. Le stuff moyen franchit 36-50 puis doit progresser pour 75-100. L’important est acquis : **aucun gardien ne tombe en 2-3 coups**, le combat dure 17-23 s, et le stuff moyen/haut ne gagne pas automatiquement sans consommable.
-
-### 6.2 Courbe d'XP
-
-Remplacer `1,2^niveau` par une courbe plus douce :
-
-```kotlin
-fun xpNext(level: Int) = (120 * 1.09^(level−1)).roundToInt()
-```
-
-- Total 1→100 : **~6,8 M XP** (au lieu de 41,4 Md).
-- Niveau 34 : 2 064 XP (au lieu de 49 222).
-- Niveau 100 : 608 k XP.
-- Récompenses : supprimer le plafond `sqrt(depth)` et utiliser un multiplicateur linéaire de palier :
-
-```kotlin
-xpMult(floor) = 1 + 0.15 * (floor − 1)
-xpMob   = (12 + 5×niveau) × xpMult(floor)
-xpBoss  = 10 × xpMob
-```
-
-- Palier 36 : ~1 200 XP/monstre, ~12 000/gardien.
-- Palier 100 : ~8 000/monstre, ~80 000/gardien.
-- Objectif : **20 à 50 monstres par niveau** en fin de partie.
-
-Gains de niveau à renforcer :
-
-- +5 ATQ (au lieu de +3)
-- +25 PV (au lieu de +18)
-- +1,5 % VIT (au lieu de +1 %)
-- éventuellement +1 % crit tous les 5 niveaux.
-
-### 6.3 Butin et objets
-
-Le problème principal : `lootItem` fixe `level = floor` mais **ne scale pas les statistiques**. Un objet rare de palier 36 a les mêmes stats de base qu’un objet rare de palier 5, à 1,6× près.
-
-Ajouter un facteur de palier :
-
-```kotlin
-val floorScale = 1 + 0.06 * (floor − 1)   // plafonné à 8
-atk  = base.atk  * rarityMult * floorScale
-hp   = base.hp   * rarityMult * floorScale
-vit  = base.vit  * rarityMult * floorScale
-crit = base.crit * rarityMult * floorScale
-```
-
-- Palier 36 : ×3,1 ; palier 100 : ×6,9.
-- Raretés : 1,2 / 1,6 / 2,1 / 2,8 (au lieu de 1,0 / 1,25 / 1,6 / 2,0 / 2,4).
-- Les objets existants gardent leurs stats (pas de migration) ; seuls les nouveaux drops et les améliorations profitent du nouveau barème. Une migration v8 de recalcul est possible mais risquée : à éviter dans un premier temps.
-
-Bonus d’ensemble : passer de valeurs plates (+10 ATQ, +30 PV) à des **pourcentages** (2 pièces : +5 % ATQ/PV ; 4 pièces : +10 % ; 6 pièces : +15 %) ou à des valeurs multipliées par le palier.
-
-Fusion : le résultat vaut actuellement **75 % de la somme** des 3 objets. Le passer à **90 %** (ou 100 % avec une petite perte de rareté) pour que fusionner ne soit pas une punition, et conserver l’effet/rareté.
-
-### 6.4 Éclats et rations
-
-Objectif : sortir de la spirale 0 éclat / 0 ration.
-
-Éclats :
-
-- Gardien : **+3** (au lieu de +2), jalon : **+8** (au lieu de +5).
-- Coffre : **+2** (au lieu de +1).
-- Élite : 20 % de chance de +1.
-- Démontage : 2 / 3 / 6 / 10 selon rareté.
-- Plafond : **24** (au lieu de 12).
-- Coûts : amélioration 1 éclat (inchangé), reforge **1** (au lieu de 2), resupply 1.
-
-Rations :
-
-- Gardien : **+2** (au lieu de +1), coffre : **+2** (au lieu de +1).
-- Monstres : 10 % de chance de drop une ration.
-- Plafond : 30.
-- Seuil d’utilisation automatique : **30 %** des PV (au lieu de 25 %).
-- Veillée gratuite : **+25-30 %** PV (au lieu de 15 %), une fois par jour.
-- Camp : repos 1 ration +40 % (inchangé), resupply 1 éclat (inchangé).
-
-### 6.5 Camp
-
-Les améliorations plates sont trop faibles face à l’exponentiel :
-
-- Lame : **+10 ATQ** par niveau (au lieu de +3).
-- Souffle : **+80 PV** (au lieu de +30).
-- Pas vifs : **+4 % VIT** (au lieu de +2,5 %).
-- Ou passer à des bonus **multiplicatifs** : +2 % ATQ, +2 % PV, +1,5 % VIT par niveau.
-- Conserver la courbe de coût `1,2^niveau` ; l’or devient enfin un choix (181 k = ~15 niveaux utiles).
-
-### 6.6 Gardiens et pitié
-
-- Bouclier : **−40 % pendant 3 s toutes les 8 s** (au lieu de −65 % / 4,5 s / 6,5 s), ou absorption d’un montant fixe (ex. 15 % des PV max).
-- La proposition initiale (`3× PV`, `1,3× ATQ`) ne suffit pas : le gardien 36 tombe en ~6 s. Utiliser la **courbe cible 6.1bis** pour viser ~18 s et ≥ 30 coups à tous les paliers.
-- Capacités : réduire les multiplicateurs (slam 2,4→1,8 ; souffle 2,0→1,6 ; drain 1,5→1,2 ; etc.).
-- Pitié : chaque défaite sur un gardien donne **+25 % de dégâts** au prochain essai, cumulable jusqu’à **+75 %**, remis à zéro à la victoire. Alternative : −5 % PV/ATQ du gardien par défaite, plafonné à −25 %.
-- **Enrage douce** : à partir de 15 s, +25 % ATQ toutes les 5 s (plafond +75 %). Le meilleur stuff ne gagne plus 100 % automatiquement ; les potions permettent de finir avant l’enrage. C’est le levier recommandé pour respecter « pas de combat automatiquement gagné » sans pénaliser le stuff moyen, qui meurt souvent avant 15 s.
-- Afficher les PV/ATQ réels et un indicateur « dangereux » basé sur le ratio ATQ ennemi / PV héros.
-
-### 6.7 Farm et récupération
-
-- Le farm courant est déjà un **filet de sécurité** : pool facile, niveau `palier − 2`, PV ×0,65, ATQ ×0,6, **sans multiplicateur de profondeur**. Il est donc beaucoup plus sûr que le sentier normal et permet de récupérer éclats/rations/butin. Aucun changement de courbe n’est nécessaire.
-- Améliorer l’UI pour expliquer ce rôle (« farmer ce palier pour récupérer ») et, plus tard, permettre de choisir un palier.
-- Farm : conserver 3 kills puis reprise.
-- Après une défaite, proposer **« Reculer d’un palier »** en plus du repli de 20 m.
-- Conserver le repli de 20 m et les 60 % de PV ; ajouter un petit gain d’XP/or de consolation.
-
-### 6.8 Score de puissance et télémétrie
-
-Le score actuel `ATQ×2 + PV/4 + VIT×20 + crit + regen×10` survalorise l’ATQ et ignore la survie. Pour le tuning :
-
-- Afficher en debug : DPS estimé, PV effectifs, TTK/TTD par palier, taux de victoire simulé.
-- Journaliser : tentatives par palier, défaites, éclats/rations par jour, temps par niveau, niveaux d’objets.
-- Seuils d’alerte : >5 tentatives par palier normal, >10 par gardien, >30 % de joueurs bloqués au même palier.
-
-### 6.9 Première validation par simulation
-
-Le simulateur `tools/equilibrage/balance_sim.py` reproduit d’abord le blocage actuel :
-
-- `player36` (build réel) : **0 %** de victoires au palier 36, monstre comme gardien.
-- Le gardien tue en ~7,5 s ; le monstre en ~3,8 s.
-
-Avec la courbe proposée (`3× PV`, `1,3× ATQ`, bouclier 40 % / 3 s / 8 s) :
-
-| Scénario | Victoires | TTK | Coups portés | Coups encaissés |
+| Type | TTK cible | Coups portés | Coups encaissés | Victoires stuff attendu |
 |---|---:|---:|---:|---:|
-| `player36`, monstre 36 | 100 % | 4,2 s | — | — |
-| `player36`, gardien 36 | 100 % | 6,4 s | — | — |
-| `reference_high`, gardien 50 | 100 % | 13,3 s | 45 | 11 |
-| `reference_high`, gardien 75 | 100 % | 17,2 s | 58 | 13 |
-| **`reference_high`, gardien 100** | **83 %** | **18,2 s** | **62** | **14** |
-| `reference` (stuff moyen), gardien 100 | 0 % | — | 46 | 11 |
+| Monstre normal | 4–6 s | 12–20 | 4–6 | ≥ 95 % |
+| Élite | 8–12 s | 20–30 | 4–6 | ≥ 80 % |
+| Gardien | 15–22 s | ≥ 30 | 8–12 | **35–65 %** |
+| Gardien + potion | 13–18 s | ≥ 25 | 8–12 | 55–75 % |
+| Stuff faible | — | — | — | 10–25 % |
+| Stuff avancé | — | — | — | 85–95 % |
 
-Avec une potion d’ATQ (+40 %) :
+### 5.3 Formules cibles (proposition à valider)
 
-- `reference_high` au gardien 100 : **100 %**, TTK **12,5 s**, **43 coups portés**.
-- Le gardien reste très loin d’un combat en 2-3 coups, et le stuff moyen ne gagne toujours pas.
-
-Conclusion : la cible « gardien ~18 s, beaucoup de coups, pas de one-shot » est atteinte pour le build avancé au palier 100. Les gardiens 75 et 100 restent à calibrer pour le stuff moyen, et la potion doit rester un accélérateur, pas une garantie de victoire à bas stuff.
-
-### 6.10 État d’implémentation (Phase A)
-
-Implémenté dans le code (version de développement, pas encore publiée) :
-
-- **Courbe cible** : interpolation entre l’ancienne courbe (≤ palier 20) et la courbe cible (≥ palier 35), avec les multiplicateurs de 6.1bis. Le niveau du gardien reste `palier + 2` (au lieu de +1 dans la table cible), donc il est ~3 % plus fort que la simulation. L’ATQ est calibrée sur un build de référence ~3 700 PV au palier 36 : le build réel gagne 59 % sans potion et 100 % avec.
-- **Gardiens** : bouclier 40 % / 3 s, **enrage** après 15 s (+25 % toutes les 5 s, cap +75 %), bénédiction de défaite cumulative (+25 % par échec, cap +75 %).
-- **Élites** : 6 % de chance, 1,8× PV, 1,15× ATQ.
-- **Monstres normaux** : ATQ cible −10 % ; **aucun soin automatique après la victoire**, l’attrition est conservée. Les rations/potions restent utiles entre les combats.
-- **Score d’objet** : PV pondérés ×0,6 (au lieu de ×0,25) pour que « Équiper le meilleur » ne privilégie plus un build glass cannon.
-- **Éclats** : plafond **24**, gardien +3, jalon +8, coffre +2, démontage 2/3/6/10, reforge **1** éclat, élite 20 % +1.
-- **Rations** : gardien +2, coffre +2, monstre 10 % +1, seuil d’auto-ration 30 %, veillée gratuite 25 %.
-- **Farm** : inchangé, car déjà sûr (sans profondeur) ; seule la compréhension UI reste à améliorer.
-
-Non inclus dans cette phase : courbe d’XP, scaling du butin, camp/sets en pourcentage (Phase B).
-
-## 7. Plan de tuning conseillé
-
-### Phase A — débloquer le palier 36 (priorité)
-
-1. Séparer `hpDepth` / `atkDepth` (ATQ cap 6×).
-2. Gardien : 3× PV, 1,3× ATQ, niveau +1, bouclier réduit.
-3. Éclats/rations : revenus doublés, plafonds relevés.
-4. Vérifier et clarifier le farm existant (déjà sûr, sans profondeur) ; pas de changement de courbe.
-5. Pitié gardien (+25 %/défaite, cap +75 %).
-
-**Critère** : le build actuel (1 349 ATQ / 3 699 PV) doit gagner un monstre normal en 4-6 s et le gardien en 15-22 s avec 1 ration, en portant au moins 30 coups.
-
-### Phase B — rendre le niveau 100 atteignable
-
-1. Courbe XP 1,09 et récompenses linéaires par palier.
-2. Butin scalable par palier.
-3. Camp/sets en pourcentage.
-4. Gains de niveau renforcés.
-
-**Critère** : 2 500-4 000 kills pour 1→100 ; ~1 niveau par 1-2 paliers ; niveau 100 vers le palier 100.
-
-### Phase C — fin de partie et polish
-
-1. Remplacer le cap 40 par une courbe lisible ou un NG+.
-2. Télémétrie et tableau de bord d’équilibrage.
-3. Ajuster les biomes (règles, élites) avec les nouvelles courbes.
-
-## 8. Impacts et précautions
-
-- **Aucune migration de sauvegarde n’est nécessaire** pour les formules de combat/XP. Les objets existants gardent leurs stats ; les nouveaux drops utilisent le nouveau barème. Une migration v8 de recalcul des objets serait plus risquée (inflation, perte de repères) et n’est pas recommandée dans un premier temps.
-- Les saves v4/v5/v6/v7 doivent rester lisibles ; les tests de migration existants couvrent déjà ce point.
-- Le upscale du butin peut rendre les anciens objets obsolètes : prévoir un message ou un « recalcul » optionnel plus tard.
-- Les seuils de pitié et les revenus d’éclats doivent être testés sur 7 à 14 jours de jeu réel, pas seulement en simulation.
-
-## 9. Annexes — formules et cibles
-
-### 9.1 Cibles de combat
-
-| Type | TTK cible | Coups encaissés | Notes |
-|---|---:|---:|---|
-| Monstre normal | 4-7 s | 5-8 | sans ration |
-| Élite | 8-12 s | 4-6 | 6 % de chance |
-| Gardien | 15-22 s | 8-12 | 1 ration, bouclier, ≥ 30 coups portés |
-
-### 9.2 Cibles de progression
-
-| Élément | Cible |
-|---|---|
-| Pas par palier | 1 000 (inchangé) |
-| Paliers 1→100 | 100 k pas (+ farm/retries) |
-| Durée 1→100 | 1 à 3 mois à 5-10 k pas/jour |
-| Kills 1→100 | 2 500-4 000 |
-| Niveau vs palier | niveau ≈ palier − 2 à palier |
-| Éclats/jour | 5-10 |
-| Niveaux d’objet/jour | 1-3 |
-
-### 9.3 Courbe XP proposée (1,09)
-
-| Niveau | XP suivant | Total depuis 1 |
-|---:|---:|---:|
-| 34 | 2 064 | ~21 600 |
-| 50 | 8 184 | ~89 600 |
-| 70 | 45 840 | ~508 000 |
-| 100 | 608 280 | ~6 760 000 |
-
-> Les totaux sont approximatifs ; ils servent d’ordre de grandeur pour le tuning.
-
-### 9.4 Formules actuelles (référence)
+**XP**
 
 ```kotlin
-xpNext(level) = 120 * 1.2^(level-1)
+xpNext(level) = round(120 × 1,09^(level−1))
+xpMult(palier) = 1 + 0,12 × (palier−1)
+xpMonstre = round((12 + 5 × niveau) × xpMult(palier))
+xpGardien = 10 × xpMonstre
+```
+
+- Total 1 → 100 : **~6,8 M XP**, soit **2 500–4 000 kills**.
+- Niveau 100 visé vers le **palier 100–120**.
+- Rattrapage : si `niveau < palier − 4`, appliquer ×1,25 XP jusqu’à revenir à `palier − 4` (évite le farm d'XP forcé).
+
+**Objets**
+
+```kotlin
+floorScale = min(6.0, 1 + 0,055 × (palier−1))
+// rareté : uncommon 1,15 ; rare 1,5 ; epic 1,9 ; legendary 2,4
+stats = base × rareté × floorScale
+```
+
+- Un rare du palier 100 devient **nettement** supérieur à un rare du 36, sans inflation infinie.
+- Les anciens objets gardent leurs stats (pas de migration) ; seuls les nouveaux drops et les améliorations futures utilisent le barème.
+
+**Amélioration d'objet**
+
+```kotlin
+niveauMax = palierDuDrop + 20
+growStat(valeur, base) = valeur + max(1, round(base × 0,04))
+coût = 30 × niveau + 20 // or, +1 éclat
+```
+
+- Croissance **additive**, pas composée : un objet ne peut plus être multiplié par 2 200.
+- Plafond de 20 niveaux au-dessus du drop : un objet du palier 100 monte au maximum au niveau 120, pas au niveau 200.
+
+**Camp**
+
+- +1,5 % ATQ, +1,5 % PV, +1 % VIT par niveau, appliqués à la **base héros** (pas au stuff), plafonnés à 30 niveaux.
+- Coût indexé sur le palier : `ceil(45 × 1,18^niveau × (1 + 0,04 × palier) / 5) × 5`.
+- L'or retrouve un usage à tous les paliers.
+
+**Sets**
+
+- Bonus en pourcentage : 2 pièces +4 %, 4 pièces +8 %, 6 pièces +12 % (ATQ/PV ou effet thématique).
+- Les bonus restent liés aux pièces **équipées** ; la collection reste permanente, sans bonus.
+
+**VIT**
+
+- Intervalle minimum : **180 ms** (au lieu de 300 ms).
+- Cap de VIT utile : **4,0** ; au-delà, la stat est plafonnée et affichée comme telle.
+- Les objets de haut palier ne génèrent plus de VIT au-delà du cap.
+
+**Effets**
+
+| Effet | Cap |
+|---|---:|
+| Vol de vie | 25 % |
+| Réduction de dégâts | 40 % |
+| Critique | 75 % |
+| Dégâts critiques | +100 % |
+| Dégâts contre gardiens | +50 % |
+
+### 5.4 Économie et récupération
+
+- Rations : plafond **30** ; gardien +3, coffre +3, monstre 20 %, élite +1 garanti.
+- Auto-ration : seuil **40 %**, soin **45 %**, une fois par combat.
+- Farm : **+10 % PV** par kill, visible dans le journal et dans l'écran de farm.
+- Camp : **repos gratuit** 20 % PV, 2 fois par jour ; repos payant 1 ration +40 % ; soin complet 1 éclat.
+- Objectif de consommation : **15–20 rations/jour** pour 5 paliers/jour.
+- `holdFloor` : gardien farmé donne **+1 éclat et +1 ration** (pas de palier), pour que le farm soit réellement une récupération.
+- Éclats : 5–10/jour, cap 24 ; les upgrades plafonnés évitent l'inflation.
+
+### 5.5 Butin, sets, fusion
+
+- Pity : rare garanti tous les **5 kills** de monstre ; pièce de set garantie tous les **10 gardiens** (ou jeton de set).
+- Non identifié : maximum **1 drop sur 10**.
+- Fusion : **90 %** de la somme, en conservant l'effet et le set.
+- Les sets doivent rester un choix : 2/4/6 pièces, pas une obligation de 6/6.
+
+### 5.6 Gardiens
+
+- Niveau : **palier + 1** (au lieu de +2), pour coller à la cible.
+- PV : calibrés pour **18 s** de TTK avec le stuff attendu.
+- ATQ : calibrée sur l'EHP du stuff attendu, diviseur **20–22** (au lieu de 16).
+- Bouclier : **35 % / 3 s / 8 s**.
+- Phase 2 à 50 % PV : **capacité télégraphiée**, sans réduction permanente de l'intervalle à 950 ms.
+- Enrage : après **25 s**, +15 % ATQ toutes les 5 s, plafond **+60 %**.
+- Pitié : **−5 % PV/ATQ du gardien par défaite**, plafond −25 %, affichée avant le combat. Alternative : +15 % dégâts héros, plafond +60 %.
+- Portail à **90 m** : arrêt, écran « Gardien devant », pronostic, choix **Engager / Farmer / Camper**, potion utilisable avant.
+- Modificateur et capacité **annoncés** avant l'engagement ; un reroll de modificateur peut être proposé au camp contre de l'or.
+
+### 5.7 Fin de jeu 81–100
+
+- Éviter 20 paliers identiques dans le même biome.
+- Après le palier 80 : **Trône brisé** avec modificateurs de biome, ou NG+ avec conservation des collections.
+- Les jalons 90 et 100 doivent être des **événements**, pas seulement des multiplicateurs.
+
+## 6. Décisions validées (24 novembre 2026)
+
+| Décision | Choix retenu | Alternative écartée |
+|---|---|---|
+| Courbe XP | **1,09** + multiplicateur linéaire | 1,10 |
+| Croissance d'objet | **Additive +4 % de la base, +20 niveaux max** | Composée avec soft cap |
+| Rations | **Drops + repos gratuit + auto-ration 40 %/45 %** | Drops seuls, repos seul |
+| Lissage gardien | **Courbe + pitié en debuff visible** | Pitié en dégâts héros |
+| Pitié | **−5 % PV/ATQ par défaite, cap −25 %** | +15 % dégâts, cap +60 % |
+| Fin de jeu | **NG+ / Trône brisé** | Nouveaux biomes |
+| Cap de butin | **×6 au palier 100** | ×8 |
+
+> Ces choix sont la référence pour la Phase B. Les alternatives ne sont conservées que comme historique ; toute modification devra être justifiée par un playtest.
+
+## 7. Risques et précautions
+
+- **Migration** : ne pas recalculer les objets existants ; les nouveaux barèmes ne s'appliquent qu'aux nouveaux drops et upgrades.
+- **Inflation** : le plafond d'upgrade et le cap de butin doivent être testés avant d'être publiés.
+- **Playtest** : le simulateur ne remplace pas 7–14 jours de jeu réel ; noter paliers, défaites, rations, or, niveaux.
+- **Documentation** : toute modification de formule doit être répercutée dans `balance_sim.py` et dans ce document, sinon les chiffres divergent à nouveau.
+- **Sauvegardes** : conserver la compatibilité v4 → v7 et les tests de migration.
+
+## 8. Annexes
+
+### 8.1 Formules actuelles (référence code 0.20.0)
+
+```kotlin
+xpNext(l) = round(120 * 1.2^(l-1))
 upgradeCost(item) = 30 * item.level + 20
 growStat(v) = v + max(1, round(v * 0.08))
-campCost(key, n) = round(45 * 1.2^n / 5) * 5
 fusion = 0.75 * somme(3 objets)
-depthMob = min(1.12^(floor-10), 40)
-depthBoss = min(1.08^(floor-10), 40)
+depthMob = min(1.12^(palier-10), 40)
+depthBoss = min(1.08^(palier-10), 40)
+intervalleHéros = max(300 ms, 1000 / (VIT * (1 + 0.004 * ferveur)))
+autoRation = PV < 30 % max, +35 %, 1 fois/combat
 ```
 
----
+### 8.2 Commandes de simulation
 
-**Conclusion** : le jeu n’a pas un problème de pas, il a un problème de **courbe de dégâts ennemis**, de **courbe d’XP** et de **monnaie de progression**. En corrigeant d’abord l’ATQ ennemie, les gardiens et l’économie d’éclats/rations, le palier 36 redevient franchissable. En corrigeant ensuite l’XP et le butin, le niveau 100 devient un objectif de quelques semaines/mois, porté par la marche, avec du farm et des améliorations utiles.
+```bash
+# Courbe du code (Phase A) : monstres et gardiens
+python tools/equilibrage/balance_sim.py --curve target \
+  --build player36,reference,reference_high \
+  --floors 36,50,75,100 --runs 300
+
+# XP et pas
+python tools/equilibrage/balance_sim.py --xp
+
+# Économie
+python tools/equilibrage/balance_sim.py --economy
+```
+
+### 8.3 Source de vérité
+
+- Kotlin : `android/app/src/main/java/com/brunothesatellite/idlesteprpg/engine/Balance.kt`.
+- Miroir Python : `tools/equilibrage/balance_constants.py`.
+- Vérification : `python tools/equilibrage/check_constants.py` (exécutée par la CI Android).
+- Toute nouvelle constante doit être ajoutée dans les trois endroits, puis vérifiée avant le playtest.
+
+### 8.4 Historique
+
+- **0.19.1** : rapport initial ; diagnostic du mur du palier 36 (ATQ ennemie exponentielle, XP, économie).
+- **0.20.0 / Phase A** : interpolation des courbes, bouclier 40 %, enrage, élites 6 %, pitié +25 %, éclats/rations revus, score d'objet PV ×0,6.
+- **0.20.0 / attrition** : suppression du soin complet après les monstres normaux ; l'attrition est conservée. Conséquence : l'économie des rations doit être recalibrée (§5.4).
+- **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.

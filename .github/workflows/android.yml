@@ -26,6 +26,9 @@ jobs:
       - name: Make wrapper executable
         run: chmod +x android/gradlew
 
+      - name: Check balance constants
+        run: python tools/equilibrage/check_constants.py
+
       - name: Unit tests, lint and debug APK
         working-directory: android
         run: ./gradlew :app:testGithubDebugUnitTest :app:lintGithubDebug :app:assembleGithubDebug --console=plain --no-daemon

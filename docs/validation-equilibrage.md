@@ -1,7 +1,8 @@
 # Plan de validation de l’équilibrage
 
-> Compagnon de `docs/equilibrage.md` et de `tools/equilibrage/balance_sim.py`.
+> Compagnon de `docs/equilibrage.md`, `docs/plan-equilibrage.md` et de `tools/equilibrage/balance_sim.py`.
 > Objectif : vérifier, avant et après implémentation, que les nouvelles courbes rendent le jeu **franchissable**, **progressif** et **non trivial**, sans remplacer un mur par un autre.
+> Toute modification suit l'ordre des lots de `docs/plan-equilibrage.md`.
 
 ## 1. Périmètre
 
@@ -26,7 +27,7 @@
 1. Le blocage au palier 36 vient de l’ATQ ennemie et de l’XP, pas des pas.
 2. Séparer les multiplicateurs PV/ATQ débloque le palier 36 avec le build actuel.
 3. Un build « stuff attendu » peut franchir les paliers 50, 75 et 100 avec du farm et des améliorations, sans devenir invincible.
-4. Le niveau 100 est atteignable en **2 000 à 3 500 kills** et **1 à 3 mois** à 5-10 k pas/jour.
+4. Le niveau 100 est atteignable en **2 500 à 4 000 kills** et **1 à 3 mois** à 5-10 k pas/jour.
 5. Les éclats/rations permettent de sortir d’une situation à 0/0 sans boucle infinie.
 6. Le butin de palier élevé est nettement meilleur, sans rendre les anciens objets inutiles.
 7. Aucun build ne domine de plus de 2× un autre.
@@ -61,7 +62,7 @@ python tools/equilibrage/balance_sim.py --curve target --build reference,referen
 python tools/equilibrage/balance_sim.py --xp
 ```
 
-La courbe `target` vise un TTK constant (monstre ~5 s, gardien ~18 s) au lieu d’un multiplicateur de profondeur. Elle sert de référence pour la Phase B.
+Le mode `--curve target` du simulateur sert à reproduire la courbe de combat visée (monstre ~5 s, gardien ~18 s). La référence de vérité reste `docs/equilibrage.md` §3.3 (état 0.20.0) et §5 (cible).
 
 ## 4. Matrice de tests
 
@@ -86,21 +87,21 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 | Monstre normal, build `reference` | ≥ 95 % de victoires, TTK 4-7 s, ≤ 0,2 ration |
 | Monstre normal, build `player36` | gagnable sans potion, PV conservés après victoire (attrition) |
 | Élite, build `reference` | ≥ 80 % de victoires, TTK 8-12 s |
-| Gardien, build `reference` sans potion | 0-30 % de victoires, TTK 15-22 s, ≥ 30 coups portés, 1 ration |
-| Gardien, build `reference` + potion | 40-70 % de victoires, TTK 13-18 s, ≥ 30 coups portés |
-| Gardien, build `reference_high` au 100 | 90-100 % de victoires, TTK 15-22 s, ≥ 30 coups portés |
+| Gardien, build `reference` sans potion | **35-65 %** de victoires, TTK 15-22 s, ≥ 30 coups portés |
+| Gardien, build `reference` + potion | **55-75 %** de victoires, TTK 13-18 s, ≥ 30 coups portés |
+| Gardien, build `reference_high` au 100 | **85-95 %** de victoires, TTK 15-22 s, ≥ 30 coups portés |
 | Gardien + potion, build `reference_high` | TTK réduit de 20-40 %, jamais < 10 s ni < 25 coups |
-| Gardien avec enrage après 15 s | sécurise les combats longs ; à renforcer si le meilleur stuff gagne encore trop souvent |
-| Build `under` | perd les gardiens, gagne encore des monstres |
-| Palier 36, build `player36` | ≥ 80 % de victoires sur monstre et gardien après patch |
+| Gardien avec enrage après 25 s | sécurise les combats longs ; à renforcer si le meilleur stuff gagne encore trop souvent |
+| Build `under` | 10-25 % sur les gardiens, gagne encore des monstres |
+| Palier 36, build `player36` | ≥ 80 % sur monstre, **35-65 %** sur gardien après patch |
 | Écart entre builds | aucun build > 2× plus rapide qu’un autre |
 
 ### 5.2 Progression
 
 | Métrique | Cible |
 |---|---|
-| Kills 1→100 | 2 000-3 500 |
-| Niveau 100 | vers le palier 100-150 |
+| Kills 1→100 | 2 500-4 000 |
+| Niveau 100 | vers le palier 100-120 |
 | Pas 1→100 | 100 000-200 000 (farm/retries inclus) |
 | Durée | 1-3 mois à 5-10 k pas/jour |
 | Tentatives par palier normal | 1-3 en moyenne, ≤ 5 |
@@ -136,14 +137,14 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 
 **Sortie** : simulateur de confiance, tableau de calibration.
 
-**Écart connu** : sur la courbe `target` recalibrée (ATQ gardien ~EHP/19), `player36` gagne 59 % au 36 et 100 % avec potion ; `reference` gagne 36-50, puis 0-1 % aux 75/100 ; `reference_high` gagne 100 % partout en 17-19 s. Le point restant est le 100 % du meilleur stuff : soit l’accepter comme récompense du sur-stuff, soit renforcer l’enrage et vérifier que le stuff moyen + potion reste à 40-70 %.
+**Écart de calibration 0.20.0** : le simulateur `target` donne `player36` à **0 %** au gardien 36, alors que l’ancien rapport annonçait 59 %, et le code ajoute +2 niveaux au gardien. Cette divergence est traitée dans `docs/equilibrage.md` §3.4 et §4.3. Tant que la porte A du plan n’est pas franchie, ces chiffres ne servent pas de référence.
 
 ### Phase A — Débloquer le palier 36
 
-**Statut : implémentée dans la version de développement, playtest à faire.**
+**Statut : implémentée dans la version 0.20.0, playtest en cours.**
 
-1. Courbe cible 6.1bis (gardien ~18 s, ≥ 30 coups), bouclier réduit, enrage après 15 s, éclats/rations revus, pitié cumulative, farm existant clarifié.
-2. Implémenté : voir 6.10 du rapport.
+1. Courbe Phase A : voir `docs/equilibrage.md` §3.3 (gardien ~18 s, ≥ 30 coups), bouclier réduit, enrage après 15 s, éclats/rations revus, pitié cumulative, farm existant clarifié.
+2. Implémenté : voir `docs/equilibrage.md` §3 et §4.
 3. Playtest 7 jours sur la sauvegarde actuelle :
    - noter paliers gagnés, défaites, éclats/rations, or, niveau ;
    - vérifier qu’aucun joueur ne reste bloqué sans option.
@@ -161,7 +162,7 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
    - nouvelle sauvegarde depuis le palier 1 ;
    - sauvegarde actuelle au 36 ;
    - sauvegarde avancée si disponible.
-4. Critères : 2 000-3 500 kills, niveau 100 vers 100-150, pas de build dominant, économie stable.
+4. Critères : 2 500-4 000 kills, niveau 100 vers 100-120, pas de build dominant, économie stable.
 
 **Sortie** : validation de la courbe longue.
 
@@ -203,7 +204,7 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 | Un build > 2× les autres | ajuster les synergies (sets, crit, vol de vie) |
 | Éclats qui s’accumulent au plafond | réduire les revenus ou augmenter les coûts |
 | Éclats toujours à 0 | augmenter les revenus ou réduire les coûts |
-| Niveau 100 < 2 000 kills | durcir l’XP |
+| Niveau 100 < 2 500 kills | durcir l'XP |
 | Niveau 100 > 4 000 kills | adoucir l’XP |
 | Joueurs bloqués > 5 tentatives | activer la pitié ou ajuster le palier |
 

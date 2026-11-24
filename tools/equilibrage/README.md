@@ -6,6 +6,16 @@ Outil autonome pour rejouer les combats de **La Marche des Âmes** avec les cour
 - Python 3.10+, **aucune dépendance externe**.
 - Les formules sont recopiées depuis `GameEngine.kt` / `Model.kt` ; elles doivent rester synchronisées avec le code.
 
+> **Référence de courbe** : `docs/equilibrage.md` (version 0.20.0) et `docs/plan-equilibrage.md`. Les résultats chiffrés de la section « Premiers résultats » sont **historiques (0.19.1)** et ne servent plus de cible.
+
+## Source de vérité
+
+- Constantes Kotlin : `android/app/src/main/java/com/brunothesatellite/idlesteprpg/engine/Balance.kt`.
+- Miroir Python : `tools/equilibrage/balance_constants.py`.
+- Vérification : `python tools/equilibrage/check_constants.py` (lancée par la CI Android).
+
+Toute modification de constante doit être répercutée dans les deux fichiers, puis vérifiée avant une simulation.
+
 ## Utilisation
 
 ```bash

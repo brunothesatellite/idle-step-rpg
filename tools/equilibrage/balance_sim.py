@@ -15,9 +15,8 @@ Exemples :
     python tools/equilibrage/balance_sim.py --xp
     python tools/equilibrage/balance_sim.py --economy
 
-Les formules sont volontairement recopiées depuis GameEngine.kt / Model.kt
-(et non importées) : le simulateur doit rester un outil autonome, exécutable
-hors Android, et servir de référence pour le tuning.
+Les formules sont alignées sur `Balance.kt` via `balance_constants.py` ;
+`check_constants.py` vérifie que les deux fichiers restent synchronisés.
 """
 
 from __future__ import annotations
@@ -27,6 +26,8 @@ import math
 import random
 from dataclasses import dataclass, replace
 from typing import Iterable
+
+from balance_constants import CURRENT, TARGET
 
 # ---------------------------------------------------------------------------
 # Modèles
@@ -167,11 +168,17 @@ def rule_for(floor: int, biome: str) -> Rule:
 
 
 def _mob_depth_current(floor: int) -> float:
-    return 1.0 if floor <= 10 else min(1.12 ** (floor - 10), 40.0)
+    start = int(CURRENT["DEPTH_START_FLOOR"])
+    return 1.0 if floor <= start else min(
+        CURRENT["MOB_DEPTH_BASE"] ** (floor - start), CURRENT["DEPTH_CAP"]
+    )
 
 
 def _boss_depth_current(floor: int) -> float:
-    return 1.0 if floor <= 10 else min(1.08 ** (floor - 10), 40.0)
+    start = int(CURRENT["DEPTH_START_FLOOR"])
+    return 1.0 if floor <= start else min(
+        CURRENT["BOSS_DEPTH_BASE"] ** (floor - start), CURRENT["DEPTH_CAP"]
+    )
 
 
 def _mob_depth_proposed(floor: int, tuning: Tuning) -> float:
@@ -194,7 +201,9 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
         depth = _mob_depth_current(floor)
         hp = (55 + 34 * (level - 1)) * (2.2 if elite else 1.0) * depth
         atk = (6 + 2.2 * (level - 1)) * (1.3 if elite else 1.0) * depth
-        interval = 1.10 if elite else 1.25
+        interval = (
+        CURRENT["ELITE_INTERVAL_MS"] if elite else CURRENT["MOB_INTERVAL_MS"]
+    ) / 1000.0
         reward = min(6.0, math.sqrt(depth))
         gold = (6 + 3 * level) * (1.6 if elite else 1.0) * reward
         xp = (12 + 5 * level) * (1.8 if elite else 1.0) * reward
@@ -203,19 +212,23 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
             ref_atk = 650 + 24 * floor
             ref_hp = 1800 + 55 * floor
             ref_vit = 1.8 + 0.02 * floor
-            ref_interval = max(0.30, 1.0 / (ref_vit * 1.4))
+            ref_interval = max(CURRENT["HERO_MIN_INTERVAL_MS"] / 1000.0, 1.0 / (ref_vit * 1.4))
             ref_dps = ref_atk * 1.18 / ref_interval
             ref_ehp = (ref_hp * 1.35) / 0.94
             hp = ref_dps * 5.0 * (1.8 if elite else 1.0)
             atk = (ref_ehp / tuning.target_mob_atk_div) * (1.15 if elite else 1.0)
-            interval = 1.10 if elite else 1.25
+            interval = (
+        CURRENT["ELITE_INTERVAL_MS"] if elite else CURRENT["MOB_INTERVAL_MS"]
+    ) / 1000.0
             mult = 1.0 + 0.15 * (floor - 1)
             gold = (6 + 3 * level) * (1.6 if elite else 1.0) * mult * 0.5
             xp = (12 + 5 * level) * (1.8 if elite else 1.0) * mult
         else:
             hp = (55 + 34 * (level - 1)) * (1.8 if elite else 1.0) * _mob_depth_proposed(floor, tuning)
             atk = (6 + 2.2 * (level - 1)) * (1.15 if elite else 1.0) * _atk_depth_proposed(floor, tuning)
-            interval = 1.10 if elite else 1.25
+            interval = (
+        CURRENT["ELITE_INTERVAL_MS"] if elite else CURRENT["MOB_INTERVAL_MS"]
+    ) / 1000.0
             mult = 1.0 + 0.15 * (floor - 1)
             gold = (6 + 3 * level) * (1.6 if elite else 1.0) * mult * 0.5
             xp = (12 + 5 * level) * (1.8 if elite else 1.0) * mult
@@ -248,7 +261,7 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shiel
             ref_atk = 650 + 24 * floor
             ref_hp = 1800 + 55 * floor
             ref_vit = 1.8 + 0.02 * floor
-            ref_interval = max(0.30, 1.0 / (ref_vit * 1.4))
+            ref_interval = max(CURRENT["HERO_MIN_INTERVAL_MS"] / 1000.0, 1.0 / (ref_vit * 1.4))
             ref_dps = ref_atk * 1.18 / ref_interval
             ref_ehp = (ref_hp * 1.35) / 0.94
             hp = ref_dps * 18.0 * 0.85
@@ -267,7 +280,7 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shiel
         name="gardien",
         hp=hp * rule.enemy_hp,
         atk=atk * rule.enemy_atk,
-        interval=1.25 * rule.enemy_interval,
+        interval=CURRENT["MOB_INTERVAL_MS"] / 1000.0 * rule.enemy_interval,
         is_boss=True,
         ability=ability,
         shield_reduction=shield_reduction,
@@ -358,7 +371,10 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
     enemy_hits: list[int] = []
     win_times: list[float] = []
     loss_times: list[float] = []
-    attack_interval = max(0.30, 1.0 / (build.vit * (1.0 + 0.004 * build.ferveur)))
+    attack_interval = max(
+        CURRENT["HERO_MIN_INTERVAL_MS"] / 1000.0,
+        1.0 / (build.vit * (1.0 + 0.004 * build.ferveur)),
+    )
 
     for _ in range(runs):
         hp = build.hp
@@ -429,9 +445,13 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
                     hero_hits.append(hero_swings)
                     enemy_hits.append(enemy_swings)
                     break
-                if not ration_used and build.rations > 0 and hp < build.hp * 0.25:
+                if (
+                    not ration_used
+                    and build.rations > 0
+                    and hp < build.hp * CURRENT["AUTO_RATION_THRESHOLD"]
+                ):
                     ration_used = True
-                    hp = min(build.hp, hp + build.hp * 0.35)
+                    hp = min(build.hp, hp + build.hp * CURRENT["AUTO_RATION_HEAL"])
 
             if enemy.ability == "slam" and ability_timer <= 0:
                 enemy_swings += 1
@@ -486,8 +506,8 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
 
 def xp_next(level: int, curve: str) -> int:
     if curve == "current":
-        return round(120 * 1.2 ** (level - 1))
-    return round(120 * 1.09 ** (level - 1))
+        return round(CURRENT["XP_BASE"] * CURRENT["XP_GROWTH"] ** (level - 1))
+    return round(CURRENT["XP_BASE"] * TARGET["XP_GROWTH"] ** (level - 1))
 
 
 def total_xp(level: int, curve: str) -> int:
