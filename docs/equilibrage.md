@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.2** (lots 1–2, `versionCode 49`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.3** (lots 1–3, `versionCode 50`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -53,7 +53,7 @@ VIT  = 1 + 0,01 × (niveau − 1) + 0,025 × camp_pas + équipement
 ```
 
 - Les gains de niveau sont **linéaires et faibles** (+3 ATQ, +18 PV, +1 % VIT).
-- Les améliorations de camp sont **plates** (+3 ATQ, +30 PV, +2,5 % VIT).
+- Les améliorations de camp sont désormais **en pourcentage de la base héros** : +1,5 % ATQ, +1,5 % PV, +1 % VIT par niveau, plafond **30**.
 - Le stuff représente l'essentiel de la puissance.
 - **La VIT est plafonnée par le rythme d'attaque** : `intervalle = 1000 / (VIT × (1 + 0,004 × ferveur))`, minimum **180 ms** depuis le lot 2. La VIT utile est plafonnée à **4,0** ; au-delà, la fiche Stats affiche « MAX » et la valeur n'est plus prise en compte.
 
@@ -184,7 +184,7 @@ Simulation de l'attrition (`reference`) :
 | C7 | Effets empilables sans cap | **corrigé lot 2** : caps 25/40/75/100/50 | résolu |
 | C8 | Gardien auto-déclenché à 100 m | mort avant de pouvoir se préparer | élevée |
 | C9 | `holdFloor` sans éclats/rations | farm non rentable | élevée |
-| C10 | Camp/sets plats + or sans sink | économie obsolète à haut palier | moyenne |
+| C10 | Camp/sets plats + or sans sink | **corrigé lot 3** : camp et sets en %, coût indexé, plafond 30 | résolu |
 | C11 | Enrage dans une zone morte | inutile pour les faibles, trop tard pour les forts | moyenne |
 | C12 | Fusion 75 %, loot sans pity | frustration et séries sèches | moyenne |
 | C13 | Biomes/modificateurs non budgétés | pics imprévisibles | moyenne |
@@ -199,7 +199,7 @@ Simulation de l'attrition (`reference`) :
 5. **Le farm de gardien** ne rend pas les ressources promises, alors qu'il est présenté comme le filet de sécurité.
 6. **Le stuff de haut palier** ne récompense pas la progression ; le joueur ne comprend pas pourquoi un drop du 100 vaut un drop du 36.
 7. **La VIT** continue d'apparaître sur les objets alors qu'elle ne sert plus.
-8. **Les sets plats** ne donnent pas de sentiment de puissance au palier 100.
+8. **Les sets** restent à surveiller : vérifier que les paliers 2/4/6 sont lisibles et utiles.
 9. **L'or** s'accumule sans usage à haut niveau.
 10. **La fusion** à 75 % décourage une mécanique qui devrait être un choix.
 
@@ -404,4 +404,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.20.0 / attrition** : suppression du soin complet après les monstres normaux ; l'attrition est conservée. Conséquence : l'économie des rations doit être recalibrée (§5.4).
 - **0.20.1 / lot 1** : XP 1,09, récompenses linéaires par palier, rattrapage ×1,25, source de vérité `Balance.kt`. Ancienne courbe 1,2 : 41,4 Md XP, conservée ici comme historique.
 - **0.20.2 / lot 2** : butin ×1 à ×6, raretés cibles, upgrades additifs +4 %/+20, caps VIT/effets. Ancien upgrade composé ×2 199 et anciens drops plats conservés en historique.
+- **0.20.3 / lot 3** : camp et sets en pourcentage, coût de camp indexé sur le palier, plafond 30 niveaux.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.

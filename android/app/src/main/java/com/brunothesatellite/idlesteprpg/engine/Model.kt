@@ -1121,17 +1121,17 @@ fun setLabel(name: String): String = when (name) {
 fun setBonusDescription(name: String, pieces: Int): String {
     if (pieces < 2) return ""
     return when (name) {
-        "veilleur" -> if (pieces >= 6) "+30 ATQ, +90 PV" else if (pieces >= 4) "+20 ATQ, +60 PV" else "+10 ATQ, +30 PV"
+        "veilleur" -> if (pieces >= 6) "+12 % ATQ, +12 % PV" else if (pieces >= 4) "+8 % ATQ, +8 % PV" else "+4 % ATQ, +4 % PV"
         "braise" -> if (pieces >= 6) "+9 % crit., +15 % vol de vie" else if (pieces >= 4) "+6 % crit., +10 % vol de vie" else "+3 % crit., +5 % vol de vie"
         "givre" -> if (pieces >= 6) "+15 % VIT, +0,9 PV/s" else if (pieces >= 4) "+10 % VIT, +0,6 PV/s" else "+5 % VIT, +0,3 PV/s"
-        "os" -> if (pieces >= 6) "+18 ATQ, +75 PV" else if (pieces >= 4) "+12 ATQ, +50 PV" else "+6 ATQ, +25 PV"
+        "os" -> if (pieces >= 6) "+12 % ATQ, +12 % PV" else if (pieces >= 4) "+8 % ATQ, +8 % PV" else "+4 % ATQ, +4 % PV"
         "toile" -> if (pieces >= 6) "+9 % VIT, +6 % crit." else if (pieces >= 4) "+6 % VIT, +4 % crit." else "+3 % VIT, +2 % crit."
-        "cendre" -> if (pieces >= 6) "+24 ATQ, +6 % crit." else if (pieces >= 4) "+16 ATQ, +3 % crit." else "+8 ATQ"
-        "forge" -> if (pieces >= 6) "+105 PV, −6 % dégâts" else if (pieces >= 4) "+70 PV, −3 % dégâts" else "+35 PV"
-        "serment" -> if (pieces >= 6) "+21 ATQ, +16 % dégâts gardiens" else if (pieces >= 4) "+14 ATQ, +8 % dégâts gardiens" else "+7 ATQ"
+        "cendre" -> if (pieces >= 6) "+12 % ATQ, +6 % crit." else if (pieces >= 4) "+8 % ATQ, +4 % crit." else "+4 % ATQ, +2 % crit."
+        "forge" -> if (pieces >= 6) "+12 % PV, −9 % dégâts" else if (pieces >= 4) "+8 % PV, −6 % dégâts" else "+4 % PV, −3 % dégâts"
+        "serment" -> if (pieces >= 6) "+12 % ATQ, +24 % dégâts gardiens" else if (pieces >= 4) "+8 % ATQ, +16 % dégâts gardiens" else "+4 % ATQ, +8 % dégâts gardiens"
         "bois" -> if (pieces >= 6) "+12 % VIT, +1,2 PV/s" else if (pieces >= 4) "+8 % VIT, +0,7 PV/s" else "+4 % VIT"
-        "abysse" -> if (pieces >= 6) "+60 PV, +12 % vol de vie" else if (pieces >= 4) "+40 PV, +8 % vol de vie" else "+20 PV, +4 % vol de vie"
-        "trone" -> if (pieces >= 6) "+30 ATQ, +30 % dégâts critiques" else if (pieces >= 4) "+20 ATQ, +15 % dégâts critiques" else "+10 ATQ"
+        "abysse" -> if (pieces >= 6) "+12 % PV, +12 % vol de vie" else if (pieces >= 4) "+8 % PV, +8 % vol de vie" else "+4 % PV, +4 % vol de vie"
+        "trone" -> if (pieces >= 6) "+12 % ATQ, +45 % dégâts critiques" else if (pieces >= 4) "+8 % ATQ, +30 % dégâts critiques" else "+4 % ATQ, +15 % dégâts critiques"
         else -> ""
     }
 }
@@ -1225,14 +1225,43 @@ fun fireTier(floor: Int): Int = ((floor - 1).coerceAtLeast(0) / 10).coerceIn(0, 
 
 fun equipped(state: GameState, slot: String): Item? = state.equipment.firstOrNull { it.slot == slot }
 
+private data class SetBonus(
+    val atkPct: Double = 0.0,
+    val hpPct: Double = 0.0,
+    val vitPct: Double = 0.0,
+    val crit: Int = 0,
+    val regen: Double = 0.0,
+    val lifesteal: Double = 0.0,
+    val damageReduction: Double = 0.0,
+    val bossDamage: Double = 0.0,
+    val critDamage: Double = 0.0
+)
+
+private fun setBonusFor(name: String, tier: Int): SetBonus = when (name) {
+    "veilleur" -> SetBonus(atkPct = 0.04 * tier, hpPct = 0.04 * tier)
+    "braise" -> SetBonus(crit = 3 * tier, lifesteal = 0.05 * tier)
+    "givre" -> SetBonus(vitPct = 0.05 * tier, regen = 0.3 * tier)
+    "os" -> SetBonus(atkPct = 0.04 * tier, hpPct = 0.04 * tier)
+    "toile" -> SetBonus(vitPct = 0.03 * tier, crit = 2 * tier)
+    "cendre" -> SetBonus(atkPct = 0.04 * tier, crit = 2 * tier)
+    "forge" -> SetBonus(hpPct = 0.04 * tier, damageReduction = 0.03 * tier)
+    "serment" -> SetBonus(atkPct = 0.04 * tier, bossDamage = 0.08 * tier)
+    "bois" -> SetBonus(vitPct = 0.04 * tier, regen = 0.35 * tier)
+    "abysse" -> SetBonus(hpPct = 0.04 * tier, lifesteal = 0.04 * tier)
+    "trone" -> SetBonus(atkPct = 0.04 * tier, critDamage = 0.15 * tier)
+    else -> SetBonus()
+}
+
 fun statsOf(state: GameState): Stats {
     val milestone = milestoneBonus(state.floor)
-    var atk = Balance.HERO_ATK_BASE + Balance.HERO_ATK_PER_LEVEL * (state.level - 1) +
-        Balance.HERO_ATK_PER_CAMP * state.upgrades.blade + Balance.HERO_ATK_PER_MILESTONE * milestone
-    var maxHp = Balance.HERO_HP_BASE + Balance.HERO_HP_PER_LEVEL * (state.level - 1) +
-        Balance.HERO_HP_PER_CAMP * state.upgrades.breath + Balance.HERO_HP_PER_MILESTONE * milestone
-    var vit = Balance.HERO_VIT_BASE + Balance.HERO_VIT_PER_LEVEL * (state.level - 1) +
-        Balance.HERO_VIT_PER_CAMP * state.upgrades.swift
+    val baseAtk = Balance.HERO_ATK_BASE + Balance.HERO_ATK_PER_LEVEL * (state.level - 1) +
+        Balance.HERO_ATK_PER_MILESTONE * milestone
+    val baseHp = Balance.HERO_HP_BASE + Balance.HERO_HP_PER_LEVEL * (state.level - 1) +
+        Balance.HERO_HP_PER_MILESTONE * milestone
+    val baseVit = Balance.HERO_VIT_BASE + Balance.HERO_VIT_PER_LEVEL * (state.level - 1)
+    var atk = (baseAtk * (1.0 + Balance.Target.CAMP_ATK_PCT * state.upgrades.blade)).roundToInt()
+    var maxHp = (baseHp * (1.0 + Balance.Target.CAMP_HP_PCT * state.upgrades.breath)).roundToInt()
+    var vit = baseVit * (1.0 + Balance.Target.CAMP_VIT_PCT * state.upgrades.swift)
     var crit = Balance.HERO_CRIT_BASE
     var regen = Balance.HERO_REGEN_BASE
     var lifesteal = 0.0
@@ -1254,6 +1283,15 @@ fun statsOf(state: GameState): Stats {
             "precision" -> crit += 5
         }
     }
+    var setAtkPct = 0.0
+    var setHpPct = 0.0
+    var setVitPct = 0.0
+    var setCrit = 0
+    var setRegen = 0.0
+    var setLifesteal = 0.0
+    var setDamageReduction = 0.0
+    var setBossDamage = 0.0
+    var setCritDamage = 0.0
     state.equipment
         .filter { it.setName.isNotBlank() }
         .groupingBy { it.setName }
@@ -1265,53 +1303,26 @@ fun statsOf(state: GameState): Stats {
                 count >= 4 -> 2
                 else -> 1
             }
-            when (setName) {
-                "veilleur" -> {
-                    atk += 10 * tier
-                    maxHp += 30 * tier
-                }
-                "braise" -> {
-                    crit += 3 * tier
-                    lifesteal += 0.05 * tier
-                }
-                "givre" -> {
-                    vit += 0.05 * tier
-                    regen += 0.3 * tier
-                }
-                "os" -> {
-                    atk += 6 * tier
-                    maxHp += 25 * tier
-                }
-                "toile" -> {
-                    vit += 0.03 * tier
-                    crit += 2 * tier
-                }
-                "cendre" -> {
-                    atk += 8 * tier
-                    crit += 2 * tier
-                }
-                "forge" -> {
-                    maxHp += 35 * tier
-                    damageReduction += 0.03 * tier
-                }
-                "serment" -> {
-                    atk += 7 * tier
-                    bossDamage += 0.08 * tier
-                }
-                "bois" -> {
-                    vit += 0.04 * tier
-                    regen += 0.35 * tier
-                }
-                "abysse" -> {
-                    maxHp += 20 * tier
-                    lifesteal += 0.04 * tier
-                }
-                "trone" -> {
-                    atk += 10 * tier
-                    critDamage += 0.15 * tier
-                }
-            }
+            val bonus = setBonusFor(setName, tier)
+            setAtkPct += bonus.atkPct
+            setHpPct += bonus.hpPct
+            setVitPct += bonus.vitPct
+            setCrit += bonus.crit
+            setRegen += bonus.regen
+            setLifesteal += bonus.lifesteal
+            setDamageReduction += bonus.damageReduction
+            setBossDamage += bonus.bossDamage
+            setCritDamage += bonus.critDamage
         }
+    atk = (atk * (1.0 + setAtkPct)).roundToInt()
+    maxHp = (maxHp * (1.0 + setHpPct)).roundToInt()
+    vit += setVitPct
+    crit += setCrit
+    regen += setRegen
+    lifesteal += setLifesteal
+    damageReduction += setDamageReduction
+    bossDamage += setBossDamage
+    critDamage += setCritDamage
     val now = System.currentTimeMillis()
     var damageTaken = 0.0
     state.buffs.filter { it.expiresAt > now }.forEach { buff ->
@@ -1432,14 +1443,15 @@ fun bossFor(floor: Int): BossTemplate = when {
     else -> biomeBossFor(floor)
 }
 
-fun upgradeCost(key: String, currentLevel: Int): Int {
+fun upgradeCost(key: String, currentLevel: Int, floor: Int = 1): Int {
     val (base, mult) = when (key) {
         "blade" -> Balance.CAMP_BLADE_COST_BASE to Balance.CAMP_BLADE_COST_MULT
         "breath" -> Balance.CAMP_BREATH_COST_BASE to Balance.CAMP_BREATH_COST_MULT
         "swift" -> Balance.CAMP_SWIFT_COST_BASE to Balance.CAMP_SWIFT_COST_MULT
         else -> Balance.CAMP_BLADE_COST_BASE to Balance.CAMP_BLADE_COST_MULT
     }
-    return (Math.ceil(base * mult.pow(currentLevel.toDouble()) / 5.0) * 5).toInt()
+    val floorFactor = 1.0 + Balance.Target.CAMP_COST_FLOOR_FACTOR * (floor - 1).coerceAtLeast(0)
+    return (Math.ceil(base * mult.pow(currentLevel.toDouble()) * floorFactor / 5.0) * 5).toInt()
 }
 
 fun upgradeLevel(state: GameState, key: String): Int = when (key) {
@@ -1457,9 +1469,9 @@ fun upgradeName(key: String): String = when (key) {
 }
 
 fun upgradeDesc(key: String): String = when (key) {
-    "blade" -> "+3 ATQ par niveau"
-    "breath" -> "+30 PV max par niveau"
-    "swift" -> "+2,5 % VIT par niveau"
+    "blade" -> "+1,5 % ATQ par niveau"
+    "breath" -> "+1,5 % PV max par niveau"
+    "swift" -> "+1 % VIT par niveau"
     else -> ""
 }
 

@@ -262,6 +262,7 @@
     <string name="dashboard_guardian_phase">6× PV\nPHASE 2</string>
     <string name="dashboard_camp_bonus_note">Les bonus de camp sont permanents. Le coût augmente à chaque niveau.</string>
     <string name="dashboard_missing">MANQUE</string>
+    <string name="dashboard_max">MAX</string>
     <string name="dashboard_last_sync">Dernière sync · %1$s</string>
     <string name="dashboard_steps_added">+%1$s pas</string>
     <string name="dashboard_steps_today">%1$s pas aujourd\'hui</string>
@@ -339,11 +340,11 @@
     <string name="dashboard_rule_throne_label">Pression des âmes</string>
     <string name="dashboard_rule_throne_desc" formatted="false">+12 % dégâts gardiens à -8 % PV max à ennemis renforcés</string>
     <string name="dashboard_upgrade_blade_name">Lame affûtée</string>
-    <string name="dashboard_upgrade_blade_desc">+3 ATQ par niveau</string>
+    <string name="dashboard_upgrade_blade_desc">+1,5 % ATQ par niveau</string>
     <string name="dashboard_upgrade_breath_name">Souffle ancien</string>
-    <string name="dashboard_upgrade_breath_desc">+30 PV max par niveau</string>
+    <string name="dashboard_upgrade_breath_desc">+1,5 % PV max par niveau</string>
     <string name="dashboard_upgrade_swift_name">Pas vifs</string>
-    <string name="dashboard_upgrade_swift_desc" formatted="false">+2,5 % VIT par niveau</string>
+    <string name="dashboard_upgrade_swift_desc" formatted="false">+1 % VIT par niveau</string>
     <string name="dashboard_upgrade_generic_name">Amélioration</string>
     <string name="dashboard_upgrade_generic_desc"></string>
     <string name="dashboard_ability_drain">DRAIN D\'ÂME</string>

@@ -260,6 +260,7 @@
     <string name="dashboard_guardian_phase">6× HP\nPHASE 2</string>
     <string name="dashboard_camp_bonus_note">Camp bonuses are permanent. The cost increases with each level.</string>
     <string name="dashboard_missing">MISSING</string>
+    <string name="dashboard_max">MAX</string>
     <string name="dashboard_last_sync">Last sync · %1$s</string>
     <string name="dashboard_steps_added">+%1$s steps</string>
     <string name="dashboard_steps_today">%1$s steps today</string>
@@ -337,11 +338,11 @@
     <string name="dashboard_rule_throne_label">Soul pressure</string>
     <string name="dashboard_rule_throne_desc" formatted="false">+12% guardian damage, -8% max HP, empowered enemies</string>
     <string name="dashboard_upgrade_blade_name">Honed blade</string>
-    <string name="dashboard_upgrade_blade_desc">+3 ATK per level</string>
+    <string name="dashboard_upgrade_blade_desc">+1.5% ATK per level</string>
     <string name="dashboard_upgrade_breath_name">Ancient breath</string>
-    <string name="dashboard_upgrade_breath_desc">+30 max HP per level</string>
+    <string name="dashboard_upgrade_breath_desc">+1.5% max HP per level</string>
     <string name="dashboard_upgrade_swift_name">Swift steps</string>
-    <string name="dashboard_upgrade_swift_desc" formatted="false">+2.5% SPD per level</string>
+    <string name="dashboard_upgrade_swift_desc" formatted="false">+1% SPD per level</string>
     <string name="dashboard_upgrade_generic_name">Upgrade</string>
     <string name="dashboard_upgrade_generic_desc"></string>
     <string name="dashboard_ability_drain">SOUL DRAIN</string>

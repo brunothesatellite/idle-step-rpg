@@ -1364,8 +1364,9 @@ private fun UpgradesTab(
 @Composable
 private fun UpgradeCard(state: GameState, key: String, onBuy: (String) -> Unit) {
     val level = upgradeLevel(state, key)
-    val cost = upgradeCost(key, level)
-    val afford = state.gold >= cost
+    val maxed = level >= Balance.Target.MAX_CAMP_LEVEL
+    val cost = upgradeCost(key, level, state.floor)
+    val afford = !maxed && state.gold >= cost
     PixelCard(Modifier.fillMaxWidth(), background = Panel2) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AssetIcon(upgradeIcon(key), 28.dp)
@@ -1405,7 +1406,9 @@ private fun UpgradeCard(state: GameState, key: String, onBuy: (String) -> Unit) 
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    if (afford) formatCompact(cost) else stringResource(R.string.dashboard_missing),
+                    if (maxed) stringResource(R.string.dashboard_max)
+                    else if (afford) formatCompact(cost)
+                    else stringResource(R.string.dashboard_missing),
                     fontFamily = Press,
                     fontSize = 6.sp,
                     color = if (afford) Ink else Muted2,

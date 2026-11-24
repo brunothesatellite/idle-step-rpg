@@ -21,6 +21,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.roundToInt
 
 class BalanceTest {
 
@@ -125,6 +126,36 @@ class BalanceTest {
         assertEquals(0.5, statsOf(gear("chasse")).bossDamage, 0.0001)
         assertEquals(75, statsOf(gear("", vit = 100, crit = 20)).crit)
         assertEquals(4.0, statsOf(gear("", vit = 100)).vit, 0.0001)
+    }
+
+    @Test
+    fun campCostScalesWithFloorAndCaps() {
+        assertEquals(110, upgradeCost("blade", 0, 36))
+        assertEquals(30, Balance.Target.MAX_CAMP_LEVEL)
+    }
+
+    @Test
+    fun campBonusesArePercentOfBase() {
+        val state = GameState().copy(
+            equipment = emptyList(),
+            level = 1,
+            floor = 1,
+            upgrades = com.brunothesatellite.idlesteprpg.engine.Upgrades(blade = 10, breath = 10, swift = 10)
+        )
+        val stats = statsOf(state)
+        assertEquals(21, stats.atk)
+        assertEquals(173, stats.maxHp)
+        assertEquals(1.1, stats.vit, 0.0001)
+    }
+
+    @Test
+    fun setBonusesArePercentOfCurrentStats() {
+        val base = GameState()
+        val setState = base.copy(equipment = base.equipment.map { it.copy(setName = "veilleur") })
+        val before = statsOf(base)
+        val after = statsOf(setState)
+        assertEquals((before.atk * 1.12).roundToInt(), after.atk)
+        assertEquals((before.maxHp * 1.12).roundToInt(), after.maxHp)
     }
 
     @Test

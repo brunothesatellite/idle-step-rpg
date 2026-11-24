@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.20.3
+- **Lot 3 — camp, sets et or** : camp en pourcentage (+1,5 % ATQ, +1,5 % PV, +1 % VIT par niveau), plafond **30 niveaux**, coût indexé sur le palier.
+- **Sets en pourcentage** : 2/4/6 pièces donnent +4/8/12 % (ATQ/PV ou effet thématique), au lieu de valeurs plates.
+- **Or** : le coût de camp augmente avec le palier ; le plafond de 30 niveaux évite l'accumulation sans usage.
+- **Tests** : **131 / 131**, lint OK.
+- **Build** : `versionCode 50`, `versionName 0.20.3`. Aucune release GitHub.
+
 ## v0.20.2
 - **Lot 2 — objets et caps** : butin scalable par palier (`1 + 0,055 × (palier−1)`, cap ×6), raretés 1,15 / 1,5 / 1,9 / 2,4.
 - **Amélioration additive** : +4 % de la statistique de base par niveau, plafond **+20 niveaux** au-dessus du drop ; les anciens objets restent compatibles et sont plafonnés à leur niveau actuel +20.

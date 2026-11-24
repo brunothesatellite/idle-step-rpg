@@ -1739,7 +1739,8 @@ object GameEngine {
 
     fun buyUpgrade(state: GameState, key: String): Boolean {
         val level = upgradeLevel(state, key)
-        val cost = upgradeCost(key, level)
+        if (level >= Balance.Target.MAX_CAMP_LEVEL) return false
+        val cost = upgradeCost(key, level, state.floor)
         if (state.gold < cost) return false
         val oldMax = statsOf(state).maxHp
         state.gold -= cost
@@ -1749,7 +1750,7 @@ object GameEngine {
             "swift" -> state.upgrades.swift++
         }
         val newMax = statsOf(state).maxHp
-        state.hp = if (key == "breath") state.hp + 30.0 else state.hp * newMax / oldMax
+        state.hp = state.hp * newMax / oldMax
         state.hp = min(state.hp, newMax.toDouble())
         state.journal = addJournal(state, "${upgradeName(key)} niveau ${upgradeLevel(state, key)}", "good")
         return true

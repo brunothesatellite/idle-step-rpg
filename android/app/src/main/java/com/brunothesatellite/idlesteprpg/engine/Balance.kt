@@ -139,6 +139,11 @@ object Balance {
         const val LOOT_SCALE_CAP = 6.0
         const val ITEM_MAX_LEVELS = 20
         const val ITEM_GROWTH = 0.04
+        const val MAX_CAMP_LEVEL = 30
+        const val CAMP_ATK_PCT = 0.015
+        const val CAMP_HP_PCT = 0.015
+        const val CAMP_VIT_PCT = 0.01
+        const val CAMP_COST_FLOOR_FACTOR = 0.04
         const val RARITY_UNCOMMON = 1.15
         const val RARITY_RARE = 1.5
         const val RARITY_EPIC = 1.9
