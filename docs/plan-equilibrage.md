@@ -1,7 +1,7 @@
 # Plan d'implémentation — équilibrage 1 → 100
 
 > **Statut : proposition, en attente de validation.** Aucun code n'est modifié par ce document.
-> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.7** (lots 1–7, `versionCode 54`), sauvegarde **v7**.
+> Base de référence : [`equilibrage.md`](equilibrage.md), version **0.20.8** (lots 1–8, `versionCode 55`), sauvegarde **v7**.
 > Objectif : rendre le palier 100 **exigeant, lisible et non frustrant**, sans paywall ni barrière définitive.
 
 ## 1. Principes directeurs
@@ -273,6 +273,8 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 
 ### Lot 8 — Biomes et modificateurs
 
+**Statut : livré en 0.20.8.** RAPIDE/BERSERK exclus avec les capacités lourdes ; capacité et modificateur affichés à la gate.
+
 **Objectif** : éviter les pics injustes.
 
 **Modifications** :
@@ -384,8 +386,9 @@ Tests unitaires à ajouter :
 7. ~~Lot 5 — gardiens, pitié, portail.~~ **Livré en 0.20.5.**
 8. ~~Lot 6 — farm et `holdFloor`.~~ **Livré en 0.20.6.**
 9. ~~Lot 7 — pity de butin, fusion, identification.~~ **Livré en 0.20.7.**
-10. Dérouler le lot 8 (biomes et modificateurs).
+10. ~~Lot 8 — biomes et modificateurs.~~ **Livré en 0.20.8.**
+11. Dérouler le lot 9 (fin de jeu et télémétrie).
 4. Calibrer les gardiens (lot 5) seulement après.
 5. Playtest 7 jours, puis 14 jours.
 
-**Lots 0 à 7 livrés. En attente du go pour le lot 8.**
+**Lots 0 à 8 livrés. En attente du go pour le lot 9.**

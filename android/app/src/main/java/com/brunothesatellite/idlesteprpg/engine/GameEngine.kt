@@ -1311,6 +1311,26 @@ object GameEngine {
         )
     }
 
+    /**
+     * Budget de menace : les capacités lourdes (frappe, souffle, drain, pression)
+     * ne se combinent pas avec RAPIDE ou BERSERK. Le joueur garde une marge de
+     * réaction et la gate reste lisible.
+     */
+    internal fun bossModifierPool(abilityId: String): List<String> {
+        val heavy = abilityId in setOf("slam", "breath", "drain", "pressure")
+        return buildList {
+            add("")
+            add("")
+            add("blinde")
+            add("regenerant")
+            add("voleur")
+            if (!heavy) {
+                add("rapide")
+                add("berserk")
+            }
+        }
+    }
+
     private fun makeBoss(state: GameState): FightData {
         val t = bossFor(state.floor)
         val ability = bossAbilityFor(t.name, state.floor)
@@ -1321,7 +1341,7 @@ object GameEngine {
         var hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) * hpScale
         var atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) * atkScale
         var interval = Balance.MOB_INTERVAL_MS.toLong()
-        val modifier = listOf("", "", "rapide", "blinde", "berserk", "regenerant", "voleur").random(rnd)
+        val modifier = bossModifierPool(ability.id).random(rnd)
         when (modifier) {
             "rapide" -> interval = Balance.BOSS_MOD_FAST_INTERVAL_MS.toLong()
             "blinde" -> hp *= Balance.BOSS_MOD_BLINDED_HP

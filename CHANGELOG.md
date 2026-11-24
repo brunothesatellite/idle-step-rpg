@@ -1,5 +1,11 @@
 # Journal des versions
 
+## v0.20.8
+- **Lot 8 — biomes et modificateurs** : budget de menace sur les gardiens. Les capacités lourdes (frappe, souffle, drain, pression) ne peuvent plus être combinées avec **RAPIDE** ou **BERSERK**, pour éviter les pics imprévisibles.
+- **Gate** : capacité et modificateur restent affichés avant l'engagement.
+- **Tests** : **138 / 138**, lint OK.
+- **Build** : `versionCode 55`, `versionName 0.20.8`. Aucune release GitHub.
+
 ## v0.20.7
 - **Lot 7 — butin, fusion, identification** : un objet **rare garanti toutes les 5 victoires** contre un monstre normal (hors farm).
 - **Pity de set** : une pièce d'ensemble garantie tous les **10 gardiens** vaincus.

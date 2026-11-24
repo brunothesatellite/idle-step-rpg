@@ -179,6 +179,16 @@ class BalanceTest {
     }
 
     @Test
+    fun heavyGuardianAbilitiesAvoidBurstModifiers() {
+        val heavy = com.brunothesatellite.idlesteprpg.engine.GameEngine.bossModifierPool("slam")
+        assertFalse(heavy.contains("rapide"))
+        assertFalse(heavy.contains("berserk"))
+        val light = com.brunothesatellite.idlesteprpg.engine.GameEngine.bossModifierPool("shield")
+        assertTrue(light.contains("rapide"))
+        assertTrue(light.contains("berserk"))
+    }
+
+    @Test
     fun targetDecisionsAreLocked() {
         assertEquals(1.09, Balance.Target.XP_GROWTH, 0.0001)
         assertEquals(0.12, Balance.Target.XP_FLOOR_MULT, 0.0001)

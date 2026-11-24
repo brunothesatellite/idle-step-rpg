@@ -1,6 +1,6 @@
 # Équilibrage de la progression — état 0.20.0 et cible 1 → 100
 
-> **Document de référence.** Version analysée : **0.20.7** (lots 1–7, `versionCode 54`), sauvegarde **v7**, 24 novembre 2026.
+> **Document de référence.** Version analysée : **0.20.8** (lots 1–8, `versionCode 55`), sauvegarde **v7**, 24 novembre 2026.
 > Compagnons : [`validation-equilibrage.md`](validation-equilibrage.md), [`plan-equilibrage.md`](plan-equilibrage.md), [`tools/equilibrage/`](../tools/equilibrage/).
 >
 > Cette version remplace les anciennes sections 6.1, 6.1bis, 6.9 et 6.10, qui contenaient **plusieurs courbes cibles incompatibles**. Il n'y a plus qu'une seule table de constantes et qu'une seule cible de référence.
@@ -85,7 +85,7 @@ Le gardien est au **niveau palier + 1**. Les monstres ont **6 % de chance d'êtr
 - un bouclier de **35 % / 3 s / 8 s** ;
 - une **phase 2** sous 50 % de PV : capacité télégraphiée, sans accélération permanente à 950 ms ;
 - un **enrage** après 25 s : +15 % ATQ toutes les 5 s, plafond +60 % ;
-- un modificateur aléatoire parmi RAPIDE, BLINDÉ, BERSERK, RÉGÉNÉRANT, VOLEUR ;
+- un modificateur aléatoire parmi RAPIDE, BLINDÉ, BERSERK, RÉGÉNÉRANT, VOLEUR ; **RAPIDE et BERSERK sont exclus avec les capacités lourdes** (frappe, souffle, drain, pression) pour plafonner la menace ;
 - une capacité de gardien (slam 2,4×, souffle 2,0×, drain 1,5×, etc.) ;
 - une **pitié** de −5 % PV/ATQ par défaite, plafond −25 %, remise à zéro à la victoire.
 
@@ -195,7 +195,7 @@ Simulation de l'attrition (`reference`) :
 | C10 | Camp/sets plats + or sans sink | **corrigé lot 3** : camp et sets en %, coût indexé, plafond 30 | résolu |
 | C11 | Enrage dans une zone morte | **corrigé lot 5** : enrage après 25 s, phase 2 télégraphiée | résolu |
 | C12 | Fusion 75 %, loot sans pity | **corrigé lot 7** : fusion 90 %, rare/5 kills, set/10 gardiens, 1 non identifié max/10 | résolu |
-| C13 | Biomes/modificateurs non budgétés | pics imprévisibles | moyenne |
+| C13 | Biomes/modificateurs non budgétés | **corrigé lot 8** : RAPIDE/BERSERK exclus avec capacités lourdes | résolu |
 | C14 | Fin de jeu 81–100 répétitive | lassitude avant le palier 100 | moyenne |
 
 ### 4.2 Failles de frustration
@@ -417,4 +417,5 @@ python tools/equilibrage/balance_sim.py --economy
 - **0.20.5 / lot 5** : niveau palier +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −5 %/défaite cap −25 %, portail à 90 m avec Engager/Farmer/Camper.
 - **0.20.6 / lot 6** : farm +10 % PV avec badge RÉCUPÉRATION, farm de gardien +1/+1 plafonné à 5/jour.
 - **0.20.7 / lot 7** : rare garanti tous les 5 kills hors farm, set garanti tous les 10 gardiens, 1 non identifié max/10, fusion 90 %.
+- **0.20.8 / lot 8** : budget de menace, RAPIDE/BERSERK exclus avec les capacités de gardien lourdes.
 - **Ce document** : remplace les cibles contradictoires de l'ancien rapport et sert de base au plan `docs/plan-equilibrage.md`.
