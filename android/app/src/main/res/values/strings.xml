@@ -136,6 +136,8 @@
     <string name="settings_licenses">LICENCES</string>
     <string name="settings_privacy">CONFIDENTIALITÉ</string>
     <string name="settings_license_note">Code sous licence MIT · ressources CC0/OFL</string>
+    <string name="settings_debug_add_steps">Debug +1000 pas</string>
+    <string name="toast_debug_steps_added">Debug : +%1$s pas ajoutés à la réserve.</string>
     <string name="settings_clear_title">Effacer la progression ?</string>
     <string name="settings_clear_text">Or, objets, paliers, serments et journal seront remis à zéro. La clé Garmin et tes préférences seront conservées.</string>
     <string name="settings_delete">EFFACER</string>

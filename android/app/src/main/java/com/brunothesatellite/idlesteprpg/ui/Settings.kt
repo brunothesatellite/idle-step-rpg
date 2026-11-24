@@ -779,6 +779,14 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     color = Muted2
                 )
             }
+            if (BuildConfig.DEBUG) {
+                Spacer(Modifier.height(10.dp))
+                OverlayAction(
+                    stringResource(R.string.settings_debug_add_steps),
+                    Modifier.fillMaxWidth(),
+                    onClick = { vm.debugAddReserveSteps(1000) }
+                )
+            }
             Spacer(Modifier.height(24.dp))
         }
     }

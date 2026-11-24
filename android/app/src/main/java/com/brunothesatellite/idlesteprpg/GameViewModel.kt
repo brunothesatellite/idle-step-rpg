@@ -1232,6 +1232,13 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch { container.gameRepository.debugAddSteps(steps) }
     }
 
+    fun debugAddReserveSteps(steps: Int) {
+        viewModelScope.launch {
+            container.gameRepository.debugAddSteps(steps)
+            _toasts.emit(tr(R.string.toast_debug_steps_added, formatInt(steps)))
+        }
+    }
+
     fun upgrades(): Upgrades = game.value.upgrades
 
     class Factory(private val container: AppContainer) : ViewModelProvider.Factory {

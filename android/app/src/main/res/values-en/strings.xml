@@ -134,6 +134,8 @@
     <string name="settings_licenses">LICENSES</string>
     <string name="settings_privacy">PRIVACY</string>
     <string name="settings_license_note">Code under MIT license · CC0/OFL assets</string>
+    <string name="settings_debug_add_steps">Debug +1000 steps</string>
+    <string name="toast_debug_steps_added">Debug: +%1$s steps added to the reserve.</string>
     <string name="settings_clear_title">Clear progress?</string>
     <string name="settings_clear_text">Gold, items, floors, oaths and journal will be reset. The Garmin key and your preferences will be kept.</string>
     <string name="settings_delete">CLEAR</string>
