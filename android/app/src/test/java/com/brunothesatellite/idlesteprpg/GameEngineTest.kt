@@ -1560,5 +1560,27 @@ class GameEngineTest {
         assertEquals("strong", state.stash.first().id)
         assertTrue(state.inventory.all { it.locked })
     }
+
+    @Test
+    fun highVitalityReachesTheTargetAttackFloor() {
+        val state = GameState().copy(
+            level = 1,
+            floor = 1,
+            ferveur = 100,
+            equipment = List(6) { index ->
+                Item(
+                    id = "swift-$index",
+                    name = "Anneau de hâte",
+                    slot = "ring",
+                    rarity = "rare",
+                    icon = "item/ring2.png",
+                    level = 1,
+                    vitPct = 100
+                )
+            }
+        )
+        assertEquals(4.0, statsOf(state).vit, 0.0001)
+        assertEquals(180.0, GameEngine.heroIntervalMs(state), 0.5)
+    }
 }
 

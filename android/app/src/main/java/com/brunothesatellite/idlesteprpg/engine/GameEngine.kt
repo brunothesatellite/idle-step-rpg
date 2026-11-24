@@ -1461,7 +1461,7 @@ object GameEngine {
         if (f.heroTimerMs <= 0) {
             heroAttack(state, f)
             if (state.fight == null) return
-            f.heroTimerMs = heroInterval(state)
+            f.heroTimerMs = heroIntervalMs(state)
         }
         if (f.enemyTimerMs <= 0) {
             enemyAttack(state, f)
@@ -1522,10 +1522,10 @@ object GameEngine {
         if (state.hp <= 0) defeat(state, f)
     }
 
-    private fun heroInterval(state: GameState): Double {
+    internal fun heroIntervalMs(state: GameState): Double {
         val s = statsOf(state)
         return (1000.0 / (s.vit * (1.0 + 0.004 * state.ferveur)))
-            .coerceAtLeast(Balance.HERO_MIN_INTERVAL_MS)
+            .coerceAtLeast(Balance.Target.HERO_MIN_INTERVAL_MS)
     }
 
     /** Conserve les derniers coups pour que l'interface puisse les afficher. */

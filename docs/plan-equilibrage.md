@@ -105,7 +105,7 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 
 ### Lot 2 — Objets, upgrades, butin, caps
 
-**Statut : livré en 0.20.2.** Butin ×1–×6, raretés cibles, upgrades additifs +4 %/+20, caps VIT/effets.
+**Statut : livré en 0.20.2.** Butin ×1–×6, raretés cibles, upgrades additifs +4 %/+20, caps VIT/effets. Le minimum d'intervalle de 180 ms est branché en **0.20.10** (le code utilisait encore 300 ms, rendant la VIT inutile au-delà de ~2,4).
 
 **Objectif** : un drop de palier 100 doit être meilleur qu'un drop de palier 36, sans croissance exponentielle.
 
@@ -386,8 +386,8 @@ Tests unitaires à ajouter :
 9. ~~Lot 7 — pity de butin, fusion, identification.~~ **Livré en 0.20.7.**
 10. ~~Lot 8 - biomes et modificateurs.~~ **Livré en 0.20.8.**
 11. ~~Lot 9 - fin de jeu et télémétrie.~~ **Livré en 0.20.9.**
-12. Lot 10 - écran de fin enrichi (proposition HTML), export des stats, pixel art dédié. **Proposition visuelle : [ecran-fin.html](ecran-fin.html).**
-4. Calibrer les gardiens (lot 5) seulement après.
-5. Playtest 7 jours, puis 14 jours.
+12. Lot 10 - écran de fin enrichi (proposition HTML), export des stats, pixel art dédié. **Proposition visuelle : [ecran-fin.html](ecran-fin.html).** En attente du go.
+13. Aligner le simulateur sur les mécaniques réelles des gardiens (bouclier 35 %, enrage 25 s, pitié, Trône brisé) **avant** toute calibration, puis calibrer le lot 5.
+14. Playtest 7 jours, puis 14 jours.
 
 **Lots 0 à 9 livrés. En attente du go pour le lot 10 (écran de fin enrichi).**

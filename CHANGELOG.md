@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.20.10
+- **Correctif VIT** : l'intervalle d'attaque respecte enfin le minimum de **180 ms** décidé au lot 2 (`Target.HERO_MIN_INTERVAL_MS`). Le code utilisait encore l'ancienne valeur de 300 ms, ce qui rendait la VIT inutile au-delà de ~2,4 et le plafond 4,0 inatteignable.
+- **Portail** : `GATE_METERS` (90 m) pointe désormais sur l'unique constante de `Balance.Target`, au lieu d'être dupliqué dans `Model.kt`.
+- **Simulateur** : intervalle minimum 180 ms, auto-ration 40 %/45 %, table des presets alignée sur le code, courbe `target` dérivée du même profil que `reference`, Trône brisé et boss final modélisés, sortie UTF-8 sous Windows.
+- **Tests** : **145 / 145**, lint OK.
+- **Build** : `versionCode 57`, `versionName 0.20.10`. Aucune release GitHub.
+
 ## v0.20.9
 - **Lot 9 — Trône brisé et télémétrie** : à partir du **palier 81**, les ennemis gagnent de **+15 % à +35 % PV/ATQ** jusqu’au palier 100, et les gardiens du Trône sont renforcés (+10 % PV, +5 % ATQ).
 - **Fin de jeu** : **L’Âme Première** devient un boss final au palier 100 (PV ×1,40, ATQ ×1,15) avec la capacité **RUPTURE DU TRÔNE** (230 % ATQ, −20 ferveur, soin 3 %). Une **fin** s’affiche une seule fois, puis le **mode sans fin** continue au-delà du palier 100.

@@ -4,6 +4,8 @@
 > Objectif : vérifier, avant et après implémentation, que les nouvelles courbes rendent le jeu **franchissable**, **progressif** et **non trivial**, sans remplacer un mur par un autre.
 > Toute modification suit l'ordre des lots de `docs/plan-equilibrage.md`.
 
+> **État au 24/11/2026 (0.20.10).** Les lots 1 à 9 sont livrés. La **porte D** (gardiens) n'est pas encore franchie : les valeurs par défaut de `--curve target` décrivent encore la Phase A (bouclier 40 %, enrage après 15 s, diviseur d'ATQ 16, sans pitié ni Trône brisé). Les taux de gardiens produits aujourd'hui ne servent pas de référence tant que le simulateur n'est pas aligné sur les mécaniques 0.20.5+.
+
 ## 1. Périmètre
 
 ### Inclus

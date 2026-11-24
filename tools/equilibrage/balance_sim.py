@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import math
 import random
+import sys
 from dataclasses import dataclass, replace
 from typing import Iterable
 
@@ -141,6 +142,16 @@ class Tuning:
     enrage_cap: float = 0.75
 
 
+def _endgame_mult(floor: int) -> float:
+    """Rampe du Trône brisé, identique à `endgameEnemyMult` (Model.kt)."""
+    start = TARGET["ENDGAME_FLOOR"]
+    end = TARGET["ENDGAME_FINAL_FLOOR"]
+    t = min(1.0, max(0.0, (floor - start) / (end - start)))
+    return TARGET["ENDGAME_ENEMY_MULT_START"] + (
+        TARGET["ENDGAME_ENEMY_MULT_END"] - TARGET["ENDGAME_ENEMY_MULT_START"]
+    ) * t
+
+
 def rule_for(floor: int, biome: str) -> Rule:
     if biome != "auto":
         return RULES[biome]
@@ -196,6 +207,9 @@ def _boss_depth_proposed(floor: int, tuning: Tuning) -> float:
 def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
              tuning: Tuning = Tuning()) -> Enemy:
     rule = rule_for(floor, biome)
+    if curve != "current" and floor >= int(TARGET["ENDGAME_FLOOR"]):
+        mult = _endgame_mult(floor)
+        rule = Rule(enemy_hp=mult, enemy_atk=mult)
     level = floor + 2 if elite else floor
     if curve == "current":
         depth = _mob_depth_current(floor)
@@ -209,10 +223,11 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
         xp = (12 + 5 * level) * (1.8 if elite else 1.0) * reward
     else:
         if curve == "target":
-            ref_atk = 650 + 24 * floor
+            # Doit décrire le même « stuff attendu » que build_preset("reference").
+            ref_atk = 650 + 20 * floor
             ref_hp = 1800 + 55 * floor
             ref_vit = 1.8 + 0.02 * floor
-            ref_interval = max(CURRENT["HERO_MIN_INTERVAL_MS"] / 1000.0, 1.0 / (ref_vit * 1.4))
+            ref_interval = max(TARGET["HERO_MIN_INTERVAL_MS"] / 1000.0, 1.0 / (ref_vit * 1.4))
             ref_dps = ref_atk * 1.18 / ref_interval
             ref_ehp = (ref_hp * 1.35) / 0.94
             hp = ref_dps * 5.0 * (1.8 if elite else 1.0)
@@ -255,6 +270,9 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
 def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shield",
               tuning: Tuning = Tuning()) -> Enemy:
     rule = rule_for(floor, biome)
+    if curve != "current" and floor >= int(TARGET["ENDGAME_FLOOR"]):
+        mult = _endgame_mult(floor)
+        rule = Rule(enemy_hp=mult, enemy_atk=mult)
     if curve == "current":
         level = floor + 2
         depth = _boss_depth_current(floor)
@@ -268,10 +286,11 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shiel
     else:
         level = floor + 1
         if curve == "target":
-            ref_atk = 650 + 24 * floor
+            # Doit décrire le même « stuff attendu » que build_preset("reference").
+            ref_atk = 650 + 20 * floor
             ref_hp = 1800 + 55 * floor
             ref_vit = 1.8 + 0.02 * floor
-            ref_interval = max(CURRENT["HERO_MIN_INTERVAL_MS"] / 1000.0, 1.0 / (ref_vit * 1.4))
+            ref_interval = max(TARGET["HERO_MIN_INTERVAL_MS"] / 1000.0, 1.0 / (ref_vit * 1.4))
             ref_dps = ref_atk * 1.18 / ref_interval
             ref_ehp = (ref_hp * 1.35) / 0.94
             hp = ref_dps * 18.0 * 0.85
@@ -291,6 +310,12 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "shiel
             * (CURRENT["XP_MOB_BASE"] + CURRENT["XP_MOB_PER_LEVEL"] * level)
             * xp_mult
         )
+    if curve != "current" and floor >= int(TARGET["ENDGAME_FLOOR"]):
+        hp *= TARGET["ENDGAME_BOSS_HP_MULT"]
+        atk *= TARGET["ENDGAME_BOSS_ATK_MULT"]
+        if floor >= int(TARGET["ENDGAME_FINAL_FLOOR"]):
+            hp *= TARGET["FINAL_BOSS_HP_MULT"]
+            atk *= TARGET["FINAL_BOSS_ATK_MULT"]
     return Enemy(
         name="gardien",
         hp=hp * rule.enemy_hp,
@@ -387,7 +412,7 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
     win_times: list[float] = []
     loss_times: list[float] = []
     attack_interval = max(
-        CURRENT["HERO_MIN_INTERVAL_MS"] / 1000.0,
+        TARGET["HERO_MIN_INTERVAL_MS"] / 1000.0,
         1.0 / (build.vit * (1.0 + 0.004 * build.ferveur)),
     )
 
@@ -463,10 +488,10 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
                 if (
                     not ration_used
                     and build.rations > 0
-                    and hp < build.hp * CURRENT["AUTO_RATION_THRESHOLD"]
+                    and hp < build.hp * TARGET["AUTO_RATION_THRESHOLD"]
                 ):
                     ration_used = True
-                    hp = min(build.hp, hp + build.hp * CURRENT["AUTO_RATION_HEAL"])
+                    hp = min(build.hp, hp + build.hp * TARGET["AUTO_RATION_HEAL"])
 
             if enemy.ability == "slam" and ability_timer <= 0:
                 enemy_swings += 1
@@ -601,6 +626,9 @@ def combat_table(curve: str, builds: Iterable[str], floors: Iterable[int], runs:
 
 
 def main() -> None:
+    # Windows ouvre stdout en cp1252 : les flèches et accents du rapport cassent.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="Simulateur d'équilibrage")
     parser.add_argument("--curve", choices=["current", "proposed", "target", "both"], default="both")
     parser.add_argument("--build", default="player36,reference",

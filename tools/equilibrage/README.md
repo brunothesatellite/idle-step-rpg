@@ -46,9 +46,10 @@ Sur Windows, avec le venv du projet :
 | Preset | ATQ | PV | VIT | Particularité |
 |---|---:|---:|---:|---|
 | `player36` | 1 349 | 3 699 | 2,27 | Capture réelle du joueur au palier 36 |
-| `reference_low` | 500 + 18×palier | 2 200 + 70×palier | 1,70 + 0,015×palier | Stuff faible |
-| `reference` | 650 + 24×palier | 2 600 + 110×palier | 1,80 + 0,020×palier | Stuff attendu |
-| `reference_high` | 800 + 30×palier | 3 000 + 160×palier | 1,90 + 0,025×palier | Stuff avancé |
+| `reference_low` | 500 + 16×palier | 1 500 + 40×palier | 1,65 + 0,015×palier | Stuff faible |
+| `reference` | 650 + 20×palier | 1 800 + 55×palier | 1,80 + 0,020×palier | Stuff attendu |
+| `reference_high` | 800 + 24×palier | 2 200 + 70×palier | 1,90 + 0,022×palier | Stuff avancé |
+| `under` | 0,7×reference | 0,7×reference | — | Stuff insuffisant |
 | `tank` | 0,8×reference | 1,4×reference | — | Régén + réduction |
 | `crit` | 0,9×reference | reference | — | 60 % crit |
 | `lifesteal` | 0,9×reference | 0,9×reference | — | 12 % vol de vie |
@@ -71,15 +72,17 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 
 ## Ce que le simulateur modélise
 
-- Attaques du héros : intervalle `1 / (VIT × (1 + 0,004 × ferveur))`, minimum 0,3 s.
+- Attaques du héros : intervalle `1 / (VIT × (1 + 0,004 × ferveur))`, minimum **0,18 s** (`Target.HERO_MIN_INTERVAL_MS`, plafond VIT 4,0).
 - Dégâts : `ATQ × U(0,9–1,0)`, critique `1,6 + critDamage`, bonus gardien, bouclier.
 - Nombre de coups portés / encaissés (pour vérifier qu’un gardien ne tombe pas en 2-3 coups).
 - Potions simulées : `--potion atk` (+40 % ATQ), `--potion crit` (+50 pts crit), `--potion mixed` (+25 % ATQ, +25 crit).
 - Attaques ennemies : intervalle, `ATQ × U(0,9–1,0)`, réduction de dégâts.
-- Ration automatique sous 25 % des PV, une fois par combat.
+- Ration automatique sous **40 %** des PV, soin de **45 %**, une fois par combat.
 - Régénération, vol de vie.
 - Capacité de gardien `shield` (réduction périodique) ou `slam` (dégâts périodiques).
 - Règles de biome (multiplicateurs PV/ATQ/intervalle, bonus héros).
+- Trône brisé (81-100) : rampe +15 % → +35 %, gardiens +10 % PV/+5 % ATQ, boss final ×1,40 PV/×1,15 ATQ.
+- Courbe `target` dérivée du même profil que le build `reference` (ATQ 650 + 20×palier, PV 1 800 + 55×palier).
 - Élites.
 - XP et pas (`--xp`).
 
@@ -91,6 +94,8 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 - La simulation hors ligne, les coffres, les serments, l’économie réelle de farm.
 - Les builds extraits automatiquement d’une sauvegarde (les presets sont des hypothèses).
 - Le hasard de génération des objets (les builds sont des profils moyens).
+- La pitié de gardien (les taux affichés sont donc « sans pitié »).
+- Les valeurs par défaut de `--curve target` pour les gardiens sont encore celles de la Phase A : bouclier 40 %, enrage après 15 s (+25 %/5 s, cap 75 %), diviseur d'ATQ 16. Elles seront alignées sur les décisions du lot 5 (35 %, 25 s, +15 %/5 s, cap 60 %, diviseur 20-22, pitié) lors de la calibration des gardiens, après validation du lot 10.
 
 ## Premiers résultats (0.19.1)
 

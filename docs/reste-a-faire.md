@@ -1,12 +1,13 @@
 # La Marche des Âmes — reste à faire
 
-> **État au 24/11/2026 — v0.20.0** (`versionCode 47`, branche `main`).
-> Ce document remplace le backlog précédent : la localisation FR/EN, le manuel bilingue,
-> le widget et la Phase A d’équilibrage sont désormais livrés.
+> **État au 24/11/2026 — v0.20.10** (`versionCode 57`, branche `main`).
+> Les lots 1 à 9 du plan d'équilibrage sont livrés ; le **lot 10** (écran de fin enrichi)
+> attend une décision, et la **calibration des gardiens** (lot 5) est reportée après cette décision.
 >
 > Rappels à jour : absence = **30 % des pas du jour** (réglable 0–30 % ou 0–5 000 pas),
-> **4 min simulées** ; tests = **118 unitaires** + 7 tests UI existants ; lint OK.
-> Équilibrage : [`equilibrage.md`](equilibrage.md) et [`validation-equilibrage.md`](validation-equilibrage.md).
+> **4 min simulées** ; tests = **145 unitaires** + 7 tests UI existants ; lint OK.
+> Équilibrage : [`plan-equilibrage.md`](plan-equilibrage.md), [`equilibrage.md`](equilibrage.md)
+> et [`validation-equilibrage.md`](validation-equilibrage.md).
 > Localisation : [`langue.md`](langue.md).
 
 Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusieurs jours.
@@ -17,39 +18,34 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 
 | # | Sujet | Détail | Effort |
 |---|---|---|---|
-| 1 | **Playtest 0.20.0** | Tester le palier 36 avec le build réel : rééquiper via « Équiper le meilleur » (PV désormais valorisés), potions, farm. Vérifier qu’un gardien dure ~15-20 s et ne tombe pas en 2-3 coups. | S |
-| 2 | **Publier 0.20.0** | Release GitHub `v0.20.0` + APK (et AAB si validé). La dernière release publiée est `v0.19.1`. | S |
-| 3 | **AAB Play 0.20.0** | Construire l’AAB, mettre à jour la fiche et les notes. | M |
-| 4 | **Phase B équilibrage** | XP, butin scalable, camp/sets en pourcentage, gains de niveau. | L |
+| 1 | **Décider le lot 10** | Écran de fin enrichi + export du rapport + pixel art dédié. Proposition visuelle : [`ecran-fin.html`](ecran-fin.html). Rien n'est codé tant que le go n'est pas donné. | M |
+| 2 | **Aligner le simulateur gardiens** | Les défauts de `--curve target` décrivent encore la Phase A (bouclier 40 %, enrage 15 s, diviseur d'ATQ 16, pas de pitié ni de Trône brisé). Porte A à refaire avant toute mesure du lot 5. | S–M |
+| 3 | **Calibrer les gardiens (lot 5)** | Une fois le lot 10 tranché et le simulateur aligné : bandes 35–65 % (`reference`), 10–25 % (`under`), 85–95 % (`reference_high`), TTK ~18 s et ≥ 30 coups. | M–L |
+| 4 | **Playtest 0.20.10** | Vérifier la VIT (minimum 180 ms), le palier courant et les gardiens avec le build réel. | S |
+| 5 | **Publier** | Release GitHub + APK (et AAB Play si validé). La dernière release publiée est `v0.19.1` ; 0.20.0 à 0.20.10 ne sont pas publiées. | S–M |
 
 ---
 
 ## 2. Équilibrage
 
-### Phase A — implémentée, playtest en cours
+### Livré — lots 1 à 9 (0.20.1 → 0.20.9)
 
-- Courbe cible interpolée entre les paliers 20 et 35.
-- Gardiens : bouclier 40 % / 3 s, enrage après 15 s, bénédiction cumulative +25 %/défaite (cap +75 %).
-- Élites : 6 %, 1,8× PV, 1,15× ATQ.
-- Éclats : plafond **24**, gardien +3, jalon +8, coffre +2, démontage 2/3/6/10, reforge **1**.
-- Rations : gardien +2, coffre +2, monstre 10 %, auto-ration 30 %, veillée gratuite **25 %**.
-- Score d’objet : PV ×0,6.
-- **Reste** : valider la progression réelle au palier 36 et au-delà ; le build glass cannon actuel peut encore nécessiter du stuff PV ou une potion.
+- **XP** : `1,09^niveau`, récompenses linéaires par palier, rattrapage ×1,25.
+- **Objets** : butin ×1 à ×6, raretés cibles, upgrades additifs +4 % (20 niveaux max), caps VIT/effets, fusion 90 %.
+- **Camp et sets** : bonus en pourcentage, coût indexé sur le palier, plafond 30 niveaux.
+- **Rations** : cap 30, revenus renforcés, auto-ration 40 %/45 %, repos gratuit 2×20 %, farm +10 % PV, farm de gardien +1 éclat/+1 ration (5/jour).
+- **Gardiens** : niveau palier +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s (+15 %/5 s, cap 60 %), pitié −5 %/défaite (cap −25 %), portail à 90 m.
+- **Butin** : rare garanti tous les 5 kills, set tous les 10 gardiens, 1 non identifié sur 10 maximum.
+- **Biomes** : budget de menace, RAPIDE/BERSERK exclus avec les capacités lourdes.
+- **Fin de jeu** : Trône brisé +15 % → +35 %, gardiens renforcés, boss final et fin unique au palier 100, mode sans fin, télémétrie locale.
+- **Correctif 0.20.10** : minimum d'intervalle d'attaque **180 ms** enfin branché (le code utilisait 300 ms, ce qui rendait la VIT inutile au-delà de ~2,4) ; `GATE_METERS` dédupliqué.
 
-### Phase B — niveau 100
+### Reste
 
-- Courbe d’XP `1,09^niveau` (au lieu de `1,2^niveau`).
-- Récompenses d’XP linéaires avec le palier.
-- Butin : stats multipliées par le palier (`1 + 0,06×(palier−1)`), raretés plus marquées.
-- Camp et sets : bonus en pourcentage.
-- Gains de niveau : +5 ATQ / +25 PV / +1,5 % VIT.
-- Validation : 2 000–3 500 kills pour 1→100, niveau 100 vers le palier 100-150.
-
-### Phase C — fin de partie
-
-- Remplacer le cap 40 par une courbe lisible ou un NG+.
-- Télémétrie locale et puissance recommandée.
-- Vérifier le cycle des biomes/boss au-delà du palier 80.
+- **Porte A** : le simulateur ne décrit pas encore fidèlement les gardiens actuels. Ses valeurs par défaut pour `--curve target` sont celles de la Phase A (bouclier 40 %, enrage après 15 s à +25 %/5 s, diviseur d'ATQ 16), sans pitié ni multiplicateurs du Trône brisé. Les chiffres de gardiens produits aujourd'hui ne servent pas de référence.
+- **Porte D** : calibration des gardiens après le lot 10. Cible : `reference` 35–65 %, `under` 10–25 %, `reference_high` 85–95 % aux paliers 36/50/75/100 ; aucun gardien gagné en < 10 s ou < 30 coups ; pitié visible et progressive.
+- **Portes E/F** : playtest 7 jours (Phase A), puis 14 jours (Phase B) avec journal quotidien.
+- Aucune famine ni dead-end : vérifier depuis 0 ration/0 éclat sur plusieurs jours.
 
 ---
 
@@ -58,10 +54,11 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 | # | Sujet | État / détail | Effort |
 |---|---|---|---|
 | P0-1 | Préavis de coffre | Fenêtre 3 h, worker 2 h, test unitaire. À observer en réel. | S |
-| P0-2 | Fuseau / heure d’été | `ensureDay` ignore une date antérieure (testé). Vérification manuelle restante. | S |
-| P0-3 | Migrations explicites | v7 en place. N’écrire une migration que lors d’un vrai changement de schéma. | M |
-| P0-4 | Tests UI | 7 tests existants (coffre, onboarding, consommables, spécial, identification, fusion). Étendre au camp, à la forge, à l’absence, aux réglages, à l’import. | M |
+| P0-2 | Fuseau / heure d'été | `ensureDay` ignore une date antérieure (testé). Vérification manuelle restante. | S |
+| P0-3 | Migrations explicites | v7 en place. N'écrire une migration que lors d'un vrai changement de schéma. | M |
+| P0-4 | Tests UI | 7 tests existants (coffre, onboarding, consommables, spécial, identification, fusion). Étendre au camp, à la forge, à l'absence, aux réglages, à l'import. | M |
 | P0-5 | Crash local | Pas de journal de crash exportable. | M |
+| P0-6 | Chaîne de build | Gradle 8.11.1 ne fonctionne qu'avec un JDK 17/21. Avec le JDK 24/25 par défaut, `testGithubDebugUnitTest` échoue (`Type T not present`). Utiliser le JBR 21 (`~/.jdks/jbr-21.0.11`) ou monter Gradle/AGP/Kotlin. | S |
 
 ---
 
@@ -71,8 +68,8 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 
 | Sujet | Détail | Effort |
 |---|---|---|
-| Sélection multiple | Vente/démontage en lot ; aujourd’hui objet par objet. | M |
-| Meilleure alternative | Comparer à la meilleure pièce du sac, pas seulement à l’objet équipé. | M |
+| Sélection multiple | Vente/démontage en lot ; aujourd'hui objet par objet. | M |
+| Meilleure alternative | Comparer à la meilleure pièce du sac, pas seulement à l'objet équipé. | M |
 | Loadouts | Ensembles favoris et changement rapide. | L |
 | Seuil de vente auto | Vendre les communs sous un niveau donné. | S |
 | Recherche dans le coffre | Pas de recherche ni de filtre. | S |
@@ -82,8 +79,8 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 | Sujet | Détail | Effort |
 |---|---|---|
 | Fréquence des rencontres | Cooldown pour éviter les répétitions rapprochées. | S |
-| Télégraphe du gardien | Annoncer l’attaque spéciale avant impact. | M |
-| Troisième phase de gardien | Ajouter une phase et l’équilibrer. | L |
+| Télégraphe du gardien | Annoncer l'attaque spéciale avant impact. | M |
+| Troisième phase de gardien | Ajouter une phase et l'équilibrer. | L |
 | Animations de combat | Victoire/défaite, butin qui vole, soin de vampirisme, dégâts réduits. | L |
 | Modificateurs supplémentaires | Invocateur, bouclier, etc. | M |
 
@@ -91,9 +88,10 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 
 | Sujet | Détail | Effort |
 |---|---|---|
-| Succès et statistiques de vie | Compteurs existants, pas d’écran dédié. | L |
+| Écran de fin enrichi (lot 10) | Maquette prête ; export HTML du rapport, pixel art dédié, stats détaillées. | M–L |
+| Succès et statistiques de vie | Compteurs existants, pas d'écran dédié. | L |
 | Serments hebdomadaires | Journaliers uniquement ; ajouter séries et reroll. | M |
-| Économie de fin de jeu | Puits d’or, coûts d’artisanat, plafonds. | L |
+| Économie de fin de jeu | Puits d'or, coûts d'artisanat, plafonds. | L |
 | Transitions de biome | Décors/météo existants ; transitions animées à faire. | M |
 | Tutoriel contextuel | Aides des 10 premiers mètres, premier combat, premier coffre, premier gardien. | M |
 
@@ -124,7 +122,7 @@ Restant :
 |---|---|---|
 | Room | Non fait ; JSON versionné + `.bak`. Décision à prendre. | XL |
 | R8 / minification | Désactivés ; activer, tester kotlinx.serialization, fournir `mapping.txt`. | M |
-| Gradle | Wrapper 8.11.1 en fin de support ; monter Gradle/AGP/Kotlin et rebuild. | M |
+| Gradle | Wrapper 8.11.1 en fin de support et limité au JDK 21 ; monter Gradle/AGP/Kotlin et rebuild. | M |
 | Tests Garmin | 401, 403, 429, vide, JSON invalide, coupure réseau, fuseau. | M |
 | Lint / dette Kotlin | Pas de ktlint/detekt ; warnings Canvas à traiter. | M |
 | Performance | 10 Hz de recomposition, deep copies, sauvegardes JSON ; profiler. | M |
@@ -133,7 +131,7 @@ Restant :
 | Sauvegarde | Export/import + aperçu + `.bak` ; rotation horodatée à ajouter. | M |
 | Accessibilité | Audit TalkBack, contrastes, focus, taille 200 %. | L |
 | Grands écrans | Pas de layout tablette/paysage. | L |
-| Play Store | Kit EN prêt ; AAB 0.20.0 et captures FR à faire. | M |
+| Play Store | Kit EN prêt ; AAB 0.20.10 et captures FR à faire. | M |
 | Mise à jour in-app | Livrée ; vérification périodique en arrière-plan à ajouter. | S |
 
 ---
@@ -142,12 +140,14 @@ Restant :
 
 | Sujet | État |
 |---|---|
-| README bilingue | À jour (0.20.0, FR puis EN) |
+| README bilingue | À jour (0.20.10, FR puis EN) |
 | Manuel FR/EN | Généré au build, en ligne 0.20.0 |
 | `langue.md` | État i18n finalisé |
-| `equilibrage.md` | Analyse + Phase A |
-| `validation-equilibrage.md` | Plan de validation |
-| `CHANGELOG.md` | v0.20.0 ajouté |
+| `plan-equilibrage.md` | Lots 0–9 livrés ; lot 10 en attente ; calibration gardiens reportée |
+| `equilibrage.md` | Analyse + cibles 1 → 100 (base 0.20.9) |
+| `validation-equilibrage.md` | Plan de validation et portes A–F |
+| `ecran-fin.html` | Proposition visuelle du lot 10 (non implémentée) |
+| `CHANGELOG.md` | v0.20.10 ajouté |
 | Spécification vs écarts | À resynchroniser |
 | Guide de récupération | À compléter (clé perdue, téléphone changé, sauvegarde corrompue) |
 
@@ -155,24 +155,25 @@ Restant :
 
 ## 8. Ordre recommandé
 
-1. **Playtest 0.20.0** au palier 36, puis décision go/no-go.
-2. **Publier 0.20.0** (GitHub + AAB Play) si validé.
-3. **Phase B** : XP, butin, camp/sets, gains de niveau ; playtest 14 jours.
-4. **Phase C** : fin de partie, télémétrie.
-5. **Qualité** : tests UI, R8, Gradle, perf, accessibilité.
-6. **Backlog produit** : inventaire, combat, endgame, tutoriel.
-7. **Localisation** : captures FR Play/manuel, décisions dates/pluriels.
+1. **Décider le lot 10** à partir de `docs/ecran-fin.html`.
+2. **Aligner le simulateur** sur les gardiens réels (porte A).
+3. **Calibrer les gardiens** (lot 5, porte D) et vérifier les bandes.
+4. **Playtest 0.20.10**, puis **publier** (GitHub + AAB Play) si validé.
+5. **Playtests 7 puis 14 jours** (portes E/F).
+6. **Qualité** : tests UI, R8, Gradle/JDK, perf, accessibilité.
+7. **Backlog produit** : inventaire, combat, endgame, tutoriel.
+8. **Localisation** : captures FR Play/manuel, décisions dates/pluriels.
 
 ---
 
-## 9. Critères d’acceptation transverses
+## 9. Critères d'acceptation transverses
 
 - Aucun pas compté deux fois, même après changement de fuseau ou réimport.
 - Toute action destructive demande confirmation.
 - Toute erreur réseau a une action de sortie (réessayer, remplacer la clé, plus tard).
-- L’app reste utilisable hors ligne et sans clé Garmin.
-- Aucune notification si l’utilisateur les a désactivées.
-- Aucune régression des données lors d’une mise à jour d’APK.
-- Tests verts (**118 unitaires**, 7 UI existants) et lint OK avant chaque release.
+- L'app reste utilisable hors ligne et sans clé Garmin.
+- Aucune notification si l'utilisateur les a désactivées.
+- Aucune régression des données lors d'une mise à jour d'APK.
+- Tests verts (**145 unitaires**, 7 UI existants) et lint OK avant chaque release.
 - FR et EN restent cohérents : aucune chaîne française résiduelle en mode EN.
 - Un gardien ne doit jamais tomber en 2-3 coups ; les potions accélèrent sans garantir la victoire.

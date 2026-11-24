@@ -13,7 +13,7 @@ const val FLOOR_METERS = 100
 const val ENCOUNTER_METERS = 10
 
 /** Distance à laquelle le portail du gardien apparaît. */
-const val GATE_METERS = 90.0
+const val GATE_METERS = Balance.Target.GATE_METERS
 
 /** Marche : pas consommés par seconde, et seuil de passage au rythme lent. */
 const val WALK_STEPS_PER_SECOND = 60.0
