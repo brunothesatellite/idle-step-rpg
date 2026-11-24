@@ -373,7 +373,7 @@ Implémenté dans le code (version de développement, pas encore publiée) :
 - **Courbe cible** : interpolation entre l’ancienne courbe (≤ palier 20) et la courbe cible (≥ palier 35), avec les multiplicateurs de 6.1bis. Le niveau du gardien reste `palier + 2` (au lieu de +1 dans la table cible), donc il est ~3 % plus fort que la simulation. L’ATQ est calibrée sur un build de référence ~3 700 PV au palier 36 : le build réel gagne 59 % sans potion et 100 % avec.
 - **Gardiens** : bouclier 40 % / 3 s, **enrage** après 15 s (+25 % toutes les 5 s, cap +75 %), bénédiction de défaite cumulative (+25 % par échec, cap +75 %).
 - **Élites** : 6 % de chance, 1,8× PV, 1,15× ATQ.
-- **Monstres normaux** : ATQ cible −10 % ; **soin complet après chaque victoire normale** pour éviter l’attrition. Les rations/potions restent réservées aux gardiens.
+- **Monstres normaux** : ATQ cible −10 % ; **aucun soin automatique après la victoire**, l’attrition est conservée. Les rations/potions restent utiles entre les combats.
 - **Score d’objet** : PV pondérés ×0,6 (au lieu de ×0,25) pour que « Équiper le meilleur » ne privilégie plus un build glass cannon.
 - **Éclats** : plafond **24**, gardien +3, jalon +8, coffre +2, démontage 2/3/6/10, reforge **1** éclat, élite 20 % +1.
 - **Rations** : gardien +2, coffre +2, monstre 10 % +1, seuil d’auto-ration 30 %, veillée gratuite 25 %.

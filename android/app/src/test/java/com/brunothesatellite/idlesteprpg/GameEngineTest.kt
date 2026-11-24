@@ -77,6 +77,29 @@ class GameEngineTest {
     }
 
     @Test
+    fun normalVictoryKeepsHpForAttrition() {
+        val state = GameState().apply {
+            floor = 5
+            hp = 123.0
+            mode = "fight"
+        }
+        val fight = FightData(
+            enemyName = "Rat des cryptes",
+            enemyIcon = "mon/rat.png",
+            enemyLevel = 5,
+            enemyHp = 1.0,
+            enemyMaxHp = 100.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 1250,
+            gold = 10,
+            xp = 0
+        )
+        GameEngine.victory(state, fight)
+        assertEquals(123.0, state.hp, 0.001)
+        assertEquals("walk", state.mode)
+    }
+
+    @Test
     fun normalBossVictoryAdvancesFloor() {
         val state = GameState().apply {
             floor = 10

@@ -107,7 +107,7 @@ La courbe `target` dérive les PV/ATQ ennemis du build de référence pour viser
 - `player36` (build réel) : **59 % au 36** sans potion, **100 % avec potion** (16,9 s / 55 coups).
 - `player36` aux paliers 50+ : 0 %, il faut d’abord du stuff/farm.
 
-Aucun gardien ne tombe en 2-3 coups : le combat dure 17-23 s et demande 55-75 coups. La courbe `target` (ATQ gardien ~EHP/19, enrage après 15 s) débloque le 36 pour le build réel, tout en gardant 75-100 comme objectif de stuff. Les monstres normaux infligent 10 % de moins et **soignent complètement** après victoire : les potions/rations restent pour les gardiens.
+Aucun gardien ne tombe en 2-3 coups : le combat dure 17-23 s et demande 55-75 coups. La courbe `target` (ATQ gardien ~EHP/19, enrage après 15 s) débloque le 36 pour le build réel, tout en gardant 75-100 comme objectif de stuff. Les monstres normaux infligent 10 % de moins, mais les PV **ne sont pas restaurés** après victoire : l'attrition est conservée et les potions/rations restent utiles.
 
 ## Prochaines étapes
 

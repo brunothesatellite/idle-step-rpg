@@ -1581,9 +1581,6 @@ object GameEngine {
         } else {
             state.mode = "walk"
             state.nextFight += 10
-            // Les monstres normaux ne doivent pas vider la réserve de PV :
-            // les rations et les potions sont réservées aux gardiens.
-            state.hp = statsOf(state).maxHp.toDouble()
             state.journal = addJournal(state, "${f.enemyName} vaincu · +$earned or", "good")
             dropConsumables(state, "mob")
             if (rnd.nextDouble() < 0.10) {

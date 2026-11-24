@@ -84,7 +84,7 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 | Cas | Cible |
 |---|---|
 | Monstre normal, build `reference` | ≥ 95 % de victoires, TTK 4-7 s, ≤ 0,2 ration |
-| Monstre normal, build `player36` | gagnable sans potion, soin complet après victoire |
+| Monstre normal, build `player36` | gagnable sans potion, PV conservés après victoire (attrition) |
 | Élite, build `reference` | ≥ 80 % de victoires, TTK 8-12 s |
 | Gardien, build `reference` sans potion | 0-30 % de victoires, TTK 15-22 s, ≥ 30 coups portés, 1 ration |
 | Gardien, build `reference` + potion | 40-70 % de victoires, TTK 13-18 s, ≥ 30 coups portés |
