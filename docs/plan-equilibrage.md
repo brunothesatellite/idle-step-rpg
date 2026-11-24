@@ -386,7 +386,7 @@ Tests unitaires à ajouter :
 9. ~~Lot 7 — pity de butin, fusion, identification.~~ **Livré en 0.20.7.**
 10. ~~Lot 8 - biomes et modificateurs.~~ **Livré en 0.20.8.**
 11. ~~Lot 9 - fin de jeu et télémétrie.~~ **Livré en 0.20.9.**
-12. Lot 10 - écran de fin enrichi (proposition HTML), export des stats, pixel art dédié. **Proposition visuelle : [ecran-fin.html](ecran-fin.html).** En attente du go.
+12. Lot 10 - écran de fin enrichi (proposition HTML), export des stats, pixel art dédié. **Proposition visuelle : [ecran-fin.html](ecran-fin.html).** Variante 2 (fonte pixel, statue réelle du palier 100, aura dorée) : [ecran-fin-v2.html](ecran-fin-v2.html). En attente du go.
 13. Aligner le simulateur sur les mécaniques réelles des gardiens (bouclier 35 %, enrage 25 s, pitié, Trône brisé) **avant** toute calibration, puis calibrer le lot 5.
 14. Playtest 7 jours, puis 14 jours.
 
