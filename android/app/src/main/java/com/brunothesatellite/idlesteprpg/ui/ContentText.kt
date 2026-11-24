@@ -599,6 +599,23 @@ fun localizedCreature(raw: String): String =
 fun localizedTier(raw: String): String = tierRes(LocalContext.current.resources, raw)
 
 @Composable
+fun localizedAbility(raw: String): String {
+    val res = LocalContext.current.resources
+    val key = when (raw) {
+        "DRAIN D'ÂME" -> R.string.dashboard_ability_drain
+        "RÉGÉNÉRATION" -> R.string.dashboard_ability_regen
+        "RACINES" -> R.string.dashboard_ability_roots
+        "ACIDE" -> R.string.dashboard_ability_acid
+        "SOUFFLE" -> R.string.dashboard_ability_breath
+        "BLINDAGE" -> R.string.dashboard_ability_shield
+        "PRESSION" -> R.string.dashboard_ability_pressure
+        "FRAPPE LOURDE" -> R.string.dashboard_ability_slam
+        else -> null
+    }
+    return key?.let { res.getString(it) } ?: raw
+}
+
+@Composable
 fun localizedZoneName(raw: String): String = zoneRes(LocalContext.current.resources, raw)
 
 @Composable

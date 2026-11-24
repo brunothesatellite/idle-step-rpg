@@ -1110,7 +1110,7 @@ fun GuardianGateDialog(
             SectionLabel(stringResource(R.string.gate_title), color = Gold)
             Spacer(Modifier.height(5.dp))
             Text(
-                boss.enemyName,
+                localizedCreature(boss.enemyName.substringBefore(" · ")),
                 fontFamily = Press,
                 fontSize = 12.sp,
                 color = GoldLight,
@@ -1150,14 +1150,14 @@ fun GuardianGateDialog(
             if (boss.abilityLabel.isNotBlank()) {
                 Spacer(Modifier.height(5.dp))
                 Text(
-                    stringResource(R.string.gate_ability, boss.abilityLabel),
+                    stringResource(R.string.gate_ability, localizedAbility(boss.abilityLabel)),
                     fontSize = 6.4.sp,
                     color = Ember
                 )
             }
             if (boss.modifier.isNotBlank()) {
                 Text(
-                    stringResource(R.string.gate_modifier, boss.modifier),
+                    stringResource(R.string.gate_modifier, modifierLabelRes(boss.modifier)),
                     fontSize = 6.4.sp,
                     color = Blood
                 )
