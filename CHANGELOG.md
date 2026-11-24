@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.21.2
+- **Pitié de gardien** : **−1 % PV/ATQ par défaite**, plafond **−3 %** (au lieu de −5 %/−25 %). Après 3 défaites, `reference` passe à 56–79 % au lieu de 100 %.
+- **Potions d'ATQ à risque** : Potion de force **+40 % ATQ / +40 % dégâts subis**, Fiole de rage **+50 % / +50 %** pendant 20 s. Le combat est accéléré (11–14 s) sans devenir automatique : 58–78 % de victoires.
+- **Simulateur** : `--potion atk`/`rage` modélisent la fragilité ; `--potion atk_pure` reste l'hypothèse sans risque.
+- **Tests** : **151 / 151**, lint OK.
+- **Build** : `versionCode 60`, `versionName 0.21.2`. Aucune release GitHub.
+
 ## v0.21.1
 - **Calibration des gardiens (lot 5)** : la courbe cible vise **18 s de TTK** avec le stuff attendu ; l'ATQ est calibrée par capacité (diviseurs 14,5 à 20,5 selon bouclier, souffle, pression, rupture…). Le Trône brisé et le boss final restent appliqués.
 - **Simulateur** : nouvelle courbe `code` qui reproduit `makeMob`/`makeBoss` ; pitié, modificateurs, toutes les capacités, régénération de combat et règles de biome exactes.

@@ -11,7 +11,7 @@
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 - **Français et anglais** — interface, journal, Codex, manuel et captures dans les deux langues.
 
-**Version :** 0.21.1 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.21.2 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel en ligne](https://brunothesatellite.github.io/idle-step-rpg/manuel/) ·
@@ -122,7 +122,7 @@ Le HTML publié et les assets sont générés au build depuis `manuel/index.temp
 ### Avec ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.21.1.apk
+adb install -r La-Marche-des-Ames-v0.21.2.apk
 ```
 
 Les mises à jour installées avec la même signature conservent les données. L’application est sideloadée, pas publiée sur le Play Store.
@@ -523,7 +523,7 @@ Détails : [`LICENSES.md`](LICENSES.md), [`assets/CREDITS.md`](assets/CREDITS.md
 - **Offline** — progress continues with the steps already fetched.
 - **French and English** — interface, journal, Codex, manual and screenshots in both languages.
 
-**Version:** 0.21.1 · **Android:** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version:** 0.21.2 · **Android:** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [Android APK](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manual online](https://brunothesatellite.github.io/idle-step-rpg/manuel/) ·
@@ -634,7 +634,7 @@ The published HTML and the assets are generated at build time from `manuel/index
 ### With ADB
 
 ```bash
-adb install -r La-Marche-des-Ames-v0.21.1.apk
+adb install -r La-Marche-des-Ames-v0.21.2.apk
 ```
 
 Updates installed with the same signature keep your data. The app is sideloaded, not published on the Play Store.

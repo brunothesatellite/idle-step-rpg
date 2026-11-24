@@ -1,11 +1,11 @@
 # La Marche des Âmes — reste à faire
 
-> **État au 24/11/2026 — v0.21.1** (`versionCode 59`, branche `main`).
-> Les lots 1 à 10 sont livrés et le **lot 5 est calibré** (courbe `code`, 18 s de TTK).
-> Reste à arbitrer la **pitié** et les **potions**, puis à playtester.
+> **État au 24/11/2026 — v0.21.2** (`versionCode 60`, branche `main`).
+> Les lots 1 à 10 sont livrés, le **lot 5 est calibré** et la **pitié/potion arbitrées**.
+> Reste le playtest.
 >
 > Rappels à jour : absence = **30 % des pas du jour** (réglable 0–30 % ou 0–5 000 pas),
-> **4 min simulées** ; tests = **150 unitaires** + 7 tests UI existants ; lint OK.
+> **4 min simulées** ; tests = **151 unitaires** + 7 tests UI existants ; lint OK.
 > Équilibrage : [`plan-equilibrage.md`](plan-equilibrage.md), [`equilibrage.md`](equilibrage.md)
 > et [`validation-equilibrage.md`](validation-equilibrage.md).
 > Localisation : [`langue.md`](langue.md).
@@ -18,9 +18,8 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 
 | # | Sujet | Détail | Effort |
 |---|---|---|---|
-| 1 | **Playtest 0.21.1** | Vérifier l'écran de fin via **Aperçu de la fin** (build debug), l'export HTML, les gardiens aux paliers 36/50/75/100, la VIT et le palier courant. | S |
-| 2 | **Arbitrer pitié et potions** | La pitié à −15 % et la potion d'ATQ font passer `reference` à 100 % : doser ou accepter « potion = victoire fiable ». | M |
-| 3 | **Publier** | Release GitHub + APK (et AAB Play si validé). La dernière release publiée est `v0.19.1` ; 0.20.0 à 0.21.1 ne sont pas publiées. | S–M |
+| 1 | **Playtest 0.21.2** | Vérifier l'écran de fin via **Aperçu de la fin** (build debug), l'export HTML, les gardiens aux paliers 36/50/75/100, la pitié et les potions à risque. | S |
+| 2 | **Publier** | Release GitHub + APK (et AAB Play si validé). La dernière release publiée est `v0.19.1` ; 0.20.0 à 0.21.2 ne sont pas publiées. | S–M |
 
 ---
 
@@ -32,7 +31,7 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 - **Objets** : butin ×1 à ×6, raretés cibles, upgrades additifs +4 % (20 niveaux max), caps VIT/effets, fusion 90 %.
 - **Camp et sets** : bonus en pourcentage, coût indexé sur le palier, plafond 30 niveaux.
 - **Rations** : cap 30, revenus renforcés, auto-ration 40 %/45 %, repos gratuit 2×20 %, farm +10 % PV, farm de gardien +1 éclat/+1 ration (5/jour).
-- **Gardiens** : niveau palier +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s (+15 %/5 s, cap 60 %), pitié −5 %/défaite (cap −25 %), portail à 90 m.
+- **Gardiens** : niveau palier +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s (+15 %/5 s, cap 60 %), pitié −1 %/défaite (cap −3 %), portail à 90 m.
 - **Butin** : rare garanti tous les 5 kills, set tous les 10 gardiens, 1 non identifié sur 10 maximum.
 - **Biomes** : budget de menace, RAPIDE/BERSERK exclus avec les capacités lourdes.
 - **Fin de jeu** : Trône brisé +15 % → +35 %, gardiens renforcés, boss final et fin unique au palier 100, mode sans fin, télémétrie locale.
@@ -130,7 +129,7 @@ Restant :
 | Sauvegarde | Export/import + aperçu + `.bak` ; rotation horodatée à ajouter. | M |
 | Accessibilité | Audit TalkBack, contrastes, focus, taille 200 %. | L |
 | Grands écrans | Pas de layout tablette/paysage. | L |
-| Play Store | Kit EN prêt ; AAB 0.21.1 et captures FR à faire. | M |
+| Play Store | Kit EN prêt ; AAB 0.21.2 et captures FR à faire. | M |
 | Mise à jour in-app | Livrée ; vérification périodique en arrière-plan à ajouter. | S |
 
 ---
@@ -139,14 +138,14 @@ Restant :
 
 | Sujet | État |
 |---|---|
-| README bilingue | À jour (0.21.1, FR puis EN) |
+| README bilingue | À jour (0.21.2, FR puis EN) |
 | Manuel FR/EN | Généré au build, en ligne 0.20.0 |
 | `langue.md` | État i18n finalisé |
 | `plan-equilibrage.md` | Lots 0-10 livrés ; lot 5 calibré |
 | `equilibrage.md` | Analyse + cibles 1 → 100 (base 0.20.9) |
 | `validation-equilibrage.md` | Plan de validation et portes A–F |
 | `ecran-fin-v2.html` | Base visuelle validée du lot 10 (implémentée en 0.21.0) |
-| `CHANGELOG.md` | v0.21.1 ajouté |
+| `CHANGELOG.md` | v0.21.2 ajouté |
 | Spécification vs écarts | À resynchroniser |
 | Guide de récupération | À compléter (clé perdue, téléphone changé, sauvegarde corrompue) |
 
@@ -172,6 +171,6 @@ Restant :
 - L'app reste utilisable hors ligne et sans clé Garmin.
 - Aucune notification si l'utilisateur les a désactivées.
 - Aucune régression des données lors d'une mise à jour d'APK.
-- Tests verts (**150 unitaires**, 7 UI existants) et lint OK avant chaque release.
+- Tests verts (**151 unitaires**, 7 UI existants) et lint OK avant chaque release.
 - FR et EN restent cohérents : aucune chaîne française résiduelle en mode EN.
 - Un gardien ne doit jamais tomber en 2-3 coups ; les potions accélèrent sans garantir la victoire.

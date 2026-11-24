@@ -223,8 +223,8 @@ val CONSUMABLES = listOf(
     ),
     ConsumableTemplate(
         "fiole_rage", "Fiole de rage", "item/misc_orb.png", "uncommon",
-        "ATQ +50 % pendant 20 s.", "buff_atk", 0.50, 20_000,
-        context = "combat", value = 60
+        "ATQ +50 %, mais dégâts subis +50 % pendant 20 s.", "berserk", 0.50, 20_000,
+        context = "combat", value = 60, secondary = 0.50
     ),
     ConsumableTemplate(
         "ecorce_fer", "Écorce de fer", "item/cons_shield.png", "uncommon",
@@ -263,8 +263,8 @@ val CONSUMABLES = listOf(
     ),
     ConsumableTemplate(
         "potion_force", "Potion de force", "item/i-might.png", "uncommon",
-        "ATQ +40 % pendant 20 s.", "buff_atk", 0.40, 20_000,
-        context = "combat", value = 65
+        "ATQ +40 %, mais dégâts subis +40 % pendant 20 s.", "berserk", 0.40, 20_000,
+        context = "combat", value = 65, secondary = 0.40
     ),
     ConsumableTemplate(
         "potion_regen", "Potion de régénération", "item/i-regeneration.png", "rare",

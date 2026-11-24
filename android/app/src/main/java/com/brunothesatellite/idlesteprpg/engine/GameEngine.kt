@@ -930,7 +930,8 @@ object GameEngine {
             "berserk" -> {
                 addBuff(state, "atk", template.magnitude, template.durationMs, "BERSERK")
                 addBuff(state, "vulnerable", template.secondary, template.durationMs, "FRAGILE")
-                message = "ATQ +${(template.magnitude * 100).roundToInt()} % · vulnérable"
+                message = "ATQ +${(template.magnitude * 100).roundToInt()} % · " +
+                    "dégâts subis +${(template.secondary * 100).roundToInt()} %"
             }
             else -> return SpecialOutcome("Effet inconnu.", false)
         }

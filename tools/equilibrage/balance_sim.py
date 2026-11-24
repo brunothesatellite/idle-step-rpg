@@ -49,6 +49,7 @@ class Build:
     lifesteal: float = 0.0
     damage_reduction: float = 0.0
     boss_damage: float = 0.0
+    damage_taken: float = 0.0
     ferveur: float = 100.0
     rations: int = 1
 
@@ -578,6 +579,14 @@ def build_preset(name: str, floor: int) -> Build:
 
 def _apply_build_modifiers(build: Build, rule: Rule, potion: str) -> Build:
     if potion == "atk":
+        # Potion de force : +40 % ATQ, +40 % dégâts subis.
+        build = replace(build, atk=build.atk * 1.40,
+                        damage_taken=build.damage_taken + 0.40)
+    elif potion == "rage":
+        # Fiole de rage : +50 % ATQ, +50 % dégâts subis.
+        build = replace(build, atk=build.atk * 1.50,
+                        damage_taken=build.damage_taken + 0.50)
+    elif potion == "atk_pure":
         build = replace(build, atk=build.atk * 1.40)
     elif potion == "crit":
         build = replace(build, crit=min(100.0, build.crit + 50.0),
@@ -640,7 +649,9 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
                 steps = int((t - enemy.enrage_after) / enemy.enrage_step) + 1
             enrage = 1.0 + min(enemy.enrage_cap, steps * enemy.enrage_pct)
             raw = enemy.atk * multiplier * enrage * (0.9 + rng.random() * 0.1)
-            return raw * (1.0 - build.damage_reduction) * (1.0 + (0.15 if t < vulnerable_until else 0.0))
+            return raw * (1.0 - build.damage_reduction) * (
+                1.0 + build.damage_taken + (0.15 if t < vulnerable_until else 0.0)
+            )
 
         while t < max_seconds:
             dt = 0.01
@@ -921,7 +932,9 @@ def main() -> None:
                         choices=["auto", "none", "blinde", "rapide", "berserk", "regenerant", "voleur"])
     parser.add_argument("--pity", type=float, default=0.0,
                         help="pitié de gardien (0 à 0.25)")
-    parser.add_argument("--potion", default="", choices=["", "atk", "crit", "mixed"])
+    parser.add_argument("--potion", default="",
+                        choices=["", "atk", "rage", "atk_pure", "crit", "mixed"],
+                        help="atk/rage = potions à risque, atk_pure = hypothèse +40 % sans risque")
     parser.add_argument("--hp-exp", type=float, default=1.11)
     parser.add_argument("--hp-cap", type=float, default=30.0)
     parser.add_argument("--atk-exp", type=float, default=1.04)

@@ -633,7 +633,7 @@
     <string name="content_consumable_pain_route">Waybread</string>
     <string name="content_consumable_pain_route_desc" formatted="false">Restores 20% HP and 1 ration.</string>
     <string name="content_consumable_fiole_rage">Rage Vial</string>
-    <string name="content_consumable_fiole_rage_desc" formatted="false">ATK +50% for 20 s.</string>
+    <string name="content_consumable_fiole_rage_desc" formatted="false">ATK +50%, but damage taken +50% for 20 s.</string>
     <string name="content_consumable_ecorce_fer">Ironbark</string>
     <string name="content_consumable_ecorce_fer_desc" formatted="false">Damage taken -40% for 20 s.</string>
     <string name="content_consumable_poudre_eclair">Lightning Powder</string>
@@ -649,7 +649,7 @@
     <string name="content_consumable_potion_hate">Haste Potion</string>
     <string name="content_consumable_potion_hate_desc" formatted="false">SPD +60% for 20 s.</string>
     <string name="content_consumable_potion_force">Strength Potion</string>
-    <string name="content_consumable_potion_force_desc" formatted="false">ATK +40% for 20 s.</string>
+    <string name="content_consumable_potion_force_desc" formatted="false">ATK +40%, but damage taken +40% for 20 s.</string>
     <string name="content_consumable_potion_regen">Regeneration Potion</string>
     <string name="content_consumable_potion_regen_desc">Regeneration +2 HP/s for 30 s.</string>
     <string name="content_consumable_viande_sechee">Dried Meat</string>

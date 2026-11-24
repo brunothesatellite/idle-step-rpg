@@ -23,9 +23,9 @@ Toute modification de constante doit être répercutée dans les deux fichiers, 
 python tools/equilibrage/balance_sim.py --curve code --build reference,reference_high,under \
   --floors 36,50,75,100 --runs 500 --modifier auto
 
-# Pitié après 3 défaites (15 %)
+# Pitié après 3 défaites (3 %)
 python tools/equilibrage/balance_sim.py --curve code --build reference \
-  --floors 36,50,75,100 --runs 300 --modifier auto --pity 0.15
+  --floors 36,50,75,100 --runs 300 --modifier auto --pity 0.03
 
 # Courbe cible de design (TTK constant) et courbe actuelle historique
 python tools/equilibrage/balance_sim.py --curve target --build reference --floors 36,100 --runs 300
@@ -75,7 +75,7 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 - Attaques du héros : intervalle `1 / (VIT × (1 + 0,004 × ferveur))`, minimum **0,18 s** (`Target.HERO_MIN_INTERVAL_MS`, plafond VIT 4,0).
 - Dégâts : `ATQ × U(0,9–1,1)`, critique `1,6 + critDamage`, bonus gardien, bouclier.
 - Nombre de coups portés / encaissés (pour vérifier qu’un gardien ne tombe pas en 2-3 coups).
-- Potions simulées : `--potion atk` (+40 % ATQ), `--potion crit` (+50 pts crit), `--potion mixed` (+25 % ATQ, +25 crit).
+- Potions simulées : `--potion atk` (+40 % ATQ, +40 % dégâts subis), `--potion rage` (+50 %/+50 %), `--potion atk_pure` (+40 % sans risque, hypothèse), `--potion crit`, `--potion mixed`.
 - Attaques ennemies : intervalle, `ATQ × U(0,9–1,0)`, réduction de dégâts.
 - Ration automatique sous **40 %** des PV, soin de **45 %**, une fois par combat.
 - Régénération de combat réelle (`0,6 % PV max/s / 3` + bonus), vol de vie.
@@ -110,7 +110,7 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 - `reference` tient la bande 35–65 % et 16–20 s, avec 55–110 coups portés.
 - `reference_high` gagne à 100 % : sur-stuff assumé (récompense).
 - `under` (0,93×) reste instable à cause du seuil de combat : 1–37 %.
-- Pitié 15 % et potion d’ATQ font passer `reference` à 100 % : le dosage reste à arbitrer au playtest.
+- Pitié 3 % (cap) : `reference` 56–79 %. Potions à risque : 58–78 %. Aucun ne rend le combat automatique.
 
 ## Premiers résultats (0.19.1)
 

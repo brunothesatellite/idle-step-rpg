@@ -21,6 +21,7 @@ import com.brunothesatellite.idlesteprpg.engine.upgradeCost
 import com.brunothesatellite.idlesteprpg.engine.xpCatchUpMultiplier
 import com.brunothesatellite.idlesteprpg.engine.xpFloorMultiplier
 import com.brunothesatellite.idlesteprpg.engine.xpNext
+import com.brunothesatellite.idlesteprpg.engine.CONSUMABLES
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -243,7 +244,7 @@ class BalanceTest {
         assertEquals(20, Balance.Target.ITEM_MAX_LEVELS)
         assertEquals(30, Balance.Target.RATIONS_CAP)
         assertEquals(0.40, Balance.Target.AUTO_RATION_THRESHOLD, 0.0001)
-        assertEquals(0.25, Balance.Target.PITY_CAP, 0.0001)
+        assertEquals(0.03, Balance.Target.PITY_CAP, 0.0001)
         assertEquals(0.90, Balance.Target.FUSION_RATIO, 0.0001)
         assertEquals(6.0, Balance.Target.LOOT_SCALE_CAP, 0.0001)
     }
@@ -255,5 +256,15 @@ class BalanceTest {
         assertEquals(19.0, Balance.Target.BOSS_DIV_BREATH, 0.0001)
         assertEquals(16.0, Balance.Target.BOSS_DIV_PRESSURE, 0.0001)
         assertEquals(20.5, Balance.Target.BOSS_DIV_RUPTURE, 0.0001)
+    }
+
+    @Test
+    fun attackPotionsCarryARealRisk() {
+        val force = CONSUMABLES.first { it.id == "potion_force" }
+        assertEquals("berserk", force.effect)
+        assertEquals(0.40, force.secondary, 0.0001)
+        val rage = CONSUMABLES.first { it.id == "fiole_rage" }
+        assertEquals("berserk", rage.effect)
+        assertEquals(0.50, rage.secondary, 0.0001)
     }
 }

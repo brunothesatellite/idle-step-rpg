@@ -635,7 +635,7 @@
     <string name="content_consumable_pain_route">Pain de route</string>
     <string name="content_consumable_pain_route_desc" formatted="false">Rend 20 % des PV et 1 ration.</string>
     <string name="content_consumable_fiole_rage">Fiole de rage</string>
-    <string name="content_consumable_fiole_rage_desc" formatted="false">ATQ +50 % pendant 20 s.</string>
+    <string name="content_consumable_fiole_rage_desc" formatted="false">ATQ +50 %, mais dégâts subis +50 % pendant 20 s.</string>
     <string name="content_consumable_ecorce_fer">Écorce de fer</string>
     <string name="content_consumable_ecorce_fer_desc" formatted="false">Dégâts subis −40 % pendant 20 s.</string>
     <string name="content_consumable_poudre_eclair">Poudre d\'éclair</string>
@@ -651,7 +651,7 @@
     <string name="content_consumable_potion_hate">Potion de hâte</string>
     <string name="content_consumable_potion_hate_desc" formatted="false">VIT +60 % pendant 20 s.</string>
     <string name="content_consumable_potion_force">Potion de force</string>
-    <string name="content_consumable_potion_force_desc" formatted="false">ATQ +40 % pendant 20 s.</string>
+    <string name="content_consumable_potion_force_desc" formatted="false">ATQ +40 %, mais dégâts subis +40 % pendant 20 s.</string>
     <string name="content_consumable_potion_regen">Potion de régénération</string>
     <string name="content_consumable_potion_regen_desc">Régénération +2 PV/s pendant 30 s.</string>
     <string name="content_consumable_viande_sechee">Viande séchée</string>

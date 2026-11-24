@@ -198,8 +198,8 @@ object Balance {
         const val ENDGAME_BOSS_ATK_MULT = 1.05
         const val FINAL_BOSS_HP_MULT = 1.40
         const val FINAL_BOSS_ATK_MULT = 1.15
-        const val PITY_HP_STEP = 0.05
-        const val PITY_CAP = 0.25
+        const val PITY_HP_STEP = 0.01
+        const val PITY_CAP = 0.03
         const val FUSION_RATIO = 0.90
         const val LOOT_PITY_RARE_KILLS = 5
         const val LOOT_PITY_SET_BOSSES = 10

@@ -24,7 +24,7 @@ Les sept recommandations ont été retenues. Elles sont la référence pour la P
 | Croissance d'objet | **Additive +4 % de la base, +20 niveaux max** | Composée avec soft cap |
 | Rations | **Drops + repos gratuit + auto-ration 40 %/45 %** | Hausse des drops uniquement |
 | Lissage gardien | **Courbe + pitié en debuff visible** | Pitié en dégâts héros |
-| Pitié | **−5 % PV/ATQ par défaite, cap −25 %** | +15 % dégâts, cap +60 % |
+| Pitié | **−1 % PV/ATQ par défaite, cap −3 %** (arbitrage 0.21.2) | +15 % dégâts, cap +60 % |
 | Fin de jeu | **NG+ / Trône brisé** | Nouveaux biomes |
 | Cap de butin | **×6 au palier 100** | ×8 |
 
@@ -197,7 +197,7 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 
 ### Lot 5 — Gardiens, pitié, portail
 
-**Statut : livré en 0.20.5, calibré en 0.21.1.** Niveau +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −5 %/défaite, portail à 90 m. Courbe des gardiens recalculée sur **18 s de TTK** et une ATQ par capacité (diviseurs 14,5–20,5) ; mesure de la porte D dans [`equilibrage.md`](equilibrage.md) §5.6.
+**Statut : livré en 0.20.5, calibré en 0.21.1.** Niveau +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −1 %/défaite (cap −3 %), portail à 90 m. Courbe des gardiens recalculée sur **18 s de TTK** et une ATQ par capacité (diviseurs 14,5–20,5) ; mesure de la porte D dans [`equilibrage.md`](equilibrage.md) §5.6.
 
 **Objectif** : supprimer le seuil 0/100 et rendre le combat lisible.
 
@@ -208,7 +208,7 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 - Bouclier : **35 % / 3 s / 8 s**.
 - Phase 2 : capacité **télégraphiée** à 50 % PV, sans passage permanent à 950 ms.
 - Enrage : après **25 s**, +15 % ATQ / 5 s, cap **+60 %**.
-- Pitié : **−5 % PV/ATQ par défaite**, cap **−25 %**, affichée avant le combat.
+- Pitié : **−1 % PV/ATQ par défaite**, cap **−3 %**, affichée avant le combat (arbitrage 0.21.2).
 - Portail à **90 m** : arrêt, écran de gardien, pronostic, choix **Engager / Farmer / Camper**, potion utilisable avant.
 - Afficher le modificateur et la capacité avant l'engagement.
 - Prévoir un reroll de modificateur au camp (or) si le tirage est injuste.
@@ -219,7 +219,7 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 - `reference_high` entre **85 et 95 %** ;
 - `under` entre **10 et 25 %** ;
 - aucun gardien gagné en < 10 s ou < 30 coups portés ;
-- pitié : après 3 défaites, le taux de victoire progresse visiblement sans devenir automatique ;
+- pitié : après 3 défaites, le taux de victoire progresse visiblement sans devenir automatique (mesuré 56–79 %) ;
 - portail : aucune attaque ne démarre avant le choix du joueur.
 
 **Critère** : plus aucun palier à 0 % ou 100 % pour le stuff attendu.

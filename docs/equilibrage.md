@@ -87,7 +87,7 @@ Le gardien est au **niveau palier + 1**. Les monstres ont **6 % de chance d'êtr
 - un **enrage** après 25 s : +15 % ATQ toutes les 5 s, plafond +60 % ;
 - un modificateur aléatoire parmi RAPIDE, BLINDÉ, BERSERK, RÉGÉNÉRANT, VOLEUR ; **RAPIDE et BERSERK sont exclus avec les capacités lourdes** (frappe, souffle, drain, pression) pour plafonner la menace ;
 - une capacité de gardien (slam 2,4×, souffle 2,0×, drain 1,5×, etc.) ;
-- une **pitié** de −5 % PV/ATQ par défaite, plafond −25 %, remise à zéro à la victoire.
+- une **pitié** de −1 % PV/ATQ par défaite, plafond −3 %, remise à zéro à la victoire.
 
 Le gardien est précédé d'un **portail à 90 m** : le joueur voit ses PV, son ATQ, sa capacité, son modificateur et peut choisir **Engager / Farmer ce palier / Camper**.
 
@@ -335,7 +335,7 @@ coût = 30 × niveau + 20 // or, +1 éclat
 - Bouclier : **35 % / 3 s / 8 s**.
 - Phase 2 à 50 % PV : **capacité télégraphiée**, sans réduction permanente de l'intervalle à 950 ms.
 - Enrage : après **25 s**, +15 % ATQ toutes les 5 s, plafond **+60 %**.
-- Pitié : **−5 % PV/ATQ du gardien par défaite**, plafond −25 %, affichée avant le combat. Alternative : +15 % dégâts héros, plafond +60 %.
+- Pitié : **−1 % PV/ATQ du gardien par défaite**, plafond −3 %, affichée avant le combat. Alternative écartée : +15 % dégâts héros, plafond +60 %.
 - Portail à **90 m** : arrêt, écran « Gardien devant », pronostic, choix **Engager / Farmer / Camper**, potion utilisable avant.
 - Modificateur et capacité **annoncés** avant l'engagement ; un reroll de modificateur peut être proposé au camp contre de l'or.
 
@@ -348,7 +348,7 @@ coût = 30 × niveau + 20 // or, +1 éclat
 | 75 | 60 % | 16,3 s | 100 % | 21 % |
 | 100 | 57 % | 20,3 s | 100 % | 2 % |
 
-Le stuff attendu reste dans la bande 35–65 % et les combats durent 16–20 s (≥ 55 coups). Le stuff avancé gagne à 100 % (récompense du sur-stuff, décision conservée) et le stuff `under` reste sous la bande à 50/100. La pitié à −15 % et la potion d'ATQ font passer `reference` à 100 % : leur dosage reste à arbitrer au playtest.
+Le stuff attendu reste dans la bande 35–65 % et les combats durent 16–20 s (≥ 55 coups). Le stuff avancé gagne à 100 % (récompense du sur-stuff, décision conservée) et le stuff `under` reste sous la bande à 50/100. La pitié (−3 % max) porte `reference` à 56–79 % ; les potions d'ATQ à risque (+40 %/+40 % ou +50 %/+50 %) donnent 58–78 %. Aucun des deux ne rend le combat automatique.
 
 ### 5.7 Fin de jeu 81–100
 
@@ -365,7 +365,7 @@ Le stuff attendu reste dans la bande 35–65 % et les combats durent 16–20 s (
 | Croissance d'objet | **Additive +4 % de la base, +20 niveaux max** | Composée avec soft cap |
 | Rations | **Drops + repos gratuit + auto-ration 40 %/45 %** | Drops seuls, repos seul |
 | Lissage gardien | **Courbe + pitié en debuff visible** | Pitié en dégâts héros |
-| Pitié | **−5 % PV/ATQ par défaite, cap −25 %** | +15 % dégâts, cap +60 % |
+| Pitié | **−1 % PV/ATQ par défaite, cap −3 %** (arbitrage 0.21.2) | +15 % dégâts, cap +60 % |
 | Fin de jeu | **Fin au palier 100 puis mode sans fin** | NG+ ou nouveaux biomes |
 | Cap de butin | **×6 au palier 100** | ×8 |
 
