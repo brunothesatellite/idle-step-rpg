@@ -1342,21 +1342,64 @@ object GameEngine {
         }
     }
 
+    /** Intervalle du stuff de référence (30 % crit, ferveur 100). */
+    private fun referenceInterval(floor: Int, rule: BiomeRule): Double {
+        val vit = (1.8 + 0.02 * floor) * (1.0 + rule.vitPct)
+        return max(Balance.Target.HERO_MIN_INTERVAL_MS / 1000.0, 1.0 / (vit * 1.4))
+    }
+
+    private fun referenceDps(floor: Int, rule: BiomeRule): Double {
+        val atk = (650.0 + 20.0 * floor) * (1.0 + rule.atkPct)
+        val crit = min(75.0, 32.0 + rule.crit)
+        return atk * (1.0 + crit / 100.0 * 0.6) / referenceInterval(floor, rule)
+    }
+
+    private fun referenceEhp(floor: Int, rule: BiomeRule): Double {
+        val hp = (1800.0 + 55.0 * floor) * (1.0 + rule.hpPct)
+        val dr = min(Balance.Target.DAMAGE_REDUCTION_CAP, 0.06 + rule.damageReduction)
+        return hp * 1.35 / (1.0 - dr)
+    }
+
+    private fun shieldFactor(abilityId: String): Double =
+        if (abilityId == "shield") {
+            1.0 - Balance.Target.SHIELD_REDUCTION *
+                (Balance.Target.SHIELD_DURATION_MS / Balance.Target.SHIELD_PERIOD_MS)
+        } else {
+            1.0
+        }
+
+    private fun bossAtkDivisor(abilityId: String): Double = when (abilityId) {
+        "shield" -> Balance.Target.BOSS_DIV_SHIELD
+        "breath" -> Balance.Target.BOSS_DIV_BREATH
+        "pressure" -> Balance.Target.BOSS_DIV_PRESSURE
+        "rupture" -> Balance.Target.BOSS_DIV_RUPTURE
+        "slam" -> Balance.Target.BOSS_DIV_SLAM
+        "drain" -> Balance.Target.BOSS_DIV_DRAIN
+        "roots" -> Balance.Target.BOSS_DIV_ROOTS
+        "acid" -> Balance.Target.BOSS_DIV_ACID
+        "regen" -> Balance.Target.BOSS_DIV_REGEN
+        else -> Balance.Target.BOSS_DIV_DEFAULT
+    }
+
     private fun makeBoss(state: GameState): FightData {
         val t = bossFor(state.floor)
         val ability = bossAbilityFor(t.name, state.floor)
         val rule = biomeRuleFor(state.floor)
         val level = state.floor + Balance.Target.BOSS_LEVEL_OFFSET
-        val hpScale = bossHpScale(state.floor)
-        val atkScale = bossAtkScale(state.floor)
-        var hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) *
-            hpScale * rule.bossHpMult
-        var atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) *
-            atkScale * rule.bossAtkMult
-        if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) {
-            hp *= Balance.Target.FINAL_BOSS_HP_MULT
-            atk *= Balance.Target.FINAL_BOSS_ATK_MULT
-        }
+        val finalHpMult =
+            if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) Balance.Target.FINAL_BOSS_HP_MULT else 1.0
+        val finalAtkMult =
+            if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) Balance.Target.FINAL_BOSS_ATK_MULT else 1.0
+        val hpMult = rule.enemyHpMult * rule.bossHpMult * finalHpMult
+        val atkMult = rule.enemyAtkMult * rule.bossAtkMult * finalAtkMult
+        val weight = targetWeight(state.floor)
+        val baseHp = Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)
+        val baseAtk = Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)
+        val targetHpBase = referenceDps(state.floor, rule) *
+            Balance.Target.BOSS_TARGET_TTK * shieldFactor(ability.id) / hpMult
+        val targetAtkBase = referenceEhp(state.floor, rule) / bossAtkDivisor(ability.id) / atkMult
+        var hp = lerp(baseHp * bossHpScale(state.floor), targetHpBase, weight)
+        var atk = lerp(baseAtk * bossAtkScale(state.floor), targetAtkBase, weight)
         var interval = Balance.MOB_INTERVAL_MS.toLong()
         val modifier = bossModifierPool(ability.id).random(rnd)
         when (modifier) {
@@ -1381,9 +1424,9 @@ object GameEngine {
             enemyIcon = t.icon,
             enemyId = t.id,
             enemyLevel = level,
-            enemyHp = hp * rule.enemyHpMult * (1.0 - pity),
-            enemyMaxHp = hp * rule.enemyHpMult * (1.0 - pity),
-            enemyAtk = atk * rule.enemyAtkMult * (1.0 - pity),
+            enemyHp = hp * hpMult * (1.0 - pity),
+            enemyMaxHp = hp * hpMult * (1.0 - pity),
+            enemyAtk = atk * atkMult * (1.0 - pity),
             enemyIntervalMs = (interval * rule.enemyIntervalMult).roundToLong(),
             gold = (12 * (6 + 3 * level) * reward).roundToInt(),
             xp = bossXpReward(level, state.floor, state.level),

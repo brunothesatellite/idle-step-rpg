@@ -4,7 +4,7 @@
 > Objectif : vérifier, avant et après implémentation, que les nouvelles courbes rendent le jeu **franchissable**, **progressif** et **non trivial**, sans remplacer un mur par un autre.
 > Toute modification suit l'ordre des lots de `docs/plan-equilibrage.md`.
 
-> **État au 24/11/2026 (0.20.10).** Les lots 1 à 9 sont livrés. La **porte D** (gardiens) n'est pas encore franchie : les valeurs par défaut de `--curve target` décrivent encore la Phase A (bouclier 40 %, enrage après 15 s, diviseur d'ATQ 16, sans pitié ni Trône brisé). Les taux de gardiens produits aujourd'hui ne servent pas de référence tant que le simulateur n'est pas aligné sur les mécaniques 0.20.5+.
+> **État au 24/11/2026 (0.21.1).** La courbe `code` du simulateur reproduit `GameEngine.makeBoss` (biome, bouclier 35 %, enrage 25 s, pitié, capacités, modificateurs, Trône brisé). La **porte D** est mesurée dans [`equilibrage.md`](equilibrage.md) §5.6 : `reference` 44–60 % et TTK 16–20 s, donc dans la bande. Restent deux écarts connus : `under` à 0–37 % selon le palier et les potions/pitié qui font passer `reference` à 100 % ; à arbitrer au playtest.
 
 ## 1. Périmètre
 
@@ -90,8 +90,8 @@ Chaque cellule produit : taux de victoire, TTK, TTD, PV restants, rations consom
 | Monstre normal, build `player36` | gagnable sans potion, PV conservés après victoire (attrition) |
 | Élite, build `reference` | ≥ 80 % de victoires, TTK 8-12 s |
 | Gardien, build `reference` sans potion | **35-65 %** de victoires, TTK 15-22 s, ≥ 30 coups portés |
-| Gardien, build `reference` + potion | **55-75 %** de victoires, TTK 13-18 s, ≥ 30 coups portés |
-| Gardien, build `reference_high` au 100 | **85-95 %** de victoires, TTK 15-22 s, ≥ 30 coups portés |
+| Gardien, build `reference` + potion | **55-75 %** de victoires, TTK 13-18 s, ≥ 30 coups portés — **mesuré 100 %**, à arbitrer |
+| Gardien, build `reference_high` au 100 | **85-95 %** de victoires, TTK 15-22 s, ≥ 30 coups portés — **mesuré 100 %** (sur-stuff assumé) |
 | Gardien + potion, build `reference_high` | TTK réduit de 20-40 %, jamais < 10 s ni < 25 coups |
 | Gardien avec enrage après 25 s | sécurise les combats longs ; à renforcer si le meilleur stuff gagne encore trop souvent |
 | Build `under` | 10-25 % sur les gardiens, gagne encore des monstres |

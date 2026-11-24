@@ -19,17 +19,17 @@ Toute modification de constante doit être répercutée dans les deux fichiers, 
 ## Utilisation
 
 ```bash
-# Courbe actuelle : reproduit le mur du palier 36
-python tools/equilibrage/balance_sim.py --curve current --build player36,reference \
-  --floors 30,34,36,40 --runs 300
+# Courbe du code 0.21.0 (référence pour la calibration)
+python tools/equilibrage/balance_sim.py --curve code --build reference,reference_high,under \
+  --floors 36,50,75,100 --runs 500 --modifier auto
 
-# Courbe proposée : vérifie le déblocage du palier 36
-python tools/equilibrage/balance_sim.py --curve proposed --build player36,reference,reference_high \
-  --floors 36,50,75,100 --runs 300
+# Pitié après 3 défaites (15 %)
+python tools/equilibrage/balance_sim.py --curve code --build reference \
+  --floors 36,50,75,100 --runs 300 --modifier auto --pity 0.15
 
-# Courbe cible : TTK constant (monstre ~5 s, gardien ~18 s)
-python tools/equilibrage/balance_sim.py --curve target --build reference,reference_high \
-  --floors 36,50,75,100 --runs 300
+# Courbe cible de design (TTK constant) et courbe actuelle historique
+python tools/equilibrage/balance_sim.py --curve target --build reference --floors 36,100 --runs 300
+python tools/equilibrage/balance_sim.py --curve current --build player36 --floors 30,36 --runs 300
 
 # Courbes d’XP et de pas
 python tools/equilibrage/balance_sim.py --xp
@@ -49,7 +49,7 @@ Sur Windows, avec le venv du projet :
 | `reference_low` | 500 + 16×palier | 1 500 + 40×palier | 1,65 + 0,015×palier | Stuff faible |
 | `reference` | 650 + 20×palier | 1 800 + 55×palier | 1,80 + 0,020×palier | Stuff attendu |
 | `reference_high` | 800 + 24×palier | 2 200 + 70×palier | 1,90 + 0,022×palier | Stuff avancé |
-| `under` | 0,7×reference | 0,7×reference | — | Stuff insuffisant |
+| `under` | 0,93×reference | 0,93×reference | — | Stuff légèrement insuffisant |
 | `tank` | 0,8×reference | 1,4×reference | — | Régén + réduction |
 | `crit` | 0,9×reference | reference | — | 60 % crit |
 | `lifesteal` | 0,9×reference | 0,9×reference | — | 12 % vol de vie |
@@ -57,9 +57,9 @@ Sur Windows, avec le venv du projet :
 
 Le build `player36` est le même à tous les paliers : il sert à montrer ce qui arrive **sans progression de stuff**.
 
-## Paramètres de la courbe proposée
+## Paramètres de la courbe
 
-Tout est modifiable pour les balayages :
+La courbe `code` lit les constantes réelles de `Balance.kt` (miroir `balance_constants.py`). Les options `--pity`, `--modifier`, `--ability` et `--potion` permettent les balayages de la porte D. Pour la courbe `target`/`proposed`, les paramètres historiques restent modifiables :
 
 ```bash
 python tools/equilibrage/balance_sim.py --curve proposed --build reference,reference_high \
@@ -73,29 +73,44 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 ## Ce que le simulateur modélise
 
 - Attaques du héros : intervalle `1 / (VIT × (1 + 0,004 × ferveur))`, minimum **0,18 s** (`Target.HERO_MIN_INTERVAL_MS`, plafond VIT 4,0).
-- Dégâts : `ATQ × U(0,9–1,0)`, critique `1,6 + critDamage`, bonus gardien, bouclier.
+- Dégâts : `ATQ × U(0,9–1,1)`, critique `1,6 + critDamage`, bonus gardien, bouclier.
 - Nombre de coups portés / encaissés (pour vérifier qu’un gardien ne tombe pas en 2-3 coups).
 - Potions simulées : `--potion atk` (+40 % ATQ), `--potion crit` (+50 pts crit), `--potion mixed` (+25 % ATQ, +25 crit).
 - Attaques ennemies : intervalle, `ATQ × U(0,9–1,0)`, réduction de dégâts.
 - Ration automatique sous **40 %** des PV, soin de **45 %**, une fois par combat.
-- Régénération, vol de vie.
-- Capacité de gardien `shield` (réduction périodique) ou `slam` (dégâts périodiques).
-- Règles de biome (multiplicateurs PV/ATQ/intervalle, bonus héros).
+- Régénération de combat réelle (`0,6 % PV max/s / 3` + bonus), vol de vie.
+- **Toutes les capacités** : bouclier, frappe, souffle, drain, régénération, racines, acide, pression, rupture (dégâts, soins, vulnérabilité, VIT, ferveur).
+- **Modificateurs** : RAPIDE, BLINDÉ, BERSERK, RÉGÉNÉRANT, VOLEUR, avec le budget de menace (pas de RAPIDE/BERSERK sur une capacité lourde) et `--modifier auto`.
+- **Pitié** de gardien (`--pity 0…0,25`) appliquée aux PV et à l’ATQ.
+- Règles de biome exactes (PV/ATQ/intervalle ennemis, bonus héros ATQ/PV/VIT/crit/DR/régén/boss).
 - Trône brisé (81-100) : rampe +15 % → +35 %, gardiens +10 % PV/+5 % ATQ, boss final ×1,40 PV/×1,15 ATQ.
-- Courbe `target` dérivée du même profil que le build `reference` (ATQ 650 + 20×palier, PV 1 800 + 55×palier).
-- Élites.
-- XP et pas (`--xp`).
+- Courbe `code` : reproduit `makeMob`/`makeBoss` (courbe cible de 18 s, ATQ par capacité, bouclier, enrage, pitié, modificateurs).
+- Élites, XP et pas (`--xp`).
 
 ## Ce qu’il ne modélise pas encore
 
 - La ferveur qui décroît après 2 h.
-- Les buffs de consommables, les sets (sauf s’ils sont intégrés au build), les bénédictions.
-- Toutes les capacités de gardien (seuls `shield` et `slam` sont simulés).
+- Les buffs de consommables autres que les potions d’ATQ/crit, les sets (sauf intégrés au build), les bénédictions.
 - La simulation hors ligne, les coffres, les serments, l’économie réelle de farm.
 - Les builds extraits automatiquement d’une sauvegarde (les presets sont des hypothèses).
 - Le hasard de génération des objets (les builds sont des profils moyens).
-- La pitié de gardien (les taux affichés sont donc « sans pitié »).
-- Les valeurs par défaut de `--curve target` pour les gardiens sont encore celles de la Phase A : bouclier 40 %, enrage après 15 s (+25 %/5 s, cap 75 %), diviseur d'ATQ 16. Elles seront alignées sur les décisions du lot 5 (35 %, 25 s, +15 %/5 s, cap 60 %, diviseur 20-22, pitié) lors de la calibration des gardiens, après validation du lot 10.
+- Le vol d’or du VOLEUR (sans effet sur le combat).
+
+## Calibration 0.21.1 — courbe `code`
+
+`--curve code --modifier auto --runs 500` :
+
+| Palier | `reference` | TTK | `reference_high` | `under` |
+|---:|---:|---:|---:|---:|
+| 36 | 57 % | 18,3 s | 100 % | 37 % |
+| 50 | 44 % | 17,8 s | 100 % | 1 % |
+| 75 | 60 % | 16,3 s | 100 % | 21 % |
+| 100 | 57 % | 20,3 s | 100 % | 2 % |
+
+- `reference` tient la bande 35–65 % et 16–20 s, avec 55–110 coups portés.
+- `reference_high` gagne à 100 % : sur-stuff assumé (récompense).
+- `under` (0,93×) reste instable à cause du seuil de combat : 1–37 %.
+- Pitié 15 % et potion d’ATQ font passer `reference` à 100 % : le dosage reste à arbitrer au playtest.
 
 ## Premiers résultats (0.19.1)
 

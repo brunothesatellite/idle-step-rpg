@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.21.1
+- **Calibration des gardiens (lot 5)** : la courbe cible vise **18 s de TTK** avec le stuff attendu ; l'ATQ est calibrée par capacité (diviseurs 14,5 à 20,5 selon bouclier, souffle, pression, rupture…). Le Trône brisé et le boss final restent appliqués.
+- **Simulateur** : nouvelle courbe `code` qui reproduit `makeMob`/`makeBoss` ; pitié, modificateurs, toutes les capacités, régénération de combat et règles de biome exactes.
+- **Mesure** : `reference` 44–60 % et 16–20 s aux paliers 36/50/75/100 ; `reference_high` 100 % ; `under` 0–37 % ; pitié/potion à 100 % (à arbitrer au playtest).
+- **Tests** : **150 / 150**, lint OK.
+- **Build** : `versionCode 59`, `versionName 0.21.1`. Aucune release GitHub.
+
 ## v0.21.0
 - **Lot 10 — écran de fin enrichi** : diorama avec la vraie statue du palier 100, l'aura dorée du héros et le gardien final déchu ; dossier du héros, progression, télémétrie, gardiens 81–100, économie, équipement porté, collections et jalons.
 - **Export HTML** : rapport autonome (mêmes données, fonte pixel embarquée) enregistré via le sélecteur de fichiers Android. Correction du fuseau horaire et de la mise en page de l'équipement ; validé sur appareil.

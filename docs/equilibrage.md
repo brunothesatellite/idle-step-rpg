@@ -330,14 +330,25 @@ coût = 30 × niveau + 20 // or, +1 éclat
 ### 5.6 Gardiens
 
 - Niveau : **palier + 1** (au lieu de +2), pour coller à la cible.
-- PV : calibrés pour **18 s** de TTK avec le stuff attendu.
-- ATQ : calibrée sur l'EHP du stuff attendu, diviseur **20–22** (au lieu de 16).
+- PV : calibrés pour **18 s** de TTK avec le stuff attendu (bouclier inclus).
+- ATQ : calibrée sur l'EHP du stuff attendu, avec un diviseur **par capacité** : 14,5 (bouclier), 16 (pression), 17,5 (frappe/acide), 18 (drain/racines), 19 (souffle), 20,5 (rupture).
 - Bouclier : **35 % / 3 s / 8 s**.
 - Phase 2 à 50 % PV : **capacité télégraphiée**, sans réduction permanente de l'intervalle à 950 ms.
 - Enrage : après **25 s**, +15 % ATQ toutes les 5 s, plafond **+60 %**.
 - Pitié : **−5 % PV/ATQ du gardien par défaite**, plafond −25 %, affichée avant le combat. Alternative : +15 % dégâts héros, plafond +60 %.
 - Portail à **90 m** : arrêt, écran « Gardien devant », pronostic, choix **Engager / Farmer / Camper**, potion utilisable avant.
 - Modificateur et capacité **annoncés** avant l'engagement ; un reroll de modificateur peut être proposé au camp contre de l'or.
+
+**Mesure 0.21.1** (`balance_sim.py --curve code --modifier auto --runs 500`) :
+
+| Palier | `reference` | TTK | `reference_high` | `under` |
+|---:|---:|---:|---:|---:|
+| 36 | 57 % | 18,3 s | 100 % | 37 % |
+| 50 | 44 % | 17,8 s | 100 % | 1 % |
+| 75 | 60 % | 16,3 s | 100 % | 21 % |
+| 100 | 57 % | 20,3 s | 100 % | 2 % |
+
+Le stuff attendu reste dans la bande 35–65 % et les combats durent 16–20 s (≥ 55 coups). Le stuff avancé gagne à 100 % (récompense du sur-stuff, décision conservée) et le stuff `under` reste sous la bande à 50/100. La pitié à −15 % et la potion d'ATQ font passer `reference` à 100 % : leur dosage reste à arbitrer au playtest.
 
 ### 5.7 Fin de jeu 81–100
 

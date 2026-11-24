@@ -1,11 +1,11 @@
 # La Marche des Âmes — reste à faire
 
-> **État au 24/11/2026 — v0.21.0** (`versionCode 58`, branche `main`).
-> Les lots 1 à 10 du plan d'équilibrage sont livrés, dont l'**écran de fin enrichi** (0.21.0).
-> Reste la **calibration des gardiens** (lot 5) après alignement du simulateur.
+> **État au 24/11/2026 — v0.21.1** (`versionCode 59`, branche `main`).
+> Les lots 1 à 10 sont livrés et le **lot 5 est calibré** (courbe `code`, 18 s de TTK).
+> Reste à arbitrer la **pitié** et les **potions**, puis à playtester.
 >
 > Rappels à jour : absence = **30 % des pas du jour** (réglable 0–30 % ou 0–5 000 pas),
-> **4 min simulées** ; tests = **148 unitaires** + 7 tests UI existants ; lint OK.
+> **4 min simulées** ; tests = **150 unitaires** + 7 tests UI existants ; lint OK.
 > Équilibrage : [`plan-equilibrage.md`](plan-equilibrage.md), [`equilibrage.md`](equilibrage.md)
 > et [`validation-equilibrage.md`](validation-equilibrage.md).
 > Localisation : [`langue.md`](langue.md).
@@ -18,16 +18,15 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 
 | # | Sujet | Détail | Effort |
 |---|---|---|---|
-| 1 | **Playtest 0.21.0** | Vérifier l'écran de fin via **Aperçu de la fin** (build debug), l'export HTML, la VIT (minimum 180 ms) et le palier courant. | S |
-| 2 | **Aligner le simulateur gardiens** | Les défauts de `--curve target` décrivent encore la Phase A (bouclier 40 %, enrage 15 s, diviseur d'ATQ 16, pas de pitié ni de Trône brisé). Porte A à refaire avant toute mesure du lot 5. | S–M |
-| 3 | **Calibrer les gardiens (lot 5)** | Une fois le simulateur aligné : bandes 35–65 % (`reference`), 10–25 % (`under`), 85–95 % (`reference_high`), TTK ~18 s et ≥ 30 coups. | M–L |
-| 4 | **Publier** | Release GitHub + APK (et AAB Play si validé). La dernière release publiée est `v0.19.1` ; 0.20.0 à 0.21.0 ne sont pas publiées. | S–M |
+| 1 | **Playtest 0.21.1** | Vérifier l'écran de fin via **Aperçu de la fin** (build debug), l'export HTML, les gardiens aux paliers 36/50/75/100, la VIT et le palier courant. | S |
+| 2 | **Arbitrer pitié et potions** | La pitié à −15 % et la potion d'ATQ font passer `reference` à 100 % : doser ou accepter « potion = victoire fiable ». | M |
+| 3 | **Publier** | Release GitHub + APK (et AAB Play si validé). La dernière release publiée est `v0.19.1` ; 0.20.0 à 0.21.1 ne sont pas publiées. | S–M |
 
 ---
 
 ## 2. Équilibrage
 
-### Livré — lots 1 à 10 (0.20.1 → 0.21.0)
+### Livré — lots 1 à 10 (0.20.1 → 0.21.0), lot 5 calibré (0.21.1)
 
 - **XP** : `1,09^niveau`, récompenses linéaires par palier, rattrapage ×1,25.
 - **Objets** : butin ×1 à ×6, raretés cibles, upgrades additifs +4 % (20 niveaux max), caps VIT/effets, fusion 90 %.
@@ -42,8 +41,8 @@ Légende effort : **S** < 1 h · **M** 1–3 h · **L** 3–8 h · **XL** plusie
 
 ### Reste
 
-- **Porte A** : le simulateur ne décrit pas encore fidèlement les gardiens actuels. Ses valeurs par défaut pour `--curve target` sont celles de la Phase A (bouclier 40 %, enrage après 15 s à +25 %/5 s, diviseur d'ATQ 16), sans pitié ni multiplicateurs du Trône brisé. Les chiffres de gardiens produits aujourd'hui ne servent pas de référence.
-- **Porte D** : calibration des gardiens. Cible : `reference` 35–65 %, `under` 10–25 %, `reference_high` 85–95 % aux paliers 36/50/75/100 ; aucun gardien gagné en < 10 s ou < 30 coups ; pitié visible et progressive.
+- **Porte A** : franchie. La courbe `code` reproduit `makeMob`/`makeBoss` (biome, bouclier, enrage, pitié, capacités, modificateurs, Trône brisé).
+- **Porte D** : `reference` 44–60 % et TTK 16–20 s aux paliers 36/50/75/100. Écarts connus : `under` 0–37 %, `reference_high` 100 % (sur-stuff assumé), pitié 15 % et potion d'ATQ à 100 %. Ces deux derniers points sont à arbitrer au playtest.
 - **Portes E/F** : playtest 7 jours (Phase A), puis 14 jours (Phase B) avec journal quotidien.
 - Aucune famine ni dead-end : vérifier depuis 0 ration/0 éclat sur plusieurs jours.
 
@@ -131,7 +130,7 @@ Restant :
 | Sauvegarde | Export/import + aperçu + `.bak` ; rotation horodatée à ajouter. | M |
 | Accessibilité | Audit TalkBack, contrastes, focus, taille 200 %. | L |
 | Grands écrans | Pas de layout tablette/paysage. | L |
-| Play Store | Kit EN prêt ; AAB 0.21.0 et captures FR à faire. | M |
+| Play Store | Kit EN prêt ; AAB 0.21.1 et captures FR à faire. | M |
 | Mise à jour in-app | Livrée ; vérification périodique en arrière-plan à ajouter. | S |
 
 ---
@@ -140,14 +139,14 @@ Restant :
 
 | Sujet | État |
 |---|---|
-| README bilingue | À jour (0.21.0, FR puis EN) |
+| README bilingue | À jour (0.21.1, FR puis EN) |
 | Manuel FR/EN | Généré au build, en ligne 0.20.0 |
 | `langue.md` | État i18n finalisé |
-| `plan-equilibrage.md` | Lots 0-10 livrés ; calibration gardiens à faire |
+| `plan-equilibrage.md` | Lots 0-10 livrés ; lot 5 calibré |
 | `equilibrage.md` | Analyse + cibles 1 → 100 (base 0.20.9) |
 | `validation-equilibrage.md` | Plan de validation et portes A–F |
 | `ecran-fin-v2.html` | Base visuelle validée du lot 10 (implémentée en 0.21.0) |
-| `CHANGELOG.md` | v0.21.0 ajouté |
+| `CHANGELOG.md` | v0.21.1 ajouté |
 | Spécification vs écarts | À resynchroniser |
 | Guide de récupération | À compléter (clé perdue, téléphone changé, sauvegarde corrompue) |
 
@@ -155,10 +154,9 @@ Restant :
 
 ## 8. Ordre recommandé
 
-1. **Playtest 0.21.0** : aperçu de la fin, export HTML, VIT et palier courant.
-2. **Aligner le simulateur** sur les gardiens réels (porte A).
-3. **Calibrer les gardiens** (lot 5, porte D) et vérifier les bandes.
-4. **Publier** (GitHub + AAB Play) si validé.
+1. **Playtest 0.21.1** : écran de fin, export HTML, gardiens 36/50/75/100.
+2. **Arbitrer** la pitié et la potion d'ATQ (aujourd'hui victoire à 100 %).
+3. **Publier** (GitHub + AAB Play) si validé.
 5. **Playtests 7 puis 14 jours** (portes E/F).
 6. **Qualité** : tests UI, R8, Gradle/JDK, perf, accessibilité.
 7. **Backlog produit** : inventaire, combat, endgame, tutoriel.
@@ -174,6 +172,6 @@ Restant :
 - L'app reste utilisable hors ligne et sans clé Garmin.
 - Aucune notification si l'utilisateur les a désactivées.
 - Aucune régression des données lors d'une mise à jour d'APK.
-- Tests verts (**148 unitaires**, 7 UI existants) et lint OK avant chaque release.
+- Tests verts (**150 unitaires**, 7 UI existants) et lint OK avant chaque release.
 - FR et EN restent cohérents : aucune chaîne française résiduelle en mode EN.
 - Un gardien ne doit jamais tomber en 2-3 coups ; les potions accélèrent sans garantir la victoire.

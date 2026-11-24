@@ -197,7 +197,7 @@ Le lot 5 (gardiens) doit être calibré **en dernier**, après XP, objets et rat
 
 ### Lot 5 — Gardiens, pitié, portail
 
-**Statut : livré en 0.20.5.** Niveau +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −5 %/défaite, portail à 90 m.
+**Statut : livré en 0.20.5, calibré en 0.21.1.** Niveau +1, bouclier 35 %/3 s/8 s, phase 2 télégraphiée, enrage 25 s, pitié −5 %/défaite, portail à 90 m. Courbe des gardiens recalculée sur **18 s de TTK** et une ATQ par capacité (diviseurs 14,5–20,5) ; mesure de la porte D dans [`equilibrage.md`](equilibrage.md) §5.6.
 
 **Objectif** : supprimer le seuil 0/100 et rendre le combat lisible.
 
@@ -387,7 +387,7 @@ Tests unitaires à ajouter :
 10. ~~Lot 8 - biomes et modificateurs.~~ **Livré en 0.20.8.**
 11. ~~Lot 9 - fin de jeu et télémétrie.~~ **Livré en 0.20.9.**
 12. ~~Lot 10 - écran de fin enrichi, export des stats.~~ **Livré en 0.21.0.** Base visuelle validée : [ecran-fin-v2.html](ecran-fin-v2.html) (statue réelle, aura dorée, fonte pixel). L'ancienne proposition reste dans [ecran-fin.html](ecran-fin.html).
-13. Aligner le simulateur sur les mécaniques réelles des gardiens (bouclier 35 %, enrage 25 s, pitié, Trône brisé) **avant** toute calibration, puis calibrer le lot 5.
+13. ~~Aligner le simulateur sur les mécaniques réelles des gardiens, puis calibrer le lot 5.~~ **Fait en 0.21.1** : courbe `code`, pitié, modificateurs, capacités, régénération ; gardiens recalibrés.
 14. Playtest 7 jours, puis 14 jours.
 
-**Lots 0 à 10 livrés. Reste : porte A gardiens, calibration du lot 5, puis playtests.**
+**Lots 0 à 10 livrés et lot 5 calibré. Reste : playtests et arbitrage pitié/potions.**

@@ -173,6 +173,19 @@ object Balance {
         const val SHIELD_DURATION_MS = 3_000.0
         const val SHIELD_PERIOD_MS = 8_000.0
         const val BOSS_ABILITY_INTERVAL_MS = 7_000.0
+        /** TTK visé pour un gardien avec le stuff de référence. */
+        const val BOSS_TARGET_TTK = 18.0
+        /** Diviseurs d'ATQ par capacité : plus la capacité frappe fort, plus le diviseur est grand. */
+        const val BOSS_DIV_SHIELD = 14.5
+        const val BOSS_DIV_BREATH = 19.0
+        const val BOSS_DIV_PRESSURE = 16.0
+        const val BOSS_DIV_RUPTURE = 20.5
+        const val BOSS_DIV_SLAM = 17.5
+        const val BOSS_DIV_DRAIN = 18.0
+        const val BOSS_DIV_ROOTS = 18.0
+        const val BOSS_DIV_ACID = 17.5
+        const val BOSS_DIV_REGEN = 17.0
+        const val BOSS_DIV_DEFAULT = 18.0
         const val GATE_METERS = 90.0
         const val BOSS_ENRAGE_AFTER_MS = 25_000.0
         const val BOSS_ENRAGE_STEP = 0.15
