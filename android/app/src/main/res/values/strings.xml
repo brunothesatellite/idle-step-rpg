@@ -323,7 +323,10 @@
     <string name="dashboard_no_fusable">Aucun objet fusionnable.</string>
     <string name="dashboard_no_filtered_items">Aucun objet dans ce filtre.</string>
     <string name="dashboard_camp_stash">Coffre de camp</string>
-    <string name="dashboard_stash_count">%1$d objet(s) en réserve · inventaire plein</string>
+    <string name="dashboard_stash_count">%1$d objet(s) en réserve</string>
+    <string name="dashboard_stash_slots">%1$d place(s) libre(s) / %2$d</string>
+    <string name="dashboard_stash_full_hint">Inventaire plein : prends, vends ou démonte un objet d\'abord.</string>
+    <string name="dashboard_take_all_blocked">Il manque %1$d place(s) pour tout prendre.</string>
     <string name="dashboard_close">FERMER</string>
     <string name="dashboard_view">VOIR</string>
     <string name="dashboard_mysterious_item">Objet mystérieux</string>
@@ -866,6 +869,7 @@
     <string name="overlay_free">GRATUIT</string>
     <string name="overlay_camp_stash">Coffre de camp</string>
     <string name="overlay_camp_stash_desc">Récupérer les objets en réserve</string>
+    <string name="overlay_camp_stash_desc_full">Pas assez de place pour tout récupérer</string>
     <string name="overlay_resume_expedition">REPRENDRE L\'EXPÉDITION</string>
     <string name="overlay_camp_quote">« La défaite n\'est qu\'un détour. Vingt mètres en arrière, l\'or coule encore. »</string>
     <string name="overlay_journal">JOURNAL</string>
@@ -956,6 +960,10 @@
     <string name="overlay_locked_suffix"> · VERROUILLÉ</string>
     <string name="overlay_set_line">%1$s · équipé %2$d/6 · collection %3$d/6</string>
     <string name="overlay_sell">VENDRE +%1$s or</string>
+    <string name="overlay_send_to_stash">Envoyer au coffre</string>
+    <string name="overlay_stash_mysterious">Objet mystérieux : reprends-le dans l\'inventaire pour l\'identifier.</string>
+    <string name="overlay_stash_locked_hint">Objet verrouillé : la vente et le démontage sont désactivés.</string>
+    <string name="overlay_dismantle_gain">DÉMONTER · +%1$d</string>
     <string name="overlay_after_level">Après +1 niv.</string>
     <string name="overlay_hero_stats">Héros · ATQ %1$s → %2$s · PV %3$s → %4$s</string>
     <string name="overlay_this_item">Cet objet</string>
@@ -1180,6 +1188,9 @@
     <string name="toast_fuse_requirements">Il faut 3 objets du même emplacement et de même rareté.</string>
     <string name="toast_stash_taken">%1$d objet(s) récupéré(s).</string>
     <string name="toast_stash_full_empty">Inventaire plein ou coffre vide.</string>
+    <string name="toast_stash_no_room">Pas assez de place pour tout prendre.</string>
+    <string name="toast_sent_to_stash">%1$s envoyé au coffre.</string>
+    <string name="toast_stash_failed">Impossible d\'envoyer cet objet au coffre.</string>
     <string name="toast_item_taken">%1$s récupéré.</string>
     <string name="toast_inventory_full">Inventaire plein.</string>
     <string name="toast_identified">Objet identifié.</string>

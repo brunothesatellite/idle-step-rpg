@@ -49,6 +49,7 @@ import com.brunothesatellite.idlesteprpg.UiState
 import com.brunothesatellite.idlesteprpg.R
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
 import com.brunothesatellite.idlesteprpg.engine.Balance
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
@@ -92,6 +93,7 @@ fun Dashboard(
     onEquipBest: () -> Unit,
     onWithdrawStash: () -> Unit,
     onWithdrawStashItem: (Item) -> Unit,
+    onSelectStashItem: (Item) -> Unit,
     onUseConsumable: (String) -> Unit,
     onToggleFarm: (Boolean) -> Unit,
     onOpenCodex: () -> Unit,
@@ -125,6 +127,7 @@ fun Dashboard(
                     onEquipBest,
                     onWithdrawStash,
                     onWithdrawStashItem,
+                    onSelectStashItem,
                     onUseConsumable
                 )
                 "upgrades" -> UpgradesTab(state, ui, onBuyUpgrade, onOpenSettings)
@@ -908,6 +911,7 @@ private fun InventoryTab(
     onEquipBest: () -> Unit,
     onWithdrawStash: () -> Unit,
     onWithdrawStashItem: (Item) -> Unit,
+    onSelectStashItem: (Item) -> Unit,
     onUseConsumable: (String) -> Unit
 ) {
     var sort by rememberSaveable { mutableStateOf("score") }
@@ -916,6 +920,7 @@ private fun InventoryTab(
     var stashOpen by remember { mutableStateOf(false) }
     var invSection by rememberSaveable { mutableStateOf("gear") }
     val consumableCount = state.consumables.values.sum()
+    val freeSlots = GameEngine.freeInventorySlots(state)
     val emptySlot = stringResource(R.string.dashboard_empty_slot)
     val filtered = state.inventory
         .filter { slotFilter == "all" || it.slot == slotFilter }
@@ -1066,6 +1071,11 @@ private fun InventoryTab(
                         fontSize = 6.5.sp,
                         color = Muted
                     )
+                    Text(
+                        stringResource(R.string.dashboard_stash_slots, freeSlots, INVENTORY_CAP),
+                        fontSize = 5.8.sp,
+                        color = if (freeSlots == 0) Ember else Muted2
+                    )
                 }
                 Spacer(Modifier.width(6.dp))
                 SmallAction(
@@ -1078,7 +1088,10 @@ private fun InventoryTab(
                 Spacer(Modifier.height(6.dp))
                 state.stash.forEach { item ->
                     Row(
-                        Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelectStashItem(item) }
+                            .padding(vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         AssetIcon(item.icon, 18.dp)
@@ -1100,12 +1113,37 @@ private fun InventoryTab(
                         SmallAction(
                             stringResource(R.string.dashboard_take),
                             Modifier.width(74.dp),
-                            onClick = { onWithdrawStashItem(item) }
+                            onClick = { onWithdrawStashItem(item) },
+                            enabled = freeSlots > 0
                         )
                     }
                 }
+                if (freeSlots == 0) {
+                    Text(
+                        stringResource(R.string.dashboard_stash_full_hint),
+                        modifier = Modifier.fillMaxWidth().padding(top = 3.dp),
+                        fontSize = 5.8.sp,
+                        color = Ember,
+                        textAlign = TextAlign.Center
+                    )
+                }
                 Spacer(Modifier.height(4.dp))
-                SmallAction(stringResource(R.string.dashboard_take_all), Modifier.fillMaxWidth(), onWithdrawStash, primary = true)
+                SmallAction(
+                    stringResource(R.string.dashboard_take_all),
+                    Modifier.fillMaxWidth(),
+                    onWithdrawStash,
+                    primary = true,
+                    enabled = state.stash.size <= freeSlots
+                )
+                if (state.stash.size > freeSlots) {
+                    Text(
+                        stringResource(R.string.dashboard_take_all_blocked, state.stash.size - freeSlots),
+                        modifier = Modifier.fillMaxWidth().padding(top = 3.dp),
+                        fontSize = 5.8.sp,
+                        color = Ember,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
         Spacer(Modifier.height(5.dp))

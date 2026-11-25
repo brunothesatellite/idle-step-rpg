@@ -1984,6 +1984,24 @@ object GameEngine {
         return true
     }
 
+    fun sellStashItem(state: GameState, itemId: String): Boolean {
+        val item = state.stash.firstOrNull { it.id == itemId } ?: return false
+        if (item.locked) return false
+        state.stash = state.stash.filter { it.id != itemId }
+        state.gold += item.value
+        state.journal = addJournal(state, "${item.name} vendu du coffre (+${item.value} or)", "neutral")
+        return true
+    }
+
+    fun sendToStash(state: GameState, itemId: String): Boolean {
+        val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
+        if (item.locked) return false
+        state.inventory = state.inventory.filter { it.id != itemId }
+        state.stash = state.stash + item
+        state.journal = addJournal(state, "${itemDisplayName(item)} déplacé au coffre", "neutral")
+        return true
+    }
+
     fun sellCommons(state: GameState): Int {
         val commons = state.inventory.filter { it.rarity == "common" && !it.locked }
         if (commons.isEmpty()) return 0
@@ -2004,6 +2022,9 @@ object GameEngine {
         )
         return updated.locked
     }
+
+    fun freeInventorySlots(state: GameState): Int =
+        (INVENTORY_CAP - state.inventory.size).coerceAtLeast(0)
 
     fun withdrawStashItem(state: GameState, itemId: String): Boolean {
         val item = state.stash.firstOrNull { it.id == itemId } ?: return false
@@ -2134,17 +2155,34 @@ object GameEngine {
     fun dismantleItem(state: GameState, itemId: String): Int {
         val item = state.inventory.firstOrNull { it.id == itemId } ?: return 0
         if (item.locked) return 0
-        val shards = when (item.rarity) {
-            "uncommon" -> 2
-            "rare" -> 3
-            "epic" -> 6
-            "legendary" -> 10
-            else -> 1
-        }
+        val shards = salvageShards(item.rarity)
+        val before = state.shards
         state.inventory = state.inventory.filter { it.id != itemId }
         state.shards = min(MAX_SHARDS, state.shards + shards)
-        state.journal = addJournal(state, "${item.name} démonté · +$shards éclat(s)", "neutral")
-        return shards
+        val gained = state.shards - before
+        state.journal = addJournal(state, "${item.name} démonté · +$gained éclat(s)", "neutral")
+        return gained
+    }
+
+    fun dismantleStashItem(state: GameState, itemId: String): Int {
+        val item = state.stash.firstOrNull { it.id == itemId } ?: return 0
+        if (item.locked) return 0
+        val shards = salvageShards(item.rarity)
+        val before = state.shards
+        state.stash = state.stash.filter { it.id != itemId }
+        state.shards = min(MAX_SHARDS, state.shards + shards)
+        val gained = state.shards - before
+        state.journal = addJournal(state, "${item.name} démonté du coffre · +$gained éclat(s)", "neutral")
+        return gained
+    }
+
+    /** Éclats rendus par le démontage, partagés par l'interface et le moteur. */
+    fun salvageShards(rarity: String): Int = when (rarity) {
+        "uncommon" -> 2
+        "rare" -> 3
+        "epic" -> 6
+        "legendary" -> 10
+        else -> 1
     }
 
     /** Objets éligibles à la fusion : même emplacement, même rareté, non verrouillés et identifiés. */
@@ -2240,15 +2278,11 @@ object GameEngine {
     }
 
     fun withdrawStash(state: GameState): Int {
-        var moved = 0
-        while (state.stash.isNotEmpty() && state.inventory.size < INVENTORY_CAP) {
-            state.inventory = state.inventory + state.stash.first()
-            state.stash = state.stash.drop(1)
-            moved++
-        }
-        if (moved > 0) {
-            state.journal = addJournal(state, "$moved objet(s) repris au coffre de camp", "neutral")
-        }
+        if (state.stash.isEmpty() || state.stash.size > freeInventorySlots(state)) return 0
+        val moved = state.stash.size
+        state.inventory = state.inventory + state.stash
+        state.stash = emptyList()
+        state.journal = addJournal(state, "$moved objet(s) repris au coffre de camp", "neutral")
         return moved
     }
 

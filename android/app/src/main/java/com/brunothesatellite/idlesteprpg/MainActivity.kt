@@ -52,6 +52,7 @@ import com.brunothesatellite.idlesteprpg.ui.GuardianGateDialog
 import com.brunothesatellite.idlesteprpg.ui.ImportPreviewDialog
 import com.brunothesatellite.idlesteprpg.ui.Ink
 import com.brunothesatellite.idlesteprpg.ui.ItemDialog
+import com.brunothesatellite.idlesteprpg.ui.StashItemDialog
 import com.brunothesatellite.idlesteprpg.ui.JournalOverlay
 import com.brunothesatellite.idlesteprpg.ui.MarcheTheme
 import com.brunothesatellite.idlesteprpg.ui.OfflineOverlay
@@ -232,6 +233,7 @@ private fun GameRoot(vm: GameViewModel) {
                             onEquipBest = vm::equipBest,
                             onWithdrawStash = vm::withdrawStash,
                             onWithdrawStashItem = vm::withdrawStashItem,
+                            onSelectStashItem = vm::selectStashItem,
                             onUseConsumable = vm::useConsumable,
                             onToggleFarm = vm::setHoldFloor,
                             onOpenCodex = vm::openCodex,
@@ -277,6 +279,7 @@ private fun GameRoot(vm: GameViewModel) {
                             onEquipBest = vm::equipBest,
                             onWithdrawStash = vm::withdrawStash,
                             onWithdrawStashItem = vm::withdrawStashItem,
+                            onSelectStashItem = vm::selectStashItem,
                             onUseConsumable = vm::useConsumable,
                             onToggleFarm = vm::setHoldFloor,
                             onOpenCodex = vm::openCodex,
@@ -328,7 +331,7 @@ private fun GameRoot(vm: GameViewModel) {
             if (state.mode == "gate" && state.pendingBoss != null &&
                 !ui.campOpen && !ui.settingsOpen && !ui.prefsOpen &&
                 !ui.codexOpen && !ui.journalOpen && !ui.chestOpen &&
-                ui.selectedItem == null && !state.endingPending && !ui.endingPreview
+                ui.selectedItem == null && ui.selectedStashItem == null && !state.endingPending && !ui.endingPreview
             ) {
                 GuardianGateDialog(
                     state = state,
@@ -367,7 +370,18 @@ private fun GameRoot(vm: GameViewModel) {
                     onIdentify = { vm.identifyItem(item) },
                     onReroll = { vm.rerollEffect(item) },
                     onUpgrade = { vm.upgradeItem(item) },
-                    onDismantle = { vm.dismantleItem(item) }
+                    onDismantle = { vm.dismantleItem(item) },
+                    onSendToStash = { vm.sendToStash(item) }
+                )
+            }
+            ui.selectedStashItem?.let { item ->
+                StashItemDialog(
+                    item = item,
+                    state = state,
+                    onDismiss = vm::dismissStashItem,
+                    onTake = { vm.withdrawStashItem(item) },
+                    onSell = { vm.sellStashItem(item) },
+                    onDismantle = { vm.dismantleStashItem(item) }
                 )
             }
             if (ui.journalOpen) {

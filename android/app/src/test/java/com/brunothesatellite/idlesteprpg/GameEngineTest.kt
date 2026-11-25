@@ -1542,6 +1542,72 @@ class GameEngineTest {
     }
 
     @Test
+    fun sendToStashRequiresUnlockedInventoryItem() {
+        val state = GameState()
+        val item = Item("stash_me", "Objet", "weapon", "rare", "item/mace2.png", 1, value = 30)
+        state.inventory = listOf(item)
+        assertTrue(GameEngine.sendToStash(state, item.id))
+        assertTrue(state.inventory.isEmpty())
+        assertEquals(1, state.stash.size)
+
+        val locked = item.copy(id = "stash_locked", locked = true)
+        state.inventory = listOf(locked)
+        assertEquals(false, GameEngine.sendToStash(state, locked.id))
+        assertEquals(1, state.inventory.size)
+
+        val equipped = item.copy(id = "stash_equipped")
+        state.inventory = emptyList()
+        state.equipment = state.equipment + equipped
+        assertEquals(false, GameEngine.sendToStash(state, equipped.id))
+    }
+
+    @Test
+    fun takeAllStashRequiresRoomForEverything() {
+        val state = GameState()
+        state.inventory = (1..22).map {
+            Item("fill_$it", "Objet $it", "talisman", "common", "item/ring-regen.png", 1, value = 1)
+        }
+        state.stash = (1..3).map {
+            Item("stash_$it", "Réserve $it", "talisman", "rare", "item/ring-regen.png", 1, value = 20)
+        }
+        assertEquals(0, GameEngine.withdrawStash(state))
+        assertEquals(22, state.inventory.size)
+        assertEquals(3, state.stash.size)
+
+        state.inventory = state.inventory.take(21)
+        assertEquals(3, GameEngine.withdrawStash(state))
+        assertEquals(24, state.inventory.size)
+        assertTrue(state.stash.isEmpty())
+    }
+
+    @Test
+    fun stashItemsCanBeSoldOrDismantled() {
+        val state = GameState()
+        state.gold = 0
+        state.shards = 0
+        state.stash = listOf(
+            Item("sold", "Vendu", "weapon", "rare", "item/mace2.png", 1, value = 50),
+            Item("locked", "Verrouillé", "weapon", "rare", "item/mace2.png", 1, value = 60, locked = true),
+            Item("epic", "Épique", "weapon", "epic", "item/mace2.png", 1, value = 70)
+        )
+        assertTrue(GameEngine.sellStashItem(state, "sold"))
+        assertEquals(50, state.gold)
+        assertEquals(false, GameEngine.sellStashItem(state, "locked"))
+        assertEquals(0, GameEngine.dismantleStashItem(state, "locked"))
+        assertEquals(6, GameEngine.dismantleStashItem(state, "epic"))
+        assertEquals(6, state.shards)
+    }
+
+    @Test
+    fun salvageShardsMatchRarity() {
+        assertEquals(1, GameEngine.salvageShards("common"))
+        assertEquals(2, GameEngine.salvageShards("uncommon"))
+        assertEquals(3, GameEngine.salvageShards("rare"))
+        assertEquals(6, GameEngine.salvageShards("epic"))
+        assertEquals(10, GameEngine.salvageShards("legendary"))
+    }
+
+    @Test
     fun lockedItemsAreNeverDisplaced() {
         val state = GameState()
         state.inventory = (1..24).map {

@@ -71,6 +71,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -89,6 +90,7 @@ import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.ITEM_EFFECTS
+import com.brunothesatellite.idlesteprpg.engine.INVENTORY_CAP
 import com.brunothesatellite.idlesteprpg.engine.MAX_SHARDS
 import com.brunothesatellite.idlesteprpg.engine.Item
 import com.brunothesatellite.idlesteprpg.engine.JournalEntry
@@ -122,6 +124,8 @@ private enum class ForgeMode { UPGRADE, REFORGE }
 
 private enum class ItemConfirm { SELL, SALVAGE, REFORGE }
 
+private enum class StashConfirm { SELL, DISMANTLE }
+
 private data class UpgradeSnapshot(
     val fromLevel: Int,
     val fromAtk: Int,
@@ -130,6 +134,23 @@ private data class UpgradeSnapshot(
     val toAtk: Int,
     val toHp: Int
 )
+
+@Composable
+private fun StashIconButton(enabled: Boolean, onClick: () -> Unit) {
+    val description = stringResource(R.string.overlay_send_to_stash)
+    Box(
+        Modifier
+            .size(28.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(if (enabled) Panel2 else Panel2.copy(alpha = 0.35f))
+            .border(1.dp, if (enabled) Gold.copy(alpha = 0.5f) else Line, RoundedCornerShape(4.dp))
+            .clickable(enabled = enabled, onClick = onClick)
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center
+    ) {
+        AssetIcon("item/misc_box.png", 18.dp)
+    }
+}
 
 @Composable
 fun ItemDialog(
@@ -143,7 +164,8 @@ fun ItemDialog(
     onIdentify: () -> Unit,
     onReroll: () -> Unit,
     onUpgrade: () -> Unit,
-    onDismantle: () -> Unit
+    onDismantle: () -> Unit,
+    onSendToStash: () -> Unit
 ) {
     val equippedItem = equipped(state, item.slot)
     val equippedHere = state.equipment.any { it.id == item.id }
@@ -173,13 +195,7 @@ fun ItemDialog(
     var lastUpgrade by remember(item.id) { mutableStateOf<UpgradeSnapshot?>(null) }
     var lastReforgeOld by remember(item.id) { mutableStateOf<String?>(null) }
     var confirmAction by remember(item.id) { mutableStateOf<ItemConfirm?>(null) }
-    val salvageBase = when (item.rarity) {
-        "uncommon" -> 2
-        "rare" -> 3
-        "epic" -> 5
-        "legendary" -> 8
-        else -> 1
-    }
+    val salvageBase = GameEngine.salvageShards(item.rarity)
     val salvageGain = (state.shards + salvageBase).coerceAtMost(MAX_SHARDS) - state.shards
     AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
@@ -241,6 +257,13 @@ fun ItemDialog(
                                 color = Blue
                             )
                         }
+                    }
+                    if (!equippedHere) {
+                        StashIconButton(
+                            enabled = !item.locked,
+                            onClick = onSendToStash
+                        )
+                        Spacer(Modifier.width(4.dp))
                     }
                     CloseButton(onDismiss, size = 28.dp, bordered = false)
                 }
@@ -526,6 +549,239 @@ fun ItemDialog(
                                 }
                             ),
                             color = if (pending == ItemConfirm.REFORGE) Gold else Blood
+                        )
+                    }
+                }
+            },
+            dismissButton = {
+                WithAppFontScale {
+                    TextButton(onClick = { confirmAction = null }) {
+                        Text(stringResource(R.string.overlay_cancel), color = Muted)
+                    }
+                }
+            },
+            containerColor = Panel2
+        )
+    }
+}
+
+@Composable
+fun StashItemDialog(
+    item: Item,
+    state: GameState,
+    onDismiss: () -> Unit,
+    onTake: () -> Unit,
+    onSell: () -> Unit,
+    onDismantle: () -> Unit
+) {
+    val equippedItem = equipped(state, item.slot)
+    val freeSlots = GameEngine.freeInventorySlots(state)
+    val canTake = freeSlots > 0
+    val shards = GameEngine.salvageShards(item.rarity)
+    val salvageGain = (state.shards + shards).coerceAtMost(MAX_SHARDS) - state.shards
+    var confirmAction by remember(item.id) { mutableStateOf<StashConfirm?>(null) }
+
+    AppDialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Brush.verticalGradient(listOf(Color(0xFF241930), Color(0xFF130E1C))))
+                    .border(1.dp, Gold.copy(alpha = 0.7f), RoundedCornerShape(12.dp))
+                    .padding(14.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        Modifier
+                            .size(50.dp)
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(Panel2)
+                            .border(1.dp, rarityColor(item.rarity), RoundedCornerShape(5.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AssetImage(item.icon, Modifier.size(36.dp))
+                    }
+                    Spacer(Modifier.width(9.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            if (item.identified) rarityLabelRes(item.rarity) else stringResource(R.string.overlay_unidentified_tag),
+                            fontSize = 5.5.sp,
+                            letterSpacing = 1.sp,
+                            color = if (item.identified) rarityColor(item.rarity) else Ember
+                        )
+                        Text(
+                            if (item.identified) localizedItem(item) else stringResource(R.string.overlay_mysterious_item),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Parchment
+                        )
+                        Text(
+                            stringResource(
+                                R.string.overlay_slot_level,
+                                slotLabelRes(item.slot),
+                                item.level
+                            ) + if (item.locked) stringResource(R.string.overlay_locked_suffix) else "",
+                            fontSize = 7.sp,
+                            color = if (item.locked) Ember else Muted
+                        )
+                        Text(
+                            stringResource(R.string.overlay_gold_value, formatCompact(item.value)),
+                            fontSize = 6.5.sp,
+                            color = Gold
+                        )
+                    }
+                    CloseButton(onDismiss, size = 28.dp, bordered = false)
+                }
+                Spacer(Modifier.height(8.dp))
+                DividerLine()
+                Spacer(Modifier.height(6.dp))
+
+                if (!item.identified) {
+                    Text(
+                        stringResource(R.string.overlay_stash_mysterious),
+                        fontSize = 7.sp,
+                        color = Muted,
+                        lineHeight = 10.sp
+                    )
+                } else {
+                    ItemCompareTable(
+                        leftTitle = stringResource(R.string.overlay_equipped_lower),
+                        rightTitle = stringResource(R.string.overlay_this_item),
+                        left = equippedItem,
+                        right = item
+                    )
+                    if (item.effect.isNotBlank()) {
+                        Spacer(Modifier.height(5.dp))
+                        Text(
+                            effectLabelRes(item.effect),
+                            fontSize = 6.sp,
+                            color = Legendary
+                        )
+                        Text(
+                            effectDescRes(item.effect),
+                            fontSize = 6.3.sp,
+                            color = Parchment.copy(alpha = 0.8f)
+                        )
+                    }
+                    if (item.setName.isNotBlank()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            setLabelRes(item.setName),
+                            fontSize = 6.sp,
+                            color = Blue
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.dashboard_stash_slots, freeSlots, INVENTORY_CAP),
+                    fontSize = 6.3.sp,
+                    color = if (canTake) Muted else Ember
+                )
+                if (!canTake) {
+                    Text(
+                        stringResource(R.string.dashboard_stash_full_hint),
+                        fontSize = 6.sp,
+                        color = Ember,
+                        lineHeight = 9.sp
+                    )
+                }
+                if (item.locked) {
+                    Text(
+                        stringResource(R.string.overlay_stash_locked_hint),
+                        fontSize = 6.sp,
+                        color = Ember,
+                        lineHeight = 9.sp
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OverlayAction(
+                        stringResource(R.string.dashboard_take),
+                        Modifier.weight(1f),
+                        onTake,
+                        primary = true,
+                        enabled = canTake
+                    )
+                    OverlayAction(
+                        if (item.locked) stringResource(R.string.overlay_locked)
+                        else stringResource(R.string.overlay_sell, formatCompact(item.value)),
+                        Modifier.weight(1.25f),
+                        { confirmAction = StashConfirm.SELL },
+                        enabled = !item.locked
+                    )
+                }
+                if (item.identified) {
+                    Spacer(Modifier.height(5.dp))
+                    OverlayAction(
+                        stringResource(R.string.overlay_dismantle_gain, salvageGain),
+                        Modifier.fillMaxWidth(),
+                        { confirmAction = StashConfirm.DISMANTLE },
+                        danger = true,
+                        enabled = !item.locked
+                    )
+                }
+            }
+        }
+    }
+
+    val pending = confirmAction
+    if (pending != null) {
+        AlertDialog(
+            onDismissRequest = { confirmAction = null },
+            title = {
+                WithAppFontScale {
+                    Text(
+                        stringResource(
+                            when (pending) {
+                                StashConfirm.SELL -> R.string.overlay_confirm_sell_title
+                                StashConfirm.DISMANTLE -> R.string.overlay_confirm_salvage_title
+                            }
+                        ),
+                        fontSize = 15.sp
+                    )
+                }
+            },
+            text = {
+                WithAppFontScale {
+                    Text(
+                        when (pending) {
+                            StashConfirm.SELL -> stringResource(
+                                R.string.overlay_confirm_sell_text,
+                                localizedItem(item),
+                                formatCompact(item.value)
+                            )
+                            StashConfirm.DISMANTLE -> stringResource(
+                                R.string.overlay_confirm_salvage_text,
+                                localizedItem(item),
+                                salvageGain
+                            )
+                        },
+                        fontSize = 9.sp
+                    )
+                }
+            },
+            confirmButton = {
+                WithAppFontScale {
+                    TextButton(onClick = {
+                        confirmAction = null
+                        when (pending) {
+                            StashConfirm.SELL -> onSell()
+                            StashConfirm.DISMANTLE -> onDismantle()
+                        }
+                    }) {
+                        Text(
+                            stringResource(
+                                when (pending) {
+                                    StashConfirm.SELL -> R.string.overlay_confirm_sell
+                                    StashConfirm.DISMANTLE -> R.string.overlay_salvage
+                                }
+                            ),
+                            color = Blood
                         )
                     }
                 }
@@ -1656,12 +1912,16 @@ fun CampOverlay(
             )
             if (state.stash.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
+                val canTakeAll = state.stash.size <= GameEngine.freeInventorySlots(state)
                 CampAction(
                     stringResource(R.string.overlay_camp_stash),
-                    stringResource(R.string.overlay_camp_stash_desc),
+                    stringResource(
+                        if (canTakeAll) R.string.overlay_camp_stash_desc
+                        else R.string.overlay_camp_stash_desc_full
+                    ),
                     "item/misc_crystal.png",
                     state.stash.size.toString(),
-                    enabled = state.inventory.size < 24,
+                    enabled = canTakeAll,
                     onClick = onWithdrawStash
                 )
             }

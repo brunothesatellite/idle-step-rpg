@@ -321,7 +321,10 @@
     <string name="dashboard_no_fusable">No fusable item.</string>
     <string name="dashboard_no_filtered_items">No item in this filter.</string>
     <string name="dashboard_camp_stash">Camp stash</string>
-    <string name="dashboard_stash_count">%1$d item(s) in stash · inventory full</string>
+    <string name="dashboard_stash_count">%1$d item(s) in stash</string>
+    <string name="dashboard_stash_slots">%1$d free slot(s) / %2$d</string>
+    <string name="dashboard_stash_full_hint">Inventory full: take, sell or dismantle an item first.</string>
+    <string name="dashboard_take_all_blocked">%1$d more slot(s) needed to take everything.</string>
     <string name="dashboard_close">CLOSE</string>
     <string name="dashboard_view">VIEW</string>
     <string name="dashboard_mysterious_item">Mysterious item</string>
@@ -864,6 +867,7 @@
     <string name="overlay_free">FREE</string>
     <string name="overlay_camp_stash">Camp stash</string>
     <string name="overlay_camp_stash_desc">Retrieve stashed items</string>
+    <string name="overlay_camp_stash_desc_full">Not enough room to take everything</string>
     <string name="overlay_resume_expedition">RESUME EXPEDITION</string>
     <string name="overlay_camp_quote">“Defeat is only a detour. Twenty metres back, the gold still flows.”</string>
     <string name="overlay_journal">JOURNAL</string>
@@ -954,6 +958,10 @@
     <string name="overlay_locked_suffix"> · LOCKED</string>
     <string name="overlay_set_line">%1$s · equipped %2$d/6 · collection %3$d/6</string>
     <string name="overlay_sell">SELL +%1$s gold</string>
+    <string name="overlay_send_to_stash">Send to stash</string>
+    <string name="overlay_stash_mysterious">Mysterious item: take it into the inventory to identify it.</string>
+    <string name="overlay_stash_locked_hint">Locked item: selling and dismantling are disabled.</string>
+    <string name="overlay_dismantle_gain">DISMANTLE · +%1$d</string>
     <string name="overlay_after_level">After +1 lv.</string>
     <string name="overlay_hero_stats">Hero · ATK %1$s → %2$s · HP %3$s → %4$s</string>
     <string name="overlay_this_item">This item</string>
@@ -1178,6 +1186,9 @@
     <string name="toast_fuse_requirements">You need 3 items of the same slot and rarity.</string>
     <string name="toast_stash_taken">%1$d item(s) retrieved.</string>
     <string name="toast_stash_full_empty">Inventory full or stash empty.</string>
+    <string name="toast_stash_no_room">Not enough room to take everything.</string>
+    <string name="toast_sent_to_stash">%1$s sent to stash.</string>
+    <string name="toast_stash_failed">Could not send this item to the stash.</string>
     <string name="toast_item_taken">%1$s retrieved.</string>
     <string name="toast_inventory_full">Inventory full.</string>
     <string name="toast_identified">Item identified.</string>

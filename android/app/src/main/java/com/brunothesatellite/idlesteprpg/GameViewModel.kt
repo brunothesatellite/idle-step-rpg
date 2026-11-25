@@ -72,6 +72,7 @@ data class UiState(
     val codexOpen: Boolean = false,
     val endingPreview: Boolean = false,
     val selectedItem: Item? = null,
+    val selectedStashItem: Item? = null,
     val chestOpen: Boolean = false,
     val syncing: Boolean = false,
     val connected: Boolean = false,
@@ -550,22 +551,22 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             container.gameRepository.mutate { GameEngine.prepareCamp(it) }
             _ui.update {
-                it.copy(campOpen = true, selectedItem = null, chestOpen = false, journalOpen = false)
+                it.copy(campOpen = true, selectedItem = null, selectedStashItem = null, chestOpen = false, journalOpen = false)
             }
         }
     }
     fun closeCamp() { _ui.update { it.copy(campOpen = false) } }
     fun openSettings() {
-        _ui.update { it.copy(settingsOpen = true, selectedItem = null, chestOpen = false) }
+        _ui.update { it.copy(settingsOpen = true, selectedItem = null, selectedStashItem = null, chestOpen = false) }
     }
     fun closeSettings() { _ui.update { it.copy(settingsOpen = false) } }
     fun openJournal() {
-        _ui.update { it.copy(journalOpen = true, selectedItem = null, campOpen = false) }
+        _ui.update { it.copy(journalOpen = true, selectedItem = null, selectedStashItem = null, campOpen = false) }
     }
     fun closeJournal() { _ui.update { it.copy(journalOpen = false) } }
 
     fun openConsumables() {
-        _ui.update { it.copy(consumablesOpen = true, selectedItem = null) }
+        _ui.update { it.copy(consumablesOpen = true, selectedItem = null, selectedStashItem = null) }
     }
 
     fun closeConsumables() { _ui.update { it.copy(consumablesOpen = false) } }
@@ -585,7 +586,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         _ui.update {
             it.copy(
                 prefsOpen = true,
-                selectedItem = null,
+                selectedItem = null, selectedStashItem = null,
                 chestOpen = false,
                 campOpen = false,
                 syncLog = container.stepRepository.syncLog()
@@ -597,7 +598,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         when (screen) {
             "garmin" -> openSettings()
             "chest" -> if (game.value.chest != null) {
-                _ui.update { it.copy(chestOpen = true, selectedItem = null) }
+                _ui.update { it.copy(chestOpen = true, selectedItem = null, selectedStashItem = null) }
             }
             "camp" -> openCamp()
             "journal" -> openJournal()
@@ -785,7 +786,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun clearProgress() {
         viewModelScope.launch {
             container.gameRepository.reset()
-            _ui.update { it.copy(selectedItem = null, chestOpen = false) }
+            _ui.update { it.copy(selectedItem = null, selectedStashItem = null, chestOpen = false) }
             _toasts.emit(tr(R.string.toast_progress_cleared))
         }
     }
@@ -838,7 +839,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 _ui.update {
                     it.copy(
                         pendingImport = null,
-                        selectedItem = null,
+                        selectedItem = null, selectedStashItem = null,
                         chestOpen = false,
                         campOpen = false,
                         prefsOpen = false
@@ -1063,7 +1064,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var fused: Item? = null
             container.gameRepository.mutate { fused = GameEngine.fuseItem(it, item.id) }
-            _ui.update { it.copy(selectedItem = null) }
+            _ui.update { it.copy(selectedItem = null, selectedStashItem = null) }
             _toasts.emit(
                 if (fused != null) tr(R.string.toast_fused)
                 else tr(R.string.toast_fuse_requirements)
@@ -1074,9 +1075,14 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun withdrawStash() {
         viewModelScope.launch {
             var moved = 0
+            val stashWasEmpty = game.value.stash.isEmpty()
             container.gameRepository.mutate { moved = GameEngine.withdrawStash(it) }
             _toasts.emit(
-                if (moved > 0) tr(R.string.toast_stash_taken, moved) else tr(R.string.toast_stash_full_empty)
+                when {
+                    moved > 0 -> tr(R.string.toast_stash_taken, moved)
+                    stashWasEmpty -> tr(R.string.toast_stash_full_empty)
+                    else -> tr(R.string.toast_stash_no_room)
+                }
             )
         }
     }
@@ -1085,11 +1091,59 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.withdrawStashItem(it, item.id) }
+            if (ok) _ui.update { it.copy(selectedStashItem = null) }
             _toasts.emit(
                 if (ok) tr(
                     R.string.toast_item_taken,
                     itemName(container.context.resources, item.name, item.effect)
                 ) else tr(R.string.toast_inventory_full)
+            )
+        }
+    }
+
+    fun selectStashItem(item: Item) {
+        _ui.update { it.copy(selectedStashItem = item, selectedItem = null) }
+    }
+
+    fun dismissStashItem() {
+        _ui.update { it.copy(selectedStashItem = null) }
+    }
+
+    fun sendToStash(item: Item) {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.sendToStash(it, item.id) }
+            if (ok) _ui.update { it.copy(selectedItem = null) }
+            _toasts.emit(
+                if (ok) tr(
+                    R.string.toast_sent_to_stash,
+                    itemName(container.context.resources, item.name, item.effect)
+                ) else tr(R.string.toast_stash_failed)
+            )
+        }
+    }
+
+    fun sellStashItem(item: Item) {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.sellStashItem(it, item.id) }
+            if (ok) _ui.update { it.copy(selectedStashItem = null) }
+            _toasts.emit(
+                if (ok) tr(
+                    R.string.toast_sold,
+                    itemName(container.context.resources, item.name, item.effect)
+                ) else tr(R.string.toast_locked)
+            )
+        }
+    }
+
+    fun dismantleStashItem(item: Item) {
+        viewModelScope.launch {
+            var shards = 0
+            container.gameRepository.mutate { shards = GameEngine.dismantleStashItem(it, item.id) }
+            if (shards > 0) _ui.update { it.copy(selectedStashItem = null) }
+            _toasts.emit(
+                if (shards > 0) tr(R.string.toast_dismantled, shards) else tr(R.string.toast_locked)
             )
         }
     }
@@ -1154,7 +1208,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var shards = 0
             container.gameRepository.mutate { shards = GameEngine.dismantleItem(it, item.id) }
-            _ui.update { it.copy(selectedItem = null) }
+            _ui.update { it.copy(selectedItem = null, selectedStashItem = null) }
             _toasts.emit(
                 if (shards > 0) tr(R.string.toast_dismantled, shards) else tr(R.string.toast_locked)
             )
@@ -1189,7 +1243,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun selectItem(item: Item) { _ui.update { it.copy(selectedItem = item) } }
-    fun dismissItem() { _ui.update { it.copy(selectedItem = null) } }
+    fun dismissItem() { _ui.update { it.copy(selectedItem = null, selectedStashItem = null) } }
 
     fun openChest() {
         if (game.value.chest != null) _ui.update { it.copy(chestOpen = true) }
@@ -1209,7 +1263,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.equipItem(it, item.id) }
-            _ui.update { it.copy(selectedItem = null) }
+            _ui.update { it.copy(selectedItem = null, selectedStashItem = null) }
             if (ok) _toasts.tryEmit(
                 tr(R.string.toast_equipped, itemName(container.context.resources, item.name, item.effect))
             )
@@ -1220,7 +1274,7 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.sellItem(it, item.id) }
-            _ui.update { it.copy(selectedItem = null) }
+            _ui.update { it.copy(selectedItem = null, selectedStashItem = null) }
             if (ok) _toasts.tryEmit(
                 tr(R.string.toast_sold, itemName(container.context.resources, item.name, item.effect))
             )
