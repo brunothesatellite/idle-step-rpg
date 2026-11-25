@@ -1432,8 +1432,20 @@ object GameEngine {
         return lerp(1.6 * depthMultiplier(floor, boss = true), target, targetWeight(floor))
     }
 
+    /**
+     * Difficulté adaptative : un héros qui dépasse le palier de plus de
+     * LEVEL_GAP_FREE niveaux affronte des ennemis plus solides. Aucun effet
+     * au niveau du palier, pour préserver le début de partie.
+     */
+    internal fun levelGapMultiplier(state: GameState): Double {
+        val gap = (state.level - state.floor - Balance.Target.LEVEL_GAP_FREE).coerceAtLeast(0)
+        return (1.0 + gap * Balance.Target.LEVEL_GAP_PCT)
+            .coerceAtMost(Balance.Target.LEVEL_GAP_CAP)
+    }
+
     private fun makeMob(state: GameState): FightData {
         val pos = state.distance
+        val gapMult = levelGapMultiplier(state)
         val biomePool = mobPoolFor(state.floor)
         val tier = when {
             pos >= 85 -> "hard"
@@ -1469,9 +1481,9 @@ object GameEngine {
             enemyIcon = t.icon,
             enemyId = t.id,
             enemyLevel = level,
-            enemyHp = hp * hpScale * rule.enemyHpMult,
-            enemyMaxHp = hp * hpScale * rule.enemyHpMult,
-            enemyAtk = atk * atkScale * rule.enemyAtkMult,
+            enemyHp = hp * hpScale * rule.enemyHpMult * gapMult,
+            enemyMaxHp = hp * hpScale * rule.enemyHpMult * gapMult,
+            enemyAtk = atk * atkScale * rule.enemyAtkMult * gapMult,
             enemyIntervalMs = ((if (elite) Balance.ELITE_INTERVAL_MS else Balance.MOB_INTERVAL_MS) *
                 rule.enemyIntervalMult).roundToLong(),
             gold = gold,
@@ -1544,6 +1556,7 @@ object GameEngine {
         val t = bossFor(state.floor)
         val ability = bossAbilityFor(t.name, state.floor)
         val rule = biomeRuleFor(state.floor)
+        val gapMult = levelGapMultiplier(state)
         val level = state.floor + Balance.Target.BOSS_LEVEL_OFFSET
         val finalHpMult =
             if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) Balance.Target.FINAL_BOSS_HP_MULT else 1.0
@@ -1583,9 +1596,9 @@ object GameEngine {
             enemyIcon = t.icon,
             enemyId = t.id,
             enemyLevel = level,
-            enemyHp = hp * hpMult * (1.0 - pity),
-            enemyMaxHp = hp * hpMult * (1.0 - pity),
-            enemyAtk = atk * atkMult * (1.0 - pity),
+            enemyHp = hp * hpMult * gapMult * (1.0 - pity),
+            enemyMaxHp = hp * hpMult * gapMult * (1.0 - pity),
+            enemyAtk = atk * atkMult * gapMult * (1.0 - pity),
             enemyIntervalMs = (interval * rule.enemyIntervalMult).roundToLong(),
             gold = (12 * (6 + 3 * level) * reward).roundToInt(),
             xp = bossXpReward(level, state.floor, state.level),
@@ -1610,9 +1623,9 @@ object GameEngine {
         val rule = biomeRuleFor(state.floor)
         val level = max(1, state.floor - Balance.FARM_LEVEL_OFFSET)
         val hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) *
-            Balance.FARM_HP_MULT * rule.enemyHpMult
+            Balance.FARM_HP_MULT * rule.enemyHpMult * levelGapMultiplier(state)
         val atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) *
-            Balance.FARM_ATK_MULT * rule.enemyAtkMult
+            Balance.FARM_ATK_MULT * rule.enemyAtkMult * levelGapMultiplier(state)
         return FightData(
             enemyName = t.name,
             enemyIcon = t.icon,

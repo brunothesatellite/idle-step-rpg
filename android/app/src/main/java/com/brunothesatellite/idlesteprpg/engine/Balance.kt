@@ -198,6 +198,9 @@ object Balance {
         const val ENDGAME_BOSS_ATK_MULT = 1.05
         const val FINAL_BOSS_HP_MULT = 1.40
         const val FINAL_BOSS_ATK_MULT = 1.15
+        const val LEVEL_GAP_FREE = 4
+        const val LEVEL_GAP_PCT = 0.05
+        const val LEVEL_GAP_CAP = 2.0
         const val PITY_HP_STEP = 0.01
         const val PITY_CAP = 0.03
         const val FUSION_RATIO = 0.90

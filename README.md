@@ -11,7 +11,7 @@
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 - **Français et anglais** — interface, journal, Codex, manuel et captures dans les deux langues.
 
-**Version :** 0.21.3 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.22.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel en ligne](https://brunothesatellite.github.io/idle-step-rpg/manuel/) ·

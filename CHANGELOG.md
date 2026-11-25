@@ -1,5 +1,12 @@
 # Journal des versions
 
+## v0.22.0
+- **Difficulté adaptative** : au-delà de **4 niveaux d'avance** sur le palier, les ennemis gagnent **+5 % PV/ATQ par niveau d'écart**, plafond **×2,0**. Aucun effet au niveau du palier : le départ niveau 1 n'est pas pénalisé.
+- **Télémétrie locale** : **100 derniers combats** détaillés (TTK/TTD, PV, soins, stats du héros, ennemi, potions, rations), agrégats par palier, historique des niveaux et **60 jours** de synthèse.
+- **Rapport d'équilibrage** : nouveau bouton dans les réglages, export JSON séparé sans journal, inventaire ni coffre.
+- **Tests** : **160 / 160**, lint OK.
+- **Build** : `versionCode 62`, `versionName 0.22.0`. Aucune release GitHub.
+
 ## v0.21.3
 - **Coffre de camp** : les boutons **PRENDRE** sont grisés quand l'inventaire est plein. **TOUT PRENDRE** n'est actif que si tous les objets tiennent dans les places libres, avec le nombre de places manquantes affiché. Le raccourci du camp suit la même règle.
 - **Envoi au coffre** : icône coffre dans la fiche d'un objet de l'inventaire, à côté de la croix. Grisée pour un objet verrouillé, absente pour un objet équipé.

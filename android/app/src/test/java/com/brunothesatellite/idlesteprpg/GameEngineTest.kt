@@ -1687,6 +1687,22 @@ class GameEngineTest {
     }
 
     @Test
+    fun levelGapMultiplierStartsAtFourLevelsAhead() {
+        val state = GameState()
+        state.floor = 1
+        state.level = 1
+        assertEquals(1.0, GameEngine.levelGapMultiplier(state), 0.0001)
+        state.level = 5
+        assertEquals(1.0, GameEngine.levelGapMultiplier(state), 0.0001)
+        state.floor = 9
+        state.level = 24
+        assertEquals(1.55, GameEngine.levelGapMultiplier(state), 0.0001)
+        state.floor = 1
+        state.level = 100
+        assertEquals(2.0, GameEngine.levelGapMultiplier(state), 0.0001)
+    }
+
+    @Test
     fun lockedItemsAreNeverDisplaced() {
         val state = GameState()
         state.inventory = (1..24).map {
