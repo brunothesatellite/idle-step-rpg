@@ -35,6 +35,22 @@ python tools/equilibrage/balance_sim.py --curve current --build player36 --floor
 python tools/equilibrage/balance_sim.py --xp
 ```
 
+### Analyser une sauvegarde réelle
+
+`save_import.py` reconstruit les statistiques d’une sauvegarde JSON avec les formules de `statsOf()`. `earlygame_experiment.py` l’utilise pour tester la courbe ennemie early game, l’écart de niveau et le rythme d’XP sans modifier le jeu :
+
+```bash
+python tools/equilibrage/earlygame_experiment.py \
+  --save C:/chemin/lowlevel.json --runs 800
+
+# Écrit aussi la matrice complète :
+python tools/equilibrage/earlygame_experiment.py \
+  --save C:/chemin/lowlevel.json --runs 800 \
+  --out docs/analyse-earlygame-data.md
+```
+
+Les sauvegardes ne sont pas versionnées dans le dépôt. Rapport d’analyse : [`docs/analyse-earlygame.md`](../../docs/analyse-earlygame.md).
+
 Sur Windows, avec le venv du projet :
 
 ```powershell
@@ -90,11 +106,10 @@ python tools/equilibrage/balance_sim.py --curve proposed --build reference,refer
 ## Ce qu’il ne modélise pas encore
 
 - La ferveur qui décroît après 2 h.
-- Les buffs de consommables autres que les potions d’ATQ/crit, les sets (sauf intégrés au build), les bénédictions.
-- La simulation hors ligne, les coffres, les serments, l’économie réelle de farm.
-- Les builds extraits automatiquement d’une sauvegarde (les presets sont des hypothèses).
-- Le hasard de génération des objets (les builds sont des profils moyens).
-- Le vol d’or du VOLEUR (sans effet sur le combat).
+- Les buffs de consommables autres que les potions d'ATQ/crit, les bénédictions.
+- La simulation hors ligne, les coffres, les serments, l'économie réelle de farm.
+- Le hasard de génération des objets (les presets sont des profils moyens). L'import de sauvegarde reconstruit les statistiques réelles de l'équipement, mais pas les buffs temporaires ni les potions consommées.
+- Le vol d'or du VOLEUR (sans effet sur le combat).
 
 ## Calibration 0.21.1 — courbe `code`
 
