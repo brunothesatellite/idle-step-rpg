@@ -1010,7 +1010,7 @@ private fun BiomeBanner(key: String, modifier: Modifier = Modifier) {
             .height(74.dp)
             .clip(RoundedCornerShape(5.dp))
     ) {
-        // MÃªme dessin que la scÃ¨ne : le bandeau est une miniature du couloir.
+        // Même dessin que la scène : le bandeau est une miniature du couloir.
         drawCorridor(palette, walls, floors, statues, props, fireCloud, visuals.fireClouds)
     }
 }

@@ -563,7 +563,7 @@ private fun ForgePanel(
         Modifier.fillMaxWidth().clickable(onClick = onBack).padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("â†", fontSize = 15.sp, color = Gold)
+        Text("←", fontSize = 15.sp, color = Gold)
         Spacer(Modifier.width(7.dp))
         Text(
             if (mode == ForgeMode.UPGRADE) stringResource(R.string.overlay_workshop_upgrade) else stringResource(R.string.overlay_workshop_reforge),
@@ -750,7 +750,7 @@ private fun CompareLine(
     ) {
         Text(label, Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
         Text(
-            left?.let { statText(it, percent) } ?: "â€”",
+            left?.let { statText(it, percent) } ?: "—",
             Modifier.weight(1f),
             fontSize = 6.3.sp,
             color = Muted,
@@ -787,7 +787,7 @@ private fun CompareRegenLine(left: Double?, right: Double) {
     ) {
         Text(stringResource(R.string.overlay_regeneration), Modifier.weight(1.25f), fontSize = 6.3.sp, color = Muted)
         Text(
-            left?.let { regenText(it) } ?: "â€”",
+            left?.let { regenText(it) } ?: "—",
             Modifier.weight(1f),
             fontSize = 6.3.sp,
             color = Muted,
@@ -931,13 +931,13 @@ private fun UpgradeRegenLine(reference: Double?, before: Double, after: Double) 
 }
 
 private fun statText(value: Int, percent: Boolean): String = when {
-    value == 0 -> "â€”"
+    value == 0 -> "—"
     percent -> "+$value %"
     else -> "+$value"
 }
 
 private fun regenText(value: Double): String =
-    if (value == 0.0) "â€”" else "+${"%.1f".format(value)}"
+    if (value == 0.0) "—" else "+${"%.1f".format(value)}"
 
 @Composable
 private fun CostRow(label: String, value: String) {
@@ -1412,8 +1412,8 @@ fun CampOverlay(
             val w = size.width
             val h = size.height
             // Le panneau d'actions a une hauteur variable (taille du texte choisie) :
-            // tente, sapins et feu sont ancrÃ©s sur sa ligne de sol, comme le hÃ©ros,
-            // pour rester visibles Ã  toutes les tailles.
+            // tente, sapins et feu sont ancrés sur sa ligne de sol, comme le héros,
+            // pour rester visibles à toutes les tailles.
             val panel = if (cardHeight > 0) cardHeight.toFloat() else h * 0.45f
             val ground = (h - panel - 16.dp.toPx()).coerceIn(h * 0.30f, h * 0.86f)
             val sceneTop = 120.dp.toPx()
@@ -1937,7 +1937,7 @@ fun GarminScreen(vm: GameViewModel, ui: UiState, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(10.dp))
             GoldButton(
-                text = if (ui.syncing) "VALIDATIONâ€¦" else stringResource(R.string.overlay_garmin_test_save),
+                text = if (ui.syncing) "VALIDATION…" else stringResource(R.string.overlay_garmin_test_save),
                 subtitle = stringResource(R.string.overlay_garmin_exchange),
                 enabled = key.isNotBlank() && !ui.syncing,
                 onClick = {
@@ -2135,7 +2135,7 @@ fun JournalOverlay(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(creatureNameRes(name), fontSize = 8.sp, color = Parchment)
-                                Text("Ã— $kills", fontFamily = Press, fontSize = 7.sp, color = Gold)
+                                Text("× $kills", fontFamily = Press, fontSize = 7.sp, color = Gold)
                             }
                             DividerLine()
                         }
@@ -2325,7 +2325,7 @@ fun OfflineOverlay(
                             Text(counts.joinToString(" Â· "), fontSize = 6.5.sp, color = Parchment)
                         }
                         report.lootItems.take(8).forEach { name ->
-                            Text("â€¢ ${localizedItemName(name)}", fontSize = 6.2.sp, color = Green, maxLines = 1)
+                            Text("• ${localizedItemName(name)}", fontSize = 6.2.sp, color = Green, maxLines = 1)
                         }
                         if (report.lootItems.size > 8) {
                             Text(stringResource(R.string.overlay_report_more, report.lootItems.size - 8), fontSize = 6.sp, color = Muted)
@@ -2374,7 +2374,7 @@ fun OfflineOverlay(
 private fun formatAbsence(minutes: Int): String =
     if (minutes >= 60) "${minutes / 60} h ${minutes % 60}" else "$minutes min"
 
-/** Phrase de dÃ©faite : nombre explicite et recul total (20 m par dÃ©faite). */
+/** Phrase de défaite : nombre explicite et recul total (20 m par défaite). */
 @Composable
 private fun defeatSummary(report: OfflineReport): String {
     val defeats = report.defeats
@@ -2415,8 +2415,8 @@ private fun RecapTile(value: String, label: String, modifier: Modifier = Modifie
 }
 
 /**
- * Ã‰cran d'attente de la reprise : simulation d'absence puis rÃ©cupÃ©ration des
- * pas. Il n'apparaÃ®t qu'aprÃ¨s 350 ms pour ne pas clignoter sur un retour rapide.
+ * Écran d'attente de la reprise : simulation d'absence puis récupération des
+ * pas. Il n'apparaît qu'après 350 ms pour ne pas clignoter sur un retour rapide.
  */
 @Composable
 fun ResumeOverlay(
@@ -2568,7 +2568,7 @@ fun ImportPreviewDialog(
                 ImportRow(stringResource(R.string.overlay_import_level), summary.level.toString())
                 ImportRow(stringResource(R.string.overlay_import_floor), summary.floor.toString())
                 ImportRow(stringResource(R.string.overlay_import_gold), formatCompact(summary.gold))
-                ImportRow(stringResource(R.string.overlay_import_day), summary.day.ifBlank { "â€”" })
+                ImportRow(stringResource(R.string.overlay_import_day), summary.day.ifBlank { "—" })
                 ImportRow(stringResource(R.string.overlay_import_items), summary.items.toString())
                 ImportRow(stringResource(R.string.overlay_import_version), "v${summary.version}")
                 Spacer(Modifier.height(8.dp))
@@ -2861,7 +2861,7 @@ fun ConsumablesOverlay(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Spacer(Modifier.width(4.dp))
-                                Text("Ã—$quantity", fontFamily = Press, fontSize = 6.sp, color = Gold)
+                                Text("×$quantity", fontFamily = Press, fontSize = 6.sp, color = Gold)
                             }
                             Text(consumableDescRes(template.id), fontSize = 6.3.sp, color = Muted, lineHeight = 9.sp)
                             Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {

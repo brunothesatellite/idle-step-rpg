@@ -30,6 +30,9 @@ jobs:
       - name: Make wrapper executable
         run: chmod +x android/gradlew
 
+      - name: Check file encoding
+        run: python tools/check_encoding.py
+
       - name: Decode signing material
         if: env.KEYSTORE_BASE64 != ''
         run: |

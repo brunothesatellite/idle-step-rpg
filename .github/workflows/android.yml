@@ -29,6 +29,9 @@ jobs:
       - name: Check balance constants
         run: python tools/equilibrage/check_constants.py
 
+      - name: Check file encoding
+        run: python tools/check_encoding.py
+
       - name: Unit tests, lint and debug APK
         working-directory: android
         run: ./gradlew :app:testGithubDebugUnitTest :app:lintGithubDebug :app:assembleGithubDebug --console=plain --no-daemon
