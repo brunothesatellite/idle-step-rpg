@@ -235,3 +235,61 @@ def load_save(path: str | Path, name: str | None = None) -> LoadedSave:
             int(item.get("level", 0)) for item in save.get("equipment", [])
         ),
     )
+
+
+def _floor_scale(floor: int) -> float:
+    return min(6.0, 1.0 + 0.055 * max(0, floor - 1))
+
+
+def _rarity_multiplier(rarity: str) -> float:
+    return {
+        "common": 1.0,
+        "uncommon": 1.15,
+        "rare": 1.5,
+        "epic": 1.9,
+        "legendary": 2.4,
+    }.get(rarity, 1.0)
+
+
+def project_save(
+    save: dict[str, Any],
+    floor: int,
+    level: int,
+    gear_mode: str = "leveled",
+) -> dict[str, Any]:
+    """Projette une sauvegarde à un autre palier.
+
+    `leveled` : niveau d'objet = palier, même rareté, sans forge.
+    `expected` : niveau d'objet = palier, rareté +1 cran et +5 niveaux de forge.
+    """
+    if gear_mode not in {"leveled", "expected"}:
+        raise ValueError(f"gear_mode inconnu : {gear_mode}")
+
+    out = json.loads(json.dumps(save))
+    out["floor"] = floor
+    out["level"] = level
+    next_rarity = {
+        "common": "uncommon",
+        "uncommon": "rare",
+        "rare": "epic",
+        "epic": "legendary",
+        "legendary": "legendary",
+    }
+    for item in out.get("equipment", []):
+        old_level = max(1, int(item.get("level", 1)))
+        ratio = _floor_scale(floor) / _floor_scale(old_level)
+        atk_hp_ratio = ratio
+        if gear_mode == "expected":
+            old_rarity = item.get("rarity", "common")
+            new_rarity = next_rarity.get(old_rarity, old_rarity)
+            ratio *= _rarity_multiplier(new_rarity) / _rarity_multiplier(old_rarity)
+            atk_hp_ratio = ratio * 1.20  # cinq niveaux de forge, +4 % de base
+            item["rarity"] = new_rarity
+        item["level"] = floor
+        item["maxLevel"] = floor + 20
+        for key in ("atk", "hp"):
+            item[key] = round(item.get(key, 0) * atk_hp_ratio)
+        for key in ("vitPct", "critPct"):
+            item[key] = round(item.get(key, 0) * ratio)
+        item["regen"] = round(item.get("regen", 0.0) * ratio, 1)
+    return out

@@ -4,69 +4,62 @@
 > Sauvegarde testée : build **LOW** actuel, palier **9**, niveau **24**.
 > Matrice complète : [`analyse-earlygame-data.md`](analyse-earlygame-data.md).
 > Outil : `tools/equilibrage/earlygame_experiment.py`.
-> Méthode : courbe `code`, 800 combats par scénario, modificateurs automatiques, sans potion.
 
-## Contexte
+## Correction de méthode
 
-Le build HIGH précédent a été écarté : il contient des objets legacy migrés, hors budget. Le build LOW est, lui, cohérent avec l’implémentation actuelle :
+La première matrice utilisait le **stuff figé niveau 3–10 et le niveau 24** aux paliers 12, 15 et 20. C’était trop pessimiste : un joueur qui progresse naturellement monte de niveau et améliore son équipement.
 
-- arme légendaire niveau 10 à **87 ATQ**, pour ~86 ATQ attendus au palier 10 ;
-- armure niveau 3–5, talisman niveau 9 ;
-- **212 ATQ**, **684 PV**, 47 % crit, 20 % réduction, aucun lifesteal.
+Cette version projette donc :
 
-Son seul écart est le **niveau 24 au palier 9**. Le modèle d’XP actuel le reproduit exactement : avec ~7 combats normaux par palier et les gardiens à ×10 XP, on atteint le niveau 24 au palier 9. Ce n’est donc pas une sauvegarde trafiquée, mais le rythme d’XP actuel.
+- **le niveau** avec le rythme d’XP actuel : 24 au palier 9, 31 au 12, 36 au 15, 44 au 20 ;
+- **le stuff nivelé** : niveau d’objet = palier, même rareté, sans forge ;
+- **le stuff attendu** : niveau d’objet = palier, rareté +1 cran et +5 niveaux de forge ;
+- 600 combats par scénario, courbe `code`, modificateurs automatiques, sans potion.
 
-## Constat de base
+Les deux projections encadrent la réalité : le stuff attendu est plutôt optimiste, le stuff nivelé plutôt conservateur.
 
-| Palier | Monstre | Gardien | PV restants | Rations |
-|---:|---|---|---:|---:|
-| 9 | 0,3 s | 2,9 s | 632 / 684 (92 %) | 0 |
-| 12 | 0,7 s | 4,5 s | 547 / 684 (80 %) | 0 |
-| 15 | 1,4 s | 7,2 s | 445 / 684 (65 %) | 0,57 |
-
-Le palier 9 est trivial. Le palier 15 commence à peine à compter. La courbe ennemie early game est la principale responsable : les paliers 1 à 19 utilisent encore l’ancienne courbe, la courbe cible ne prenant le relais qu’entre 20 et 35.
-
-## Levier 1 — courbe ennemie early game
-
-Multiplicateur dégressif jusqu’au palier 20, puis retour à 1.
+## Résultats — stuff attendu
 
 | Scénario | Palier 9 | Palier 12 | Palier 15 |
 |---|---|---|---|
-| **Actuel** | 2,9 s · 92 % PV | 4,5 s · 80 % | 7,2 s · 65 % |
-| **Early doux** : PV monstres ×3, gardiens ×2,5, ATK ×1,5 | **5,6 s · 77 %** | **7,6 s · 64 %** | **10,7 s · 37 %** (98 % de victoires) |
-| **Early moyen** : ×4 / ×3 / ×1,75 | 6,5 s · 67 % | 8,8 s · 64 % | 11,6 s · 21 % (81 % de victoires) |
-| **Early fort** : ×5 / ×4 / ×2 | 8,3 s · 53 % | 11,2 s · 53 % | 12,3 s · 5 % (30 % de victoires) |
+| **Actuel** | 2,2 s · 95 % PV | 2,6 s · 93 % | 3,4 s · 85 % |
+| **Early doux** | 4,2 s · 87 % | 4,3 s · 83 % | **4,7 s · 74 %** |
+| **Early moyen** | 4,9 s · 82 % | 4,9 s · 79 % | **5,2 s · 70 %** |
+| **Early fort** | 6,3 s · 70 % | 6,0 s · 70 % | **6,2 s · 61 %** |
 
-La formule exacte testée est :
+Tous les scénarios restent à 100 % de victoires. Le stuff attendu est plus fort que le stuff actuel : l’arme passe niveau 15, l’armure gagne une rareté et cinq niveaux de forge.
 
-```text
-facteur(palier) = 1 + (maximum - 1) × (1 - palier / 20)
-```
-
-Au palier 9, « early doux » applique donc réellement ×2,1 aux PV des monstres, ×1,825 aux PV des gardiens et ×1,275 à l’ATK. Au palier 15 : ×1,75 / ×1,375 / ×1,125. Au palier 20 : ×1.
-
-**Lecture :**
-
-- **Early doux** transforme le gardien du 9 en combat de 5,6 s avec 23 % de PV perdus, sans rendre le 15 injuste (98 % de victoires). C’est le meilleur premier candidat.
-- **Early moyen** rend le 15 risqué (81 % de victoires) avec le stuff niveau 10 actuel. Un stuff naturel niveau 15 serait sans doute plus solide, mais il faut le vérifier sur une sauvegarde fraîche.
-- **Early fort** casse le palier 15 : 30 % de victoires. À écarter tel quel.
-
-## Levier 2 — écart de niveau
-
-Les ennemis gagnent des PV/ATQ quand le héros dépasse le palier de plus de 4 niveaux.
+## Résultats — stuff nivelé
 
 | Scénario | Palier 9 | Palier 12 | Palier 15 |
 |---|---|---|---|
-| **Écart 3 %/niv, cap ×1,5** | 4,0 s · 84 % | 5,7 s · 66 % | 8,6 s · 55 % |
-| **Écart 4 %/niv, cap ×1,6** | 4,4 s · 81 % | 6,0 s · 64 % | 9,0 s · 47 % |
-| **Early doux + écart 3 %** | 7,6 s · 61 % | 9,9 s · 58 % | **49 % de victoires** |
-| **Early moyen + écart 3 %** | 8,9 s · 71 % | 11,5 s · 36 % | **21 % de victoires** |
+| **Actuel** | 2,9 s · 92 % | 3,4 s · 89 % | 4,3 s · 79 % |
+| **Early doux** | 5,5 s · 79 % | 5,5 s · 74 % | **6,0 s · 64 %** |
+| **Early moyen** | 6,4 s · 68 % | 6,4 s · 66 % | **6,7 s · 59 %** |
+| **Early fort** | 8,2 s · 55 % | 8,1 s · 56 % | **8,0 s · 66 %** |
 
-L’écart de niveau seul reste insuffisant au palier 9 (4,0–4,4 s), mais il agit sans toucher au build `reference` (qui est au niveau du palier). En revanche, **cumulé à un early moyen ou fort, il devient trop punitif** : le palier 15 tombe à 49 %, puis 21 % de victoires. Il ne faut pas empiler les deux leviers sans mesure.
+Le stuff nivelé est le scénario le plus défavorable ; il donne la borne haute de difficulté.
 
-## Levier 3 — rythme d’XP
+## Ce que cela change
 
-Modèle calibré sur la sauvegarde : ~7 combats normaux par palier, gardien ×10.
+Avec le stuff figé, « early fort » semblait trop violent au palier 15 : 12,3 s et seulement 30 % de victoires. Avec le niveau et le stuff projetés, il devient **6,2 s à 61 % de PV** (stuff attendu) ou **8,0 s à 66 %** (stuff nivelé). C’est le premier réglage qui reste dans la cible **6–8 s et 30–40 % de PV perdus**.
+
+À l’inverse, **early doux et early moyen ne suffisent plus** :
+
+- au palier 15, ils donnent 4,7 s / 74 % et 5,2 s / 70 % avec le stuff attendu ;
+- au palier 12, 4,3 s et 4,9 s ;
+- le personnage gagne tellement de niveau et de stuff entre 9 et 15 que le multiplicateur dégressif est absorbé.
+
+## Levier écart de niveau
+
+Avec les niveaux projetés, l’écart de niveau devient très fort :
+
+- `écart 3 %/niv, cap ×1,5` au palier 15 : 6,7 s / 64 % (stuff nivelé), mais au palier 20 : **9,2 s et 30 % de victoires** (stuff nivelé) ;
+- cumulé à early fort, le palier 15 tombe à **22 % de victoires** (stuff nivelé), 78 % (stuff attendu).
+
+Il ne faut donc **pas empiler** early fort et écart de niveau. L’écart de niveau est un levier pour le surlevel, pas pour remplacer la courbe early game.
+
+## Rythme d’XP
 
 | Règle XP | Niv. 5 | Niv. 9 | Niv. 15 | Niv. 20 | Niv. 25 | Niv. 30 | Niv. 36 |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -76,43 +69,45 @@ Modèle calibré sur la sauvegarde : ~7 combats normaux par palier, gardien ×10
 | Gardien ×5 · malus −50 % | 11 | 17 | 26 | 33 | 38 | 44 | 49 |
 | Gardien ×5 · malus −75 % | 11 | 15 | 21 | 26 | 32 | 36 | 43 |
 
-Même la variante la plus sévère reste au niveau 15 au palier 9, et au niveau 43 au palier 36. **L’XP seule ne ramènera pas le héros au niveau du palier.** Si le surlevel est assumé, il faut plutôt faire évoluer les ennemis avec l’écart de niveau. Si le niveau doit suivre le palier, il faudra une refonte plus large de l’XP, pas seulement un ajustement du multiplicateur de gardien.
+Même la variante la plus sévère reste au niveau 15 au palier 9. L’XP seule ne ramènera pas le héros au niveau du palier ; si le surlevel est assumé, il faut plutôt un écart de niveau ennemi. Mais ce levier est plus tardif, pas prioritaire pour le début de jeu.
 
 ## Recommandation
 
-### Premier passage à tester
+### Premier passage
 
-**Appliquer uniquement « early doux »** :
+**Appliquer « early fort » seul** :
 
-- PV monstres : ×3 maximum au palier 1, retour à ×1 au palier 20 ;
-- PV gardiens : ×2,5 maximum, retour à ×1 au palier 20 ;
-- ATK : ×1,5 maximum, retour à ×1 au palier 20.
+- PV monstres : ×5 maximum, retour à ×1 au palier 20 ;
+- PV gardiens : ×4 maximum, retour à ×1 au palier 20 ;
+- ATK : ×2 maximum, retour à ×1 au palier 20.
 
-Pourquoi ce choix :
+Facteurs réellement appliqués :
 
-- il corrige le palier 9 sans toucher aux paliers 20+ ;
-- il laisse le palier 15 exigeant mais gagnable (98 %) ;
-- il ne cumule pas avec un malus de niveau, donc on peut mesurer son effet seul ;
-- il ne modifie ni l’XP ni le stuff, donc pas de régression économique.
+| Palier | Monstres | Gardiens | ATK |
+|---:|---:|---:|---:|
+| 9 | ×3,2 | ×2,65 | ×1,55 |
+| 12 | ×2,6 | ×2,2 | ×1,4 |
+| 15 | ×2,0 | ×1,75 | ×1,25 |
+| 20 | ×1 | ×1 | ×1 |
+
+C’est moins brutal que les maxima ne le suggèrent, et c’est absorbé par la progression naturelle du niveau et du stuff.
+
+### Pourquoi pas early doux/moyen
+
+Ils sont corrects sur le stuff figé, mais trop faibles dès que le niveau et le stuff progressent : 4,7 à 5,2 s au palier 15, avec 70–74 % de PV restants. Le joueur ne sentirait toujours pas la menace.
 
 ### Ce qu’il faut vérifier ensuite
 
-1. **Jouer une sauvegarde fraîche de 1 à 20** avec ce réglage, en relevant à chaque palier :
-   - niveau du héros ;
-   - niveau moyen de l’équipement ;
-   - TTK monstre et gardien ;
-   - PV perdus ;
-   - rations consommées.
-2. Si le palier 9 reste trop facile, passer à **early moyen**, mais surveiller le palier 15.
-3. Si le surlevel continue de poser problème plus tard, tester **un écart de niveau léger (2–3 %/niv, cap ×1,4–1,5)** seul, sans early fort.
-4. Ne pas toucher au late game : le profil `reference` est déjà à 58 % au palier 36, 44 % au 50, 37 % au 58.
+1. Jouer une sauvegarde fraîche de 1 à 20 avec early fort et relever à chaque palier : niveau, niveau moyen du stuff, TTK, PV perdus, rations.
+2. Vérifier le palier 20 : early fort s’arrête à 20 ; le stuff projeté y donne 4,9–6,4 s et 60–62 % de PV. Si c’est encore trop facile, traiter la transition 20–35 séparément.
+3. Ne pas ajouter d’écart de niveau en même temps. Si le surlevel reste un problème après le 20, tester un écart léger (2 %/niv, cap ×1,4), pas 3–4 %.
+4. Ne pas toucher au late game : `reference` est déjà à 56 % au 36, 44 % au 50, 37 % au 58.
 5. Ne pas calibrer sur le build HIGH : ses objets legacy faussent tout.
 
-### Ce qui reste hors de ce lot
+### Limites du modèle
 
-- l’intégration des multiplicateurs dans `makeMob`/`makeBoss` ;
-- la décision produit sur le rythme d’XP ;
-- la refonte éventuelle des objets legacy ;
-- la courbe 36–100.
+- La projection de stuff suppose une progression régulière ; elle ne modélise pas la chance de drops, la fusion ni le farm.
+- Le niveau projeté suit le rythme d’XP actuel ; un joueur qui farme davantage sera plus haut.
+- Les potions et buffs ne sont pas utilisés.
 
-Tant que ces décisions ne sont pas prises, le simulateur permet d’itérer sans modifier le jeu.
+Le simulateur permet d’ajuster ces hypothèses avant toute modification du jeu.

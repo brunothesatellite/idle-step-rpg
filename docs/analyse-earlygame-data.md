@@ -4,37 +4,128 @@
 
 Sauvegarde importée : palier **9**, niveau **24**, ATQ **212**, PV **684**.
 
-## Build LOW
+## Build LOW — stuff figé
 
 | Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | référence actuelle | 9 | 100 % | 0.3 s | 100 % | 100 % | 2.9 s | 92 % | 0.00 |
 | référence actuelle | 12 | 100 % | 0.7 s | 100 % | 100 % | 4.5 s | 80 % | 0.00 |
-| référence actuelle | 15 | 100 % | 1.4 s | 96 % | 100 % | 7.2 s | 65 % | 0.57 |
+| référence actuelle | 15 | 100 % | 1.4 s | 96 % | 100 % | 7.2 s | 64 % | 0.57 |
+| référence actuelle | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
 | early doux · PV m×3 · g×2,5 · ATQ×1,5 | 9 | 100 % | 1.0 s | 100 % | 100 % | 5.6 s | 77 % | 0.00 |
-| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 12 | 100 % | 1.4 s | 97 % | 100 % | 7.6 s | 64 % | 0.34 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 12 | 100 % | 1.4 s | 97 % | 100 % | 7.6 s | 63 % | 0.34 |
 | early doux · PV m×3 · g×2,5 · ATQ×1,5 | 15 | 100 % | 2.1 s | 92 % | 98 % | 10.7 s | 37 % | 1.00 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
 | early moyen · PV m×4 · g×3 · ATQ×1,75 | 9 | 100 % | 1.2 s | 99 % | 100 % | 6.5 s | 67 % | 0.00 |
-| early moyen · PV m×4 · g×3 · ATQ×1,75 | 12 | 100 % | 1.8 s | 95 % | 100 % | 8.8 s | 64 % | 0.70 |
-| early moyen · PV m×4 · g×3 · ATQ×1,75 | 15 | 100 % | 2.5 s | 90 % | 81 % | 11.6 s | 21 % | 1.00 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 12 | 100 % | 1.8 s | 95 % | 100 % | 8.8 s | 64 % | 0.69 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 15 | 100 % | 2.5 s | 90 % | 81 % | 11.7 s | 20 % | 1.00 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
 | early fort · PV m×5 · g×4 · ATQ×2 | 9 | 100 % | 1.5 s | 98 % | 100 % | 8.3 s | 53 % | 0.09 |
-| early fort · PV m×5 · g×4 · ATQ×2 | 12 | 100 % | 2.1 s | 94 % | 100 % | 11.2 s | 53 % | 0.99 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 12 | 100 % | 2.1 s | 94 % | 100 % | 11.3 s | 52 % | 0.99 |
 | early fort · PV m×5 · g×4 · ATQ×2 | 15 | 100 % | 2.9 s | 87 % | 30 % | 12.3 s | 5 % | 1.00 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
 | écart de niveau 3 %/niv · cap×1,5 | 9 | 100 % | 0.4 s | 100 % | 100 % | 4.0 s | 84 % | 0.00 |
 | écart de niveau 3 %/niv · cap×1,5 | 12 | 100 % | 1.0 s | 99 % | 100 % | 5.7 s | 66 % | 0.01 |
 | écart de niveau 3 %/niv · cap×1,5 | 15 | 100 % | 1.6 s | 93 % | 100 % | 8.6 s | 55 % | 0.97 |
+| écart de niveau 3 %/niv · cap×1,5 | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
 | écart de niveau 4 %/niv · cap×1,6 | 9 | 100 % | 0.6 s | 100 % | 100 % | 4.4 s | 81 % | 0.00 |
-| écart de niveau 4 %/niv · cap×1,6 | 12 | 100 % | 1.0 s | 99 % | 100 % | 6.0 s | 64 % | 0.09 |
-| écart de niveau 4 %/niv · cap×1,6 | 15 | 100 % | 1.7 s | 93 % | 100 % | 9.0 s | 47 % | 0.99 |
+| écart de niveau 4 %/niv · cap×1,6 | 12 | 100 % | 1.0 s | 99 % | 100 % | 6.1 s | 63 % | 0.09 |
+| écart de niveau 4 %/niv · cap×1,6 | 15 | 100 % | 1.8 s | 93 % | 100 % | 9.0 s | 47 % | 0.99 |
+| écart de niveau 4 %/niv · cap×1,6 | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
 | early doux + écart 3 % | 9 | 100 % | 1.4 s | 98 % | 100 % | 7.6 s | 61 % | 0.26 |
 | early doux + écart 3 % | 12 | 100 % | 1.8 s | 95 % | 100 % | 9.9 s | 58 % | 0.98 |
-| early doux + écart 3 % | 15 | 100 % | 2.5 s | 90 % | 49 % | 11.7 s | 10 % | 1.00 |
-| early moyen + écart 3 % | 9 | 100 % | 1.8 s | 96 % | 100 % | 8.9 s | 71 % | 0.85 |
+| early doux + écart 3 % | 15 | 100 % | 2.5 s | 90 % | 48 % | 11.8 s | 10 % | 1.00 |
+| early doux + écart 3 % | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
+| early moyen + écart 3 % | 9 | 100 % | 1.8 s | 96 % | 100 % | 8.9 s | 71 % | 0.86 |
 | early moyen + écart 3 % | 12 | 100 % | 2.2 s | 93 % | 97 % | 11.5 s | 36 % | 1.00 |
-| early moyen + écart 3 % | 15 | 100 % | 2.9 s | 86 % | 21 % | 11.8 s | 3 % | 1.00 |
-| early fort + écart de niveau | 9 | 100 % | 2.2 s | 93 % | 94 % | 12.1 s | 35 % | 1.00 |
-| early fort + écart de niveau | 12 | 100 % | 2.9 s | 89 % | 15 % | 12.7 s | 2 % | 1.00 |
+| early moyen + écart 3 % | 15 | 100 % | 2.9 s | 85 % | 19 % | 11.8 s | 2 % | 1.00 |
+| early moyen + écart 3 % | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
+| early fort + écart de niveau | 9 | 100 % | 2.3 s | 93 % | 94 % | 12.1 s | 35 % | 1.00 |
+| early fort + écart de niveau | 12 | 100 % | 2.9 s | 89 % | 14 % | 12.7 s | 2 % | 1.00 |
 | early fort + écart de niveau | 15 | 100 % | 3.6 s | 78 % | 0 % | 10.8 s | 0 % | 1.00 |
+| early fort + écart de niveau | 20 | 100 % | 3.5 s | 66 % | 0 % | 8.3 s | 0 % | 1.00 |
+
+## Build LOW — stuff nivelé
+
+| Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| référence actuelle | 9 | 100 % | 0.3 s | 100 % | 100 % | 2.9 s | 92 % | 0.00 |
+| référence actuelle | 12 | 100 % | 0.6 s | 100 % | 100 % | 3.4 s | 89 % | 0.00 |
+| référence actuelle | 15 | 100 % | 0.8 s | 99 % | 100 % | 4.3 s | 79 % | 0.00 |
+| référence actuelle | 20 | 100 % | 1.5 s | 95 % | 100 % | 6.4 s | 60 % | 0.41 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 9 | 100 % | 1.0 s | 100 % | 100 % | 5.5 s | 79 % | 0.00 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 12 | 100 % | 1.0 s | 99 % | 100 % | 5.5 s | 74 % | 0.00 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 15 | 100 % | 1.3 s | 96 % | 100 % | 6.0 s | 64 % | 0.02 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 20 | 100 % | 1.5 s | 95 % | 100 % | 6.4 s | 60 % | 0.41 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 9 | 100 % | 1.1 s | 99 % | 100 % | 6.4 s | 68 % | 0.00 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 12 | 100 % | 1.3 s | 98 % | 100 % | 6.4 s | 66 % | 0.00 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 15 | 100 % | 1.5 s | 95 % | 100 % | 6.7 s | 59 % | 0.08 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 20 | 100 % | 1.5 s | 95 % | 100 % | 6.4 s | 60 % | 0.41 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 9 | 100 % | 1.4 s | 98 % | 100 % | 8.2 s | 55 % | 0.08 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 12 | 100 % | 1.6 s | 96 % | 100 % | 8.1 s | 56 % | 0.19 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 15 | 100 % | 1.8 s | 94 % | 100 % | 8.0 s | 66 % | 0.64 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 20 | 100 % | 1.5 s | 95 % | 100 % | 6.4 s | 60 % | 0.41 |
+| écart de niveau 3 %/niv · cap×1,5 | 9 | 100 % | 0.4 s | 100 % | 100 % | 3.9 s | 85 % | 0.00 |
+| écart de niveau 3 %/niv · cap×1,5 | 12 | 100 % | 0.9 s | 99 % | 100 % | 5.0 s | 72 % | 0.00 |
+| écart de niveau 3 %/niv · cap×1,5 | 15 | 100 % | 1.3 s | 95 % | 100 % | 6.7 s | 64 % | 0.49 |
+| écart de niveau 3 %/niv · cap×1,5 | 20 | 100 % | 2.4 s | 84 % | 30 % | 9.2 s | 5 % | 1.00 |
+| écart de niveau 4 %/niv · cap×1,6 | 9 | 100 % | 0.6 s | 100 % | 100 % | 4.3 s | 82 % | 0.00 |
+| écart de niveau 4 %/niv · cap×1,6 | 12 | 100 % | 0.9 s | 99 % | 100 % | 5.5 s | 65 % | 0.00 |
+| écart de niveau 4 %/niv · cap×1,6 | 15 | 100 % | 1.4 s | 93 % | 100 % | 7.1 s | 60 % | 0.63 |
+| écart de niveau 4 %/niv · cap×1,6 | 20 | 100 % | 2.6 s | 81 % | 6 % | 8.7 s | 0 % | 1.00 |
+| early doux + écart 3 % | 9 | 100 % | 1.3 s | 98 % | 100 % | 7.5 s | 56 % | 0.11 |
+| early doux + écart 3 % | 12 | 100 % | 1.6 s | 95 % | 100 % | 8.7 s | 66 % | 0.84 |
+| early doux + écart 3 % | 15 | 100 % | 2.0 s | 91 % | 99 % | 9.8 s | 39 % | 1.00 |
+| early doux + écart 3 % | 20 | 100 % | 2.4 s | 84 % | 30 % | 9.2 s | 5 % | 1.00 |
+| early moyen + écart 3 % | 9 | 100 % | 1.7 s | 96 % | 100 % | 8.7 s | 63 % | 0.60 |
+| early moyen + écart 3 % | 12 | 100 % | 2.0 s | 94 % | 100 % | 10.1 s | 55 % | 0.99 |
+| early moyen + écart 3 % | 15 | 100 % | 2.3 s | 89 % | 78 % | 10.8 s | 23 % | 1.00 |
+| early moyen + écart 3 % | 20 | 100 % | 2.4 s | 84 % | 30 % | 9.2 s | 5 % | 1.00 |
+| early fort + écart de niveau | 9 | 100 % | 2.2 s | 94 % | 99 % | 12.0 s | 39 % | 1.00 |
+| early fort + écart de niveau | 12 | 100 % | 2.7 s | 89 % | 40 % | 13.0 s | 7 % | 1.00 |
+| early fort + écart de niveau | 15 | 100 % | 2.9 s | 82 % | 22 % | 11.7 s | 1 % | 1.00 |
+| early fort + écart de niveau | 20 | 100 % | 2.6 s | 81 % | 6 % | 8.7 s | 0 % | 1.00 |
+
+## Build LOW — stuff attendu
+
+| Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| référence actuelle | 9 | 100 % | 0.2 s | 100 % | 100 % | 2.2 s | 95 % | 0.00 |
+| référence actuelle | 12 | 100 % | 0.2 s | 100 % | 100 % | 2.6 s | 93 % | 0.00 |
+| référence actuelle | 15 | 100 % | 0.6 s | 100 % | 100 % | 3.4 s | 85 % | 0.00 |
+| référence actuelle | 20 | 100 % | 1.1 s | 99 % | 100 % | 4.9 s | 62 % | 0.01 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 9 | 100 % | 0.6 s | 100 % | 100 % | 4.2 s | 87 % | 0.00 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 12 | 100 % | 0.8 s | 100 % | 100 % | 4.3 s | 83 % | 0.00 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 15 | 100 % | 1.0 s | 98 % | 100 % | 4.7 s | 74 % | 0.00 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 20 | 100 % | 1.1 s | 99 % | 100 % | 4.9 s | 62 % | 0.01 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 9 | 100 % | 0.9 s | 100 % | 100 % | 4.9 s | 82 % | 0.00 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 12 | 100 % | 1.0 s | 99 % | 100 % | 4.9 s | 79 % | 0.00 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 15 | 100 % | 1.2 s | 97 % | 100 % | 5.2 s | 70 % | 0.00 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 20 | 100 % | 1.1 s | 99 % | 100 % | 4.9 s | 62 % | 0.01 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 9 | 100 % | 1.1 s | 99 % | 100 % | 6.3 s | 70 % | 0.00 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 12 | 100 % | 1.1 s | 98 % | 100 % | 6.0 s | 70 % | 0.00 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 15 | 100 % | 1.3 s | 95 % | 100 % | 6.2 s | 61 % | 0.03 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 20 | 100 % | 1.1 s | 99 % | 100 % | 4.9 s | 62 % | 0.01 |
+| écart de niveau 3 %/niv · cap×1,5 | 9 | 100 % | 0.2 s | 100 % | 100 % | 3.0 s | 90 % | 0.00 |
+| écart de niveau 3 %/niv · cap×1,5 | 12 | 100 % | 0.6 s | 100 % | 100 % | 3.8 s | 82 % | 0.00 |
+| écart de niveau 3 %/niv · cap×1,5 | 15 | 100 % | 1.0 s | 98 % | 100 % | 5.2 s | 62 % | 0.01 |
+| écart de niveau 3 %/niv · cap×1,5 | 20 | 100 % | 1.9 s | 87 % | 98 % | 7.8 s | 35 % | 1.00 |
+| écart de niveau 4 %/niv · cap×1,6 | 9 | 100 % | 0.2 s | 100 % | 100 % | 3.3 s | 88 % | 0.00 |
+| écart de niveau 4 %/niv · cap×1,6 | 12 | 100 % | 0.7 s | 100 % | 100 % | 4.3 s | 77 % | 0.00 |
+| écart de niveau 4 %/niv · cap×1,6 | 15 | 100 % | 1.0 s | 98 % | 100 % | 5.5 s | 63 % | 0.17 |
+| écart de niveau 4 %/niv · cap×1,6 | 20 | 100 % | 2.0 s | 86 % | 72 % | 8.4 s | 19 % | 1.00 |
+| early doux + écart 3 % | 9 | 100 % | 0.9 s | 100 % | 100 % | 5.7 s | 72 % | 0.00 |
+| early doux + écart 3 % | 12 | 100 % | 1.2 s | 98 % | 100 % | 6.4 s | 60 % | 0.04 |
+| early doux + écart 3 % | 15 | 100 % | 1.6 s | 92 % | 100 % | 7.4 s | 64 % | 0.80 |
+| early doux + écart 3 % | 20 | 100 % | 1.9 s | 87 % | 98 % | 7.8 s | 35 % | 1.00 |
+| early moyen + écart 3 % | 9 | 100 % | 1.3 s | 98 % | 100 % | 6.6 s | 63 % | 0.03 |
+| early moyen + écart 3 % | 12 | 100 % | 1.5 s | 95 % | 100 % | 7.3 s | 65 % | 0.45 |
+| early moyen + écart 3 % | 15 | 100 % | 1.9 s | 92 % | 100 % | 8.3 s | 56 % | 0.98 |
+| early moyen + écart 3 % | 20 | 100 % | 1.9 s | 87 % | 98 % | 7.8 s | 35 % | 1.00 |
+| early fort + écart de niveau | 9 | 100 % | 1.7 s | 96 % | 100 % | 9.2 s | 67 % | 0.91 |
+| early fort + écart de niveau | 12 | 100 % | 2.0 s | 93 % | 100 % | 10.6 s | 42 % | 1.00 |
+| early fort + écart de niveau | 15 | 100 % | 2.3 s | 88 % | 78 % | 10.8 s | 19 % | 1.00 |
+| early fort + écart de niveau | 20 | 100 % | 2.0 s | 86 % | 72 % | 8.4 s | 19 % | 1.00 |
 
 ## Build `reference`
 
@@ -44,47 +135,47 @@ Sauvegarde importée : palier **9**, niveau **24**, ATQ **212**, PV **684**.
 | référence actuelle | 15 | 100 % | 0.1 s | 100 % | 100 % | 1.4 s | 99 % | 0.00 |
 | référence actuelle | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | référence actuelle | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| référence actuelle | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| référence actuelle | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 | early doux · PV m×3 · g×2,5 · ATQ×1,5 | 9 | 100 % | 0.0 s | 100 % | 100 % | 1.3 s | 99 % | 0.00 |
 | early doux · PV m×3 · g×2,5 · ATQ×1,5 | 15 | 100 % | 0.2 s | 100 % | 100 % | 1.9 s | 96 % | 0.00 |
 | early doux · PV m×3 · g×2,5 · ATQ×1,5 | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | early doux · PV m×3 · g×2,5 · ATQ×1,5 | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| early doux · PV m×3 · g×2,5 · ATQ×1,5 | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 | early moyen · PV m×4 · g×3 · ATQ×1,75 | 9 | 100 % | 0.1 s | 100 % | 100 % | 1.5 s | 98 % | 0.00 |
 | early moyen · PV m×4 · g×3 · ATQ×1,75 | 15 | 100 % | 0.3 s | 100 % | 100 % | 2.1 s | 96 % | 0.00 |
 | early moyen · PV m×4 · g×3 · ATQ×1,75 | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | early moyen · PV m×4 · g×3 · ATQ×1,75 | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| early moyen · PV m×4 · g×3 · ATQ×1,75 | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| early moyen · PV m×4 · g×3 · ATQ×1,75 | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 | early fort · PV m×5 · g×4 · ATQ×2 | 9 | 100 % | 0.2 s | 100 % | 100 % | 2.0 s | 97 % | 0.00 |
 | early fort · PV m×5 · g×4 · ATQ×2 | 15 | 100 % | 0.4 s | 100 % | 100 % | 2.5 s | 95 % | 0.00 |
 | early fort · PV m×5 · g×4 · ATQ×2 | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | early fort · PV m×5 · g×4 · ATQ×2 | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| early fort · PV m×5 · g×4 · ATQ×2 | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| early fort · PV m×5 · g×4 · ATQ×2 | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 | écart de niveau 3 %/niv · cap×1,5 | 9 | 100 % | 0.0 s | 100 % | 100 % | 0.6 s | 100 % | 0.00 |
 | écart de niveau 3 %/niv · cap×1,5 | 15 | 100 % | 0.1 s | 100 % | 100 % | 1.4 s | 99 % | 0.00 |
 | écart de niveau 3 %/niv · cap×1,5 | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | écart de niveau 3 %/niv · cap×1,5 | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| écart de niveau 3 %/niv · cap×1,5 | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| écart de niveau 3 %/niv · cap×1,5 | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 | écart de niveau 4 %/niv · cap×1,6 | 9 | 100 % | 0.0 s | 100 % | 100 % | 0.6 s | 100 % | 0.00 |
 | écart de niveau 4 %/niv · cap×1,6 | 15 | 100 % | 0.1 s | 100 % | 100 % | 1.4 s | 99 % | 0.00 |
 | écart de niveau 4 %/niv · cap×1,6 | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | écart de niveau 4 %/niv · cap×1,6 | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| écart de niveau 4 %/niv · cap×1,6 | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| écart de niveau 4 %/niv · cap×1,6 | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 | early doux + écart 3 % | 9 | 100 % | 0.0 s | 100 % | 100 % | 1.3 s | 99 % | 0.00 |
 | early doux + écart 3 % | 15 | 100 % | 0.2 s | 100 % | 100 % | 1.9 s | 96 % | 0.00 |
 | early doux + écart 3 % | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | early doux + écart 3 % | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| early doux + écart 3 % | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| early doux + écart 3 % | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 | early moyen + écart 3 % | 9 | 100 % | 0.1 s | 100 % | 100 % | 1.5 s | 98 % | 0.00 |
 | early moyen + écart 3 % | 15 | 100 % | 0.3 s | 100 % | 100 % | 2.1 s | 96 % | 0.00 |
 | early moyen + écart 3 % | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | early moyen + écart 3 % | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| early moyen + écart 3 % | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| early moyen + écart 3 % | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 | early fort + écart de niveau | 9 | 100 % | 0.2 s | 100 % | 100 % | 2.0 s | 97 % | 0.00 |
 | early fort + écart de niveau | 15 | 100 % | 0.4 s | 100 % | 100 % | 2.5 s | 95 % | 0.00 |
 | early fort + écart de niveau | 20 | 100 % | 0.4 s | 100 % | 100 % | 2.4 s | 93 % | 0.00 |
 | early fort + écart de niveau | 25 | 100 % | 1.9 s | 88 % | 100 % | 11.4 s | 57 % | 1.00 |
-| early fort + écart de niveau | 36 | 100 % | 5.6 s | 44 % | 58 % | 18.6 s | 12 % | 1.00 |
+| early fort + écart de niveau | 36 | 100 % | 5.6 s | 45 % | 56 % | 18.6 s | 12 % | 1.00 |
 
 ## Rythme d’XP
 

@@ -15,6 +15,7 @@ Usage :
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import sys
 from dataclasses import dataclass, replace
@@ -33,7 +34,14 @@ from balance_sim import (
     simulate,
     simulate_mixed,
 )
-from save_import import LoadedSave, load_save
+from save_import import (
+    LoadedSave,
+    apply_rule,
+    base_stats,
+    build_from_stats,
+    load_save,
+    project_save,
+)
 
 
 @dataclass(frozen=True)
@@ -92,9 +100,13 @@ def xp_projection(
         while xp >= xp_next(level):
             xp -= xp_next(level)
             level += 1
-        if floor in (5, 9, 15, 20, 25, 30, 36):
-            rows[floor] = level
+        rows[floor] = level
     return rows
+
+
+def xp_level_at(target_floor: int, mobs_per_floor: int = 7) -> int:
+    """Niveau atteint en jouant normalement jusqu'au palier demandé."""
+    return xp_projection(10.0, 0.0, mobs_per_floor, max_floor=target_floor)[target_floor]
 
 
 def early_factor(value: float, floor: int, end_floor: int) -> float:
@@ -201,15 +213,23 @@ def configs() -> list[EarlyConfig]:
     ]
 
 
-def low_rows(save: LoadedSave, runs: int) -> list[ResultRow]:
+def low_build_at(
+    save: LoadedSave, raw: dict, floor: int, gear_mode: str
+) -> tuple[Build, int]:
+    if gear_mode == "frozen":
+        return save.build_at(floor), save.level
+    level = xp_level_at(floor)
+    doc = project_save(raw, floor, level, gear_mode)
+    stats = apply_rule(base_stats(doc), floor)
+    return build_from_stats(stats, "LOW", save.ferveur), level
+
+
+def low_rows(save: LoadedSave, raw: dict, runs: int, gear_mode: str) -> list[ResultRow]:
     rows: list[ResultRow] = []
     for config in configs():
-        for floor in (9, 12, 15):
-            rows.append(
-                simulate_row(
-                    config.name, save.build_at(floor), floor, save.level, config, runs
-                )
-            )
+        for floor in (9, 12, 15, 20):
+            build, level = low_build_at(save, raw, floor, gear_mode)
+            rows.append(simulate_row(config.name, build, floor, level, config, runs))
     return rows
 
 
@@ -253,22 +273,27 @@ def main() -> None:
         sys.stdout.reconfigure(encoding="utf-8")
 
     save = load_save(args.save, name="LOW")
-    low = low_rows(save, args.runs)
+    raw = json.loads(save.path.read_text(encoding="utf-8"))
+    sections = {
+        "figé": low_rows(save, raw, args.runs, "frozen"),
+        "nivelé": low_rows(save, raw, args.runs, "leveled"),
+        "attendu": low_rows(save, raw, args.runs, "expected"),
+    }
     reference = reference_rows(args.runs)
     xp_lines = xp_table()
 
+    def print_section(title: str, rows: list[ResultRow]) -> None:
+        print(f"\n## {title}\n")
+        print("| Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |")
+        print("|---|---:|---:|---:|---:|---:|---:|---:|---:|")
+        for row in rows:
+            print(format_row(row))
+
     print(f"Sauvegarde : {save.path}")
     print(f"Palier {save.floor} · niveau {save.level} · PV {save.stats['hp']:.0f} · ATQ {save.stats['atk']:.0f}")
-    print("\n## LOW\n")
-    print("| Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |")
-    print("|---|---:|---:|---:|---:|---:|---:|---:|---:|")
-    for row in low:
-        print(format_row(row))
-    print("\n## REFERENCE\n")
-    print("| Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |")
-    print("|---|---:|---:|---:|---:|---:|---:|---:|---:|")
-    for row in reference:
-        print(format_row(row))
+    for title, rows in sections.items():
+        print_section(f"LOW — stuff {title}", rows)
+    print_section("REFERENCE", reference)
     print("\n## XP\n")
     print("\n".join(xp_lines))
 
@@ -282,12 +307,17 @@ def main() -> None:
             f"Sauvegarde importée : palier **{save.floor}**, niveau **{save.level}**, "
             f"ATQ **{save.stats['atk']:.0f}**, PV **{save.stats['hp']:.0f}**.",
             "",
-            "## Build LOW",
-            "",
-            "| Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
-            *[format_row(row) for row in low],
-            "",
+        ]
+        for title, rows in sections.items():
+            lines += [
+                f"## Build LOW — stuff {title}",
+                "",
+                "| Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |",
+                "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+                *[format_row(row) for row in rows],
+                "",
+            ]
+        lines += [
             "## Build `reference`",
             "",
             "| Scénario | Palier | Monstre | TTK | PV restants | Gardien | TTK | PV restants | Rations |",

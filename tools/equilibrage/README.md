@@ -49,7 +49,7 @@ python tools/equilibrage/earlygame_experiment.py \
   --out docs/analyse-earlygame-data.md
 ```
 
-Les sauvegardes ne sont pas versionnées dans le dépôt. Rapport d’analyse : [`docs/analyse-earlygame.md`](../../docs/analyse-earlygame.md).
+Les sauvegardes ne sont pas versionnées dans le dépôt. Le rapport inclut le stuff figé, le stuff nivelé et le stuff attendu (rareté +1, +5 niveaux de forge). Rapport d’analyse : [`docs/analyse-earlygame.md`](../../docs/analyse-earlygame.md).
 
 Sur Windows, avec le venv du projet :
 
