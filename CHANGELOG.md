@@ -1,5 +1,14 @@
 # Journal des versions
 
+## v0.21.3
+- **Coffre de camp** : les boutons **PRENDRE** sont grisés quand l'inventaire est plein. **TOUT PRENDRE** n'est actif que si tous les objets tiennent dans les places libres, avec le nombre de places manquantes affiché. Le raccourci du camp suit la même règle.
+- **Envoi au coffre** : icône coffre dans la fiche d'un objet de l'inventaire, à côté de la croix. Grisée pour un objet verrouillé, absente pour un objet équipé.
+- **Fiche d'un objet du coffre** : comparaison avec l'équipement porté, **PRENDRE** si une place est libre, **VENDRE** et **DÉMONTER** avec confirmation.
+- **Démontage** : les éclats affichés et réels sont alignés (épique 6, légendaire 10), plafond d'éclats compris.
+- **Encodage** : correction des séquences de mojibake de l'interface et garde-fou `tools/check_encoding.py` exécuté en CI.
+- **Tests** : **155 / 155**, lint OK.
+- **Build** : `versionCode 61`, `versionName 0.21.3`. Release GitHub **v0.21.3** avec APK et AAB.
+
 ## v0.21.2
 - **Pitié de gardien** : **−1 % PV/ATQ par défaite**, plafond **−3 %** (au lieu de −5 %/−25 %). Après 3 défaites, `reference` passe à 56–79 % au lieu de 100 %.
 - **Potions d'ATQ à risque** : Potion de force **+40 % ATQ / +40 % dégâts subis**, Fiole de rage **+50 % / +50 %** pendant 20 s. Le combat est accéléré (11–14 s) sans devenir automatique : 58–78 % de victoires.
