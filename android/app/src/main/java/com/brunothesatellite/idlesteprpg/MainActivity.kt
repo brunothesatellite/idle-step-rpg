@@ -163,6 +163,13 @@ private fun GameRoot(vm: GameViewModel) {
         previousMode = state.mode
     }
 
+    // Un coffre peut disparaître ou être ouvert pendant que sa fenêtre est
+    // encore marquée ouverte. Sans ce garde-fou, le drapeau restait vrai et
+    // masquait le portail du gardien alors que le héros était bloqué à 90 m.
+    LaunchedEffect(state.chest) {
+        if (state.chest == null && ui.chestOpen) vm.closeChest()
+    }
+
     BackHandler(
         enabled = ui.resume != null || ui.campOpen || ui.settingsOpen || ui.prefsOpen ||
             ui.selectedItem != null || ui.chestOpen || ui.journalOpen ||
@@ -330,7 +337,7 @@ private fun GameRoot(vm: GameViewModel) {
             }
             if (state.mode == "gate" && state.pendingBoss != null &&
                 !ui.campOpen && !ui.settingsOpen && !ui.prefsOpen &&
-                !ui.codexOpen && !ui.journalOpen && !ui.chestOpen &&
+                !ui.codexOpen && !ui.journalOpen && !(ui.chestOpen && state.chest != null) &&
                 ui.selectedItem == null && ui.selectedStashItem == null && !state.endingPending && !ui.endingPreview
             ) {
                 GuardianGateDialog(

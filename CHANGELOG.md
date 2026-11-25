@@ -1,5 +1,10 @@
 # Journal des versions
 
+## v0.22.1
+- **Correctif portail du gardien** : un drapeau de coffre resté ouvert après la disparition ou l'ouverture du coffre pouvait masquer la gate à 90 m et bloquer le héros avec de la réserve. Le drapeau est maintenant fermé dès que le coffre n'existe plus, et la gate ne dépend plus d'un coffre absent.
+- **Tests** : **160 / 160**, lint OK.
+- **Build** : `versionCode 63`, `versionName 0.22.1`. Aucune release GitHub.
+
 ## v0.22.0
 - **Difficulté adaptative** : au-delà de **4 niveaux d'avance** sur le palier, les ennemis gagnent **+5 % PV/ATQ par niveau d'écart**, plafond **×2,0**. Aucun effet au niveau du palier : le départ niveau 1 n'est pas pénalisé.
 - **Télémétrie locale** : **100 derniers combats** détaillés (TTK/TTD, PV, soins, stats du héros, ennemi, potions, rations), agrégats par palier, historique des niveaux et **60 jours** de synthèse.
