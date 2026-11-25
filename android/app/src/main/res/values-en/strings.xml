@@ -90,6 +90,7 @@
     <string name="settings_save">Save</string>
     <string name="settings_save_note">Progress is also saved automatically. Export it before changing phones.</string>
     <string name="settings_export">EXPORT</string>
+    <string name="settings_export_report">EXPORT BALANCE REPORT</string>
     <string name="settings_import">IMPORT</string>
     <string name="settings_clear_progress">CLEAR PROGRESS</string>
     <string name="settings_step_source">Step source</string>

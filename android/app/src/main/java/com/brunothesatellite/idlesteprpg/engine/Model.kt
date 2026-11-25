@@ -123,8 +123,102 @@ data class JournalEntry(
     val type: String = "neutral"
 )
 
+const val TELEMETRY_SCHEMA = 2
+const val TELEMETRY_FIGHTS = 100
+const val TELEMETRY_DAYS = 60
+const val TELEMETRY_LEVELS = 200
+const val TELEMETRY_FLOORS = 200
+
+@Serializable
+data class FightSample(
+    var at: Long = 0L,
+    var floor: Int = 1,
+    var biome: String = "",
+    var level: Int = 1,
+    var kind: String = "normal",
+    var enemyId: String = "",
+    var enemyLevel: Int = 0,
+    var elite: Boolean = false,
+    var tier: String = "",
+    var win: Boolean = false,
+    var durationMs: Long = 0L,
+    var hpStart: Int = 0,
+    var hpEnd: Int = 0,
+    var damageTaken: Int = 0,
+    var healLifesteal: Int = 0,
+    var healRegen: Int = 0,
+    var healRation: Int = 0,
+    var healPotion: Int = 0,
+    var rations: Int = 0,
+    var potions: List<String> = emptyList(),
+    var buffs: List<String> = emptyList(),
+    var ferveur: Int = 0,
+    var atk: Int = 0,
+    var maxHp: Int = 0,
+    var vit: Double = 0.0,
+    var crit: Int = 0,
+    var critDamage: Double = 0.0,
+    var regen: Double = 0.0,
+    var lifesteal: Double = 0.0,
+    var damageReduction: Double = 0.0,
+    var bossDamage: Double = 0.0,
+    var enemyHp: Double = 0.0,
+    var enemyAtk: Double = 0.0,
+    var enemyIntervalMs: Long = 0L,
+    var modifier: String = "",
+    var ability: String = "",
+    var heroHits: Int = 0,
+    var enemyHits: Int = 0,
+    var xpGained: Int = 0,
+    var goldGained: Int = 0
+)
+
+@Serializable
+data class FloorTelemetry(
+    var attempts: Int = 0,
+    var wins: Int = 0,
+    var bossAttempts: Int = 0,
+    var bossWins: Int = 0,
+    var farmAttempts: Int = 0,
+    var farmWins: Int = 0,
+    var totalMs: Long = 0L,
+    var totalDamageTaken: Long = 0L,
+    var rations: Int = 0,
+    var potions: Int = 0
+)
+
+@Serializable
+data class LevelTelemetry(
+    var at: Long = 0L,
+    var level: Int = 1,
+    var floor: Int = 1,
+    var xp: Int = 0,
+    var atk: Int = 0,
+    var maxHp: Int = 0,
+    var vit: Double = 0.0,
+    var crit: Int = 0,
+    var power: Int = 0,
+    var gearLevels: List<Int> = emptyList()
+)
+
+@Serializable
+data class DayTelemetry(
+    var day: String = "",
+    var fights: Int = 0,
+    var wins: Int = 0,
+    var bossFights: Int = 0,
+    var bossWins: Int = 0,
+    var totalMs: Long = 0L,
+    var damageTaken: Long = 0L,
+    var rations: Int = 0,
+    var potions: Int = 0,
+    var levelStart: Int = 1,
+    var levelEnd: Int = 1
+)
+
 @Serializable
 data class BalanceTelemetry(
+    var schema: Int = TELEMETRY_SCHEMA,
     var normalFights: Int = 0,
     var normalWins: Int = 0,
     var bossFights: Int = 0,
@@ -132,7 +226,49 @@ data class BalanceTelemetry(
     var combatMs: Long = 0,
     var combatCount: Int = 0,
     var bossAttempts: Map<Int, Int> = emptyMap(),
-    var bossWinsByFloor: Map<Int, Int> = emptyMap()
+    var bossWinsByFloor: Map<Int, Int> = emptyMap(),
+    var recentFights: List<FightSample> = emptyList(),
+    var floorStats: Map<Int, FloorTelemetry> = emptyMap(),
+    var levelHistory: List<LevelTelemetry> = emptyList(),
+    var days: Map<String, DayTelemetry> = emptyMap()
+)
+
+@Serializable
+data class ReportStats(
+    var atk: Int = 0,
+    var maxHp: Int = 0,
+    var vit: Double = 0.0,
+    var crit: Int = 0,
+    var regen: Double = 0.0,
+    var lifesteal: Double = 0.0,
+    var damageReduction: Double = 0.0,
+    var critDamage: Double = 0.0,
+    var bossDamage: Double = 0.0,
+    var damageTaken: Double = 0.0,
+    var power: Int = 0
+)
+
+@Serializable
+data class BalanceReport(
+    var generatedAt: Long = 0L,
+    var appVersion: String = "",
+    var saveVersion: Int = 0,
+    var telemetrySchema: Int = TELEMETRY_SCHEMA,
+    var day: String = "",
+    var floor: Int = 1,
+    var level: Int = 1,
+    var xp: Int = 0,
+    var gold: Int = 0,
+    var rations: Int = 0,
+    var shards: Int = 0,
+    var ferveur: Int = 0,
+    var totalSteps: Int = 0,
+    var holdFloor: Boolean = false,
+    var bossPity: Double = 0.0,
+    var stats: ReportStats = ReportStats(),
+    var equipment: List<Item> = emptyList(),
+    var upgrades: Upgrades = Upgrades(),
+    var telemetry: BalanceTelemetry = BalanceTelemetry()
 )
 
 @Serializable
@@ -161,6 +297,18 @@ data class FightData(
     var abilityFlashMs: Double = 0.0,
     var shieldMs: Double = 0.0,
     var phase2: Boolean = false,
+    var startHp: Double = 0.0,
+    var startFerveur: Int = 0,
+    var damageTaken: Double = 0.0,
+    var healLifesteal: Double = 0.0,
+    var healRegen: Double = 0.0,
+    var healRation: Double = 0.0,
+    var healPotion: Double = 0.0,
+    var heroHits: Int = 0,
+    var enemyHits: Int = 0,
+    var potionsUsed: List<String> = emptyList(),
+    var buffsAtStart: List<String> = emptyList(),
+    var heroAtStart: ReportStats = ReportStats(),
     /** Pool d'apparition : easy, mid, hard ou farm. */
     var tier: String = "easy",
     /** Identifiant stable de la créature, indépendant du nom affiché. */

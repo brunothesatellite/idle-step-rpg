@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg
 
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.BalanceReport
 import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.FightData
 import com.brunothesatellite.idlesteprpg.engine.GATE_METERS
@@ -19,6 +20,8 @@ import com.brunothesatellite.idlesteprpg.engine.fireTier
 import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.oathsFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -1605,6 +1608,82 @@ class GameEngineTest {
         assertEquals(3, GameEngine.salvageShards("rare"))
         assertEquals(6, GameEngine.salvageShards("epic"))
         assertEquals(10, GameEngine.salvageShards("legendary"))
+    }
+
+    @Test
+    fun telemetryCapturesFightSample() {
+        val state = GameState()
+        state.floor = 9
+        state.level = 10
+        state.day = "2026-11-25"
+        GameEngine.startFight(state)
+        val f = state.fight!!
+        f.elapsedMs = 4_200.0
+        f.damageTaken = 120.0
+        f.healRegen = 10.0
+        f.heroHits = 7
+        f.enemyHits = 3
+        GameEngine.victory(state, f)
+
+        val sample = state.telemetry.recentFights.single()
+        assertTrue(sample.win)
+        assertEquals("normal", sample.kind)
+        assertEquals(9, sample.floor)
+        assertEquals(4_200L, sample.durationMs)
+        assertEquals(120, sample.damageTaken)
+        assertEquals(7, sample.heroHits)
+        assertEquals(3, sample.enemyHits)
+        assertEquals(1, state.telemetry.floorStats[9]?.wins)
+        assertEquals(1, state.telemetry.days["2026-11-25"]?.wins)
+    }
+
+    @Test
+    fun telemetryKeepsOnlyTheLastHundredFights() {
+        val state = GameState()
+        repeat(105) {
+            GameEngine.startFight(state)
+            val f = state.fight!!
+            f.elapsedMs = 1_000.0
+            GameEngine.victory(state, f)
+        }
+        assertEquals(100, state.telemetry.recentFights.size)
+    }
+
+    @Test
+    fun telemetryRecordsLevelUps() {
+        val state = GameState()
+        state.floor = 9
+        GameEngine.startFight(state)
+        val f = state.fight!!
+        f.elapsedMs = 1_000.0
+        f.xp = 100_000
+        GameEngine.victory(state, f)
+        assertTrue(state.telemetry.levelHistory.isNotEmpty())
+        assertTrue(state.telemetry.levelHistory.last().level > 1)
+    }
+
+    @Test
+    fun telemetrySerializesInSaveAndReport() {
+        val state = GameState()
+        GameEngine.startFight(state)
+        val f = state.fight!!
+        f.elapsedMs = 1_000.0
+        GameEngine.victory(state, f)
+
+        val telemetryJson = Json { encodeDefaults = true }.encodeToString(state.telemetry)
+        assertTrue(telemetryJson.contains("recentFights"))
+        assertTrue(telemetryJson.contains("floorStats"))
+        assertTrue(telemetryJson.contains("levelHistory"))
+
+        val reportJson = Json { encodeDefaults = true }.encodeToString(
+            BalanceReport(
+                floor = state.floor,
+                level = state.level,
+                telemetry = state.telemetry
+            )
+        )
+        assertTrue(reportJson.contains("telemetry"))
+        assertTrue(reportJson.contains("\"schema\":2"))
     }
 
     @Test

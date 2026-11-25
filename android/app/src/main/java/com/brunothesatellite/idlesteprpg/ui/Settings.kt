@@ -79,6 +79,9 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri -> if (uri != null) vm.exportTo(uri) }
+    val reportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri -> if (uri != null) vm.exportBalanceReportTo(uri) }
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri -> if (uri != null) vm.importFrom(uri) }
@@ -441,6 +444,12 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                         onClick = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) }
                     )
                 }
+                Spacer(Modifier.height(5.dp))
+                OverlayAction(
+                    stringResource(R.string.settings_export_report),
+                    Modifier.fillMaxWidth(),
+                    onClick = { reportLauncher.launch("marche-ames-rapport-equilibrage.json") }
+                )
                 Spacer(Modifier.height(5.dp))
                 OverlayAction(
                     stringResource(R.string.settings_clear_progress),

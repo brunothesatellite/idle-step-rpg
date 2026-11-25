@@ -805,6 +805,20 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
+    fun exportBalanceReportTo(uri: Uri) {
+        viewModelScope.launch {
+            val ok = runCatching {
+                val text = container.gameRepository.exportBalanceReport(BuildConfig.VERSION_NAME)
+                withContext(Dispatchers.IO) {
+                    container.context.contentResolver.openOutputStream(uri)?.use {
+                        it.write(text.toByteArray(Charsets.UTF_8))
+                    } ?: error("Flux indisponible")
+                }
+            }.isSuccess
+            _toasts.emit(if (ok) tr(R.string.toast_export_ok) else tr(R.string.toast_export_fail))
+        }
+    }
+
     fun importFrom(uri: Uri) {
         inspectImport(uri)
     }

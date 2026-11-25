@@ -92,6 +92,7 @@
     <string name="settings_save">Sauvegarde</string>
     <string name="settings_save_note">La progression est aussi sauvegardée automatiquement. Exportez-la avant de changer de téléphone.</string>
     <string name="settings_export">EXPORTER</string>
+    <string name="settings_export_report">EXPORTER LE RAPPORT D\'ÉQUILIBRAGE</string>
     <string name="settings_import">IMPORTER</string>
     <string name="settings_clear_progress">EFFACER LA PROGRESSION</string>
     <string name="settings_step_source">Source de pas</string>

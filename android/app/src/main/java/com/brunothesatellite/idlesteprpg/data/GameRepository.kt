@@ -3,11 +3,14 @@ package com.brunothesatellite.idlesteprpg.data
 import android.content.Context
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.BalanceReport
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
 import com.brunothesatellite.idlesteprpg.engine.OfflineSim
+import com.brunothesatellite.idlesteprpg.engine.ReportStats
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
 import com.brunothesatellite.idlesteprpg.engine.deepCopy
+import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
 import com.brunothesatellite.idlesteprpg.widget.MarcheWidgetProvider
 import com.brunothesatellite.idlesteprpg.widget.WidgetHero
@@ -281,6 +284,46 @@ class GameRepository(
 
     suspend fun exportJson(): String = withContext(Dispatchers.IO) {
         json.encodeToString(_state.value.deepCopy())
+    }
+
+    /** Rapport local d'équilibrage : stats, équipement et télémétrie, sans journal ni inventaire. */
+    suspend fun exportBalanceReport(appVersion: String): String = withContext(Dispatchers.IO) {
+        val state = _state.value.deepCopy()
+        val s = statsOf(state)
+        val report = BalanceReport(
+            generatedAt = System.currentTimeMillis(),
+            appVersion = appVersion,
+            saveVersion = state.version,
+            telemetrySchema = state.telemetry.schema,
+            day = state.day,
+            floor = state.floor,
+            level = state.level,
+            xp = state.xp,
+            gold = state.gold,
+            rations = state.rations,
+            shards = state.shards,
+            ferveur = state.ferveur,
+            totalSteps = state.totalSteps,
+            holdFloor = state.holdFloor,
+            bossPity = state.bossPity,
+            stats = ReportStats(
+                atk = s.atk,
+                maxHp = s.maxHp,
+                vit = s.vit,
+                crit = s.crit,
+                regen = s.regen,
+                lifesteal = s.lifesteal,
+                damageReduction = s.damageReduction,
+                critDamage = s.critDamage,
+                bossDamage = s.bossDamage,
+                damageTaken = s.damageTaken,
+                power = s.power
+            ),
+            equipment = state.equipment,
+            upgrades = state.upgrades,
+            telemetry = state.telemetry
+        )
+        json.encodeToString(report)
     }
 
     suspend fun inspectJson(text: String): SaveSummary? = withContext(Dispatchers.IO) {

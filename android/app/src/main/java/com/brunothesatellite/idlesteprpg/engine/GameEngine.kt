@@ -395,10 +395,146 @@ object GameEngine {
         state.bestiary = state.bestiary + (id to ((state.bestiary[id] ?: 0) + 1))
     }
 
-    private fun recordCombat(state: GameState, f: FightData) {
+    private fun reportStats(s: Stats): ReportStats = ReportStats(
+        atk = s.atk,
+        maxHp = s.maxHp,
+        vit = s.vit,
+        crit = s.crit,
+        regen = s.regen,
+        lifesteal = s.lifesteal,
+        damageReduction = s.damageReduction,
+        critDamage = s.critDamage,
+        bossDamage = s.bossDamage,
+        damageTaken = s.damageTaken,
+        power = s.power
+    )
+
+    private fun recordCombat(state: GameState, f: FightData, win: Boolean) {
         if (f.elapsedMs <= 0.0) return
-        state.telemetry.combatMs += f.elapsedMs.toLong()
+        val duration = f.elapsedMs.toLong().coerceAtLeast(1L)
+        val s = if (f.heroAtStart.atk > 0) f.heroAtStart else reportStats(statsOf(state))
+        val kind = when {
+            f.isBoss -> "boss"
+            f.farm -> "farm"
+            else -> "normal"
+        }
+        val sample = FightSample(
+            at = System.currentTimeMillis(),
+            floor = state.floor,
+            biome = biomeKeyFor(state.floor),
+            level = state.level,
+            kind = kind,
+            enemyId = f.enemyId,
+            enemyLevel = f.enemyLevel,
+            elite = f.elite,
+            tier = f.tier,
+            win = win,
+            durationMs = duration,
+            hpStart = f.startHp.roundToInt(),
+            hpEnd = state.hp.roundToInt(),
+            damageTaken = f.damageTaken.roundToInt(),
+            healLifesteal = f.healLifesteal.roundToInt(),
+            healRegen = f.healRegen.roundToInt(),
+            healRation = f.healRation.roundToInt(),
+            healPotion = f.healPotion.roundToInt(),
+            rations = if (f.usedRation) 1 else 0,
+            potions = f.potionsUsed,
+            buffs = f.buffsAtStart,
+            ferveur = f.startFerveur,
+            atk = s.atk,
+            maxHp = s.maxHp,
+            vit = s.vit,
+            crit = s.crit,
+            critDamage = s.critDamage,
+            regen = s.regen,
+            lifesteal = s.lifesteal,
+            damageReduction = s.damageReduction,
+            bossDamage = s.bossDamage,
+            enemyHp = f.enemyMaxHp,
+            enemyAtk = f.enemyAtk,
+            enemyIntervalMs = f.enemyIntervalMs,
+            modifier = f.modifier,
+            ability = f.ability,
+            heroHits = f.heroHits,
+            enemyHits = f.enemyHits,
+            xpGained = f.xp,
+            goldGained = f.gold
+        )
+
+        state.telemetry.combatMs += duration
         state.telemetry.combatCount++
+        state.telemetry.recentFights =
+            (state.telemetry.recentFights + sample).takeLast(TELEMETRY_FIGHTS)
+
+        val floorStat = state.telemetry.floorStats[sample.floor] ?: FloorTelemetry()
+        floorStat.attempts++
+        if (win) floorStat.wins++
+        if (f.isBoss) {
+            floorStat.bossAttempts++
+            if (win) floorStat.bossWins++
+        }
+        if (f.farm) {
+            floorStat.farmAttempts++
+            if (win) floorStat.farmWins++
+        }
+        floorStat.totalMs += duration
+        floorStat.totalDamageTaken += f.damageTaken.roundToLong()
+        floorStat.rations += if (f.usedRation) 1 else 0
+        floorStat.potions += f.potionsUsed.size
+        state.telemetry.floorStats =
+            (state.telemetry.floorStats + (sample.floor to floorStat))
+                .entries
+                .sortedBy { it.key }
+                .takeLast(TELEMETRY_FLOORS)
+                .associate { it.toPair() }
+
+        val dayKey = state.day.ifBlank { "inconnu" }
+        val dayStat = state.telemetry.days[dayKey]
+            ?: DayTelemetry(day = dayKey, levelStart = state.level, levelEnd = state.level)
+        dayStat.fights++
+        if (win) dayStat.wins++
+        if (f.isBoss) {
+            dayStat.bossFights++
+            if (win) dayStat.bossWins++
+        }
+        dayStat.totalMs += duration
+        dayStat.damageTaken += f.damageTaken.roundToLong()
+        dayStat.rations += if (f.usedRation) 1 else 0
+        dayStat.potions += f.potionsUsed.size
+        dayStat.levelEnd = state.level
+        state.telemetry.days =
+            (state.telemetry.days + (dayKey to dayStat))
+                .entries
+                .sortedBy { it.key }
+                .takeLast(TELEMETRY_DAYS)
+                .associate { it.toPair() }
+    }
+
+    private fun recordLevel(state: GameState, s: Stats) {
+        val event = LevelTelemetry(
+            at = System.currentTimeMillis(),
+            level = state.level,
+            floor = state.floor,
+            xp = state.xp,
+            atk = s.atk,
+            maxHp = s.maxHp,
+            vit = s.vit,
+            crit = s.crit,
+            power = s.power,
+            gearLevels = state.equipment.map { it.level }
+        )
+        state.telemetry.levelHistory =
+            (state.telemetry.levelHistory + event).takeLast(TELEMETRY_LEVELS)
+
+        val dayKey = state.day.ifBlank { "inconnu" }
+        val dayStat = state.telemetry.days[dayKey] ?: return
+        dayStat.levelEnd = state.level
+        state.telemetry.days =
+            (state.telemetry.days + (dayKey to dayStat))
+                .entries
+                .sortedBy { it.key }
+                .takeLast(TELEMETRY_DAYS)
+                .associate { it.toPair() }
     }
 
     fun simulateOffline(
@@ -619,7 +755,11 @@ object GameEngine {
         val bonusRegen = (s.regen - 0.6).coerceAtLeast(0.0)
         val regen = (s.maxHp * 0.006 * (1.0 + 0.008 * state.ferveur) + bonusRegen) / 1000.0 *
             (if (fighting) 1.0 / 3.0 else 1.0)
+        val hpBeforeRegen = state.hp
         state.hp = min(s.maxHp.toDouble(), state.hp + regen * dtMs)
+        if (fighting) {
+            state.fight?.let { it.healRegen += (state.hp - hpBeforeRegen).coerceAtLeast(0.0) }
+        }
 
         when (state.mode) {
             "walk" -> tickWalk(state, dtMs)
@@ -859,6 +999,7 @@ object GameEngine {
         }
         val stats = statsOf(state)
         val maxHp = stats.maxHp.toDouble()
+        val hpBefore = state.hp
         var message: String
         when (template.effect) {
             "heal_pct" -> {
@@ -934,6 +1075,10 @@ object GameEngine {
                     "dégâts subis +${(template.secondary * 100).roundToInt()} %"
             }
             else -> return SpecialOutcome("Effet inconnu.", false)
+        }
+        state.fight?.let { fight ->
+            fight.potionsUsed = (fight.potionsUsed + id).takeLast(6)
+            fight.healPotion += (state.hp - hpBefore).coerceAtLeast(0.0)
         }
         val next = state.consumables.toMutableMap()
         if (count <= 1) next.remove(id) else next[id] = count - 1
@@ -1178,6 +1323,12 @@ object GameEngine {
     fun startFight(state: GameState, farm: Boolean = false) {
         if (state.mode == "fight" || state.mode == "boss") return
         val f = if (farm) makeFarm(state) else makeMob(state)
+        f.startHp = state.hp
+        f.startFerveur = state.ferveur
+        f.heroAtStart = reportStats(statsOf(state))
+        f.buffsAtStart = state.buffs
+            .filter { it.expiresAt > System.currentTimeMillis() }
+            .map { it.type }
         state.fight = f
         state.mode = if (farm) "fight" else "fight"
         state.farmWaitMs = 0.0
@@ -1185,7 +1336,14 @@ object GameEngine {
     }
 
     fun startBoss(state: GameState) {
-        state.fight = state.pendingBoss ?: makeBoss(state)
+        val f = state.pendingBoss ?: makeBoss(state)
+        f.startHp = state.hp
+        f.startFerveur = state.ferveur
+        f.heroAtStart = reportStats(statsOf(state))
+        f.buffsAtStart = state.buffs
+            .filter { it.expiresAt > System.currentTimeMillis() }
+            .map { it.type }
+        state.fight = f
         state.pendingBoss = null
         state.mode = "boss"
         state.telemetry.bossFights++
@@ -1592,6 +1750,7 @@ object GameEngine {
 
     private fun heroAttack(state: GameState, f: FightData) {
         val s = statsOf(state)
+        f.heroHits++
         var atk = s.atk
         var dmg = atk * (0.9 + rnd.nextDouble() * 0.2)
         if (f.isBoss) dmg *= 1.0 + s.bossDamage
@@ -1604,16 +1763,20 @@ object GameEngine {
         f.enemyHp -= dmg
         recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit, onEnemy = true)
         if (s.lifesteal > 0.0) {
+            val before = state.hp
             state.hp = min(s.maxHp.toDouble(), state.hp + dmg * s.lifesteal)
+            f.healLifesteal += (state.hp - before).coerceAtLeast(0.0)
         }
         if (f.enemyHp <= 0) victory(state, f)
     }
 
     private fun enemyAttack(state: GameState, f: FightData) {
         val s = statsOf(state)
+        f.enemyHits++
         var dmg = f.enemyAtk * bossEnrage(f) * (0.9 + rnd.nextDouble() * 0.1)
         dmg *= (1.0 - s.damageReduction) * (1.0 + s.damageTaken)
         state.hp -= dmg
+        f.damageTaken += dmg
         recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit = false, onEnemy = false)
         if (f.isBoss && f.modifier == "VOLEUR") {
             val stolen = max(1, (dmg * 0.5).roundToInt())
@@ -1630,14 +1793,16 @@ object GameEngine {
         if (!f.usedRation && !f.farm && state.hp < s.maxHp * Balance.Target.AUTO_RATION_THRESHOLD && state.rations > 0) {
             f.usedRation = true
             state.rations--
+            val before = state.hp
             val heal = s.maxHp * Balance.Target.AUTO_RATION_HEAL
             state.hp = min(s.maxHp.toDouble(), state.hp + heal)
+            f.healRation += (state.hp - before).coerceAtLeast(0.0)
             state.journal = addJournal(state, "Ration consommée (+${heal.roundToInt()} PV)", "neutral")
         }
     }
 
     internal fun victory(state: GameState, f: FightData) {
-        recordCombat(state, f)
+        recordCombat(state, f, win = true)
         val earned = goldGain(state, f.gold)
         state.gold += earned
         state.goldEarned += earned
@@ -1792,7 +1957,7 @@ object GameEngine {
     }
 
     private fun defeat(state: GameState, f: FightData) {
-        recordCombat(state, f)
+        recordCombat(state, f, win = false)
         state.fight = null
         state.retreats++
         state.distance = max(0.0, floor((state.distance - 20.0) / 10.0) * 10.0)
@@ -1820,6 +1985,7 @@ object GameEngine {
             val s = statsOf(state)
             state.hp = min(s.maxHp.toDouble(), state.hp + s.maxHp * Balance.LEVEL_UP_HEAL)
             state.journal = addJournal(state, "Niveau ${state.level} atteint", "good")
+            recordLevel(state, s)
             guard++
         }
     }
