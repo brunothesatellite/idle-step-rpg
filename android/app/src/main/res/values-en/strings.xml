@@ -6,8 +6,8 @@
 
     <!-- Onboarding -->
     <string name="onboarding_page1_title">THE MARCH OF SOULS</string>
-    <string name="onboarding_page1_text">Your steps become the distance travelled in an endless dungeon, whether they come from Garmin or Health Connect. 10 steps = 1 metre. Fights, guardians and chests progress without you having to play continuously.</string>
-    <string name="onboarding_page1_note">The game is played by walking, not by staying on the screen.</string>
+    <string name="onboarding_page1_text">Your steps become the distance travelled in an endless dungeon, whether they come from Garmin or Health Connect. 10 steps = 1 metre. Fights, guardians and chests progress without you having to play continuously. The hero walks on his own; the big decisions remain yours: equip, forge, camp, face the guardian. That is what makes the difference at the end of the path. No need to optimize every detail — and if you prefer, auto-optimization can take over in Settings.</string>
+    <string name="onboarding_page1_note">The Throne won\'t fall by itself, but there\'s no rush.</string>
     <string name="onboarding_page2_title">STEP SOURCE</string>
     <string name="onboarding_page2_text">Garmin uses a personal key and a 24-hour token. Health Connect reads steps recorded by Google Fit, Samsung Health or a watch. You can change source at any time in Settings.</string>
     <string name="onboarding_page2_note">Only one source is active at a time: no double counting.</string>

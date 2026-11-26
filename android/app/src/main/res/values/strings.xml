@@ -8,8 +8,8 @@
 
     <!-- Onboarding -->
     <string name="onboarding_page1_title">LA MARCHE DES ÂMES</string>
-    <string name="onboarding_page1_text">Vos pas deviennent la distance parcourue dans un donjon infini, qu\'ils viennent de Garmin ou de Santé Connect. 10 pas = 1 mètre. Les combats, gardiens et coffres avancent sans que vous ayez à jouer en continu.</string>
-    <string name="onboarding_page1_note">Le jeu se joue en marchant, pas en restant sur l\'écran.</string>
+    <string name="onboarding_page1_text">Vos pas deviennent la distance parcourue dans un donjon infini, qu\'ils viennent de Garmin ou de Santé Connect. 10 pas = 1 mètre. Les combats, gardiens et coffres avancent sans que vous ayez à jouer en continu. Le héros avance seul ; les grandes décisions restent les vôtres : équiper, forger, camper, oser le gardien. C\'est ce qui fait la différence au bout du sentier. Pas besoin d\'optimiser chaque détail — et si vous préférez, l\'auto-optimisation peut prendre le relais dans les réglages.</string>
+    <string name="onboarding_page1_note">Le Trône ne tombe pas tout seul, mais rien ne presse.</string>
     <string name="onboarding_page2_title">SOURCE DE PAS</string>
     <string name="onboarding_page2_text">Garmin utilise une clé personnelle et un jeton de 24 h. Santé Connect lit les pas enregistrés par Google Fit, Samsung Health ou une montre. Vous pourrez changer de source à tout moment dans les réglages.</string>
     <string name="onboarding_page2_note">Une seule source est active à la fois : pas de double comptage.</string>
