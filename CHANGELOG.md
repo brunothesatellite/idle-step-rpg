@@ -7,6 +7,7 @@
 - **Camp** : le marchand est replié par défaut et la carte est plafonnée en hauteur ; la tente et le feu restent visibles.
 - **Onboarding** : la page 1 précise que le héros avance seul, mais que les grandes décisions (équiper, forger, camper, oser le gardien) restent au joueur. L’auto-optimisation est présentée comme une option, pas une obligation.
 - **Manuel FR/EN** : la même nuance est ajoutée dans « Découvrir le jeu ».
+- **Manuel — durée de vie** : les estimations sont remplacées par les résultats de la simulation 0.25.0 (5 profils × 3 rythmes, paliers 1 → 101). Les tableaux « Durée de vie estimée » et « Compléter une collection » deviennent des cartes sur téléphone, sans scroll horizontal.
 - **Langue de secours** : l’anglais devient la langue par défaut des ressources (`values/`) ; le français passe dans `values-fr/`. Appareil FR → FR, EN → EN, toute autre langue → EN. Le manuel et les formats de date/nombre suivent la même règle.
 - **Test appareil** : gardien final vaincu en **30,4 s**, phase 2 atteinte, écran de fin déclenché.
 - **Analyse complète** : 5 profils × 3 rythmes × 5 graines. Le passif minimal (auto off) ne termine pas (mur p.31–34) ; le passif optimisé termine, mais son gardien final monte à **35 s** à 8 000/15 000 pas/j. Piste retenue pour la suite : plancher de PV final **0,55** au lieu de 0,75.

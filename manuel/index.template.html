@@ -36,6 +36,7 @@
     color: var(--parchment);
     font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
     line-height: 1.55;
+    overflow-wrap: anywhere;
   }
   a { color: var(--gold-light); }
   a:hover { color: #fff; }
@@ -113,8 +114,8 @@
     font-family: ui-monospace, Consolas, monospace;
     font-size: 0.92em;
   }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; table-layout: fixed; }
+  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }
   th { background: var(--panel2); color: var(--gold-light); font-size: 13px; }
   tr:nth-child(even) td { background: rgba(42, 31, 58, 0.35); }
   .note, .warn, .ok {
@@ -187,6 +188,40 @@
     nav.toc ol { columns: 1; }
     section { padding: 15px 14px; }
     .wrap { padding: 14px 10px 50px; }
+    table { font-size: 13px; }
+    th, td { padding: 5px 4px; }
+    th { font-size: 12px; }
+    table.stack { display: block; width: 100%; }
+    table.stack tbody { display: block; width: 100%; }
+    table.stack tr:first-child { display: none; }
+    table.stack tr {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      margin: 8px 0;
+      padding: 7px 8px;
+      background: rgba(42, 31, 58, 0.35);
+    }
+    table.stack tr:nth-child(even) td { background: transparent; }
+    table.stack td {
+      display: block;
+      width: 100%;
+      border: 0;
+      padding: 4px 0;
+    }
+    table.stack td:first-child {
+      color: var(--gold-light);
+      font-weight: 600;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 5px;
+      margin-bottom: 3px;
+    }
+    table.stack td[data-label]::before {
+      content: attr(data-label) " : ";
+      color: var(--muted);
+    }
+    table.stack td:last-child { padding-bottom: 0; }
   }
   @media print {
     body { background: #fff; color: #111; }
@@ -755,15 +790,27 @@
     <li>Le réglage est conservé dans la sauvegarde et survit au redémarrage.</li>
   </ul>
   <h3>Durée de vie estimée</h3>
-  <p>Le donjon continue <strong>sans fin</strong> après le palier 100, mais il a désormais une <strong>fin</strong> : le palier 100 se termine par un combat contre <strong>L'Âme Première</strong>, puis un écran de fin s'affiche une seule fois. « Finir » signifie ici atteindre cette fin, puis compléter le <strong>Codex</strong> ({{MOB_COUNT}} monstres, {{BOSS_COUNT}} gardiens, {{SET_COUNT}} ensembles). Le calcul part de <strong>1 000 pas par palier</strong> (10 pas = 1 m, 100 m par palier) et applique un <strong>coefficient de farm de 3 à 5</strong> (jusqu'à 6 pour le Codex) pour les retraites, les gardiens réessayés, les coffres et la recherche d'équipement.</p>
-  <table>
-    <tr><th>Objectif</th><th>Pas (distance pure)</th><th>5 000 pas/jour</th><th>8 000 pas/jour</th><th>10 000 pas/jour</th></tr>
-    <tr><td>8 biomes · palier 71</td><td>70 000</td><td>6 à 10 semaines</td><td>4 à 6 semaines</td><td>3 à 5 semaines</td></tr>
-    <tr><td>Titre Légende des Âmes · palier 100</td><td>100 000</td><td>2 à 3,5 mois</td><td>5 à 9 semaines</td><td>4 à 7 semaines</td></tr>
-    <tr><td>Codex complet</td><td>≈ 150 000</td><td>4 à 6 mois</td><td>2,5 à 4 mois</td><td>2 à 3 mois</td></tr>
+  <p>Le donjon continue <strong>sans fin</strong> après le palier 100, mais il a désormais une <strong>fin</strong> : le palier 100 se termine par un combat contre <strong>L'Âme Première</strong>, puis un écran de fin s'affiche une seule fois. Les chiffres ci-dessous viennent de la <strong>simulation 0.25.0</strong> : 5 profils × 3 rythmes × 5 graines, du palier 1 au palier 101, avec butin, équipement, coffres, forge, camp, farm, ténacité, pitié et gardien final. Les jours sont des <strong>médianes</strong> et incluent le farm et les replis.</p>
+  <table class="stack">
+    <tr><th>Profil</th><th>5 000 pas/jour</th><th>8 000 pas/jour</th><th>15 000 pas/jour</th></tr>
+    <tr><td><strong>Passif minimal</strong><br><small>auto-optimisation off</small></td><td data-label="5 000 pas/jour">Non fini<br><small>mur p.32</small></td><td data-label="8 000 pas/jour">Non fini<br><small>mur p.31</small></td><td data-label="15 000 pas/jour">Non fini<br><small>mur p.34</small></td></tr>
+    <tr><td><strong>Passif optimisé</strong><br><small>auto on</small></td><td data-label="5 000 pas/jour">32,3 j</td><td data-label="8 000 pas/jour">22,3 j</td><td data-label="15 000 pas/jour">12,0 j</td></tr>
+    <tr><td><strong>Normal</strong></td><td data-label="5 000 pas/jour">31,9 j</td><td data-label="8 000 pas/jour">20,3 j</td><td data-label="15 000 pas/jour">11,0 j</td></tr>
+    <tr><td><strong>Optimisé</strong></td><td data-label="5 000 pas/jour">32,0 j</td><td data-label="8 000 pas/jour">19,7 j</td><td data-label="15 000 pas/jour">11,1 j</td></tr>
+    <tr><td><strong>Hyper-optimisé</strong></td><td data-label="5 000 pas/jour">35,2 j</td><td data-label="8 000 pas/jour">22,0 j</td><td data-label="15 000 pas/jour">12,1 j</td></tr>
   </table>
-  <p>En <strong>temps de marche effectif</strong> (≈ 100 pas/minute), cela représente environ <strong>12 h</strong> pour les 8 biomes, <strong>17 h</strong> pour le palier 100 et <strong>25 h</strong> pour le Codex. Le reste du temps est du farm, pas de la marche.</p>
-  <div class="note"><strong>Hypothèses :</strong> un joueur qui synchronise chaque jour, sans plafond journalier atteint (60 000 pas) ni rythme suspect (250 pas/min). Sans aucun farm, le parcours brut des 70 paliers ne prendrait que <strong>14 jours</strong> à 5 000 pas/jour, <strong>9 jours</strong> à 8 000 et <strong>7 jours</strong> à 10 000 : c'est le plancher théorique, pas une durée réaliste. Les paliers 60+ relèvent de l'endgame et leur équilibrage est encore en ajustement ; les fourchettes hautes sont des cibles de conception.</div>
+  <p>Le <strong>passif minimal</strong> (auto-optimisation désactivée, aucun coffre/fusion/forge/camp/soin) ne termine pas : il reste bloqué aux paliers 31–34, malgré un niveau 104–107. C'est le profil par défaut ; activez l'auto-optimisation dans <strong>Réglages → Inventaire</strong> pour finir sans optimiser à la main.</p>
+  <div class="note"><strong>Pourquoi l'hyper-optimisé met parfois plus de jours ?</strong> Il farme jusqu'à 3 fois chaque gardien et n'engage qu'à 75 % de chances estimées. Il meurt beaucoup moins (22 replis à 5 000 pas/jour contre 69 pour l'optimisé) mais prend plus de temps calendaire. « Plus optimisé » ne veut pas dire « plus rapide » : c'est un choix de sécurité.</div>
+  <p>Le <strong>gardien final</strong> reste dans la cible 20–30 s pour l'optimisé et l'hyper (18,6–20,0 s), et à 28–32 s pour le normal. Le passif optimisé est à 27,9 s à 5 000, mais à 35 s à 8 000/15 000 : son DPS plus faible déclenche le plancher de PV. Les taux de victoire sont mesurés sur le build médian à l'arrivée, avant le farm et la ténacité.</p>
+  <table class="stack">
+    <tr><th>Profil</th><th>5 000 pas/jour</th><th>8 000 pas/jour</th><th>15 000 pas/jour</th></tr>
+    <tr><td><strong>Passif optimisé</strong></td><td data-label="5 000 pas/jour">27,9 s · 59 %</td><td data-label="8 000 pas/jour">35,2 s · 100 %</td><td data-label="15 000 pas/jour">34,9 s · 100 %</td></tr>
+    <tr><td><strong>Normal</strong></td><td data-label="5 000 pas/jour">— · 0 %</td><td data-label="8 000 pas/jour">31,7 s · 88 %</td><td data-label="15 000 pas/jour">28,2 s · 60 %</td></tr>
+    <tr><td><strong>Optimisé</strong></td><td data-label="5 000 pas/jour">19,4 s · 100 %</td><td data-label="8 000 pas/jour">18,6 s · 68 %</td><td data-label="15 000 pas/jour">19,4 s · 100 %</td></tr>
+    <tr><td><strong>Hyper-optimisé</strong></td><td data-label="5 000 pas/jour">18,7 s · 100 %</td><td data-label="8 000 pas/jour">19,7 s · 100 %</td><td data-label="15 000 pas/jour">20,0 s · 100 %</td></tr>
+  </table>
+  <p>En <strong>marche effective</strong> (≈ 100 pas/minute), 100 000 pas représentent environ <strong>17 h</strong>. Les jours ci-dessus incluent le farm, les combats et les replis : le reste du temps n'est pas de la marche.</p>
+  <div class="note"><strong>Hypothèses :</strong> 5 graines par couple profil × rythme, médianes ; le passif minimal est le seul profil non finissable. Le Codex complet n'est pas inclus dans la simulation : comptez plusieurs mois supplémentaires après le palier 101, selon les pièces manquantes. Un tiret signifie qu'aucune simulation n'a gagné avec le build médian à l'arrivée, pas que le profil ne finit pas. Le test réel du gardien final sur appareil a duré 30,4 s.</div>
   <h3>Fin du sentier · palier 100</h3>
   <p>Du palier <strong>81</strong> au palier <strong>100</strong>, la règle <strong>Trône brisé</strong> remplace Pression des âmes. La pression monte progressivement : <strong>+15 %</strong> de PV et ATQ ennemis au palier 81, <strong>+35 %</strong> au palier 100, puis plafond. Les gardiens du Trône reçoivent en plus <strong>+10 % PV</strong> et <strong>+5 % ATQ</strong>.</p>
   <ul>
@@ -862,19 +909,19 @@
     <li><strong>Pièce non identifiée :</strong> elle compte déjà dans la collection. Identifiez-la (1 éclat) pour révéler son ensemble et son bonus dans la fiche.</li>
     <li><strong>Bonus :</strong> équipez 2, 4 puis 6 pièces du même ensemble. Le Codex affiche le bonus actif et le prochain palier ; la fiche d'objet rappelle « équipé y/6 · collection x/6 ».</li>
   </ul>
-  <table>
+  <table class="stack">
     <tr><th>Ensemble</th><th>Biome(s)</th><th>2 pièces</th><th>4 pièces</th><th>6 pièces</th></tr>
-    <tr><td>Veilleur</td><td>Cryptes de Vael (1–10)</td><td>+10 ATQ, +30 PV</td><td>+20 ATQ, +60 PV</td><td>+30 ATQ, +90 PV</td></tr>
-    <tr><td>Ossature</td><td>Cryptes (1–10), Catacombes (11–20)</td><td>+6 ATQ, +25 PV</td><td>+12 ATQ, +50 PV</td><td>+18 ATQ, +75 PV</td></tr>
-    <tr><td>Toile</td><td>Catacombes (11–20)</td><td>+3 % VIT, +2 % critique</td><td>+6 % VIT, +4 % critique</td><td>+9 % VIT, +6 % critique</td></tr>
-    <tr><td>Braise</td><td>Cavernes de cendre (21–30)</td><td>+3 % critique, +5 % vol de vie</td><td>+6 % critique, +10 % vol de vie</td><td>+9 % critique, +15 % vol de vie</td></tr>
-    <tr><td>Cendre</td><td>Cavernes de cendre (21–30)</td><td>+8 ATQ</td><td>+16 ATQ, +3 % critique</td><td>+24 ATQ, +6 % critique</td></tr>
-    <tr><td>Forge</td><td>Forge noyée (31–40)</td><td>+35 PV</td><td>+70 PV, −3 % dégâts subis</td><td>+105 PV, −6 % dégâts subis</td></tr>
-    <tr><td>Givre</td><td>Cimes du Serment (41–50)</td><td>+5 % VIT, +0,3 PV/s</td><td>+10 % VIT, +0,6 PV/s</td><td>+15 % VIT, +0,9 PV/s</td></tr>
-    <tr><td>Serment</td><td>Cimes du Serment (41–50)</td><td>+7 ATQ</td><td>+14 ATQ, +8 % dégâts gardiens</td><td>+21 ATQ, +16 % dégâts gardiens</td></tr>
-    <tr><td>Bois</td><td>Bois des Âmes (51–60)</td><td>+4 % VIT</td><td>+8 % VIT, +0,7 PV/s</td><td>+12 % VIT, +1,2 PV/s</td></tr>
-    <tr><td>Abîme</td><td>Abîme organique (61–70)</td><td>+20 PV, +4 % vol de vie</td><td>+40 PV, +8 % vol de vie</td><td>+60 PV, +12 % vol de vie</td></tr>
-    <tr><td>Trône</td><td>Trône des Âmes (71+)</td><td>+10 ATQ</td><td>+20 ATQ, +15 % dégâts critiques</td><td>+30 ATQ, +30 % dégâts critiques</td></tr>
+    <tr><td>Veilleur</td><td data-label="Biome(s)">Cryptes de Vael (1–10)</td><td data-label="2 pièces">+10 ATQ, +30 PV</td><td data-label="4 pièces">+20 ATQ, +60 PV</td><td data-label="6 pièces">+30 ATQ, +90 PV</td></tr>
+    <tr><td>Ossature</td><td data-label="Biome(s)">Cryptes (1–10), Catacombes (11–20)</td><td data-label="2 pièces">+6 ATQ, +25 PV</td><td data-label="4 pièces">+12 ATQ, +50 PV</td><td data-label="6 pièces">+18 ATQ, +75 PV</td></tr>
+    <tr><td>Toile</td><td data-label="Biome(s)">Catacombes (11–20)</td><td data-label="2 pièces">+3 % VIT, +2 % critique</td><td data-label="4 pièces">+6 % VIT, +4 % critique</td><td data-label="6 pièces">+9 % VIT, +6 % critique</td></tr>
+    <tr><td>Braise</td><td data-label="Biome(s)">Cavernes de cendre (21–30)</td><td data-label="2 pièces">+3 % critique, +5 % vol de vie</td><td data-label="4 pièces">+6 % critique, +10 % vol de vie</td><td data-label="6 pièces">+9 % critique, +15 % vol de vie</td></tr>
+    <tr><td>Cendre</td><td data-label="Biome(s)">Cavernes de cendre (21–30)</td><td data-label="2 pièces">+8 ATQ</td><td data-label="4 pièces">+16 ATQ, +3 % critique</td><td data-label="6 pièces">+24 ATQ, +6 % critique</td></tr>
+    <tr><td>Forge</td><td data-label="Biome(s)">Forge noyée (31–40)</td><td data-label="2 pièces">+35 PV</td><td data-label="4 pièces">+70 PV, −3 % dégâts subis</td><td data-label="6 pièces">+105 PV, −6 % dégâts subis</td></tr>
+    <tr><td>Givre</td><td data-label="Biome(s)">Cimes du Serment (41–50)</td><td data-label="2 pièces">+5 % VIT, +0,3 PV/s</td><td data-label="4 pièces">+10 % VIT, +0,6 PV/s</td><td data-label="6 pièces">+15 % VIT, +0,9 PV/s</td></tr>
+    <tr><td>Serment</td><td data-label="Biome(s)">Cimes du Serment (41–50)</td><td data-label="2 pièces">+7 ATQ</td><td data-label="4 pièces">+14 ATQ, +8 % dégâts gardiens</td><td data-label="6 pièces">+21 ATQ, +16 % dégâts gardiens</td></tr>
+    <tr><td>Bois</td><td data-label="Biome(s)">Bois des Âmes (51–60)</td><td data-label="2 pièces">+4 % VIT</td><td data-label="4 pièces">+8 % VIT, +0,7 PV/s</td><td data-label="6 pièces">+12 % VIT, +1,2 PV/s</td></tr>
+    <tr><td>Abîme</td><td data-label="Biome(s)">Abîme organique (61–70)</td><td data-label="2 pièces">+20 PV, +4 % vol de vie</td><td data-label="4 pièces">+40 PV, +8 % vol de vie</td><td data-label="6 pièces">+60 PV, +12 % vol de vie</td></tr>
+    <tr><td>Trône</td><td data-label="Biome(s)">Trône des Âmes (71+)</td><td data-label="2 pièces">+10 ATQ</td><td data-label="4 pièces">+20 ATQ, +15 % dégâts critiques</td><td data-label="6 pièces">+30 ATQ, +30 % dégâts critiques</td></tr>
   </table>
   <h3>Fiche de créature et de gardien</h3>
   <div class="grid">

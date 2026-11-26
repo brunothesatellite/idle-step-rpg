@@ -36,6 +36,7 @@
     color: var(--parchment);
     font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
     line-height: 1.55;
+    overflow-wrap: anywhere;
   }
   a { color: var(--gold-light); }
   a:hover { color: #fff; }
@@ -113,8 +114,8 @@
     font-family: ui-monospace, Consolas, monospace;
     font-size: 0.92em;
   }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; table-layout: fixed; }
+  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }
   th { background: var(--panel2); color: var(--gold-light); font-size: 13px; }
   tr:nth-child(even) td { background: rgba(42, 31, 58, 0.35); }
   .note, .warn, .ok {
@@ -187,6 +188,40 @@
     nav.toc ol { columns: 1; }
     section { padding: 15px 14px; }
     .wrap { padding: 14px 10px 50px; }
+    table { font-size: 13px; }
+    th, td { padding: 5px 4px; }
+    th { font-size: 12px; }
+    table.stack { display: block; width: 100%; }
+    table.stack tbody { display: block; width: 100%; }
+    table.stack tr:first-child { display: none; }
+    table.stack tr {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      margin: 8px 0;
+      padding: 7px 8px;
+      background: rgba(42, 31, 58, 0.35);
+    }
+    table.stack tr:nth-child(even) td { background: transparent; }
+    table.stack td {
+      display: block;
+      width: 100%;
+      border: 0;
+      padding: 4px 0;
+    }
+    table.stack td:first-child {
+      color: var(--gold-light);
+      font-weight: 600;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 5px;
+      margin-bottom: 3px;
+    }
+    table.stack td[data-label]::before {
+      content: attr(data-label) " : ";
+      color: var(--muted);
+    }
+    table.stack td:last-child { padding-bottom: 0; }
   }
   @media print {
     body { background: #fff; color: #111; }
@@ -755,15 +790,27 @@
     <li>The setting is kept in the save and survives a restart.</li>
   </ul>
   <h3>Estimated play time</h3>
-  <p>The dungeon goes on <strong>endlessly</strong> after floor 100, but it now has an <strong>ending</strong>: floor 100 closes with a fight against <strong>The First Soul</strong>, then an ending screen appears once. “Finishing” here means reaching that ending, then completing the <strong>Codex</strong> ({{MOB_COUNT}} monsters, {{BOSS_COUNT}} guardians, {{SET_COUNT}} sets). The calculation starts from <strong>1,000 steps per floor</strong> (10 steps = 1 m, 100 m per floor) and applies a <strong>farm coefficient of 3 to 5</strong> (up to 6 for the Codex) for retreats, retried guardians, chests and gear hunting.</p>
-  <table>
-    <tr><th>Goal</th><th>Steps (pure distance)</th><th>5,000 steps/day</th><th>8,000 steps/day</th><th>10,000 steps/day</th></tr>
-    <tr><td>8 biomes · floor 71</td><td>70,000</td><td>6 to 10 weeks</td><td>4 to 6 weeks</td><td>3 to 5 weeks</td></tr>
-    <tr><td>Legend of Souls title · floor 100</td><td>100,000</td><td>2 to 3.5 months</td><td>5 to 9 weeks</td><td>4 to 7 weeks</td></tr>
-    <tr><td>Full Codex</td><td>≈ 150,000</td><td>4 to 6 months</td><td>2.5 to 4 months</td><td>2 to 3 months</td></tr>
+  <p>The dungeon continues <strong>endlessly</strong> after floor 100, but it now has an <strong>ending</strong>: floor 100 ends with a fight against <strong>The First Soul</strong>, then an ending screen appears once. The figures below come from the <strong>0.25.0 simulation</strong>: 5 profiles × 3 paces × 5 seeds, from floor 1 to floor 101, including loot, gear, chests, forging, camp, farming, tenacity, pity and the final guardian. Days are <strong>medians</strong> and include farming and retreats.</p>
+  <table class="stack">
+    <tr><th>Profile</th><th>5,000 steps/day</th><th>8,000 steps/day</th><th>15,000 steps/day</th></tr>
+    <tr><td><strong>Minimal passive</strong><br><small>auto-optimization off</small></td><td data-label="5,000 steps/day">Not finished<br><small>wall f.32</small></td><td data-label="8,000 steps/day">Not finished<br><small>wall f.31</small></td><td data-label="15,000 steps/day">Not finished<br><small>wall f.34</small></td></tr>
+    <tr><td><strong>Optimized passive</strong><br><small>auto on</small></td><td data-label="5,000 steps/day">32.3 d</td><td data-label="8,000 steps/day">22.3 d</td><td data-label="15,000 steps/day">12.0 d</td></tr>
+    <tr><td><strong>Normal</strong></td><td data-label="5,000 steps/day">31.9 d</td><td data-label="8,000 steps/day">20.3 d</td><td data-label="15,000 steps/day">11.0 d</td></tr>
+    <tr><td><strong>Optimized</strong></td><td data-label="5,000 steps/day">32.0 d</td><td data-label="8,000 steps/day">19.7 d</td><td data-label="15,000 steps/day">11.1 d</td></tr>
+    <tr><td><strong>Hyper-optimized</strong></td><td data-label="5,000 steps/day">35.2 d</td><td data-label="8,000 steps/day">22.0 d</td><td data-label="15,000 steps/day">12.1 d</td></tr>
   </table>
-  <p>In <strong>effective walking time</strong> (≈ 100 steps/minute), that is about <strong>12 h</strong> for the 8 biomes, <strong>17 h</strong> for floor 100 and <strong>25 h</strong> for the Codex. The rest is farming, not walking.</p>
-  <div class="note"><strong>Assumptions:</strong> a player who syncs every day, without hitting the daily cap (60,000 steps) or the suspicious rate (250 steps/min). With no farming at all, the raw path through 70 floors would take only <strong>14 days</strong> at 5,000 steps/day, <strong>9 days</strong> at 8,000 and <strong>7 days</strong> at 10,000: that is the theoretical floor, not a realistic duration. Floors 60+ are endgame and their balance is still being tuned; the high ranges are design targets.</div>
+  <p>The <strong>minimal passive</strong> profile (auto-optimization off, no chests/fusion/forge/camp/heal) does not finish: it gets stuck at floors 31–34, despite level 104–107. It is the default profile; enable auto-optimization in <strong>Settings → Inventory</strong> to finish without optimizing by hand.</p>
+  <div class="note"><strong>Why is hyper-optimized sometimes slower?</strong> It farms each guardian up to 3 times and only engages at 75% estimated win chance. It dies far less (22 retreats at 5,000 steps/day vs 69 for optimized) but takes more calendar time. “More optimized” does not mean “faster”: it is a safety choice.</div>
+  <p>The <strong>final guardian</strong> stays in the 20–30 s target for optimized and hyper (18.6–20.0 s), and at 28–32 s for normal. The optimized passive is 27.9 s at 5,000, but 35 s at 8,000/15,000: its lower DPS triggers the HP floor. Win rates are measured on the median arrival build, before farming and tenacity.</p>
+  <table class="stack">
+    <tr><th>Profile</th><th>5,000 steps/day</th><th>8,000 steps/day</th><th>15,000 steps/day</th></tr>
+    <tr><td><strong>Optimized passive</strong></td><td data-label="5,000 steps/day">27.9 s · 59%</td><td data-label="8,000 steps/day">35.2 s · 100%</td><td data-label="15,000 steps/day">34.9 s · 100%</td></tr>
+    <tr><td><strong>Normal</strong></td><td data-label="5,000 steps/day">— · 0%</td><td data-label="8,000 steps/day">31.7 s · 88%</td><td data-label="15,000 steps/day">28.2 s · 60%</td></tr>
+    <tr><td><strong>Optimized</strong></td><td data-label="5,000 steps/day">19.4 s · 100%</td><td data-label="8,000 steps/day">18.6 s · 68%</td><td data-label="15,000 steps/day">19.4 s · 100%</td></tr>
+    <tr><td><strong>Hyper-optimized</strong></td><td data-label="5,000 steps/day">18.7 s · 100%</td><td data-label="8,000 steps/day">19.7 s · 100%</td><td data-label="15,000 steps/day">20.0 s · 100%</td></tr>
+  </table>
+  <p>In <strong>effective walking time</strong> (≈100 steps/minute), 100,000 steps is about <strong>17 h</strong>. The days above include farming, fights and retreats: the rest is not walking.</p>
+  <div class="note"><strong>Assumptions:</strong> 5 seeds per profile × pace, medians; minimal passive is the only non-finishable profile. The full Codex is not included in the simulation: expect several extra months after floor 101, depending on missing pieces. A dash means no simulation won with the median arrival build, not that the profile cannot finish. The real device test of the final guardian lasted 30.4 s.</div>
   <h3>End of the path · floor 100</h3>
   <p>From floor <strong>81</strong> to floor <strong>100</strong>, the <strong>Broken Throne</strong> rule replaces Soul pressure. Pressure rises gradually: <strong>+15%</strong> enemy HP and ATK on floor 81, <strong>+35%</strong> on floor 100, then caps. Throne guardians also get <strong>+10% HP</strong> and <strong>+5% ATK</strong>.</p>
   <ul>
@@ -862,19 +909,19 @@
     <li><strong>Unidentified piece:</strong> it already counts in the collection. Identify it (1 shard) to reveal its set and bonus on the sheet.</li>
     <li><strong>Bonus:</strong> equip 2, then 4, then 6 pieces of the same set. The Codex shows the active bonus and the next tier; the item sheet recalls “equipped y/6 · collection x/6”.</li>
   </ul>
-  <table>
+  <table class="stack">
     <tr><th>Set</th><th>Biome(s)</th><th>2 pieces</th><th>4 pieces</th><th>6 pieces</th></tr>
-    <tr><td>Watcher</td><td>Crypts of Vael (1–10)</td><td>+10 ATK, +30 HP</td><td>+20 ATK, +60 HP</td><td>+30 ATK, +90 HP</td></tr>
-    <tr><td>Frame</td><td>Crypts (1–10), Catacombs (11–20)</td><td>+6 ATK, +25 HP</td><td>+12 ATK, +50 HP</td><td>+18 ATK, +75 HP</td></tr>
-    <tr><td>Web</td><td>Catacombs (11–20)</td><td>+3% SPD, +2% crit</td><td>+6% SPD, +4% crit</td><td>+9% SPD, +6% crit</td></tr>
-    <tr><td>Ember</td><td>Ash Caverns (21–30)</td><td>+3% crit, +5% lifesteal</td><td>+6% crit, +10% lifesteal</td><td>+9% crit, +15% lifesteal</td></tr>
-    <tr><td>Ash</td><td>Ash Caverns (21–30)</td><td>+8 ATK</td><td>+16 ATK, +3% crit</td><td>+24 ATK, +6% crit</td></tr>
-    <tr><td>Forge</td><td>Drowned Forge (31–40)</td><td>+35 HP</td><td>+70 HP, −3% damage taken</td><td>+105 HP, −6% damage taken</td></tr>
-    <tr><td>Frost</td><td>Peaks of the Oath (41–50)</td><td>+5% SPD, +0.3 HP/s</td><td>+10% SPD, +0.6 HP/s</td><td>+15% SPD, +0.9 HP/s</td></tr>
-    <tr><td>Oath</td><td>Peaks of the Oath (41–50)</td><td>+7 ATK</td><td>+14 ATK, +8% guardian damage</td><td>+21 ATK, +16% guardian damage</td></tr>
-    <tr><td>Wood</td><td>Wood of Souls (51–60)</td><td>+4% SPD</td><td>+8% SPD, +0.7 HP/s</td><td>+12% SPD, +1.2 HP/s</td></tr>
-    <tr><td>Abyss</td><td>Organic Abyss (61–70)</td><td>+20 HP, +4% lifesteal</td><td>+40 HP, +8% lifesteal</td><td>+60 HP, +12% lifesteal</td></tr>
-    <tr><td>Throne</td><td>Throne of Souls (71+)</td><td>+10 ATK</td><td>+20 ATK, +15% critical damage</td><td>+30 ATK, +30% critical damage</td></tr>
+    <tr><td>Watcher</td><td data-label="Biome(s)">Crypts of Vael (1–10)</td><td data-label="2 pieces">+10 ATK, +30 HP</td><td data-label="4 pieces">+20 ATK, +60 HP</td><td data-label="6 pieces">+30 ATK, +90 HP</td></tr>
+    <tr><td>Frame</td><td data-label="Biome(s)">Crypts (1–10), Catacombs (11–20)</td><td data-label="2 pieces">+6 ATK, +25 HP</td><td data-label="4 pieces">+12 ATK, +50 HP</td><td data-label="6 pieces">+18 ATK, +75 HP</td></tr>
+    <tr><td>Web</td><td data-label="Biome(s)">Catacombs (11–20)</td><td data-label="2 pieces">+3% SPD, +2% crit</td><td data-label="4 pieces">+6% SPD, +4% crit</td><td data-label="6 pieces">+9% SPD, +6% crit</td></tr>
+    <tr><td>Ember</td><td data-label="Biome(s)">Ash Caverns (21–30)</td><td data-label="2 pieces">+3% crit, +5% lifesteal</td><td data-label="4 pieces">+6% crit, +10% lifesteal</td><td data-label="6 pieces">+9% crit, +15% lifesteal</td></tr>
+    <tr><td>Ash</td><td data-label="Biome(s)">Ash Caverns (21–30)</td><td data-label="2 pieces">+8 ATK</td><td data-label="4 pieces">+16 ATK, +3% crit</td><td data-label="6 pieces">+24 ATK, +6% crit</td></tr>
+    <tr><td>Forge</td><td data-label="Biome(s)">Drowned Forge (31–40)</td><td data-label="2 pieces">+35 HP</td><td data-label="4 pieces">+70 HP, −3% damage taken</td><td data-label="6 pieces">+105 HP, −6% damage taken</td></tr>
+    <tr><td>Frost</td><td data-label="Biome(s)">Peaks of the Oath (41–50)</td><td data-label="2 pieces">+5% SPD, +0.3 HP/s</td><td data-label="4 pieces">+10% SPD, +0.6 HP/s</td><td data-label="6 pieces">+15% SPD, +0.9 HP/s</td></tr>
+    <tr><td>Oath</td><td data-label="Biome(s)">Peaks of the Oath (41–50)</td><td data-label="2 pieces">+7 ATK</td><td data-label="4 pieces">+14 ATK, +8% guardian damage</td><td data-label="6 pieces">+21 ATK, +16% guardian damage</td></tr>
+    <tr><td>Wood</td><td data-label="Biome(s)">Wood of Souls (51–60)</td><td data-label="2 pieces">+4% SPD</td><td data-label="4 pieces">+8% SPD, +0.7 HP/s</td><td data-label="6 pieces">+12% SPD, +1.2 HP/s</td></tr>
+    <tr><td>Abyss</td><td data-label="Biome(s)">Organic Abyss (61–70)</td><td data-label="2 pieces">+20 HP, +4% lifesteal</td><td data-label="4 pieces">+40 HP, +8% lifesteal</td><td data-label="6 pieces">+60 HP, +12% lifesteal</td></tr>
+    <tr><td>Throne</td><td data-label="Biome(s)">Throne of Souls (71+)</td><td data-label="2 pieces">+10 ATK</td><td data-label="4 pieces">+20 ATK, +15% critical damage</td><td data-label="6 pieces">+30 ATK, +30% critical damage</td></tr>
   </table>
   <h3>Creature and guardian sheets</h3>
   <div class="grid">
