@@ -6,6 +6,7 @@
 - **Économie** : relance du modificateur de gardien au portail (une fois par gardien, coût en or), marchand de camp (potions, écorce, force, élixir) et respec du camp (remboursement de 70 %).
 - **Camp** : le marchand est replié par défaut et la carte est plafonnée en hauteur ; la tente et le feu restent visibles.
 - **Test appareil** : gardien final vaincu en **30,4 s**, phase 2 atteinte, écran de fin déclenché.
+- **Analyse complète** : 5 profils × 3 rythmes × 5 graines. Le passif minimal (auto off) ne termine pas (mur p.31–34) ; le passif optimisé termine, mais son gardien final monte à **35 s** à 8 000/15 000 pas/j. Piste retenue pour la suite : plancher de PV final **0,55** au lieu de 0,75.
 - **Télémétrie v5** : phase finale, or investi dans le camp, nouveaux compteurs.
 - **Sauvegarde v9** : migration automatique.
 - **Tests** : **178 / 178**, lint OK.
