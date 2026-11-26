@@ -416,7 +416,8 @@
     <li>La fiche compare aussi les <strong>PV actuels / PV max</strong> et l'<strong>ATQ du héros</strong> pour préparer l'engagement.</li>
     <li>Choix : <strong>ENGAGER</strong>, <strong>FARMER CE PALIER</strong> ou <strong>CAMPER</strong>. Le combat ne démarre qu'après ENGAGER, à 100 m.</li>
     <li><strong>Phase 2</strong> sous 50 % de PV : capacité télégraphiée, sans accélération permanente.</li>
-    <li><strong>Pitié</strong> : chaque défaite affaiblit le gardien de <strong>−1 % PV/ATQ</strong>, cumulable jusqu'à <strong>−3 %</strong>, remis à zéro à la victoire.</li>
+    <li><strong>Pitié</strong> : chaque défaite affaiblit le gardien de <strong>−3 % PV/ATQ</strong>, cumulable jusqu’à <strong>−15 %</strong>, remis à zéro à la victoire.</li>
+    <li><strong>Ténacité</strong> : chaque défaite sur un palier donne <strong>+5 % ATQ/PV</strong> (max <strong>+25 %</strong>), remis à zéro à la victoire du gardien ou au changement de palier. Le portail et le HUD affichent le bonus.</li>
     <li><strong>Après la victoire</strong>, les PV sont plafonnés à <strong>65 % des PV max</strong> (farm compris) : le héros repart entamé et doit gérer ses rations.</li>
     <li>Modificateurs possibles : <strong>Rapide</strong>, <strong>Blindé</strong>, <strong>Berserk</strong>, <strong>Régénérant</strong>, <strong>Voleur</strong>. <strong>Rapide</strong> et <strong>Berserk</strong> ne se combinent jamais avec une capacité lourde (frappe, souffle, drain, pression).</li>
   </ul>
@@ -562,9 +563,11 @@
   <p>Arme, tête, torse, mains, bottes, talisman. Un objet équipé remplace l'ancien, qui retourne dans le sac.</p>
   <h3>Raretés</h3>
   <p>Commun, inhabituel, rare, épique, légendaire. La couleur de la bordure et du nom l'indique. Les objets rares et plus peuvent avoir un effet, un ensemble ou être non identifiés.</p>
+  <p><strong>Butin adapté au niveau :</strong> le niveau effectif du butin suit le héros : <code>min(palier + 10, max(palier, niveau − 10))</code>. Un joueur qui avance plus vite que son palier reçoit donc un stuff utilisable, sans casser l’identité de biome.</p>
   <h3>Actions</h3>
   <ul>
     <li><strong>Équiper le meilleur :</strong> compare les six emplacements et équipe chaque amélioration.</li>
+    <li><strong>Optimisation automatique :</strong> active dans <strong>Réglages → Inventaire</strong>. Le mode identifie, fusionne les doublons non-set, forge avec réserves, achète le camp, équipe, ouvre les coffres et soigne automatiquement. Il ne touche pas aux objets verrouillés ni aux pièces de set.</li>
     <li><strong>Vendre les communs :</strong> convertit les objets communs non verrouillés en or.</li>
     <li><strong>Verrouiller :</strong> protège un objet de la vente et de la fusion.</li>
     <li><strong>Fusionner :</strong> l'objet ouvert et les <strong>deux meilleurs</strong> objets identifiés et non verrouillés du même emplacement et de la même rareté donnent un objet de rareté supérieure. Trois légendaires donnent un légendaire fusionné. Le résultat conserve <strong>90 %</strong> de la somme des statistiques, ainsi que l'effet et l'ensemble. Le bouton affiche <strong>FUSIONNER</strong> quand les trois sont réunis, sinon <strong>FUSIONNER 2/3</strong> et reste grisé.</li>
@@ -727,7 +730,7 @@
     <tr><td>Trône (81+)</td><td>Trône brisé</td><td>+15 à +35 % PV et ATQ ennemis · gardiens renforcés · boss final au palier 100.</td></tr>
   </table>
   <p><strong>Écart de niveau :</strong> au-delà de <strong>4 niveaux d'avance</strong> sur le palier, les ennemis gagnent <strong>+2 % PV et ATQ par niveau d'écart</strong>, avec un plafond de <strong>×1,25</strong>. Au niveau du palier, aucun malus.</p>
-  <p><strong>Courbe de palier early game :</strong> les ennemis voient leurs PV et leur ATQ augmenter progressivement jusqu'à <strong>×3,0 PV / ×2,5 ATQ</strong> entre les paliers 8 et 15, puis revenir à la normale au palier 25. Le premier gardien et le début de partie restent accessibles ; le milieu de partie demande d'améliorer l'équipement.</p>
+  <p><strong>Courbe de palier early game :</strong> les ennemis voient leurs PV et leur ATQ augmenter progressivement jusqu’à <strong>×3,0 PV / ×2,5 ATQ</strong> entre les paliers 6 et 8, puis revenir à la normale au palier 20. Le premier gardien et le début de partie restent accessibles ; le milieu de partie demande d’améliorer l’équipement.</p>
   <h3>Mode farm</h3>
   <figure class="shot">
     <img src="images/farm_mode.jpg" alt="Carte Biome avec le mode farm actif et le badge FARM dans le HUD">

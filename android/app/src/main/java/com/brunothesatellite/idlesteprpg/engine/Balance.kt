@@ -10,7 +10,7 @@ package com.brunothesatellite.idlesteprpg.engine
  * et vérifiée par `tools/equilibrage/check_constants.py`.
  */
 object Balance {
-    const val VERSION = "0.20.0"
+    const val VERSION = "0.24.0"
 
     // --- Comportement courant (0.20.0) ---
     const val XP_BASE = 120.0
@@ -66,9 +66,9 @@ object Balance {
     const val MOB_INTERVAL_MS = 1250.0
 
     const val ELITE_CHANCE = 0.06
-    const val ELITE_HP_MULT = 1.8
-    const val ELITE_ATK_MULT = 1.15
-    const val ELITE_LEVEL_BONUS = 2
+    const val ELITE_HP_MULT = 1.45
+    const val ELITE_ATK_MULT = 1.05
+    const val ELITE_LEVEL_BONUS = 1
     const val ELITE_INTERVAL_MS = 1100.0
 
     const val BOSS_LEVEL_OFFSET = 2
@@ -202,15 +202,15 @@ object Balance {
         const val LEVEL_GAP_FREE = 4
         const val LEVEL_GAP_PCT = 0.02
         const val LEVEL_GAP_CAP = 1.25
-        const val EARLY_CURVE_PEAK_START = 8
-        const val EARLY_CURVE_PEAK_END = 15
-        const val EARLY_CURVE_END = 25
+        const val EARLY_CURVE_PEAK_START = 6
+        const val EARLY_CURVE_PEAK_END = 8
+        const val EARLY_CURVE_END = 20
         const val EARLY_HP_MAX = 3.0
         const val EARLY_ATK_MAX = 2.5
         const val DEFEAT_XP_RATIO = 0.25
         const val LIFESTEAL_PER_SECOND_CAP = 0.03
-        const val PITY_HP_STEP = 0.01
-        const val PITY_CAP = 0.03
+        const val PITY_HP_STEP = 0.03
+        const val PITY_CAP = 0.15
         const val FUSION_RATIO = 0.90
         const val LOOT_PITY_RARE_KILLS = 5
         const val LOOT_PITY_SET_BOSSES = 10

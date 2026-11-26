@@ -239,7 +239,7 @@ def templates_for(floor: int) -> list[LootTemplate]:
     return GENERIC + BIOME_LOOT[biome_key(floor)]
 
 
-def loot_item(floor: int, rarity: str, rng: random.Random, force_set: bool = False) -> Item:
+def loot_item(floor: int, rarity: str, rng: random.Random, hero_level: int, force_set: bool = False) -> Item:
     final = rarity
     if rarity == "epic" and rng.random() < CURRENT["LOOT_EPIC_LEGENDARY_CHANCE"]:
         final = "legendary"
@@ -247,7 +247,8 @@ def loot_item(floor: int, rarity: str, rng: random.Random, force_set: bool = Fal
         final = "legendary"
     tpl = rng.choice(templates_for(floor))
     mult = RARITY_MULT[final]
-    scale = min(TARGET["LOOT_SCALE_CAP"], 1.0 + TARGET["LOOT_FLOOR_SCALE"] * max(0, floor - 1))
+    loot_floor = min(floor + 10, max(floor, hero_level - 10))
+    scale = min(TARGET["LOOT_SCALE_CAP"], 1.0 + TARGET["LOOT_FLOOR_SCALE"] * max(0, loot_floor - 1))
 
     def scaled(v: int) -> int:
         return max(1, round(v * mult * scale)) if v > 0 else 0
@@ -268,7 +269,7 @@ def loot_item(floor: int, rarity: str, rng: random.Random, force_set: bool = Fal
         slot=tpl.slot,
         name=tpl.name + (f" - {effect}" if effect else ""),
         rarity=final,
-        level=max(1, floor),
+        level=max(1, loot_floor),
         atk=scaled(tpl.atk),
         hp=scaled(tpl.hp),
         vit=scaled(tpl.vit),
@@ -278,7 +279,7 @@ def loot_item(floor: int, rarity: str, rng: random.Random, force_set: bool = Fal
         effect=effect,
         set_name=set_name,
         identified=identified,
-        max_level=max(1, floor) + ITEM_MAX_LEVELS,
+        max_level=max(1, loot_floor) + ITEM_MAX_LEVELS,
     )
     item.base_atk = item.atk
     item.base_hp = item.hp
@@ -334,6 +335,7 @@ class Hero:
     pool: list[Item] = field(default_factory=list)
     potions: int = 0
     steps: int = 0
+    tenacity: int = 0
 
     def raw_stats(self) -> Stats:
         milestone = 0  # filled by stats_for_floor
@@ -394,6 +396,9 @@ class Hero:
         crit_damage = min(crit_damage, TARGET["CRIT_DAMAGE_CAP"])
         boss_damage = min(boss_damage, TARGET["BOSS_DAMAGE_CAP"])
         dr = min(max(dr, 0.0), TARGET["DAMAGE_REDUCTION_CAP"])
+        tenacity = 1.0 + 0.05 * min(5, self.tenacity)
+        atk *= tenacity
+        max_hp *= tenacity
         power = atk * 2 + max_hp * 0.2 + vit * 100 + crit * 4 + regen * 20 + lifesteal * 500 + dr * 500
         return Stats(atk, max_hp, vit, crit, crit_damage, regen, lifesteal, dr, boss_damage, power)
 
@@ -458,6 +463,7 @@ class Profile:
     farm_boss: int
     preheal: bool
     potions: str            # none, situational, aggressive
+    protect_sets: bool = False
 
 
 PROFILES = {
@@ -490,6 +496,11 @@ PROFILES = {
         "passif_plus", "Passif + coffres + auto-optimisation", "smart", "normal", "normal", "light",
         chests=True, specials="safe", boss_threshold=0.0, farm_mobs=0,
         farm_boss=0, preheal=True, potions="none",
+    ),
+    "passif_auto_game": Profile(
+        "passif_auto_game", "Passif + auto-optimisation du jeu", "greedy", "normal", "max", "max",
+        chests=True, specials="safe", boss_threshold=0.0, farm_mobs=0,
+        farm_boss=0, preheal=True, potions="none", protect_sets=True,
     ),
     "normal": Profile(
         "normal", "Normal", "greedy", "light", "light", "light",
@@ -903,6 +914,8 @@ def fuse_items(hero: Hero, profile: Profile, rng: random.Random) -> None:
                 continue
             if item.rarity == "legendary":
                 continue
+            if profile.protect_sets and item.set_name:
+                continue
             groups.setdefault((item.slot, item.rarity), []).append(item)
         for (slot, rarity), group in groups.items():
             if len(group) < 3:
@@ -1055,6 +1068,7 @@ class Snapshot:
     boss_attempts: int
     retreats: int
     farm_kills: int
+    tenacity: int = 0
 
 
 @dataclass
@@ -1079,6 +1093,7 @@ class RunResult:
     rations_used: int = 0
     max_floor: int = 1
     level_100_floor: int = 0
+    tenacity_max: int = 0
     snapshots: dict[int, Snapshot] = field(default_factory=dict)
     floor_stats: dict[int, dict] = field(default_factory=dict)
     wall_floor: int | None = None
@@ -1103,6 +1118,9 @@ class Progression:
         self.mobs_since_rare = 0
         self.special = None
         self.result = RunResult(profile.key, steps_per_day, seed, False, 1, 1, 0.0, 0)
+        self.tenacity_stacks = 0
+        self.tenacity_floor = 1
+        self.hero.tenacity = 0
         self.floor_start_steps = 0
         self.floor_start_power = self.hero.stats(1).power
         self.floor_entry_steps = 0
@@ -1136,8 +1154,20 @@ class Progression:
             self.result.steps += cost
             self.open_chest(ctype)
 
-    def floor_stat(self, floor: int) -> dict:
-        return self.result.floor_stats.setdefault(
+    def on_defeat(self) -> None:
+        if self.tenacity_floor != self.floor:
+            self.tenacity_stacks = 0
+            self.tenacity_floor = self.floor
+        self.tenacity_stacks = min(5, self.tenacity_stacks + 1)
+        self.hero.tenacity = self.tenacity_stacks
+        self.result.tenacity_max = max(self.result.tenacity_max, self.tenacity_stacks)
+
+    def on_guardian_victory(self) -> None:
+        self.tenacity_stacks = 0
+        self.hero.tenacity = 0
+        self.tenacity_floor = self.floor
+
+    def floor_stat(self, floor: int) -> dict:        return self.result.floor_stats.setdefault(
             floor,
             {"attempts": 0, "wins": 0, "retreats": 0, "normal_retreats": 0,
              "farm_kills": 0, "steps": 0, "days": 0.0, "level_in": self.hero.level},
@@ -1183,7 +1213,7 @@ class Progression:
         self.result.gold_earned += gold
         self.hero.rations = min(MAX_RATIONS, self.hero.rations + 3)
         self.hero.shards = min(MAX_SHARDS, self.hero.shards + 2)
-        self.add_loot(loot_item(self.floor, rarity, self.rng))
+        self.add_loot(loot_item(self.floor, rarity, self.rng, self.hero.level))
         if self.rng.random() < 0.7:
             self.hero.potions += self.rng.randint(1, 3)
         self.result.chests += 1
@@ -1218,7 +1248,7 @@ class Progression:
                 self.hero.rations -= 1
                 self.hero.hp = s.max_hp
         elif kind == "marchand":
-            item = loot_item(self.floor, "epic" if self.rng.random() < 0.3 else "rare", self.rng)
+            item = loot_item(self.floor, "epic" if self.rng.random() < 0.3 else "rare", self.rng, self.hero.level)
             cost = max(60, item.value * 2)
             if self.hero.gold >= cost and item.score() > item_score(self.hero.equipment.get(item.slot, item)) * 0.9:
                 self.hero.gold -= cost
@@ -1329,7 +1359,7 @@ class Progression:
             self.hero.shards = min(MAX_SHARDS, self.hero.shards + int(CURRENT["BOSS_SHARDS"]))
             # butin de gardien
             force_set = self.bosses_since_set >= int(TARGET["LOOT_PITY_SET_BOSSES"])
-            item = loot_item(self.floor, "rare", self.rng, force_set=force_set)
+            item = loot_item(self.floor, "rare", self.rng, self.hero.level, force_set=force_set)
             if item.set_name:
                 self.bosses_since_set = 0
             else:
@@ -1340,6 +1370,7 @@ class Progression:
             self.boss_pity = 0.0
             self.result.kills_boss += 1
             fs["wins"] += 1
+            self.on_guardian_victory()
             # plafond post-gardien
             s = self.hero.stats(self.floor)
             self.hero.hp = min(self.hero.hp, BOSS_VICTORY_HP_CAP * s.max_hp)
@@ -1348,6 +1379,7 @@ class Progression:
         self.result.retreats += 1
         fs["retreats"] += 1
         self.xp_gain(round(enemy.xp * DEFEAT_XP_RATIO))
+        self.on_defeat()
         self.boss_pity = min(TARGET["PITY_CAP"], self.boss_pity + TARGET["PITY_HP_STEP"])
         self.farm_recovery(gap)
         self.distance = max(0.0, math.floor((self.distance - 20.0) / 10.0) * 10.0)
@@ -1375,6 +1407,7 @@ class Progression:
             self.result.retreats += 1
             self.floor_stat(self.floor)["normal_retreats"] += 1
             self.xp_gain(round(out["enemy"].xp * DEFEAT_XP_RATIO))
+            self.on_defeat()
             self.farm_recovery(gap_mult(self.hero.level, self.floor))
             return out
         self.result.kills_normal += 1
@@ -1412,7 +1445,7 @@ class Progression:
         self.mobs_since_rare += 1
         if self.mobs_since_rare >= int(TARGET["LOOT_PITY_RARE_KILLS"]):
             self.mobs_since_rare = 0
-            self.add_loot(loot_item(self.floor, "rare", self.rng))
+            self.add_loot(loot_item(self.floor, "rare", self.rng, self.hero.level))
         if self.rng.random() < TARGET["MOB_RATION_CHANCE"]:
             self.hero.rations = min(MAX_RATIONS, self.hero.rations + 1)
         if out["elite"]:
@@ -1437,6 +1470,7 @@ class Progression:
             boss_attempts=self.result.boss_attempts,
             retreats=self.result.retreats,
             farm_kills=self.result.farm_kills,
+            tenacity=self.tenacity_stacks,
         )
 
     def run(self, max_days: int = 2000) -> RunResult:
@@ -1501,6 +1535,7 @@ class Progression:
                     self.result.max_floor = max(self.result.max_floor, self.floor)
                     self.floor_start_steps = self.result.steps
                     self.floor_start_power = self.hero.stats(self.floor).power
+                    self.tenacity_floor = self.floor
                     self.floor_entry_steps = self.result.steps
                     self.floor_entry_day = self.day
                     manage_gear(self.hero, self.profile, self.floor, self.rng)
@@ -1529,6 +1564,7 @@ def ttk_table(result: RunResult, potion: str = "") -> list[dict]:
         if snap is None:
             continue
         hero = Hero(level=snap.level, upgrades=dict(snap.upgrades))
+        hero.tenacity = snap.tenacity
         hero.equipment = {item.slot: item for item in snap.equipment}
         build = hero.build(floor)
         gap = gap_mult(snap.level, floor)

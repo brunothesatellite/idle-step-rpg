@@ -1426,6 +1426,14 @@ fun GuardianGateDialog(
                     color = Green
                 )
             }
+            if (state.tenacity.stacks > 0) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(R.string.gate_tenacity, state.tenacity.stacks * 5),
+                    fontSize = 6.4.sp,
+                    color = Green
+                )
+            }
             Spacer(Modifier.height(9.dp))
             GoldButton(stringResource(R.string.gate_engage), onClick = onEngage)
             Spacer(Modifier.height(6.dp))

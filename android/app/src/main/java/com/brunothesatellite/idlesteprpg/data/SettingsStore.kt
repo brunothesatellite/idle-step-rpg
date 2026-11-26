@@ -68,6 +68,18 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean("auto_sell_commons", false)
         set(value) = prefs.edit().putBoolean("auto_sell_commons", value).apply()
 
+    var autoOptimize: Boolean
+        get() = prefs.getBoolean("auto_optimize", true)
+        set(value) = prefs.edit().putBoolean("auto_optimize", value).apply()
+
+    var autoOpenChests: Boolean
+        get() = prefs.getBoolean("auto_open_chests", true)
+        set(value) = prefs.edit().putBoolean("auto_open_chests", value).apply()
+
+    var autoHeal: Boolean
+        get() = prefs.getBoolean("auto_heal", true)
+        set(value) = prefs.edit().putBoolean("auto_heal", value).apply()
+
     var onboardingDone: Boolean
         get() = prefs.getBoolean("onboarding_done", false)
         set(value) = prefs.edit().putBoolean("onboarding_done", value).apply()

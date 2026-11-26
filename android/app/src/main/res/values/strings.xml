@@ -89,6 +89,12 @@
     <string name="settings_inventory">Inventaire</string>
     <string name="settings_auto_sell">Vendre les communs automatiquement</string>
     <string name="settings_auto_sell_desc">Les objets communs non verrouillés sont convertis en or au ramassage.</string>
+    <string name="settings_auto_optimize">Optimisation automatique</string>
+    <string name="settings_auto_optimize_desc">Équipe le meilleur stuff, fusionne les doublons non-set, forge et achète le camp avec des réserves.</string>
+    <string name="settings_auto_chests">Ouvrir les coffres automatiquement</string>
+    <string name="settings_auto_chests_desc">Ouvre le coffre en attente dès que la réserve de pas le permet.</string>
+    <string name="settings_auto_heal">Soins automatiques</string>
+    <string name="settings_auto_heal_desc">Utilise les repos gratuits et quelques rations pour remonter les PV avant de repartir.</string>
     <string name="settings_save">Sauvegarde</string>
     <string name="settings_save_note">La progression est aussi sauvegardée automatiquement. Exportez-la avant de changer de téléphone.</string>
     <string name="settings_export">EXPORTER</string>
@@ -284,6 +290,7 @@
     <string name="dashboard_fervor_vit">VIT</string>
     <string name="dashboard_fervor_regen">RÉGÉN</string>
     <string name="dashboard_fervor_crit">CRIT</string>
+    <string name="dashboard_tenacity">TÉNACITÉ +%1$d %% · +%1$d %% ATQ/PV</string>
     <string name="dashboard_oaths">Serments du jour</string>
     <string name="dashboard_streak">Série %1$d jour(s)</string>
     <string name="dashboard_weekly_steps">%1$s pas cette semaine</string>
@@ -724,6 +731,7 @@
     <string name="journal_guardian_ignite">Le gardien s\'embrase</string>
     <string name="journal_ability">%1$s · %2$s</string>
     <string name="journal_ration">Ration consommée (+%1$d PV)</string>
+    <string name="journal_tenacity">Ténacité +%1$d %% (%2$d/5)</string>
     <string name="journal_kill_farm_floor">%1$s vaincu — palier %2$d conservé (farm)</string>
     <string name="journal_kill_floor">%1$s vaincu — palier %2$d</string>
     <string name="journal_milestone_floor">Jalon · palier %1$d franchi — %2$s · +5 éclats</string>
@@ -1086,7 +1094,8 @@
     <string name="gate_level">Palier %1$d · Niv. %2$d</string>
     <string name="gate_ability">CAPACITÉ · %1$s</string>
     <string name="gate_modifier">MODIFICATEUR · %1$s</string>
-    <string name="gate_pity" formatted="false">AFFAIBLI −%1$d %%</string>
+    <string name="gate_pity" formatted="false">AFFAIBLI -%1$d %%</string>
+    <string name="gate_tenacity">TÉNACITÉ +%1$d %% · +%1$d %% ATQ/PV</string>
     <string name="gate_engage">ENGAGER</string>
     <string name="gate_farm">FARMER CE PALIER</string>
     <string name="gate_camp">CAMPER</string>

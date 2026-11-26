@@ -207,7 +207,7 @@
   <h1>THE MARCH OF SOULS</h1>
   <p>Complete user manual — a walking RPG where your steps become your progress.</p>
   <p class="lang"><a href="../index.html">Français</a> · <strong>English</strong></p>
-  <span class="badge">Version 0.23.0 · Android 14+ · Garmin or Health Connect</span>
+  <span class="badge">Version 0.24.0 · Android 14+ · Garmin or Health Connect</span>
 </header>
 
 <nav class="toc">
@@ -416,7 +416,8 @@
     <li>The panel also shows the hero's <strong>current / max HP</strong> and <strong>ATK</strong> to help you prepare.</li>
     <li>Choice: <strong>ENGAGE</strong>, <strong>FARM THIS FLOOR</strong> or <strong>CAMP</strong>. The fight only starts after ENGAGE, at 100 m.</li>
     <li><strong>Phase 2</strong> below 50% HP: telegraphed ability, with no permanent speed-up.</li>
-    <li><strong>Pity</strong>: each defeat weakens the guardian by <strong>-1% HP/ATK</strong>, up to <strong>-3%</strong>, reset on victory.</li>
+    <li><strong>Pity</strong>: each defeat weakens the guardian by <strong>-3% HP/ATK</strong>, up to <strong>-15%</strong>, reset on victory.</li>
+    <li><strong>Tenacity</strong>: each defeat on a floor grants <strong>+5% ATK/HP</strong> (max <strong>+25%</strong>), reset on guardian victory or floor change. The gate and HUD show the bonus.</li>
     <li><strong>After victory</strong>, HP is capped at <strong>65% of max HP</strong> (farming included): the hero leaves wounded and must manage rations.</li>
     <li>Possible modifiers: <strong>Fast</strong>, <strong>Armored</strong>, <strong>Berserk</strong>, <strong>Regenerating</strong>, <strong>Thief</strong>. <strong>Fast</strong> and <strong>Berserk</strong> never combine with a heavy ability (blow, breath, drain, pressure).</li>
   </ul>
@@ -562,9 +563,11 @@
   <p>Weapon, head, body, hands, boots, talisman. An equipped item replaces the old one, which returns to the bag.</p>
   <h3>Rarities</h3>
   <p>Common, uncommon, rare, epic, legendary. The border and name colour show it. Rare and above items may have an effect, a set, or be unidentified.</p>
+  <p><strong>Level-scaled loot:</strong> the effective loot level follows the hero: <code>min(floor + 10, max(floor, level − 10))</code>. A player moving faster than their floor still gets usable gear, without changing the biome identity.</p>
   <h3>Actions</h3>
   <ul>
     <li><strong>Equip best:</strong> compares the six slots and equips every improvement.</li>
+    <li><strong>Automatic optimization:</strong> enabled in <strong>Settings → Inventory</strong>. It identifies items, fuses non-set duplicates, forges with reserves, buys camp upgrades, equips gear, opens chests and heals automatically. It never touches locked items or set pieces.</li>
     <li><strong>Sell commons:</strong> converts unlocked common items into gold.</li>
     <li><strong>Lock:</strong> protects an item from selling and fusion.</li>
     <li><strong>Fuse:</strong> the open item and the <strong>two best</strong> identified, unlocked items of the same slot and rarity give an item of higher rarity. Three legendaries give a fused legendary. The result keeps <strong>90%</strong> of the summed stats, along with the effect and set. The button shows <strong>FUSE</strong> when all three are gathered, otherwise <strong>FUSE 2/3</strong> and stays greyed out.</li>
@@ -727,7 +730,7 @@
     <tr><td>Throne (81+)</td><td>Broken Throne</td><td>+15% to +35% enemy HP and ATK · reinforced guardians · final boss on floor 100.</td></tr>
   </table>
   <p><strong>Level gap:</strong> beyond <strong>4 levels ahead</strong> of the floor, enemies gain <strong>+2% HP and ATK per level of gap</strong>, capped at <strong>×1.25</strong>. At the floor's own level there is no penalty.</p>
-  <p><strong>Early-game floor curve:</strong> enemy HP and ATK rise progressively up to <strong>×3.0 HP / ×2.5 ATK</strong> between floors 8 and 15, then return to normal by floor 25. The first guardian and the very start remain accessible; the mid game rewards better gear.</p>
+  <p><strong>Early-game floor curve:</strong> enemy HP and ATK rise progressively up to <strong>×3.0 HP / ×2.5 ATK</strong> between floors 6 and 8, then return to normal by floor 20. The first guardian and the very start remain accessible; the mid game rewards better gear.</p>
   <h3>Farm mode</h3>
   <figure class="shot">
     <img src="images/farm_mode.jpg" alt="Biome card with farm mode active and the FARM badge in the HUD">
@@ -1088,7 +1091,7 @@
 </section>
 
 <footer>
-  The March of Souls · manual v0.23.0 · <a href="#top">Back to contents</a><br>
+  The March of Souls · manual v0.24.0 · <a href="#top">Back to contents</a><br>
   Garmin or Health Connect · no data sent to a publisher server.
 </footer>
 

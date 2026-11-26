@@ -659,6 +659,14 @@ private fun FerveurCard(state: GameState) {
             BonusText(stringResource(R.string.dashboard_fervor_regen), "+${decimalRes(state.ferveur * 0.8)} %")
             BonusText(stringResource(R.string.dashboard_fervor_crit), "+${decimalRes(state.ferveur * 0.02)} %")
         }
+        if (state.tenacity.stacks > 0) {
+            Spacer(Modifier.height(5.dp))
+            Text(
+                stringResource(R.string.dashboard_tenacity, state.tenacity.stacks * 5),
+                fontSize = 5.8.sp,
+                color = Green
+            )
+        }
     }
 }
 

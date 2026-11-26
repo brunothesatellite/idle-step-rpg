@@ -81,7 +81,7 @@ const val MAX_RATIONS = Balance.Target.RATIONS_CAP
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250
-const val SAVE_VERSION = 7
+const val SAVE_VERSION = 8
 
 @Serializable
 data class Upgrades(
@@ -89,6 +89,39 @@ data class Upgrades(
     var breath: Int = 0,
     var swift: Int = 0
 )
+
+/** Bonus de reprise après une défaite sur un palier. */
+@Serializable
+data class TenacityState(
+    var stacks: Int = 0,
+    var floor: Int = 0
+)
+
+/** Politique d'optimisation automatique, appliquée par la couche données. */
+data class AutoOptimizePolicy(
+    val enabled: Boolean = true,
+    val openChests: Boolean = true,
+    val autoHeal: Boolean = true,
+    val reserveShards: Int = 6,
+    val reserveGold: Int = 200,
+    val maxFusions: Int = 4,
+    val maxUpgrades: Int = 3,
+    val maxCampBuys: Int = 2
+)
+
+/** Résultat d'un passage d'optimisation, pour la télémétrie et les tests. */
+data class AutoOptimizeResult(
+    val identifications: Int = 0,
+    val fusions: Int = 0,
+    val upgrades: Int = 0,
+    val campBuys: Int = 0,
+    val equips: Int = 0,
+    val chests: Int = 0,
+    val heals: Int = 0
+) {
+    val total: Int
+        get() = identifications + fusions + upgrades + campBuys + equips + chests + heals
+}
 
 @Serializable
 data class Item(
@@ -123,7 +156,7 @@ data class JournalEntry(
     val type: String = "neutral"
 )
 
-const val TELEMETRY_SCHEMA = 3
+const val TELEMETRY_SCHEMA = 4
 const val TELEMETRY_FIGHTS = 100
 const val TELEMETRY_DAYS = 60
 const val TELEMETRY_LEVELS = 200
@@ -153,6 +186,8 @@ data class FightSample(
     var potions: List<String> = emptyList(),
     var buffs: List<String> = emptyList(),
     var ferveur: Int = 0,
+    var tenacityStacks: Int = 0,
+    var bossPity: Double = 0.0,
     var atk: Int = 0,
     var maxHp: Int = 0,
     var vit: Double = 0.0,
@@ -182,6 +217,8 @@ data class FloorTelemetry(
     var bossWins: Int = 0,
     var farmAttempts: Int = 0,
     var farmWins: Int = 0,
+    var eliteAttempts: Int = 0,
+    var eliteWins: Int = 0,
     var totalMs: Long = 0L,
     var totalDamageTaken: Long = 0L,
     var rations: Int = 0,
@@ -227,6 +264,12 @@ data class BalanceTelemetry(
     var bossWins: Int = 0,
     var combatMs: Long = 0,
     var combatCount: Int = 0,
+    var autoFusions: Int = 0,
+    var autoUpgrades: Int = 0,
+    var autoCampBuys: Int = 0,
+    var autoChests: Int = 0,
+    var autoHeals: Int = 0,
+    var tenacityMax: Int = 0,
     var bossAttempts: Map<Int, Int> = emptyMap(),
     var bossWinsByFloor: Map<Int, Int> = emptyMap(),
     var recentFights: List<FightSample> = emptyList(),
@@ -268,6 +311,8 @@ data class BalanceReport(
     var holdFloor: Boolean = false,
     var bossPity: Double = 0.0,
     var retreats: Int = 0,
+    var autoOptimize: Boolean = false,
+    var tenacityMax: Int = 0,
     var stats: ReportStats = ReportStats(),
     var equipment: List<Item> = emptyList(),
     var upgrades: Upgrades = Upgrades(),
@@ -302,6 +347,8 @@ data class FightData(
     var phase2: Boolean = false,
     var startHp: Double = 0.0,
     var startFerveur: Int = 0,
+    var tenacityStacks: Int = 0,
+    var bossPity: Double = 0.0,
     var damageTaken: Double = 0.0,
     var healLifesteal: Double = 0.0,
     /** Réserve de soin vampire, en PV, reconstituée à 3 % des PV max par seconde. */
@@ -548,6 +595,7 @@ data class GameState(
     var fight: FightData? = null,
     var pendingBoss: FightData? = null,
     var bossPity: Double = 0.0,
+    var tenacity: TenacityState = TenacityState(),
     var chest: ChestData? = null,
     /** Or du dernier coffre ouvert, pour le toast (non sérialisé). */
     @Transient var chestFlashGold: Int = 0,
@@ -1457,6 +1505,9 @@ private fun setBonusFor(name: String, tier: Int): SetBonus = when (name) {
     else -> SetBonus()
 }
 
+fun tenacityMultiplier(stacks: Int): Double =
+    1.0 + 0.05 * stacks.coerceIn(0, 5)
+
 fun statsOf(state: GameState): Stats {
     val milestone = milestoneBonus(state.floor)
     val baseAtk = Balance.HERO_ATK_BASE + Balance.HERO_ATK_PER_LEVEL * (state.level - 1) +
@@ -1549,6 +1600,9 @@ fun statsOf(state: GameState): Stats {
     regen += rule.regen
     damageReduction += rule.damageReduction
     bossDamage += rule.bossDamage
+    val tenacity = tenacityMultiplier(state.tenacity.stacks)
+    atk = (atk * tenacity).roundToInt()
+    maxHp = (maxHp * tenacity).roundToInt()
     vit = vit.coerceAtMost(Balance.Target.VIT_CAP)
     crit = crit.coerceAtMost(Balance.Target.CRIT_CAP.toInt())
     lifesteal = lifesteal.coerceAtMost(Balance.Target.LIFESTEAL_CAP)
@@ -1602,6 +1656,13 @@ fun lootFloorScale(floor: Int): Double =
         Balance.Target.LOOT_SCALE_CAP,
         1.0 + Balance.Target.LOOT_FLOOR_SCALE * (floor - 1).coerceAtLeast(0)
     )
+
+/**
+ * Niveau effectif du butin : suit le héros qui avance plus vite que son palier,
+ * sans dépasser palier + 10. Conserve l'identité de biome via `floor`.
+ */
+fun lootFloorFor(floor: Int, level: Int): Int =
+    min(floor + 10, max(floor, level - 10))
 
 fun rarityMultiplier(rarity: String): Double = when (rarity) {
     "uncommon" -> Balance.Target.RARITY_UNCOMMON

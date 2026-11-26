@@ -1,5 +1,17 @@
 # Journal des versions
 
+## v0.24.0
+- **Optimisation automatique** : nouveau mode activé par défaut. Il identifie les objets, fusionne les doublons non-set, forge avec réserves d’or/éclats, achète le camp, équipe le meilleur stuff, ouvre les coffres et utilise les soins automatiques. Désactivable dans Réglages → Inventaire.
+- **Ténacité** : chaque défaite sur un palier donne **+5 % ATQ/PV** (max **+25 %**), remis à zéro à la victoire du gardien ou au changement de palier. Le portail et le HUD affichent le bonus.
+- **Butin adapté au niveau** : le niveau effectif du butin suit le héros (`min(palier + 10, max(palier, niveau - 10))`) pour que l’XP fasse progresser le stuff des joueurs qui avancent vite.
+- **Élites adoucies** : PV ×1,45 (au lieu de ×1,80), ATQ ×1,05 (au lieu de ×1,15), niveau +1 (au lieu de +2).
+- **Courbe early resserrée** : pic ×3,0 PV / ×2,5 ATQ sur les paliers 6–8, retour à ×1 au palier 20 (au lieu de 25).
+- **Pitié de gardien renforcée** : **−3 % PV/ATQ par défaite**, plafond **−15 %** (au lieu de −1 %/−3 %).
+- **Télémétrie v4** : ténacité, pitié, élites, compteurs d’auto-optimisation, `autoOptimize` et `tenacityMax` dans le rapport.
+- **Sauvegarde v8** : migration automatique, aucune perte de progression.
+- **Tests** : **174 / 174**, lint OK.
+- **Build** : `versionCode 65`, `versionName 0.24.0`. Aucune release GitHub à ce stade.
+
 ## v0.23.0
 - **Courbe de palier early game** : les PV ennemis montent jusqu'à **×3,0** et l'ATQ jusqu'à **×2,5** entre les paliers 8 et 15, puis reviennent à ×1 au palier 25. Aucun effet au palier 1 : le premier gardien reste accessible. La courbe s'applique aux monstres, aux gardiens et au farm.
 - **Écart de niveau réduit** : au-delà de 4 niveaux d'avance, **+2 % PV/ATQ par niveau**, plafond **×1,25**. L'écart redevient un garde-fou et non le moteur principal de la difficulté.

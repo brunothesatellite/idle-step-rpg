@@ -420,6 +420,21 @@ fun SettingsOverlay(vm: GameViewModel, ui: UiState, state: GameState, onClose: (
                     stringResource(R.string.settings_auto_sell_desc),
                     ui.autoSellCommons
                 ) { vm.setAutoSellCommons(it) }
+                ToggleRow(
+                    stringResource(R.string.settings_auto_optimize),
+                    stringResource(R.string.settings_auto_optimize_desc),
+                    ui.autoOptimize
+                ) { vm.setAutoOptimize(it) }
+                ToggleRow(
+                    stringResource(R.string.settings_auto_chests),
+                    stringResource(R.string.settings_auto_chests_desc),
+                    ui.autoOpenChests
+                ) { vm.setAutoOpenChests(it) }
+                ToggleRow(
+                    stringResource(R.string.settings_auto_heal),
+                    stringResource(R.string.settings_auto_heal_desc),
+                    ui.autoHeal
+                ) { vm.setAutoHeal(it) }
             }
             Spacer(Modifier.height(10.dp))
             PixelCard(Modifier.fillMaxWidth()) {

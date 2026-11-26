@@ -29,11 +29,17 @@ profit des agrégats par palier et par jour.
 
 ```json
 {
-  "schema": 3,
+  "schema": 4,
   "normalFights": 120,
   "normalWins": 118,
   "bossFights": 12,
   "bossWins": 10,
+  "autoFusions": 9,
+  "autoUpgrades": 14,
+  "autoCampBuys": 6,
+  "autoChests": 11,
+  "autoHeals": 23,
+  "tenacityMax": 3,
   "recentFights": [
     {
       "at": 1795610000000,
@@ -58,6 +64,8 @@ profit des agrégats par palier et par jour.
       "potions": [],
       "buffs": [],
       "ferveur": 51,
+      "tenacityStacks": 1,
+      "bossPity": 0.03,
       "atk": 212,
       "maxHp": 684,
       "vit": 1.51,
@@ -87,6 +95,8 @@ profit des agrégats par palier et par jour.
       "bossWins": 1,
       "farmAttempts": 0,
       "farmWins": 0,
+      "eliteAttempts": 2,
+      "eliteWins": 1,
       "totalMs": 61200,
       "totalDamageTaken": 2880,
       "rations": 2,
@@ -140,6 +150,13 @@ profit des agrégats par palier et par jour.
 - **Replis** : `retreats` à la racine du rapport, et `floorStats[].losses` /
   `days[].losses` pour les défaites. Une défaite accorde 25 % de l’XP du combat
   (`recentFights[].xpGained` reflète déjà ce montant).
+- **Ténacité** : `recentFights[].tenacityStacks`, et `tenacityMax` à la racine du
+  rapport. Chaque pile vaut +5 % ATQ/PV (max 5).
+- **Pitié** : `recentFights[].bossPity` et `bossPity` à la racine ; −3 %/défaite,
+  plafond −15 %.
+- **Élites** : `floorStats[].eliteAttempts` / `eliteWins`.
+- **Auto-optimisation** : `autoFusions`, `autoUpgrades`, `autoCampBuys`,
+  `autoChests`, `autoHeals` dans `telemetry`, et `autoOptimize` à la racine.
 - **Soin vampire** : plafonné à 3 % des PV max par seconde ; `healLifesteal`
   mesure le soin réellement rendu.
 
@@ -151,7 +168,7 @@ profit des agrégats par palier et par jour.
 
 ## Compatibilité
 
-- Schéma de télémétrie : **3**.
-- Version de sauvegarde : inchangée (**7**).
+- Schéma de télémétrie : **4**.
+- Version de sauvegarde : **8**.
 - Les anciennes sauvegardes sont complétées avec des champs vides ; les nouvelles
   sauvegardes restent lisibles par les versions qui ignorent les champs inconnus.

@@ -441,6 +441,8 @@ object GameEngine {
             potions = f.potionsUsed,
             buffs = f.buffsAtStart,
             ferveur = f.startFerveur,
+            tenacityStacks = f.tenacityStacks,
+            bossPity = f.bossPity,
             atk = s.atk,
             maxHp = s.maxHp,
             vit = s.vit,
@@ -480,6 +482,10 @@ object GameEngine {
         if (f.farm) {
             floorStat.farmAttempts++
             if (win) floorStat.farmWins++
+        }
+        if (f.elite) {
+            floorStat.eliteAttempts++
+            if (win) floorStat.eliteWins++
         }
         floorStat.totalMs += duration
         floorStat.totalDamageTaken += f.damageTaken.roundToLong()
@@ -1329,6 +1335,8 @@ object GameEngine {
         val f = if (farm) makeFarm(state) else makeMob(state)
         f.startHp = state.hp
         f.startFerveur = state.ferveur
+        f.tenacityStacks = state.tenacity.stacks
+        f.bossPity = state.bossPity
         f.heroAtStart = reportStats(statsOf(state))
         f.buffsAtStart = state.buffs
             .filter { it.expiresAt > System.currentTimeMillis() }
@@ -1343,6 +1351,8 @@ object GameEngine {
         val f = state.pendingBoss ?: makeBoss(state)
         f.startHp = state.hp
         f.startFerveur = state.ferveur
+        f.tenacityStacks = state.tenacity.stacks
+        f.bossPity = state.bossPity
         f.heroAtStart = reportStats(statsOf(state))
         f.buffsAtStart = state.buffs
             .filter { it.expiresAt > System.currentTimeMillis() }
@@ -1971,6 +1981,7 @@ object GameEngine {
                     "neutral"
                 )
             }
+            state.tenacity = TenacityState(stacks = 0, floor = state.floor)
         } else if (f.farm) {
             state.farmKills++
             val s = statsOf(state)
@@ -2031,6 +2042,11 @@ object GameEngine {
             0
         }
         if (retreatXp > 0) gainXp(state, retreatXp)
+        if (state.tenacity.floor != state.floor) {
+            state.tenacity = TenacityState(stacks = 0, floor = state.floor)
+        }
+        state.tenacity.stacks = min(5, state.tenacity.stacks + 1)
+        state.telemetry.tenacityMax = max(state.telemetry.tenacityMax, state.tenacity.stacks)
         state.hp = statsOf(state).maxHp * Balance.DEFEAT_HP_RATIO
         state.mode = "farmWait"
         state.farmKills = 0
@@ -2047,6 +2063,11 @@ object GameEngine {
             state,
             "Défaite — repli de 20 m dans la zone de farm$xpText",
             "bad"
+        )
+        state.journal = addJournal(
+            state,
+            "Ténacité +${state.tenacity.stacks * 5} % (${state.tenacity.stacks}/5)",
+            "good"
         )
     }
 
@@ -2172,7 +2193,7 @@ object GameEngine {
 
     fun equipItem(state: GameState, itemId: String): Boolean {
         val item = state.inventory.firstOrNull { it.id == itemId } ?: return false
-        if (!item.identified) return false
+        if (!item.identified || item.locked) return false
         val previous = state.equipment.firstOrNull { it.slot == item.slot }
         swapEquipment(state, item, previous)
         state.journal = addJournal(state, "${item.name} équipé", "good")
@@ -2189,7 +2210,7 @@ object GameEngine {
         listOf("weapon", "head", "body", "hands", "feet", "talisman").forEach { slot ->
             val current = state.equipment.firstOrNull { it.slot == slot }
             val best = state.inventory
-                .filter { it.slot == slot && it.identified }
+                .filter { it.slot == slot && it.identified && !it.locked }
                 .maxByOrNull { itemScore(it) }
                 ?: return@forEach
             if (current == null || itemScore(best) > itemScore(current)) {
@@ -2206,6 +2227,146 @@ object GameEngine {
         }
         return changes
     }
+
+    /**
+     * Optimisation automatique idempotente : identification, fusions de doublons
+     * non-set, forge avec réserves, camp, équipement et ouverture de coffre.
+     * Ne dépense jamais sous les réserves et ne touche pas aux objets verrouillés.
+     */
+    fun autoOptimize(
+        state: GameState,
+        policy: AutoOptimizePolicy = AutoOptimizePolicy()
+    ): AutoOptimizeResult {
+        if (!policy.enabled) return AutoOptimizeResult()
+        var identifications = 0
+        var fusions = 0
+        var upgrades = 0
+        var campBuys = 0
+        var equips = 0
+        var chests = 0
+        var heals = 0
+
+        if (state.stash.isNotEmpty() && state.stash.size <= freeInventorySlots(state)) {
+            withdrawStash(state)
+        }
+
+        var guard = 0
+        while (guard < 3) {
+            val item = state.inventory.firstOrNull { !it.identified } ?: break
+            if (state.shards <= policy.reserveShards) break
+            if (!identifyItem(state, item.id)) break
+            identifications++
+            guard++
+        }
+
+        guard = 0
+        while (fusions < policy.maxFusions && guard < 20) {
+            val fusable = state.inventory
+                .filter {
+                    it.identified && !it.locked &&
+                        it.rarity in setOf("common", "uncommon", "rare", "epic")
+                }
+            val group = fusable
+                .groupBy { it.slot to it.rarity }
+                .entries
+                .firstOrNull { (key, items) ->
+                    items.size >= 3 && state.inventory
+                        .filter {
+                            it.slot == key.first && it.rarity == key.second &&
+                                it.identified && !it.locked
+                        }
+                        .all { it.setName.isBlank() }
+                }
+                ?: break
+            val chosen = group.value.maxByOrNull { itemScore(it) } ?: break
+            val before = state.inventory.size
+            if (fuseItem(state, chosen.id) == null) break
+            fusions++
+            if (state.inventory.size >= before) break
+            guard++
+        }
+
+        guard = 0
+        while (upgrades < policy.maxUpgrades && guard < 20) {
+            var acted = false
+            for (slot in listOf("weapon", "body", "head", "hands", "feet", "talisman")) {
+                val item = state.equipment.firstOrNull { it.slot == slot } ?: continue
+                if (isMaxLevel(item)) continue
+                val cost = upgradeCost(item)
+                if (state.gold < cost + policy.reserveGold) continue
+                if (state.shards <= policy.reserveShards) continue
+                if (upgradeItem(state, item.id)) {
+                    upgrades++
+                    acted = true
+                    break
+                }
+            }
+            if (!acted) break
+            guard++
+        }
+
+        guard = 0
+        while (campBuys < policy.maxCampBuys && guard < 10) {
+            var acted = false
+            for (key in listOf("blade", "breath", "swift")) {
+                val level = upgradeLevel(state, key)
+                if (level >= Balance.Target.MAX_CAMP_LEVEL) continue
+                val cost = upgradeCost(key, level, state.floor)
+                if (state.gold < cost * 3) continue
+                if (buyUpgrade(state, key)) {
+                    campBuys++
+                    acted = true
+                    break
+                }
+            }
+            if (!acted) break
+            guard++
+        }
+
+        equips = equipBest(state)
+
+        if (policy.autoHeal) {
+            var maxHp = statsOf(state).maxHp
+            if (state.hp < 0.80 * maxHp) {
+                repeat(2) { if (freeRest(state)) heals++ }
+            }
+            var healGuard = 0
+            maxHp = statsOf(state).maxHp
+            while (state.hp < 0.75 * maxHp && state.rations > 0 && healGuard < 2) {
+                if (!rest(state)) break
+                heals++
+                healGuard++
+                maxHp = statsOf(state).maxHp
+            }
+        }
+
+        if (policy.openChests &&
+            state.chest != null &&
+            state.mode == "walk" &&
+            state.distance < GATE_METERS - 0.5 &&
+            state.stepBank > 0.0 &&
+            forceChest(state)
+        ) {
+            chests++
+        }
+
+        state.telemetry.autoFusions += fusions
+        state.telemetry.autoUpgrades += upgrades
+        state.telemetry.autoCampBuys += campBuys
+        state.telemetry.autoChests += chests
+        state.telemetry.autoHeals += heals
+
+        return AutoOptimizeResult(
+            identifications = identifications,
+            fusions = fusions,
+            upgrades = upgrades,
+            campBuys = campBuys,
+            equips = equips,
+            chests = chests,
+            heals = heals
+        )
+    }
+
 
     private fun swapEquipment(state: GameState, item: Item, previous: Item?) {
         val oldMax = statsOf(state).maxHp
@@ -2601,7 +2762,8 @@ object GameEngine {
         val templates = lootTemplatesFor(floor)
         val base = templates[rnd.nextInt(templates.size)]
         val mult = rarityMultiplier(finalRarity)
-        val floorScale = lootFloorScale(floor)
+        val lootFloor = lootFloorFor(floor, state.level)
+        val floorScale = lootFloorScale(lootFloor)
         val effect = when {
             finalRarity == "legendary" -> ITEM_EFFECTS.random(rnd)
             (finalRarity == "epic" || finalRarity == "rare") &&
@@ -2637,7 +2799,7 @@ object GameEngine {
         val hp = scaled(base.hp)
         val vit = scaled(base.vitPct)
         val crit = scaled(base.critPct)
-        val level = max(1, floor)
+        val level = max(1, lootFloor)
         return base.copy(
             id = "loot_${System.nanoTime()}",
             name = if (effect.isEmpty()) base.name else "${base.name} · ${effectLabel(effect)}",

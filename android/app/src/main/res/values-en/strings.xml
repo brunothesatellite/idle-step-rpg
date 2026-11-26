@@ -87,6 +87,12 @@
     <string name="settings_inventory">Inventory</string>
     <string name="settings_auto_sell">Sell commons automatically</string>
     <string name="settings_auto_sell_desc">Unlocked common items are converted to gold when picked up.</string>
+    <string name="settings_auto_optimize">Automatic optimization</string>
+    <string name="settings_auto_optimize_desc">Equips the best gear, fuses non-set duplicates, forges and buys camp upgrades with reserves.</string>
+    <string name="settings_auto_chests">Open chests automatically</string>
+    <string name="settings_auto_chests_desc">Opens the pending chest as soon as the step reserve allows it.</string>
+    <string name="settings_auto_heal">Automatic healing</string>
+    <string name="settings_auto_heal_desc">Uses free rests and a few rations to restore HP before moving on.</string>
     <string name="settings_save">Save</string>
     <string name="settings_save_note">Progress is also saved automatically. Export it before changing phones.</string>
     <string name="settings_export">EXPORT</string>
@@ -282,6 +288,7 @@
     <string name="dashboard_fervor_vit">SPD</string>
     <string name="dashboard_fervor_regen">REGEN</string>
     <string name="dashboard_fervor_crit">CRIT</string>
+    <string name="dashboard_tenacity">TENACITY +%1$d%% · +%1$d%% ATK/HP</string>
     <string name="dashboard_oaths">Daily oaths</string>
     <string name="dashboard_streak">%1$d-day streak</string>
     <string name="dashboard_weekly_steps">%1$s steps this week</string>
@@ -722,6 +729,7 @@
     <string name="journal_guardian_ignite">The guardian ignites</string>
     <string name="journal_ability">%1$s · %2$s</string>
     <string name="journal_ration">Ration consumed (+%1$d HP)</string>
+    <string name="journal_tenacity">Tenacity +%1$d%% (%2$d/5)</string>
     <string name="journal_kill_farm_floor">%1$s defeated — floor %2$d kept (farm)</string>
     <string name="journal_kill_floor">%1$s defeated — floor %2$d</string>
     <string name="journal_milestone_floor">Milestone · floor %1$d cleared — %2$s · +5 shards</string>
@@ -1084,7 +1092,8 @@
     <string name="gate_level">Floor %1$d · Lv. %2$d</string>
     <string name="gate_ability">ABILITY · %1$s</string>
     <string name="gate_modifier">MODIFIER · %1$s</string>
-    <string name="gate_pity" formatted="false">WEAKENED −%1$d %%</string>
+    <string name="gate_pity" formatted="false">WEAKENED -%1$d %%</string>
+    <string name="gate_tenacity">TENACITY +%1$d%% · +%1$d%% ATK/HP</string>
     <string name="gate_engage">ENGAGE</string>
     <string name="gate_farm">FARM THIS FLOOR</string>
     <string name="gate_camp">CAMP</string>

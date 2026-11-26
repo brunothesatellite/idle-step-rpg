@@ -323,6 +323,13 @@ private val RULES: List<Rule> = listOf(
     Rule(Regex("""^Ration consommée \(\+(\d+) PV\)$""")) { r, m ->
         r.getString(R.string.journal_ration, m.groupValues[1].toInt())
     },
+    Rule(Regex("""^Ténacité \+(\d+) % \((\d+)/5\)$""")) { r, m ->
+        r.getString(
+            R.string.journal_tenacity,
+            m.groupValues[1].toInt(),
+            m.groupValues[2].toInt()
+        )
+    },
     Rule(Regex("""^(.+) vaincu — palier (\d+) conservé \(farm\)$""")) { r, m ->
         r.getString(
             R.string.journal_kill_farm_floor,

@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
 import com.brunothesatellite.idlesteprpg.engine.BalanceReport
+import com.brunothesatellite.idlesteprpg.engine.AutoOptimizePolicy
 import com.brunothesatellite.idlesteprpg.engine.ChestData
 import com.brunothesatellite.idlesteprpg.engine.FightData
 import com.brunothesatellite.idlesteprpg.engine.GATE_METERS
@@ -16,8 +17,10 @@ import com.brunothesatellite.idlesteprpg.engine.OfflineMode
 import com.brunothesatellite.idlesteprpg.engine.OfflinePolicy
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
+import com.brunothesatellite.idlesteprpg.engine.TenacityState
 import com.brunothesatellite.idlesteprpg.engine.fireTier
 import com.brunothesatellite.idlesteprpg.engine.bossFor
+import com.brunothesatellite.idlesteprpg.engine.lootFloorFor
 import com.brunothesatellite.idlesteprpg.engine.oathsFor
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import kotlinx.serialization.encodeToString
@@ -1683,7 +1686,253 @@ class GameEngineTest {
             )
         )
         assertTrue(reportJson.contains("telemetry"))
-        assertTrue(reportJson.contains("\"schema\":3"))
+        assertTrue(reportJson.contains("\"schema\":4"))
+    }
+
+    @Test
+    fun tenacityStacksOnDefeatAndResetsOnGuardianVictory() {
+        val state = GameState().apply {
+            floor = 5
+            level = 50
+            hp = 1.0
+            xp = 0
+            day = LocalDate.now().toString()
+            mode = "fight"
+            fight = FightData(
+                enemyName = "Colosse de test",
+                enemyIcon = "x",
+                enemyLevel = 50,
+                enemyHp = 1_000_000.0,
+                enemyMaxHp = 1_000_000.0,
+                enemyAtk = 100_000.0,
+                enemyIntervalMs = 1_000L,
+                gold = 0,
+                xp = 0,
+                heroTimerMs = 60_000.0,
+                enemyTimerMs = 0.0
+            )
+        }
+        GameEngine.tick(state, 16.0)
+        assertEquals(1, state.tenacity.stacks)
+        assertEquals(5, state.tenacity.floor)
+
+        state.tenacity = TenacityState(stacks = 3, floor = 5)
+        state.hp = statsOf(state).maxHp.toDouble()
+        state.pendingBoss = FightData(
+            enemyName = "Gardien de test",
+            enemyIcon = "x",
+            enemyLevel = 5,
+            enemyHp = 1.0,
+            enemyMaxHp = 100.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 1_000L,
+            gold = 10,
+            xp = 0,
+            isBoss = true,
+            elapsedMs = 1_000.0
+        )
+        GameEngine.startBoss(state)
+        state.fight!!.enemyHp = 0.0
+        GameEngine.victory(state, state.fight!!)
+        assertEquals(0, state.tenacity.stacks)
+        assertEquals(6, state.tenacity.floor)
+    }
+
+    @Test
+    fun tenacityBoostsAttackAndHealth() {
+        val state = GameState().apply {
+            floor = 5
+            level = 10
+        }
+        val base = statsOf(state)
+        state.tenacity = TenacityState(stacks = 3, floor = 5)
+        val buffed = statsOf(state)
+        assertTrue(buffed.atk > base.atk)
+        assertTrue(buffed.maxHp > base.maxHp)
+    }
+
+    @Test
+    fun lootFloorFollowsHeroLevelWithCap() {
+        assertEquals(8, lootFloorFor(6, 18))
+        assertEquals(31, lootFloorFor(21, 80))
+        assertEquals(21, lootFloorFor(21, 20))
+        assertEquals(100, lootFloorFor(100, 98))
+        assertEquals(110, lootFloorFor(100, 200))
+    }
+
+    @Test
+    fun lootUsesHeroLevelForItemLevel() {
+        val state = GameState().apply {
+            floor = 21
+            level = 80
+            inventory = emptyList()
+            mobsSinceRare = 4
+        }
+        val fight = FightData(
+            enemyName = "Monstre de test",
+            enemyIcon = "x",
+            enemyLevel = 21,
+            enemyHp = 1.0,
+            enemyMaxHp = 100.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 1_000L,
+            gold = 0,
+            xp = 0,
+            elapsedMs = 1_000.0
+        )
+        GameEngine.victory(state, fight)
+        assertTrue(state.inventory.any { it.level == 31 })
+    }
+
+    @Test
+    fun autoOptimizeFusesDuplicatesAndProtectsSetsAndLocks() {
+        val state = GameState().apply {
+            floor = 10
+            level = 20
+            gold = 50_000
+            shards = 20
+            inventory = listOf(
+                Item("rare_a", "Rare A", "weapon", "rare", "x", 10, atk = 10),
+                Item("rare_b", "Rare B", "weapon", "rare", "x", 10, atk = 12),
+                Item("rare_c", "Rare C", "weapon", "rare", "x", 10, atk = 14),
+                Item("rare_locked", "Rare verrouillee", "weapon", "rare", "x", 10, atk = 99, locked = true),
+                Item("set_a", "Set A", "weapon", "epic", "x", 10, atk = 8, setName = "veilleur"),
+                Item("set_b", "Set B", "weapon", "epic", "x", 10, atk = 8, setName = "veilleur"),
+                Item("set_c", "Set C", "weapon", "epic", "x", 10, atk = 8, setName = "veilleur")
+            )
+        }
+        val result = GameEngine.autoOptimize(
+            state,
+            AutoOptimizePolicy(
+                openChests = false,
+                reserveShards = 6,
+                reserveGold = 100,
+                maxFusions = 2,
+                maxUpgrades = 0,
+                maxCampBuys = 0
+            )
+        )
+        assertTrue(result.fusions >= 1)
+        assertTrue(state.inventory.any { it.id == "rare_locked" })
+        assertEquals(3, state.inventory.count { it.setName == "veilleur" })
+        assertTrue(state.equipment.any { it.rarity == "epic" } || state.inventory.any { it.rarity == "epic" })
+    }
+
+    @Test
+    fun autoOptimizeUpgradesWithReserves() {
+        val state = GameState().apply {
+            floor = 10
+            level = 20
+            gold = 50_000
+            shards = 20
+            inventory = emptyList()
+            equipment = equipment.map {
+                if (it.slot == "weapon") {
+                    it.copy(level = 10, maxLevel = 30, baseAtk = it.atk)
+                } else {
+                    it
+                }
+            }
+        }
+        val result = GameEngine.autoOptimize(
+            state,
+            AutoOptimizePolicy(
+                openChests = false,
+                reserveShards = 6,
+                reserveGold = 100,
+                maxFusions = 0,
+                maxUpgrades = 2,
+                maxCampBuys = 0
+            )
+        )
+        assertTrue(result.upgrades >= 1)
+        assertTrue(state.shards >= 6)
+        assertTrue(state.gold >= 0)
+        assertTrue(state.equipment.first { it.slot == "weapon" }.level > 10)
+    }
+
+    @Test
+    fun autoOptimizeHealsWithRations() {
+        val state = GameState().apply {
+            floor = 10
+            level = 20
+            hp = 20.0
+            rations = 5
+            inventory = emptyList()
+            day = LocalDate.now().toString()
+            freeRestDay = day
+            freeRestUses = 2
+        }
+        val result = GameEngine.autoOptimize(
+            state,
+            AutoOptimizePolicy(
+                openChests = false,
+                autoHeal = true,
+                maxFusions = 0,
+                maxUpgrades = 0,
+                maxCampBuys = 0
+            )
+        )
+        assertTrue(result.heals >= 1)
+        assertTrue(state.hp > 20.0)
+        assertTrue(state.rations < 5)
+    }
+
+    @Test
+    fun autoOptimizeDoesNotOpenChestAtGuardianGate() {
+        val state = GameState().apply {
+            mode = "walk"
+            distance = 89.999
+            nextFight = 90
+            stepBank = 1_000.0
+            chest = ChestData(
+                type = "bois",
+                quota = 1,
+                goldMin = 40,
+                goldMax = 80,
+                rarity = "uncommon",
+                expiresAt = System.currentTimeMillis() + 60_000L
+            )
+        }
+        val result = GameEngine.autoOptimize(
+            state,
+            AutoOptimizePolicy(
+                openChests = true,
+                autoHeal = false,
+                maxFusions = 0,
+                maxUpgrades = 0,
+                maxCampBuys = 0
+            )
+        )
+        assertEquals(0, result.chests)
+        assertEquals("walk", state.mode)
+    }
+
+    @Test
+    fun autoOptimizeStartsChestWhenEnabled() {
+        val state = GameState().apply {
+            mode = "walk"
+            stepBank = 1_000.0
+            chest = ChestData(
+                type = "bois",
+                quota = 1,
+                goldMin = 40,
+                goldMax = 80,
+                rarity = "uncommon",
+                expiresAt = System.currentTimeMillis() + 60_000L
+            )
+        }
+        val result = GameEngine.autoOptimize(
+            state,
+            AutoOptimizePolicy(
+                openChests = true,
+                maxFusions = 0,
+                maxUpgrades = 0,
+                maxCampBuys = 0
+            )
+        )
+        assertEquals(1, result.chests)
+        assertEquals("chest", state.mode)
     }
 
     @Test
@@ -1703,13 +1952,15 @@ class GameEngineTest {
     }
 
     @Test
-    fun earlyFloorCurvePeaksBetweenEightAndFifteen() {
+    fun earlyFloorCurvePeaksBetweenSixAndEight() {
         assertEquals(1.0, GameEngine.earlyThreatMultiplier(1, 3.0), 0.0001)
+        assertEquals(3.0, GameEngine.earlyThreatMultiplier(6, 3.0), 0.0001)
         assertEquals(3.0, GameEngine.earlyThreatMultiplier(8, 3.0), 0.0001)
-        assertEquals(3.0, GameEngine.earlyThreatMultiplier(15, 3.0), 0.0001)
-        assertEquals(2.0, GameEngine.earlyThreatMultiplier(20, 3.0), 0.0001)
+        assertEquals(2.6667, GameEngine.earlyThreatMultiplier(10, 3.0), 0.0001)
+        assertEquals(1.8333, GameEngine.earlyThreatMultiplier(15, 3.0), 0.0001)
+        assertEquals(1.0, GameEngine.earlyThreatMultiplier(20, 3.0), 0.0001)
         assertEquals(1.0, GameEngine.earlyThreatMultiplier(25, 3.0), 0.0001)
-        assertEquals(2.5, GameEngine.earlyThreatMultiplier(10, 2.5), 0.0001)
+        assertEquals(2.25, GameEngine.earlyThreatMultiplier(10, 2.5), 0.0001)
     }
 
     @Test

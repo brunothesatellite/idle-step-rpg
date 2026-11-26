@@ -99,6 +99,9 @@ data class UiState(
     val notifyBossWaiting: Boolean = true,
     val quietHours: Boolean = false,
     val autoSellCommons: Boolean = false,
+    val autoOptimize: Boolean = true,
+    val autoOpenChests: Boolean = true,
+    val autoHeal: Boolean = true,
     val offlineMode: String = "percent",
     val offlinePercent: Int = 30,
     val offlineMaxSteps: Int = 1_000,
@@ -166,6 +169,9 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
                 notifyBossWaiting = container.settings.notifyBossWaiting,
                 quietHours = container.settings.quietHours,
                 autoSellCommons = container.settings.autoSellCommons,
+                autoOptimize = container.settings.autoOptimize,
+                autoOpenChests = container.settings.autoOpenChests,
+                autoHeal = container.settings.autoHeal,
                 offlineMode = container.settings.offlineMode,
                 offlinePercent = container.settings.offlinePercent,
                 offlineMaxSteps = container.settings.offlineMaxSteps,
@@ -705,6 +711,21 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
     fun setAutoSellCommons(value: Boolean) {
         container.settings.autoSellCommons = value
         _ui.update { it.copy(autoSellCommons = value) }
+    }
+
+    fun setAutoOptimize(value: Boolean) {
+        container.settings.autoOptimize = value
+        _ui.update { it.copy(autoOptimize = value) }
+    }
+
+    fun setAutoOpenChests(value: Boolean) {
+        container.settings.autoOpenChests = value
+        _ui.update { it.copy(autoOpenChests = value) }
+    }
+
+    fun setAutoHeal(value: Boolean) {
+        container.settings.autoHeal = value
+        _ui.update { it.copy(autoHeal = value) }
     }
 
     fun setOfflineMode(value: String) {

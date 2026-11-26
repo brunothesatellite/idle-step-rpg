@@ -3,6 +3,7 @@ package com.brunothesatellite.idlesteprpg.data
 import android.content.Context
 import com.brunothesatellite.idlesteprpg.engine.GameEngine
 import com.brunothesatellite.idlesteprpg.engine.GameState
+import com.brunothesatellite.idlesteprpg.engine.AutoOptimizePolicy
 import com.brunothesatellite.idlesteprpg.engine.BalanceReport
 import com.brunothesatellite.idlesteprpg.engine.OfflineReport
 import com.brunothesatellite.idlesteprpg.engine.OfflineSim
@@ -43,6 +44,7 @@ class GameRepository(
 ) {
 
     private val file = File(context.filesDir, "game_state.json")
+    private var lastAutoOptimizeAt = 0L
     private val backup = File(context.filesDir, "game_state.bak.json")
     private val json = Json {
         ignoreUnknownKeys = true
@@ -84,6 +86,7 @@ class GameRepository(
         }
         GameEngine.migrate(loaded)
         GameEngine.ensureDay(loaded)
+        applyAutomation(loaded, force = true)
         if (loaded.lastActiveAt <= 0L) loaded.lastActiveAt = System.currentTimeMillis()
         return loaded
     }
@@ -95,7 +98,7 @@ class GameRepository(
         mutex.withLock {
             val s = before.deepCopy()
             GameEngine.tick(s, dtMs)
-            applyAutoSell(s)
+            applyAutomation(s)
             warnings = GameEngine.chestWarnings(s)
             _state.value = s
             after = s
@@ -111,7 +114,7 @@ class GameRepository(
         mutex.withLock {
             val s = before.deepCopy()
             block(s)
-            applyAutoSell(s)
+            applyAutomation(s)
             _state.value = s
             after = s
         }
@@ -177,7 +180,7 @@ class GameRepository(
             } else {
                 report = existing
             }
-            applyAutoSell(s)
+            applyAutomation(s, force = true)
             _state.value = s
             after = s
             saveLocked(s)
@@ -259,7 +262,7 @@ class GameRepository(
                 report = existing.copy(remainingSteps = s.stepBank.toInt())
                 s.offlineReport = report
             }
-            applyAutoSell(s)
+            applyAutomation(s, force = true)
             warnings = GameEngine.chestWarnings(s)
             _state.value = s
             after = s
@@ -276,7 +279,7 @@ class GameRepository(
         mutex.withLock {
             val s = before.deepCopy()
             GameEngine.debugAddSteps(s, steps)
-            applyAutoSell(s)
+            applyAutomation(s, force = true)
             _state.value = s
             after = s
         }
@@ -309,6 +312,8 @@ class GameRepository(
             holdFloor = state.holdFloor,
             bossPity = state.bossPity,
             retreats = state.retreats,
+            autoOptimize = settings.autoOptimize,
+            tenacityMax = state.telemetry.tenacityMax,
             stats = ReportStats(
                 atk = s.atk,
                 maxHp = s.maxHp,
@@ -391,6 +396,27 @@ class GameRepository(
     private fun autoSellEnabled(): Boolean =
         context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
             .getBoolean("auto_sell_commons", false)
+
+    private fun applyAutomation(state: GameState, force: Boolean = false) {
+        applyAutoSell(state)
+        if (!settings.autoOptimize) return
+        if (state.mode == "fight" || state.mode == "boss" ||
+            state.mode == "farmWait" || state.mode == "chest" || state.mode == "special"
+        ) {
+            return
+        }
+        val now = System.currentTimeMillis()
+        if (!force && now - lastAutoOptimizeAt < 1_500L) return
+        lastAutoOptimizeAt = now
+        GameEngine.autoOptimize(
+            state,
+            AutoOptimizePolicy(
+                enabled = true,
+                openChests = settings.autoOpenChests,
+                autoHeal = settings.autoHeal
+            )
+        )
+    }
 
     private fun applyAutoSell(state: GameState) {
         if (!autoSellEnabled()) return
