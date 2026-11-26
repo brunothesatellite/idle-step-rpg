@@ -9,7 +9,7 @@
 - **Loot** : butin adapté au niveau, pity rare tous les 5 monstres, coffres, fusions non-set pour l’auto, forge et camp avec réserves.
 - **Combat** : monstres analytiques ; gardiens simulés avec `balance_sim.py` (capacités, modificateurs, enrage, pity, potions).
 - **Gardien final** : PV adaptés au DPS, phases 66 %/33 %, capacité accélérée ; le simulateur approxime les phases par une ATQ ×1,08 et une période de 6 s.
-- **Économie** : la relance du modificateur, le marchand et le respec ne sont **pas** modélisés dans les combats ; ils sont traités en test appareil.
+- **Économie** : relance du modificateur (une fois par approche, si l’estimation de victoire est < 85 %, avec 25/75/100 % de chances selon le profil), marchand de camp (achat de potions si l’inventaire passe sous 1/2/3) et respec (optimisé et hyper au palier 30, remboursement de 70 %, réallocation VIT > ATQ > PV).
 
 ## 2. Jours pour terminer
 
@@ -17,9 +17,9 @@
 |---|---:|---:|---:|---:|---:|
 | **Passif minimal (auto off)** | non fini<br>(mur p.32) | non fini<br>(mur p.31) | non fini<br>(mur p.34) | 34 / 101 | 107 |
 | **Passif optimisé (auto on)** | 32,3 j (5/5) | 22,3 j (5/5) | 12,0 j (5/5) | 101 / 101 | 96 |
-| **Normal** | 30,8 j (5/5) | 20,2 j (5/5) | 13,0 j (5/5) | 101 / 101 | 97 |
-| **Optimisé** | 31,8 j (5/5) | 21,5 j (5/5) | 11,2 j (5/5) | 101 / 101 | 96 |
-| **Hyper-optimisé** | 36,0 j (5/5) | 22,0 j (5/5) | 11,5 j (5/5) | 101 / 101 | 98 |
+| **Normal** | 31,9 j (5/5) | 20,3 j (5/5) | 11,0 j (5/5) | 101 / 101 | 96 |
+| **Optimisé** | 32,0 j (5/5) | 19,7 j (5/5) | 11,1 j (5/5) | 101 / 101 | 97 |
+| **Hyper-optimisé** | 35,2 j (5/5) | 22,0 j (5/5) | 12,1 j (5/5) | 101 / 101 | 98 |
 
 Le **passif minimal ne termine pas** : il atteint le palier 31–34, niveau 104–107, puis reste bloqué. Le **passif optimisé** termine 5/5 à tous les rythmes.
 
@@ -31,34 +31,35 @@ Ce n’est pas une anomalie : **« jours » = pas totaux ÷ pas par jour**. Or l
 - il farme **15 monstres** avant le gardien si la marge est insuffisante (10 / 5) ;
 - il refait jusqu’à **3 fois** chaque gardien des paliers 10, 20, … 100 (1 fois / 0).
 
-Chaque farm de gardien = un palier complet re-marché, soit **~900 pas**. En médiane, l’hyper en fait **29–30** (3 par gardien), l’optimisé **10** (1 par gardien) et le normal **0**. Les **20 paliers supplémentaires** représentent ~18 000 pas, soit **3,6 jours à 5 000 pas/j** : c’est l’essentiel de l’écart 36,0 vs 31,8 jours.
+Chaque farm de gardien = un palier complet re-marché, soit **~900 pas**. En médiane, l’hyper en fait **30** (3 par gardien), l’optimisé **10** (1 par gardien) et le normal **0**. Les **20 paliers supplémentaires** représentent ~18 000 pas, soit **3,6 jours à 5 000 pas/j** ; l’écart médian est de **3,2 jours** (35,2 vs 32,0), le reste étant compensé par les replis évités.
 
 | Profil | Jours 5k | Replis 5k | Farms gardien 5k | Jours 15k | Replis 15k | Farms gardien 15k |
 |---|---:|---:|---:|---:|---:|---:|
 | Passif optimisé | 32,3 | 131 | 0 | 12,0 | 204 | 0 |
-| Normal | 30,8 | 92 | 0 | 13,0 | 260 | 0 |
-| Optimisé | 31,8 | 50 | 10 | 11,2 | 102 | 10 |
-| Hyper-optimisé | 36,0 | 28 | 29 | 11,5 | 31 | 30 |
+| Normal | 31,9 | 91 | 0 | 11,0 | 155 | 0 |
+| Optimisé | 32,0 | 69 | 10 | 11,1 | 120 | 10 |
+| Hyper-optimisé | 35,2 | 22 | 30 | 12,1 | 33 | 32 |
 
-À 15 000 pas/j, l’écart hyper/optimisé tombe à **0,3 jour** : le coût fixe du farm est dilué et les **71 replis évités** compensent les paliers supplémentaires. À 5 000 pas/j, l’optimisé ne meurt que 50 fois, donc le farm de l’hyper n’est pas rentabilisé en pas.
+À 15 000 pas/j, l’écart hyper/optimisé tombe à **1,0 jour** (12,1 vs 11,1) : le coût fixe du farm est dilué et l’hyper évite **87 replis** (33 contre 120). À 5 000 pas/j, l’optimisé ne meurt que 69 fois, donc le farm de l’hyper n’est pas entièrement rentabilisé en pas.
 
-**Lecture** : « plus optimisé » ne veut pas dire « plus rapide » dans ce tableau. L’hyper optimise la **puissance et la sécurité** (28 replis contre 50–260), pas le temps de calendrier. Le normal peut même être plus rapide que l’optimisé à 5 000 pas/j parce qu’il ne farme aucun gardien ; à 15 000, ce pari se retourne (260 replis). Pour mesurer la vitesse pure, il faudrait un profil « speedrun » sans farm de gardien.
+**Lecture** : « plus optimisé » ne veut pas dire « plus rapide » dans ce tableau. L’hyper optimise la **puissance et la sécurité** (22 replis à 5k contre 69–131), pas le temps de calendrier. Le normal reste proche de l’optimisé (31,9 vs 32,0 à 5k ; 11,0 vs 11,1 à 15k) mais avec plus de replis (91 vs 69 ; 155 vs 120). Pour mesurer la vitesse pure, il faudrait un profil « speedrun » sans farm de gardien.
 
 ## 3. 0.24 → 0.25 : ce qui change
 
-La courbe 1 → 99 est **inchangée** pour les quatre profils déjà suivis en 0.24 : mêmes jours et mêmes replis. Le lot 2 ne touche ni au butin, ni aux monstres, ni aux gardiens intermédiaires. Deux changements structurent cette version :
+Les règles de butin, de monstres et de gardiens intermédiaires sont **inchangées** depuis 0.24. Les sinks économiques déplacent légèrement les trajectoires (relance, respec), mais les jours restent dans la même enveloppe : les écarts de 0,1–2,0 jour sont surtout du bruit de graines. Trois changements structurent cette version :
 
 - **Nouveau profil par défaut** : l’auto-optimisation étant désactivée par défaut, le « passif » de 0.24 devient le **passif optimisé** (auto on), et le **passif minimal** (auto off) apparaît comme le vrai profil subi. Il ne termine pas.
 - **Gardien final rallongé** : la cible passe de « 10–15 s » à **20–30 s** avec des PV adaptatifs et trois phases.
+- **Économie simulée** : relance du modificateur, marchand de camp et respec sont maintenant dans le simulateur (voir § 8).
 
 | Profil | TTK final 0.24 (8 000 pas/j) | TTK final 0.25 (8 000 pas/j) | Victoire 0.25 |
 |---|---:|---:|---:|
 | Passif (0.24, auto on) → Passif optimisé | 12,8 s | 35,2 s | 100 % |
-| Normal | 15,1 s | 28,7 s | 60 % |
-| Optimisé | 8,4 s | 21,1 s | 100 % |
+| Normal | 15,1 s | 31,7 s | 88 % |
+| Optimisé | 8,4 s | 18,6 s | 68 % |
 | Hyper-optimisé | 6,0 s | 19,7 s | 100 % |
 
-Le combat final est donc passé d’un **pic de 6–15 s** à un vrai combat de **20–35 s**. La cible est tenue pour le normal, l’optimisé et l’hyper ; le passif optimisé dépasse à 35 s (voir § 6).
+Le combat final est donc passé d’un **pic de 6–15 s** à un combat de **18,6–35,2 s**. La cible 20–30 s est tenue à **±2 s** pour le normal, l’optimisé et l’hyper à 8 000 pas/j ; le passif optimisé dépasse à 35 s (voir § 6).
 
 ## 4. Statistiques de run
 
@@ -70,15 +71,15 @@ Le combat final est donc passé d’un **pic de 6–15 s** à un vrai combat de 
 | Passif optimisé (auto on) | 5000 | 32,3 | 160 750 | 95 | 131 | 131 | 393 | 151 | 2 379 198 | 1342 |
 | Passif optimisé (auto on) | 8000 | 22,3 | 177 700 | 95 | 198 | 155 | 594 | 163 | 2 395 765 | 1257 |
 | Passif optimisé (auto on) | 15000 | 12,0 | 180 150 | 96 | 204 | 132 | 612 | 175 | 2 492 411 | 1116 |
-| Normal | 5000 | 30,8 | 153 250 | 95 | 92 | 125 | 276 | 145 | 2 345 236 | 1303 |
-| Normal | 8000 | 20,2 | 161 000 | 95 | 129 | 118 | 387 | 156 | 2 379 698 | 1184 |
-| Normal | 15000 | 13,0 | 194 850 | 97 | 260 | 120 | 780 | 166 | 2 559 095 | 1140 |
-| Optimisé | 5000 | 31,8 | 158 150 | 96 | 50 | 118 | 150 | 146 | 2 579 997 | 1239 |
-| Optimisé | 8000 | 21,5 | 171 050 | 96 | 88 | 116 | 264 | 165 | 2 616 637 | 1150 |
-| Optimisé | 15000 | 11,2 | 167 850 | 96 | 102 | 116 | 306 | 153 | 2 630 431 | 1011 |
-| Hyper-optimisé | 5000 | 36,0 | 178 650 | 98 | 28 | 136 | 84 | 187 | 3 087 794 | 1183 |
-| Hyper-optimisé | 8000 | 22,0 | 175 350 | 97 | 16 | 133 | 48 | 170 | 3 084 953 | 1019 |
-| Hyper-optimisé | 15000 | 11,5 | 172 650 | 98 | 31 | 133 | 93 | 167 | 3 063 394 | 972 |
+| Normal | 5000 | 31,9 | 158 700 | 95 | 91 | 125 | 273 | 159 | 2 356 282 | 1325 |
+| Normal | 8000 | 20,3 | 161 750 | 95 | 117 | 117 | 351 | 157 | 2 357 035 | 1156 |
+| Normal | 15000 | 11,0 | 164 550 | 96 | 155 | 123 | 465 | 165 | 2 466 766 | 1031 |
+| Optimisé | 5000 | 32,0 | 159 100 | 96 | 69 | 121 | 207 | 148 | 2 577 757 | 1291 |
+| Optimisé | 8000 | 19,7 | 157 000 | 96 | 64 | 118 | 192 | 151 | 2 612 918 | 1124 |
+| Optimisé | 15000 | 11,1 | 165 600 | 97 | 120 | 115 | 360 | 150 | 2 642 794 | 1016 |
+| Hyper-optimisé | 5000 | 35,2 | 175 450 | 97 | 22 | 137 | 66 | 181 | 3 065 118 | 1110 |
+| Hyper-optimisé | 8000 | 22,0 | 175 350 | 98 | 15 | 137 | 45 | 184 | 3 075 847 | 955 |
+| Hyper-optimisé | 15000 | 12,1 | 182 000 | 98 | 33 | 137 | 99 | 191 | 3 083 631 | 976 |
 
 La colonne **Farm récup.** compte les combats de récupération après un repli (**3 par défaite**), pas le farm volontaire de gardiens. Les pas totaux incluent tout : marche, combats, replis et farm.
 
@@ -114,30 +115,30 @@ Un tiret dans une colonne TTK signifie qu’aucun combat n’a été gagné sur 
 | Palier | Niv. | ATQ | PV | VIT | Crit | Camp A/S/V | TTK facile | TTK moyen | TTK coriace | TTK élite | TTK gardien | Victoire gardien | PV perdus | Rations |
 |---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | 10 | 27 | 201 | 1111 | 1,53 | 43 | 2/2/0 | 1,5 | 1,6 | 1,8 | 3,2 | 13,5 | 100 % | 520 | 1,00 |
-| 20 | 43 | 407 | 1902 | 2,27 | 75 | 3/3/0 | 0,8 | 0,8 | 0,9 | 1,5 | 4,5 | 100 % | 555 | 0,00 |
-| 30 | 59 | 1039 | 2481 | 2,58 | 75 | 12/12/6 | 2,9 | 3,0 | 3,2 | 4,8 | 10,6 | 32 % | 2406 | 1,00 |
-| 40 | 68 | 1015 | 3707 | 2,67 | 75 | 12/12/12 | 6,4 | 6,7 | 6,8 | — | 14,7 | 100 % | 2148 | 1,00 |
-| 50 | 75 | 1182 | 5288 | 3,49 | 75 | 12/12/12 | 4,7 | 4,8 | 4,9 | 7,3 | 16,7 | 100 % | 3292 | 1,00 |
-| 60 | 80 | 1202 | 6254 | 4,00 | 75 | 12/12/12 | 5,4 | 5,5 | 5,6 | 8,3 | 17,7 | 100 % | 3436 | 1,00 |
-| 70 | 84 | 1548 | 6162 | 4,00 | 75 | 12/12/12 | 4,3 | 4,3 | 4,4 | 6,6 | 15,4 | 100 % | 3756 | 1,00 |
-| 80 | 88 | 1399 | 6682 | 4,00 | 75 | 12/12/12 | 5,8 | 5,8 | 5,9 | 8,8 | 18,5 | 100 % | 3134 | 0,00 |
-| 90 | 92 | 2110 | 8688 | 3,95 | 75 | 12/12/12 | 4,0 | 4,0 | 4,1 | 6,1 | 13,2 | 100 % | 3682 | 0,41 |
-| 100 | 95 | 2406 | 8988 | 3,45 | 75 | 12/12/12 | 4,3 | 4,4 | 4,4 | 6,5 | 28,7 | 60 % | 6800 | 1,00 |
+| 20 | 43 | 407 | 1902 | 2,27 | 75 | 3/3/0 | 0,8 | 0,9 | 0,9 | 1,5 | 4,6 | 100 % | 592 | 0,00 |
+| 30 | 60 | 1152 | 2544 | 2,68 | 75 | 10/9/4 | 3,0 | 3,1 | 3,2 | 4,9 | 11,1 | 48 % | 2275 | 0,80 |
+| 40 | 68 | 1142 | 3910 | 2,95 | 75 | 12/12/12 | 5,2 | 5,3 | 5,4 | 8,3 | 14,3 | 100 % | 1513 | 0,99 |
+| 50 | 75 | 1150 | 4327 | 4,00 | 75 | 12/12/12 | 4,2 | 4,3 | 4,4 | 6,5 | 12,4 | 100 % | 2015 | 1,00 |
+| 60 | 80 | 1261 | 5648 | 4,00 | 75 | 12/12/12 | 3,4 | 3,4 | 3,5 | 5,2 | 13,1 | 100 % | 2630 | 1,00 |
+| 70 | 84 | 1431 | 5460 | 4,00 | 75 | 12/12/12 | 3,0 | 3,1 | 3,1 | 4,6 | 13,1 | 100 % | 3747 | 1,00 |
+| 80 | 89 | 1691 | 6341 | 4,00 | 75 | 12/12/12 | 3,2 | 3,2 | 3,2 | 4,8 | 12,3 | 100 % | 3091 | 0,00 |
+| 90 | 92 | 1704 | 7850 | 4,00 | 75 | 12/12/12 | 3,6 | 3,6 | 3,6 | 5,4 | 11,6 | 100 % | 2083 | 0,00 |
+| 100 | 95 | 2125 | 7931 | 4,00 | 75 | 12/12/12 | 3,2 | 3,3 | 3,3 | 4,9 | 31,7 | 88 % | 4287 | 0,59 |
 
 #### Optimisé
 
 | Palier | Niv. | ATQ | PV | VIT | Crit | Camp A/S/V | TTK facile | TTK moyen | TTK coriace | TTK élite | TTK gardien | Victoire gardien | PV perdus | Rations |
 |---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| 10 | 27 | 303 | 1101 | 1,46 | 46 | 3/3/0 | 0,5 | 0,6 | 0,6 | 1,1 | 5,0 | 100 % | 439 | 0,01 |
-| 20 | 44 | 534 | 1697 | 1,93 | 75 | 6/6/1 | 0,5 | 0,5 | 0,5 | 1,0 | 2,5 | 100 % | 298 | 0,00 |
-| 30 | 57 | 845 | 2498 | 2,74 | 75 | 8/9/4 | 2,5 | 2,6 | 2,7 | 4,0 | 7,2 | 12 % | 2495 | 1,00 |
-| 40 | 66 | 898 | 4438 | 3,22 | 75 | 19/17/8 | 4,3 | 4,5 | 4,5 | 6,6 | 9,8 | 100 % | 1900 | 1,00 |
-| 50 | 73 | 1124 | 4350 | 3,78 | 75 | 25/25/20 | 2,8 | 2,8 | 2,9 | 4,3 | 8,0 | 100 % | 2067 | 0,96 |
-| 60 | 79 | 1151 | 4744 | 3,67 | 75 | 25/25/25 | 3,0 | 3,1 | 3,2 | 4,3 | 9,5 | 100 % | 2515 | 0,99 |
-| 70 | 85 | 1619 | 6922 | 4,00 | 75 | 25/25/25 | 2,4 | 2,4 | 2,5 | 3,7 | 8,6 | 100 % | 2722 | 0,61 |
-| 80 | 89 | 1849 | 6849 | 4,00 | 75 | 25/25/25 | 2,5 | 2,6 | 2,7 | 4,0 | 7,3 | 100 % | 3600 | 0,00 |
-| 90 | 92 | 1938 | 8427 | 4,00 | 75 | 25/25/25 | 2,2 | 2,2 | 2,3 | 3,4 | 7,1 | 100 % | 2740 | 0,00 |
-| 100 | 96 | 1958 | 8542 | 4,00 | 75 | 25/25/25 | 2,5 | 2,5 | 2,6 | 3,8 | 21,1 | 100 % | 3250 | 0,66 |
+| 10 | 27 | 217 | 1070 | 1,42 | 42 | 2/2/0 | 0,9 | 0,9 | 0,9 | 1,9 | 6,4 | 100 % | 541 | 0,23 |
+| 20 | 44 | 524 | 2121 | 2,25 | 75 | 5/5/0 | 0,5 | 0,5 | 0,5 | 0,9 | 1,8 | 100 % | 205 | 0,00 |
+| 30 | 57 | 769 | 2896 | 2,75 | 75 | 5/2/6 | 3,3 | 3,4 | 3,6 | 5,3 | 10,2 | 26 % | 2846 | 0,56 |
+| 40 | 67 | 1024 | 4273 | 3,16 | 75 | 14/13/13 | 3,3 | 3,4 | 3,5 | 5,3 | 8,8 | 100 % | 1503 | 0,71 |
+| 50 | 73 | 1088 | 5657 | 3,70 | 75 | 25/25/20 | 2,9 | 3,0 | 3,0 | 4,6 | 10,3 | 100 % | 2315 | 0,52 |
+| 60 | 79 | 1279 | 6017 | 3,58 | 75 | 25/25/25 | 2,7 | 2,6 | 2,7 | 4,0 | 9,8 | 100 % | 1824 | 0,87 |
+| 70 | 83 | 1903 | 6018 | 3,67 | 75 | 25/25/25 | 1,8 | 1,8 | 1,9 | 2,8 | 6,6 | 100 % | 2506 | 0,19 |
+| 80 | 88 | 1723 | 5957 | 3,74 | 75 | 25/25/25 | 2,5 | 2,5 | 2,5 | 3,8 | 7,0 | 100 % | 2895 | 0,32 |
+| 90 | 92 | 1742 | 6591 | 3,79 | 75 | 25/25/25 | 2,8 | 2,7 | 2,8 | 4,1 | 7,3 | 100 % | 2827 | 0,39 |
+| 100 | 96 | 1761 | 6706 | 3,84 | 75 | 25/25/25 | 3,1 | 3,1 | 3,1 | 4,3 | 18,6 | 68 % | 4862 | 1,00 |
 
 #### Hyper-optimisé
 
@@ -145,9 +146,9 @@ Un tiret dans une colonne TTK signifie qu’aucun combat n’a été gagné sur 
 |---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | 10 | 26 | 201 | 951 | 1,45 | 54 | 4/4/1 | 0,7 | 0,8 | 0,8 | 1,5 | 6,7 | 100 % | 442 | 0,67 |
 | 20 | 45 | 619 | 1866 | 2,04 | 75 | 7/6/1 | 0,3 | 0,3 | 0,4 | 0,5 | 1,5 | 100 % | 150 | 0,00 |
-| 30 | 57 | 861 | 3941 | 3,10 | 75 | 8/8/4 | 2,0 | 2,0 | 2,1 | 3,2 | 6,7 | 100 % | 1431 | 0,28 |
-| 40 | 66 | 954 | 5189 | 3,78 | 75 | 10/11/5 | 2,7 | 2,7 | 2,7 | 4,2 | 5,4 | 100 % | 1876 | 0,01 |
-| 50 | 73 | 1150 | 5449 | 4,00 | 75 | 27/27/18 | 2,6 | 2,6 | 2,7 | 4,0 | 7,5 | 100 % | 2010 | 0,53 |
+| 30 | 57 | 845 | 3792 | 3,13 | 75 | 3/0/6 | 2,0 | 2,0 | 2,1 | 3,3 | 6,7 | 100 % | 1586 | 0,24 |
+| 40 | 66 | 950 | 5104 | 3,80 | 75 | 9/7/6 | 2,6 | 2,7 | 2,8 | 4,2 | 5,4 | 100 % | 1906 | 0,01 |
+| 50 | 73 | 1146 | 5426 | 4,00 | 75 | 26/26/20 | 2,6 | 2,6 | 2,7 | 4,0 | 7,5 | 100 % | 2009 | 0,53 |
 | 60 | 79 | 1732 | 5757 | 4,00 | 75 | 30/30/24 | 1,9 | 1,9 | 1,9 | 2,9 | 5,3 | 100 % | 1889 | 0,01 |
 | 70 | 85 | 2011 | 7267 | 4,00 | 75 | 30/30/28 | 1,5 | 1,5 | 1,6 | 2,4 | 5,5 | 100 % | 2359 | 0,00 |
 | 80 | 89 | 2313 | 9890 | 4,00 | 75 | 30/30/30 | 1,7 | 1,7 | 1,8 | 2,7 | 5,0 | 100 % | 1954 | 0,00 |
@@ -160,11 +161,13 @@ Un tiret dans une colonne TTK signifie qu’aucun combat n’a été gagné sur 
 |---|---:|---:|---:|
 | Passif minimal (auto off) | non atteint | non atteint | non atteint |
 | Passif optimisé (auto on) | 27,9 s · 59 % | 35,2 s · 100 % | 34,9 s · 100 % |
-| Normal | 28,2 s · 46 % | 28,7 s · 60 % | 29,3 s · 60 % |
-| Optimisé | 19,7 s · 100 % | 21,1 s · 100 % | 19,6 s · 100 % |
-| Hyper-optimisé | 20,9 s · 100 % | 19,7 s · 100 % | 20,2 s · 100 % |
+| Normal | — s · 0 % | 31,7 s · 88 % | 28,2 s · 60 % |
+| Optimisé | 19,4 s · 100 % | 18,6 s · 68 % | 19,4 s · 100 % |
+| Hyper-optimisé | 18,7 s · 100 % | 19,7 s · 100 % | 20,0 s · 100 % |
 
-Le gardien final est dans la cible pour l’optimisé et l’hyper (≈20–21 s) et pour le normal (≈28–29 s). Le **passif optimisé** est à 28 s à 5 000 pas/j, mais à **35 s à 8 000/15 000** : son DPS plus faible déclenche le plancher de PV et allonge le combat. Il gagne quand même 100 %, mais le combat devient long et peu tendu.
+Le gardien final est dans la cible basse pour l’optimisé et l’hyper (**18,6–20,0 s**) et dans la cible haute pour le normal (**28,2–31,7 s**), mais avec une forte variance : sur le build médian **à l’arrivée** au palier, le normal à 5 000 pas/j ne gagne pas et l’optimisé à 8 000 tombe à 68 %. Ces taux sont mesurés avant le farm et la ténacité, pas sur l’état exact du combat. Le **passif optimisé** reste à 28 s à 5 000, mais à **35 s à 8 000/15 000** : son DPS plus faible déclenche le plancher de PV et allonge le combat.
+
+Un tiret signifie qu’aucune des 200 simulations n’a gagné avec le build médian à l’arrivée, pas que le profil ne finit pas le jeu.
 
 ## 7. Analyse par profil
 
@@ -185,56 +188,76 @@ Le gardien final est dans la cible pour l’optimisé et l’hyper (≈20–21 s
 
 ### Normal — finissable, encore irrégulier
 
-- **30,8 / 20,2 / 13,0 jours**, **92 / 129 / 260 replis**.
-- Le rythme rapide reste défavorable : **260 replis** à 15 000, à cause des paliers 40–70 et des élites.
-- Le gardien final est **28–29 s** avec **46–60 %** de victoire : le combat est exigeant et mémorable, sans être un mur.
-- Les pics de gardiens restent 12, 20–21, 26, 30, 50–70 ; la ténacité/pitié les rendent finissables.
+- **31,9 / 20,3 / 11,0 jours**, **91 / 117 / 155 replis**.
+- Le rythme rapide reste le plus irrégulier : **155 replis** à 15 000, contre 120 pour l’optimisé. La relance et la pitié limitent la casse.
+- Le gardien final est **28,2–31,7 s** avec **0–88 %** de victoire à l’arrivée : le build médian à 5 000 ne gagne pas, mais les runs finissent via le farm et la ténacité. C’est le final le plus tendu des profils finisseurs.
+- Les pics de gardiens restent 12, 20–21, 26, 30 et 50–70 ; la ténacité/pitié les rendent finissables.
 
 ### Optimisé — le profil récompensé
 
-- **31,8 / 21,5 / 11,2 jours**, **50 / 88 / 102 replis**.
-- Le gardien final est à **19,7–21,1 s**, 100 % : rapide mais lisible, avec les phases.
+- **32,0 / 19,7 / 11,1 jours**, **69 / 64 / 120 replis**.
+- Le gardien final est à **18,6–19,4 s**, **68–100 %** à l’arrivée : rapide mais lisible, avec les phases.
+- La relance et le respec au palier 30 sont utilisés, mais restent marginaux dans l’économie actuelle.
 - Les décisions de stuff, sets et forge paient. Le milieu de partie reste le plus intéressant.
 
 ### Hyper-optimisé — facile, avec un vrai final
 
-- **36,0 / 22,0 / 11,5 jours**, **28 / 16 / 31 replis**.
-- Le farm de gardiens explique le 36 jours à 5 000 pas/j : il prend du temps pour sécuriser le stuff.
-- Le gardien final est à **19,7–20,9 s**, 100 %, avec un minimum de tension grâce aux phases.
+- **35,2 / 22,0 / 12,1 jours**, **22 / 15 / 33 replis**.
+- Le farm de gardiens explique le **35,2 jours** à 5 000 pas/j : il prend du temps pour sécuriser le stuff.
+- Le gardien final est à **18,7–20,0 s**, 100 %, avec un minimum de tension grâce aux phases.
 - C’est le profil le plus confortable ; le jeu reste relativement facile comme demandé.
 
-## 8. Points à corriger
+## 8. Économie — relance, marchand, respec
+
+Les trois sinks sont maintenant simulés avec des politiques par profil :
+
+| Profil | Relances 5k / 8k / 15k | Potions achetées | Respecs | Or remboursé (respec) |
+|---|---:|---:|---:|---:|
+| Passif minimal | 0 / 0 / 0 | 0 | 0 | 0 |
+| Passif optimisé | 0 / 0 / 0 | 0 | 0 | 0 |
+| Normal | 1 / 1 / 2 | 0 | 0 | 0 |
+| Optimisé | 0 / 0 / 1 | 0 | 1 | 1 498 / 1 974 / 1 194 |
+| Hyper-optimisé | 0 / 0 / 0 | 0 | 1 | 1 676 / 1 918 / 2 208 |
+
+- **Relance** : utilisée seulement si l’estimation de victoire est < 85 %, avec 25/75/100 % de chances. Les profils forts (hyper) ne relancent presque jamais, ce qui est rationnel : ils n’en ont pas besoin. Coût 200 + 30 × palier, négligeable face aux 2,3–3,1 M d’or gagnés.
+- **Marchand** : aucune potion achetée. L’inventaire moyen avant un gardien est de ~148 potions (maximum > 300) : les coffres et les gardiens en donnent bien plus que la consommation. Le marchand est donc un sink sans rareté.
+- **Respec** : utilisé une fois au palier 30 par l’optimisé et l’hyper ; le remboursement de 70 % ne représente que 1 200–2 200 or, et le camp est reconstruit aussitôt. Effet combat nul ou dans le bruit des graines.
+
+**Conclusion** : les trois sinks sont **modélisés**, mais restent **marginaux** dans l’économie actuelle. Pour qu’ils pèsent, il faut soit réduire l’or gagné, soit augmenter les coûts, soit rendre les potions plus rares/plus utiles (ou proposer des offres de marchand plus fortes). C’est le prochain chantier économique.
+
+## 9. Points à corriger
 
 1. **Passif minimal non finissable** : l’auto-optimisation est off par défaut. Ajouter une **suggestion au premier lancement** ou un rappel quand le joueur atteint un mur, sans réactiver le mode automatiquement.
-2. **Gardien final du passif à 35 s** à 8 000/15 000 : baisser le plancher de PV final de **0,75 à 0,55** pour les builds à faible DPS, ou cibler 24 s. Le combat resterait gagnable mais plus court.
-3. **Rythme rapide du normal** : 260 replis à 15 000. Le butin adapté a réduit le problème (1 234 en 0.23), mais un catch-up de stuff ou un adoucissement des élites 40–70 reste utile.
-4. **Économie non modélisée** : la relance du modificateur et les potions de camp devraient réduire les replis en jeu réel ; à mesurer avec les prochains rapports.
+2. **Gardien final des builds faibles** : passif optimisé à 35 s, normal à 5 000 sans victoire sur le build médian, optimisé à 8 000 à 68 %. Baisser le plancher de PV final de **0,75 à 0,55** pour les builds à faible DPS, ou cibler 24 s.
+3. **Rythme rapide du normal** : encore **155 replis** à 15 000 (contre 120 pour l’optimisé). Le butin adapté a réduit le problème (1 234 en 0.23), mais un catch-up de stuff ou un adoucissement des élites 40–70 reste utile.
+4. **Économie marginale** : relances 0–2 par run, **0 potion achetée** (inventaire moyen ~148), respec une fois pour ~1,2–2,2k or remboursé. Les sinks sont modélisés mais ne pèsent pas ; calibrer l’or, les coûts ou la rareté des potions.
 5. **Pics 40–70** : encore irréguliers pour le normal et le passif optimisé ; la ténacité/pitié évitent le mur, mais le ressenti reste en dents de scie.
 
-## 9. Conclusion — ressenti attendu
+## 10. Conclusion — ressenti attendu
 
 - **Passif minimal** : frustration au palier 31, après beaucoup de temps. Priorité : lui proposer l’auto-optimisation.
 - **Passif optimisé** : expérience idle crédible, 12–32 jours, mais encore trop de replis et un final trop long à haut rythme.
-- **Normal** : bon challenge, final réussi, mais le rythme rapide et les élites restent punitifs.
+- **Normal** : bon challenge, final tendu et variable (0–88 % à l’arrivée), rythme rapide encore irrégulier.
 - **Optimisé** : le meilleur équilibre ; le final est court mais les phases et la pitié gardent un intérêt.
 - **Hyper** : relativement facile, final réussi, farm de gardiens assumé ; le minimum de challenge est là.
 
-## 10. Limites
+## 11. Limites
 
 - 5 graines, combats de monstres analytiques, phases du gardien final approximées.
 - L’auto-optimisation simulée est une politique modèle (gloutonne, non-set) ; le jeu réel peut différer.
-- La relance, le marchand et le respec ne sont pas dans la simulation ; ils sont validés par les tests unitaires et le test appareil.
+- Les politiques d’économie sont simplifiées : relance si l’estimation < 85 %, marchand si l’inventaire est bas, respec au palier 30. Le marchand n’est pas utilisé car les potions sont abondantes.
+- Les taux du gardien final sont mesurés sur le build médian à l’arrivée au palier, avant le farm et la ténacité ; le combat réel peut différer.
 - Le test de partie fraîche reste la référence pour le ressenti.
 
-## 11. Reproductibilité
+## 12. Reproductibilité
 
 ```bash
 python tools/equilibrage/progression_sim.py --seeds 5 \
   --profiles passif,passif_auto_game,normal,optimise,hyper \
   --steps 5000,8000,15000 \
-  --out progression_025_full.json
+  --out progression_025_econ_full.json
 
 python tools/equilibrage/report_progression_025.py \
-  --data progression_025_full.json \
+  --data progression_025_econ_full.json \
   --out docs/analyse-progression-025.md
 ```

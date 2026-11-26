@@ -337,6 +337,12 @@ class Hero:
     potions: int = 0
     steps: int = 0
     tenacity: int = 0
+    camp_invested: int = 0
+    potions_bought: int = 0
+    rerolls: int = 0
+    respecs: int = 0
+    camp_refunded: int = 0
+    respec_done: list[int] = field(default_factory=list)
 
     def raw_stats(self) -> Stats:
         milestone = 0  # filled by stats_for_floor
@@ -465,6 +471,10 @@ class Profile:
     preheal: bool
     potions: str            # none, situational, aggressive
     protect_sets: bool = False
+    reroll: float = 0.0
+    merchant: int = 0
+    respec_floors: tuple[int, ...] = ()
+    camp_order_late: tuple[str, ...] = ("blade", "breath", "swift")
 
 
 PROFILES = {
@@ -507,16 +517,21 @@ PROFILES = {
         "normal", "Normal", "greedy", "light", "light", "light",
         chests=True, specials="safe", boss_threshold=0.35, farm_mobs=5,
         farm_boss=0, preheal=True, potions="situational",
+        reroll=0.25, merchant=1,
     ),
     "optimise": Profile(
         "optimise", "Optimise", "smart", "normal", "normal", "normal",
         chests=True, specials="smart", boss_threshold=0.55, farm_mobs=10,
         farm_boss=1, preheal=True, potions="situational",
+        reroll=0.75, merchant=2, respec_floors=(30,),
+        camp_order_late=("swift", "blade", "breath"),
     ),
     "hyper": Profile(
         "hyper", "Hyper-optimise", "oracle", "heavy", "max", "max",
         chests=True, specials="smart", boss_threshold=0.75, farm_mobs=15,
         farm_boss=3, preheal=True, potions="aggressive",
+        reroll=1.0, merchant=3, respec_floors=(30,),
+        camp_order_late=("swift", "blade", "breath"),
     ),
 }
 
@@ -1025,7 +1040,18 @@ def buy_camp(hero: Hero, profile: Profile, floor: int) -> None:
         return
     caps = {"light": 12, "normal": 25, "max": 30}
     cap = caps[profile.camp]
-    order = ("blade", "breath", "swift") if profile.camp != "light" else ("blade", "breath", "swift")
+    order = ("blade", "breath", "swift")
+    if profile.respec_floors and floor in profile.respec_floors and floor not in hero.respec_done:
+        hero.respec_done.append(floor)
+        refund = round(hero.camp_invested * 0.70)
+        hero.gold += refund
+        hero.camp_invested = 0
+        hero.upgrades = {"blade": 0, "breath": 0, "swift": 0}
+        hero.respecs += 1
+        hero.camp_refunded += refund
+        order = profile.camp_order_late
+    elif hero.respec_done:
+        order = profile.camp_order_late
     for key in order:
         while hero.upgrades[key] < cap:
             level = hero.upgrades[key]
@@ -1034,6 +1060,7 @@ def buy_camp(hero: Hero, profile: Profile, floor: int) -> None:
             if hero.gold < cost + reserve:
                 break
             hero.gold -= cost
+            hero.camp_invested += cost
             hero.upgrades[key] += 1
 
 
@@ -1114,6 +1141,10 @@ class RunResult:
     tenacity_max: int = 0
     guardian_farms: int = 0
     preboss_farm_mobs: int = 0
+    rerolls: int = 0
+    potions_bought: int = 0
+    respecs: int = 0
+    camp_refunded: int = 0
     snapshots: dict[int, Snapshot] = field(default_factory=dict)
     floor_stats: dict[int, dict] = field(default_factory=dict)
     wall_floor: int | None = None
@@ -1331,7 +1362,25 @@ class Progression:
             return "rage" if self.rng.random() < 0.5 else "atk"
         return "atk" if self.rng.random() < 0.35 else ""
 
+    def potion_price(self, floor: int) -> int:
+        factor = 1.0 + 0.02 * max(0, floor - 1)
+        return math.ceil(120 * factor / 5.0) * 5
+
+    def buy_potions_before_boss(self) -> None:
+        target = self.profile.merchant
+        if target <= 0 or self.profile.potions == "none":
+            return
+        price = self.potion_price(self.floor)
+        reserve = 5 * price
+        while self.hero.potions < target and self.hero.gold >= price + reserve:
+            self.hero.gold -= price
+            self.hero.potions += 1
+            self.hero.potions_bought += 1
+            self.result.potions_bought += 1
+            self.result.gold_spent += price
+
     def attempt_boss(self) -> bool:
+        self.buy_potions_before_boss()
         self.heal_before_boss()
         s_max = self.hero.stats(self.floor)
         self.hero.hp = min(self.hero.hp, s_max.max_hp)
@@ -1340,6 +1389,16 @@ class Progression:
         fs["attempts"] += 1
         ability = ability_for(self.floor, "auto")
         mod = self.rng.choice(modifier_pool(ability))
+        if (mod and self.profile.reroll > 0
+                and boss_estimate(self.hero, self.floor) < 0.85
+                and self.rng.random() < self.profile.reroll):
+            cost = 200 + 30 * self.floor
+            if self.hero.gold >= cost + 200:
+                self.hero.gold -= cost
+                self.hero.rerolls += 1
+                self.result.rerolls += 1
+                self.result.gold_spent += cost
+                mod = self.rng.choice(modifier_pool(ability))
         enemy = make_boss(self.floor, "code", "auto", ability, mod, self.boss_pity, Tuning())
         gap = gap_mult(self.hero.level, self.floor)
         enemy = replace(
@@ -1578,6 +1637,10 @@ class Progression:
         self.result.final_level = self.hero.level
         self.result.days = self.day - 1 + (self.steps_per_day - self.steps_left) / self.steps_per_day
         self.result.max_floor = max(self.result.max_floor, self.floor)
+        self.result.respecs = self.hero.respecs
+        self.result.camp_refunded = self.hero.camp_refunded
+        self.result.potions_bought = self.hero.potions_bought
+        self.result.rerolls = self.hero.rerolls
         return self.result
 
 
@@ -1710,6 +1773,10 @@ def main() -> None:
                     "boss_attempts": res.boss_attempts,
                     "guardian_farms": res.guardian_farms,
                     "preboss_farm_mobs": res.preboss_farm_mobs,
+                    "rerolls": res.rerolls,
+                    "potions_bought": res.potions_bought,
+                    "respecs": res.respecs,
+                    "camp_refunded": res.camp_refunded,
                     "chests": res.chests,
                     "gold_earned": res.gold_earned,
                     "floor_stats": res.floor_stats,
@@ -1735,6 +1802,10 @@ def main() -> None:
                 "farm_median": round(statistics.median([r.farm_kills for r in runs]), 0),
                 "guardian_farms_median": round(statistics.median([r.guardian_farms for r in runs]), 1),
                 "preboss_farm_mobs_median": round(statistics.median([r.preboss_farm_mobs for r in runs]), 1),
+                "rerolls_median": round(statistics.median([r.rerolls for r in runs]), 1),
+                "potions_bought_median": round(statistics.median([r.potions_bought for r in runs]), 1),
+                "respecs_median": round(statistics.median([r.respecs for r in runs]), 1),
+                "camp_refunded_median": round(statistics.median([r.camp_refunded for r in runs]), 0),
                 "chests_median": round(statistics.median([r.chests for r in runs]), 0),
                 "rations_median": round(statistics.median([r.rations_used for r in runs]), 0),
                 "gold_median": round(statistics.median([r.gold_earned for r in runs]), 0),
