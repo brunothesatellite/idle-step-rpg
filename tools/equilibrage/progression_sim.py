@@ -1112,6 +1112,8 @@ class RunResult:
     max_floor: int = 1
     level_100_floor: int = 0
     tenacity_max: int = 0
+    guardian_farms: int = 0
+    preboss_farm_mobs: int = 0
     snapshots: dict[int, Snapshot] = field(default_factory=dict)
     floor_stats: dict[int, dict] = field(default_factory=dict)
     wall_floor: int | None = None
@@ -1445,6 +1447,7 @@ class Progression:
         return out
 
     def farm_floor_walk(self) -> None:
+        self.result.guardian_farms += 1
         for pos in range(10, 90, 10):
             tier = "easy" if pos < 30 else "mid" if pos < 70 else "hard"
             self.do_normal_fight(tier, farm=True)
@@ -1461,6 +1464,7 @@ class Progression:
         if estimate >= self.profile.boss_threshold:
             return
         # farm de mobs au palier courant
+        self.result.preboss_farm_mobs += self.profile.farm_mobs
         for _ in range(self.profile.farm_mobs):
             tier = "mid" if self.rng.random() < 0.7 else "hard"
             self.do_normal_fight(tier, farm=True)
@@ -1704,6 +1708,8 @@ def main() -> None:
                     "farm_kills": res.farm_kills,
                     "retreats": res.retreats,
                     "boss_attempts": res.boss_attempts,
+                    "guardian_farms": res.guardian_farms,
+                    "preboss_farm_mobs": res.preboss_farm_mobs,
                     "chests": res.chests,
                     "gold_earned": res.gold_earned,
                     "floor_stats": res.floor_stats,
@@ -1727,6 +1733,8 @@ def main() -> None:
                 "boss_attempts_median": round(statistics.median([r.boss_attempts for r in runs]), 1),
                 "kills_median": round(statistics.median([r.kills_normal + r.kills_boss for r in runs]), 0),
                 "farm_median": round(statistics.median([r.farm_kills for r in runs]), 0),
+                "guardian_farms_median": round(statistics.median([r.guardian_farms for r in runs]), 1),
+                "preboss_farm_mobs_median": round(statistics.median([r.preboss_farm_mobs for r in runs]), 1),
                 "chests_median": round(statistics.median([r.chests for r in runs]), 0),
                 "rations_median": round(statistics.median([r.rations_used for r in runs]), 0),
                 "gold_median": round(statistics.median([r.gold_earned for r in runs]), 0),

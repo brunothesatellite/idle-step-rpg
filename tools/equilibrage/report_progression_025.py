@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import statistics
 from pathlib import Path
 
 PROFILES = [
@@ -37,6 +38,13 @@ def summary_map(data: dict) -> dict[tuple[str, int], dict]:
     return {(s["profile"], s["steps"]): s for s in data["summary"]}
 
 
+def steps_median_map(data: dict) -> dict[tuple[str, int], float]:
+    groups: dict[tuple[str, int], list[int]] = {}
+    for run in data["runs"]:
+        groups.setdefault((run["profile"], run["steps"]), []).append(run["steps_total"])
+    return {key: statistics.median(values) for key, values in groups.items()}
+
+
 def days_table(data: dict) -> list[str]:
     sm = summary_map(data)
     lines = [
@@ -62,19 +70,21 @@ def days_table(data: dict) -> list[str]:
 
 def stats_table(data: dict) -> list[str]:
     sm = summary_map(data)
+    steps_med = steps_median_map(data)
     lines = [
-        "| Profil | Pas/j | Jours | Niv. | Replis | Tentatives gardien | Fermes | Coffres | Or | Rations |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Profil | Pas/j | Jours | Pas totaux | Niv. | Replis | Tentatives gardien | Farm récup. | Coffres | Or | Rations |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for key, label in PROFILES:
         for steps in (5000, 8000, 15000):
             s = sm[(key, steps)]
             gold = f"{int(s['gold_median']):,}".replace(",", " ")
+            total_steps = f"{int(steps_med[(key, steps)]):,}".replace(",", " ")
             lines.append(
-                f"| {label} | {steps} | {fmt(s['days_median'])} | {fmt(s['level_median'])} | "
-                f"{int(s['retreats_median'])} | {int(s['boss_attempts_median'])} | "
-                f"{int(s['farm_median'])} | {int(s['chests_median'])} | {gold} | "
-                f"{int(s['rations_median'])} |"
+                f"| {label} | {steps} | {fmt(s['days_median'])} | {total_steps} | "
+                f"{fmt(s['level_median'])} | {int(s['retreats_median'])} | "
+                f"{int(s['boss_attempts_median'])} | {int(s['farm_median'])} | "
+                f"{int(s['chests_median'])} | {gold} | {int(s['rations_median'])} |"
             )
     return lines
 
@@ -148,6 +158,27 @@ def main() -> None:
     out.append("")
     out.append("Le **passif minimal ne termine pas** : il atteint le palier 31–34, niveau 104–107, puis reste bloqué. Le **passif optimisé** termine 5/5 à tous les rythmes.")
     out.append("")
+    out.append("### Pourquoi l’hyper-optimisé met plus de jours que l’optimisé")
+    out.append("")
+    out.append("Ce n’est pas une anomalie : **« jours » = pas totaux ÷ pas par jour**. Or l’hyper-optimisé est défini comme un joueur **prudent**, pas comme un joueur pressé :")
+    out.append("")
+    out.append("- il n’engage un gardien qu’à partir de **75 %** de chances estimées (optimisé 55 %, normal 35 %) ;")
+    out.append("- il farme **15 monstres** avant le gardien si la marge est insuffisante (10 / 5) ;")
+    out.append("- il refait jusqu’à **3 fois** chaque gardien des paliers 10, 20, … 100 (1 fois / 0).")
+    out.append("")
+    out.append("Chaque farm de gardien = un palier complet re-marché, soit **~900 pas**. En médiane, l’hyper en fait **29–30** (3 par gardien), l’optimisé **10** (1 par gardien) et le normal **0**. Les **20 paliers supplémentaires** représentent ~18 000 pas, soit **3,6 jours à 5 000 pas/j** : c’est l’essentiel de l’écart 36,0 vs 31,8 jours.")
+    out.append("")
+    out.append("| Profil | Jours 5k | Replis 5k | Farms gardien 5k | Jours 15k | Replis 15k | Farms gardien 15k |")
+    out.append("|---|---:|---:|---:|---:|---:|---:|")
+    out.append("| Passif optimisé | 32,3 | 131 | 0 | 12,0 | 204 | 0 |")
+    out.append("| Normal | 30,8 | 92 | 0 | 13,0 | 260 | 0 |")
+    out.append("| Optimisé | 31,8 | 50 | 10 | 11,2 | 102 | 10 |")
+    out.append("| Hyper-optimisé | 36,0 | 28 | 29 | 11,5 | 31 | 30 |")
+    out.append("")
+    out.append("À 15 000 pas/j, l’écart hyper/optimisé tombe à **0,3 jour** : le coût fixe du farm est dilué et les **71 replis évités** compensent les paliers supplémentaires. À 5 000 pas/j, l’optimisé ne meurt que 50 fois, donc le farm de l’hyper n’est pas rentabilisé en pas.")
+    out.append("")
+    out.append("**Lecture** : « plus optimisé » ne veut pas dire « plus rapide » dans ce tableau. L’hyper optimise la **puissance et la sécurité** (28 replis contre 50–260), pas le temps de calendrier. Le normal peut même être plus rapide que l’optimisé à 5 000 pas/j parce qu’il ne farme aucun gardien ; à 15 000, ce pari se retourne (260 replis). Pour mesurer la vitesse pure, il faudrait un profil « speedrun » sans farm de gardien.")
+    out.append("")
     out.append("## 3. 0.24 → 0.25 : ce qui change")
     out.append("")
     out.append("La courbe 1 → 99 est **inchangée** pour les quatre profils déjà suivis en 0.24 : mêmes jours et mêmes replis. Le lot 2 ne touche ni au butin, ni aux monstres, ni aux gardiens intermédiaires. Deux changements structurent cette version :")
@@ -167,6 +198,8 @@ def main() -> None:
     out.append("## 4. Statistiques de run")
     out.append("")
     out.extend(stats_table(data))
+    out.append("")
+    out.append("La colonne **Farm récup.** compte les combats de récupération après un repli (**3 par défaite**), pas le farm volontaire de gardiens. Les pas totaux incluent tout : marche, combats, replis et farm.")
     out.append("")
     out.append("## 5. TTK par palier — 8 000 pas/j")
     out.append("")

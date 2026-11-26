@@ -23,6 +23,27 @@
 
 Le **passif minimal ne termine pas** : il atteint le palier 31–34, niveau 104–107, puis reste bloqué. Le **passif optimisé** termine 5/5 à tous les rythmes.
 
+### Pourquoi l’hyper-optimisé met plus de jours que l’optimisé
+
+Ce n’est pas une anomalie : **« jours » = pas totaux ÷ pas par jour**. Or l’hyper-optimisé est défini comme un joueur **prudent**, pas comme un joueur pressé :
+
+- il n’engage un gardien qu’à partir de **75 %** de chances estimées (optimisé 55 %, normal 35 %) ;
+- il farme **15 monstres** avant le gardien si la marge est insuffisante (10 / 5) ;
+- il refait jusqu’à **3 fois** chaque gardien des paliers 10, 20, … 100 (1 fois / 0).
+
+Chaque farm de gardien = un palier complet re-marché, soit **~900 pas**. En médiane, l’hyper en fait **29–30** (3 par gardien), l’optimisé **10** (1 par gardien) et le normal **0**. Les **20 paliers supplémentaires** représentent ~18 000 pas, soit **3,6 jours à 5 000 pas/j** : c’est l’essentiel de l’écart 36,0 vs 31,8 jours.
+
+| Profil | Jours 5k | Replis 5k | Farms gardien 5k | Jours 15k | Replis 15k | Farms gardien 15k |
+|---|---:|---:|---:|---:|---:|---:|
+| Passif optimisé | 32,3 | 131 | 0 | 12,0 | 204 | 0 |
+| Normal | 30,8 | 92 | 0 | 13,0 | 260 | 0 |
+| Optimisé | 31,8 | 50 | 10 | 11,2 | 102 | 10 |
+| Hyper-optimisé | 36,0 | 28 | 29 | 11,5 | 31 | 30 |
+
+À 15 000 pas/j, l’écart hyper/optimisé tombe à **0,3 jour** : le coût fixe du farm est dilué et les **71 replis évités** compensent les paliers supplémentaires. À 5 000 pas/j, l’optimisé ne meurt que 50 fois, donc le farm de l’hyper n’est pas rentabilisé en pas.
+
+**Lecture** : « plus optimisé » ne veut pas dire « plus rapide » dans ce tableau. L’hyper optimise la **puissance et la sécurité** (28 replis contre 50–260), pas le temps de calendrier. Le normal peut même être plus rapide que l’optimisé à 5 000 pas/j parce qu’il ne farme aucun gardien ; à 15 000, ce pari se retourne (260 replis). Pour mesurer la vitesse pure, il faudrait un profil « speedrun » sans farm de gardien.
+
 ## 3. 0.24 → 0.25 : ce qui change
 
 La courbe 1 → 99 est **inchangée** pour les quatre profils déjà suivis en 0.24 : mêmes jours et mêmes replis. Le lot 2 ne touche ni au butin, ni aux monstres, ni aux gardiens intermédiaires. Deux changements structurent cette version :
@@ -41,23 +62,25 @@ Le combat final est donc passé d’un **pic de 6–15 s** à un vrai combat de 
 
 ## 4. Statistiques de run
 
-| Profil | Pas/j | Jours | Niv. | Replis | Tentatives gardien | Fermes | Coffres | Or | Rations |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Passif minimal (auto off) | 5000 | 237,6 | 106 | 6665 | 924 | 19995 | 0 | 2 253 077 | 6865 |
-| Passif minimal (auto off) | 8000 | 113,4 | 104 | 5327 | 1594 | 15981 | 0 | 1 664 612 | 4584 |
-| Passif minimal (auto off) | 15000 | 80,9 | 107 | 7194 | 1651 | 21582 | 0 | 2 414 268 | 4346 |
-| Passif optimisé (auto on) | 5000 | 32,3 | 95 | 131 | 131 | 393 | 151 | 2 379 198 | 1342 |
-| Passif optimisé (auto on) | 8000 | 22,3 | 95 | 198 | 155 | 594 | 163 | 2 395 765 | 1257 |
-| Passif optimisé (auto on) | 15000 | 12,0 | 96 | 204 | 132 | 612 | 175 | 2 492 411 | 1116 |
-| Normal | 5000 | 30,8 | 95 | 92 | 125 | 276 | 145 | 2 345 236 | 1303 |
-| Normal | 8000 | 20,2 | 95 | 129 | 118 | 387 | 156 | 2 379 698 | 1184 |
-| Normal | 15000 | 13,0 | 97 | 260 | 120 | 780 | 166 | 2 559 095 | 1140 |
-| Optimisé | 5000 | 31,8 | 96 | 50 | 118 | 150 | 146 | 2 579 997 | 1239 |
-| Optimisé | 8000 | 21,5 | 96 | 88 | 116 | 264 | 165 | 2 616 637 | 1150 |
-| Optimisé | 15000 | 11,2 | 96 | 102 | 116 | 306 | 153 | 2 630 431 | 1011 |
-| Hyper-optimisé | 5000 | 36,0 | 98 | 28 | 136 | 84 | 187 | 3 087 794 | 1183 |
-| Hyper-optimisé | 8000 | 22,0 | 97 | 16 | 133 | 48 | 170 | 3 084 953 | 1019 |
-| Hyper-optimisé | 15000 | 11,5 | 98 | 31 | 133 | 93 | 167 | 3 063 394 | 972 |
+| Profil | Pas/j | Jours | Pas totaux | Niv. | Replis | Tentatives gardien | Farm récup. | Coffres | Or | Rations |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Passif minimal (auto off) | 5000 | 237,6 | 1 187 900 | 106 | 6665 | 924 | 19995 | 0 | 2 253 077 | 6865 |
+| Passif minimal (auto off) | 8000 | 113,4 | 906 900 | 104 | 5327 | 1594 | 15981 | 0 | 1 664 612 | 4584 |
+| Passif minimal (auto off) | 15000 | 80,9 | 1 213 400 | 107 | 7194 | 1651 | 21582 | 0 | 2 414 268 | 4346 |
+| Passif optimisé (auto on) | 5000 | 32,3 | 160 750 | 95 | 131 | 131 | 393 | 151 | 2 379 198 | 1342 |
+| Passif optimisé (auto on) | 8000 | 22,3 | 177 700 | 95 | 198 | 155 | 594 | 163 | 2 395 765 | 1257 |
+| Passif optimisé (auto on) | 15000 | 12,0 | 180 150 | 96 | 204 | 132 | 612 | 175 | 2 492 411 | 1116 |
+| Normal | 5000 | 30,8 | 153 250 | 95 | 92 | 125 | 276 | 145 | 2 345 236 | 1303 |
+| Normal | 8000 | 20,2 | 161 000 | 95 | 129 | 118 | 387 | 156 | 2 379 698 | 1184 |
+| Normal | 15000 | 13,0 | 194 850 | 97 | 260 | 120 | 780 | 166 | 2 559 095 | 1140 |
+| Optimisé | 5000 | 31,8 | 158 150 | 96 | 50 | 118 | 150 | 146 | 2 579 997 | 1239 |
+| Optimisé | 8000 | 21,5 | 171 050 | 96 | 88 | 116 | 264 | 165 | 2 616 637 | 1150 |
+| Optimisé | 15000 | 11,2 | 167 850 | 96 | 102 | 116 | 306 | 153 | 2 630 431 | 1011 |
+| Hyper-optimisé | 5000 | 36,0 | 178 650 | 98 | 28 | 136 | 84 | 187 | 3 087 794 | 1183 |
+| Hyper-optimisé | 8000 | 22,0 | 175 350 | 97 | 16 | 133 | 48 | 170 | 3 084 953 | 1019 |
+| Hyper-optimisé | 15000 | 11,5 | 172 650 | 98 | 31 | 133 | 93 | 167 | 3 063 394 | 972 |
+
+La colonne **Farm récup.** compte les combats de récupération après un repli (**3 par défaite**), pas le farm volontaire de gardiens. Les pas totaux incluent tout : marche, combats, replis et farm.
 
 ## 5. TTK par palier — 8 000 pas/j
 
