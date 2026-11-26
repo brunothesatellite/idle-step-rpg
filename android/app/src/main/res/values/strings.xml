@@ -928,6 +928,8 @@
     <string name="overlay_recap_fights">FIGHTS</string>
     <string name="overlay_recap_floors">FLOORS</string>
     <string name="overlay_recap_guardians">GUARDIANS</string>
+    <string name="overlay_recap_portal">GATE</string>
+    <string name="overlay_absence_gate_waiting">Guardian gate waiting — engage it when you return.</string>
     <string name="overlay_recap_levels">LEVELS</string>
     <string name="overlay_recap_chests">CHESTS</string>
     <string name="overlay_recap_reserve">RESERVE</string>

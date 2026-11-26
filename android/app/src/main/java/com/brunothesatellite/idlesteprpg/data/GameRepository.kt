@@ -168,6 +168,7 @@ class GameRepository(
                     chests = sim.chests,
                     reason = "absence",
                     special = sim.stoppedOnSpecial,
+                    stoppedOnBoss = sim.stoppedOnBoss,
                     defeated = sim.defeated,
                     defeats = sim.defeats,
                     lootItems = sim.lootItems,
@@ -252,6 +253,7 @@ class GameRepository(
                         floors = sim.floors,
                         kills = sim.kills,
                         defeats = sim.defeats,
+                        stoppedOnBoss = sim.stoppedOnBoss,
                         defeated = sim.defeats > 0,
                         reason = "garmin",
                         remainingSteps = s.stepBank.toInt()

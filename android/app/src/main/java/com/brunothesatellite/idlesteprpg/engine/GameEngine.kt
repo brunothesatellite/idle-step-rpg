@@ -17,7 +17,8 @@ data class OfflineSim(
     val gold: Int,
     val floors: Int,
     val kills: Int,
-    val defeats: Int = 0
+    val defeats: Int = 0,
+    val stoppedOnBoss: Boolean = false
 )
 
 /**
@@ -573,7 +574,8 @@ object GameEngine {
             gold = sim.gold,
             floors = sim.floors,
             kills = sim.kills,
-            defeats = sim.defeats
+            defeats = sim.defeats,
+            stoppedOnBoss = sim.stoppedOnBoss
         )
     }
 
@@ -631,7 +633,6 @@ object GameEngine {
             )
         }
 
-        val floorSteps = (FLOOR_METERS * STEPS_PER_METER).toInt()
         val maxIterations = (capMs / dtMs.toLong()).toInt().coerceAtLeast(1)
         var iterations = 0
         var stoppedOnSpecial = false
@@ -639,6 +640,13 @@ object GameEngine {
         var stoppedOnChest = false
         var stoppedOnCamp = false
         while (iterations < maxIterations && state.stepBank > 0.0) {
+            // La simulation ne doit jamais franchir un portail ni engager un
+            // gardien : on s'arrête dès que le portail est atteint, même s'il
+            // reste du budget.
+            if (state.mode == "gate") {
+                stoppedOnBoss = true
+                break
+            }
             val consumed = (startBank - state.stepBank).toInt().coerceAtLeast(0)
             if (consumed >= budget) break
             tick(state, dtMs)
@@ -655,10 +663,7 @@ object GameEngine {
                 stoppedOnChest = true
                 break
             }
-            // Ne pas engloutir un gardien qu'on ne pourrait pas terminer : on
-            // s'arrête devant le portail s'il reste moins d'un palier de budget.
-            val remaining = budget - (startBank - state.stepBank).toInt().coerceAtLeast(0)
-            if (state.fight == null && state.distance >= GATE_METERS && remaining < floorSteps) {
+            if (state.fight == null && state.distance >= GATE_METERS) {
                 stoppedOnBoss = true
                 break
             }
@@ -742,6 +747,7 @@ object GameEngine {
                 else -> "mixed"
             },
             special = a.special || b.special,
+            stoppedOnBoss = a.stoppedOnBoss || b.stoppedOnBoss,
             defeated = a.defeated || b.defeated || (a.defeats + b.defeats) > 0,
             defeats = a.defeats + b.defeats,
             createdAt = minOf(a.createdAt, b.createdAt),

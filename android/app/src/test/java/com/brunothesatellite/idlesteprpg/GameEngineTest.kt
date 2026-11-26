@@ -170,6 +170,34 @@ class GameEngineTest {
     }
 
     @Test
+    fun absenceSimulationStopsAtGuardianGateWithoutEngaging() {
+        val state = GameState().apply {
+            floor = 1
+            level = 50
+            hp = 20_000.0
+            stepsToday = 20_000
+            stepBank = 20_000.0
+            mode = "walk"
+            distance = 80.0
+            nextFight = GATE_METERS.toInt()
+            oaths.bossesClaimed = true
+            upgrades.blade = 40
+            upgrades.breath = 40
+            upgrades.swift = 40
+        }
+        val sim = GameEngine.simulateAbsence(state, 10L * 60L * 1000L)
+        assertTrue(sim.stoppedOnBoss)
+        assertEquals(0, sim.floors)
+        assertEquals(0, sim.bosses)
+        assertEquals("gate", state.mode)
+        assertEquals(1, state.floor)
+        assertNotNull(state.pendingBoss)
+        assertNull(state.fight)
+        assertTrue(sim.stepsConsumed > 0)
+        assertTrue("simulatedMs=${sim.simulatedMs}", sim.simulatedMs < 10L * 60L * 1000L)
+    }
+
+    @Test
     fun absenceSimulationRespectsTheDailyBudget() {
         // 30 % des pas du jour, indépendamment du stock disponible.
         val reference = GameState().apply { stepsToday = 10_000 }
@@ -215,7 +243,8 @@ class GameEngineTest {
         val absence = OfflineReport(
             days = 0, steps = 0, distanceMeters = 120, combats = 3,
             gold = 40, floors = 1, kills = 3, minutes = 12,
-            stepsConsumed = 1_200, remainingSteps = 800, reason = "absence"
+            stepsConsumed = 1_200, remainingSteps = 800, reason = "absence",
+            stoppedOnBoss = true
         )
         val garmin = OfflineReport(
             days = 2, steps = 5_000, distanceMeters = 500,
@@ -228,6 +257,7 @@ class GameEngineTest {
         assertEquals(3, merged.combats)
         assertEquals("mixed", merged.reason)
         assertEquals(5_800, merged.remainingSteps)
+        assertTrue(merged.stoppedOnBoss)
     }
 
     @Test

@@ -2602,6 +2602,7 @@ fun OfflineOverlay(
                 )
                 Spacer(Modifier.height(12.dp))
                 if (absence) {
+                    val showProgress = report.floors > 0 || report.bosses > 0
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         RecapTile(formatAbsence(report.minutes), stringResource(R.string.overlay_recap_absence), Modifier.weight(1f))
                         RecapTile(formatCompact(report.stepsConsumed), stringResource(R.string.overlay_recap_steps_used), Modifier.weight(1f))
@@ -2611,14 +2612,32 @@ fun OfflineOverlay(
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         RecapTile(formatCompact(report.combats), stringResource(R.string.overlay_recap_fights), Modifier.weight(1f))
                         RecapTile(formatCompact(report.gold), stringResource(R.string.overlay_gold), Modifier.weight(1f))
-                        RecapTile(formatCompact(report.floors), stringResource(R.string.overlay_recap_floors), Modifier.weight(1f))
-                        RecapTile(formatCompact(report.bosses), stringResource(R.string.overlay_recap_guardians), Modifier.weight(1f))
+                        if (showProgress) {
+                            RecapTile(formatCompact(report.floors), stringResource(R.string.overlay_recap_floors), Modifier.weight(1f))
+                            RecapTile(formatCompact(report.bosses), stringResource(R.string.overlay_recap_guardians), Modifier.weight(1f))
+                        } else {
+                            RecapTile(
+                                if (report.stoppedOnBoss) "1" else "0",
+                                stringResource(R.string.overlay_recap_portal),
+                                Modifier.weight(1f)
+                            )
+                        }
                     }
                     Spacer(Modifier.height(6.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         RecapTile(formatCompact(report.levels), stringResource(R.string.overlay_recap_levels), Modifier.weight(1f))
                         RecapTile(formatCompact(report.chests), stringResource(R.string.overlay_recap_chests), Modifier.weight(1f))
                         RecapTile(formatCompact(report.remainingSteps), stringResource(R.string.overlay_recap_reserve), Modifier.weight(1f))
+                    }
+                    if (!showProgress && report.stoppedOnBoss) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            stringResource(R.string.overlay_absence_gate_waiting),
+                            fontSize = 6.8.sp,
+                            color = Gold,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 10.sp
+                        )
                     }
                     if (mixed) {
                         Spacer(Modifier.height(8.dp))

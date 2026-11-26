@@ -522,6 +522,8 @@ data class OfflineReport(
     val chests: Int = 0,
     val reason: String = "",
     val special: Boolean = false,
+    /** Vrai si la simulation s'est arrêtée au portail du gardien. */
+    val stoppedOnBoss: Boolean = false,
     val defeated: Boolean = false,
     /** Nombre de défaites subies pendant la simulation (recul de 20 m chacune). */
     val defeats: Int = 0,

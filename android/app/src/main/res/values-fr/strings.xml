@@ -927,6 +927,8 @@
     <string name="overlay_recap_fights">COMBATS</string>
     <string name="overlay_recap_floors">PALIERS</string>
     <string name="overlay_recap_guardians">GARDIENS</string>
+    <string name="overlay_recap_portal">PORTAIL</string>
+    <string name="overlay_absence_gate_waiting">Portail du gardien en attente — engagez-le à votre retour.</string>
     <string name="overlay_recap_levels">NIVEAUX</string>
     <string name="overlay_recap_chests">COFFRES</string>
     <string name="overlay_recap_reserve">RÉSERVE</string>

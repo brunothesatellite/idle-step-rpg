@@ -1,5 +1,10 @@
 # Journal des versions
 
+## v0.25.1-dev
+- **Résumé d'absence** : la simulation s'arrête désormais dès le **portail du gardien**, même s'il reste du budget. Le résumé affiche **PORTAIL** au lieu de « Paliers / Gardiens » quand aucun gardien n'a été combattu, avec la mention « Portail du gardien en attente — engagez-le à votre retour ».
+- **Manuel FR/EN** : section « Résumé d'absence » mise à jour ; les compteurs Paliers/Gardiens ne peuvent être non nuls que si un combat de gardien était déjà engagé à la fermeture.
+- **Tests** : **180 / 180**, lint OK.
+
 ## v0.25.0
 - **Optimisation automatique désactivée par défaut** : elle reste disponible dans Réglages → Inventaire, avec les coffres et soins automatiques.
 - **Gardien final mémorable** : au palier 100, L’Âme Première adapte ses PV au DPS du héros pour viser **20–30 s** de combat, avec trois phases à 66 % et 33 % (ATQ +8 % puis +12 %, capacités plus rapides). Les multiplicateurs finaux sont maintenant réellement appliqués.
