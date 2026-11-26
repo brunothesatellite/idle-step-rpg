@@ -71,11 +71,15 @@ private val fr = Locale.FRANCE
 /** Locale de l'application, mise à jour au démarrage et au changement de langue. */
 object AppLocale {
     @Volatile
-    var current: Locale = Locale.FRANCE
+    var current: Locale = Locale.US
 
-    /** L'anglais du jeu suit les conventions américaines (dates, heures, séparateurs). */
+    /**
+     * Français → conventions françaises ; anglais et toute autre langue →
+     * conventions anglaises. Les ressources Android ont la même règle :
+     * `values/` est anglais, `values-fr/` français.
+     */
     fun updateFrom(locale: Locale) {
-        current = if (locale.language == "en") Locale.US else Locale.FRANCE
+        current = if (locale.language == "fr") Locale.FRANCE else Locale.US
     }
 }
 

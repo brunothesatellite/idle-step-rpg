@@ -1,12 +1,20 @@
 package com.brunothesatellite.idlesteprpg
 
+import com.brunothesatellite.idlesteprpg.ui.AppLocale
 import com.brunothesatellite.idlesteprpg.ui.formatCompact
 import com.brunothesatellite.idlesteprpg.ui.formatFloatNumber
 import com.brunothesatellite.idlesteprpg.ui.formatLevelShort
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
+import java.util.Locale
 
 class FormattingTest {
+
+    @Before
+    fun setUp() {
+        AppLocale.updateFrom(Locale.FRANCE)
+    }
 
     private fun plain(value: String): String =
         value.replace('\u202F', ' ').replace('\u00A0', ' ')
@@ -59,5 +67,14 @@ class FormattingTest {
         assertEquals("999k", formatLevelShort(999_999))
         assertEquals("1M", formatLevelShort(1_000_000))
         assertEquals("1Md", formatLevelShort(1_000_000_000))
+    }
+
+    @Test
+    fun nonFrenchLocalesFallBackToEnglishFormatting() {
+        AppLocale.updateFrom(Locale.GERMANY)
+        assertEquals(Locale.US, AppLocale.current)
+        assertEquals("9,999", formatCompact(9_999))
+        assertEquals("10k", formatCompact(10_000))
+        assertEquals("1.2M", formatCompact(1_234_567))
     }
 }

@@ -1,14 +1,19 @@
 # Internationalisation — état final
 
+> **Mise à jour 0.25.0** : l’anglais devient la langue de secours par défaut
+> (`values/`), le français passe dans `values-fr/`. Appareil FR → FR ; EN → EN ;
+> autre langue → EN. Le reste du document décrit la passe d’origine v0.20.0.
+>
 > État vérifié : **v0.20.0**, branche **`main`**, sauvegarde **v7**, 23/11/2026.
 > Périmètre livré : application Android, manuel embarqué et web, kit Play Store, README.
 > Hors périmètre : démo web racine, vidéo promo, nouveaux alphabets.
 
 ## 1. Résumé
 
-- Le **français reste la langue par défaut** ; l’anglais est proposé via le sélecteur
-  **Système / Français / English** et couvre désormais l’application, les contenus dynamiques,
-  le manuel et le kit de publication.
+- L’**anglais est la langue de secours par défaut** (`values/`) ; le français est dans
+  `values-fr/`. Comportement : appareil FR → français ; appareil EN → anglais ; appareil
+  dans toute autre langue → anglais. Le sélecteur **Système / Français / English** reste
+  disponible et couvre l’application, les contenus dynamiques, le manuel et le kit de publication.
 - **Tous les écrans sont extraits**, y compris le dernier zone en dur : `ui/Update.kt`
   (mise à jour disponible, téléchargement, installation, notes Play Protect).
 - **333 littéraux accentués** restent dans 11 fichiers Kotlin, dont **109 clés de correspondance**
@@ -136,7 +141,7 @@ Un contenu inconnu du catalogue **retombe en français** : aucun crash, aucune p
 - `ContentText.kt` : traduction du journal et des textes paramétrés, avec repli FR.
 - `ManualActivity` : sélection FR/EN + repli.
 - `generateManual` : génération des deux manuels et copie des images.
-- `values/` = français ; `values-en/` = anglais ; clés identiques (hors `app_name`).
+- `values/` = anglais (langue de secours) ; `values-fr/` = français ; clés identiques (hors `app_name`). Pour un appareil FR, Android prend `values-fr/` ; pour EN ou toute autre langue, il prend `values/`.
 
 ## 6. Validation
 

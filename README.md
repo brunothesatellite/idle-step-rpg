@@ -421,7 +421,7 @@ idle-step-rpg/
 │   ├── app/src/main/
 │   │   ├── java/...         # code
 │   │   ├── assets/          # sprites, sons, manuel (FR et EN)
-│   │   └── res/             # thème, icône, widget, values / values-en
+│   │   └── res/             # thème, icône, widget, values (EN) / values-fr (FR)
 │   ├── app/src/test/        # tests unitaires
 │   └── app/src/androidTest/ # tests UI
 ├── manuel/                  # manuel HTML et captures
@@ -933,7 +933,7 @@ idle-step-rpg/
 │   ├── app/src/main/
 │   │   ├── java/...         # code
 │   │   ├── assets/          # sprites, sounds, manual (FR and EN)
-│   │   └── res/             # theme, icon, widget, values / values-en
+│   │   └── res/             # theme, icon, widget, values (EN) / values-fr (FR)
 │   ├── app/src/test/        # unit tests
 │   └── app/src/androidTest/ # UI tests
 ├── manuel/                  # HTML manual and screenshots

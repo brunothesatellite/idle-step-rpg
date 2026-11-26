@@ -74,7 +74,7 @@ class ManualActivity : ComponentActivity() {
             val language = resources.configuration.locales[0].language
             val enAsset = "manuel/en/index.html"
             val hasEnglishManual = runCatching { assets.open(enAsset).close() }.isSuccess
-            val manualPath = if (language == "en" && hasEnglishManual) {
+            val manualPath = if (language != "fr" && hasEnglishManual) {
                 "file:///android_asset/$enAsset"
             } else {
                 "file:///android_asset/manuel/index.html"
