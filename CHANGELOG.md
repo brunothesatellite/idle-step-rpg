@@ -4,6 +4,8 @@
 - **Optimisation automatique désactivée par défaut** : elle reste disponible dans Réglages → Inventaire, avec les coffres et soins automatiques.
 - **Gardien final mémorable** : au palier 100, L’Âme Première adapte ses PV au DPS du héros pour viser **20–30 s** de combat, avec trois phases à 66 % et 33 % (ATQ +8 % puis +12 %, capacités plus rapides). Les multiplicateurs finaux sont maintenant réellement appliqués.
 - **Économie** : relance du modificateur de gardien au portail (une fois par gardien, coût en or), marchand de camp (potions, écorce, force, élixir) et respec du camp (remboursement de 70 %).
+- **Camp** : le marchand est replié par défaut et la carte est plafonnée en hauteur ; la tente et le feu restent visibles.
+- **Test appareil** : gardien final vaincu en **30,4 s**, phase 2 atteinte, écran de fin déclenché.
 - **Télémétrie v5** : phase finale, or investi dans le camp, nouveaux compteurs.
 - **Sauvegarde v9** : migration automatique.
 - **Tests** : **178 / 178**, lint OK.

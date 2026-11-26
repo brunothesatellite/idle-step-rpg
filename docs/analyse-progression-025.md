@@ -28,7 +28,18 @@ Le gardien final tombe dans la cible **20–30 s** pour l’optimisé, l’hyper
 - **Respec du camp** : remboursement de 70 % de l’or investi, remise à zéro des trois améliorations.
 - Les rations ne sont pas encore réduites : les rapports doivent confirmer que le plafond 30/30 reste permanent avant de toucher à la génération.
 
-## 4. Point d’attention
+## 4. Test sur appareil
+
+Combat final réel sur le Pixel 7a avec un build de test au palier 100 :
+
+- durée **30,4 s**, victoire, **phase 2 atteinte** ;
+- **9 130 dégâts** subis, aucune ration consommée ;
+- journal : « L’Âme Première brûle ses derniers serments — phase finale », puis écran de fin « Le Trône est brisé » et passage au palier 101.
+- La sauvegarde debug a été restaurée après le test.
+
+Le camp a aussi été corrigé : le marchand est replié par défaut et la carte est plafonnée en hauteur, pour laisser la tente et le feu visibles.
+
+## 5. Point d’attention
 
 L’auto-optimisation est désormais **désactivée par défaut**, comme demandé. Un joueur vraiment passif qui ne l’active pas retrouve le mur du palier 21. Le mode assisté reste la réponse : le joueur doit activer l’auto-optimisation dans **Réglages → Inventaire** (ou bénéficier d’un futur bouton de suggestion).
 

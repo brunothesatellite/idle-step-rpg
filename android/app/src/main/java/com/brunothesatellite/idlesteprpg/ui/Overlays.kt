@@ -1647,6 +1647,7 @@ fun CampOverlay(
     val stats = statsOf(state)
     var cardHeight by remember { mutableStateOf(0) }
     var confirmRespec by remember { mutableStateOf(false) }
+    var shopOpen by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val constrainedCard = density.fontScale > 1.5f && landscape
@@ -1840,6 +1841,7 @@ fun CampOverlay(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
+                .heightIn(max = 600.dp)
                 .then(if (constrainedCard) Modifier.fillMaxHeight(0.86f) else Modifier)
                 .onSizeChanged { cardHeight = it.height }
                 .padding(14.dp)
@@ -1931,40 +1933,62 @@ fun CampOverlay(
                 onClick = { pendingAction = vigilLabel; onFreeRest() }
             )
             Spacer(Modifier.height(7.dp))
-            SectionLabel(stringResource(R.string.overlay_camp_shop))
-            Text(
-                stringResource(R.string.overlay_camp_shop_desc),
-                fontSize = 5.8.sp,
-                color = Muted2,
-                lineHeight = 8.sp
-            )
-            Spacer(Modifier.height(4.dp))
-            listOf(
-                Triple("potion_soin", "item/cons_potion_red.png", "soin"),
-                Triple("ecorce_fer", "item/cons_shield.png", "def"),
-                Triple("potion_force", "item/i-might.png", "atk")
-            ).forEach { (id, icon, _) ->
-                val price = GameEngine.campConsumablePrice(state, id)
-                CampAction(
-                    consumableNameRes(id),
-                    stringResource(R.string.overlay_camp_price, price),
-                    icon,
-                    price.toString(),
-                    enabled = state.gold >= price,
-                    onClick = { onBuyConsumable(id) }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { shopOpen = !shopOpen }
+                    .padding(vertical = 3.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.overlay_camp_shop),
+                    fontFamily = Press,
+                    fontSize = 8.sp,
+                    color = GoldLight,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    if (shopOpen) "▲" else "▼",
+                    fontFamily = Press,
+                    fontSize = 8.sp,
+                    color = Muted
+                )
+            }
+            if (shopOpen) {
+                Text(
+                    stringResource(R.string.overlay_camp_shop_desc),
+                    fontSize = 5.8.sp,
+                    color = Muted2,
+                    lineHeight = 8.sp
                 )
                 Spacer(Modifier.height(4.dp))
+                listOf(
+                    Triple("potion_soin", "item/cons_potion_red.png", "soin"),
+                    Triple("ecorce_fer", "item/cons_shield.png", "def"),
+                    Triple("potion_force", "item/i-might.png", "atk")
+                ).forEach { (id, icon, _) ->
+                    val price = GameEngine.campConsumablePrice(state, id)
+                    CampAction(
+                        consumableNameRes(id),
+                        stringResource(R.string.overlay_camp_price, price),
+                        icon,
+                        price.toString(),
+                        enabled = state.gold >= price,
+                        onClick = { onBuyConsumable(id) }
+                    )
+                    Spacer(Modifier.height(4.dp))
+                }
+                val respecRefund = GameEngine.campRespecRefund(state)
+                val campLevels = state.upgrades.blade + state.upgrades.breath + state.upgrades.swift
+                CampAction(
+                    stringResource(R.string.overlay_camp_respec),
+                    stringResource(R.string.overlay_camp_respec_desc),
+                    "item/misc_crystal.png",
+                    stringResource(R.string.overlay_camp_price, respecRefund),
+                    enabled = campLevels > 0,
+                    onClick = { confirmRespec = true }
+                )
             }
-            val respecRefund = GameEngine.campRespecRefund(state)
-            val campLevels = state.upgrades.blade + state.upgrades.breath + state.upgrades.swift
-            CampAction(
-                stringResource(R.string.overlay_camp_respec),
-                stringResource(R.string.overlay_camp_respec_desc),
-                "item/misc_crystal.png",
-                stringResource(R.string.overlay_camp_price, respecRefund),
-                enabled = campLevels > 0,
-                onClick = { confirmRespec = true }
-            )
             if (state.stash.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
                 val canTakeAll = state.stash.size <= GameEngine.freeInventorySlots(state)
