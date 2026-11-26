@@ -624,7 +624,8 @@ def _apply_build_modifiers(build: Build, rule: Rule, potion: str) -> Build:
 
 
 def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 180.0,
-             seed: int = 42, potion: str = "", rule: Rule = Rule()) -> Result:
+             seed: int = 42, potion: str = "", rule: Rule = Rule(),
+             start_hp: float | None = None) -> Result:
     build = _apply_build_modifiers(build, rule, potion)
     rng = random.Random(seed)
     wins = 0
@@ -638,7 +639,7 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
     loss_times: list[float] = []
 
     for _ in range(runs):
-        hp = build.hp
+        hp = build.hp if start_hp is None else min(start_hp, build.hp)
         enemy_hp = enemy.hp
         ferveur = build.ferveur
         t = 0.0
