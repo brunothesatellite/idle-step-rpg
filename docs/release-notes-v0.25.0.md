@@ -61,7 +61,7 @@
 
 ## English summary
 
-v0.25.0 adds a memorable final guardian with adaptive HP and three phases (20–30 s target), the camp economy (guardian modifier reroll, camp merchant, 70% camp respec), and disables auto-optimization by default. The onboarding and FR/EN manual now state that the hero walks alone but the big decisions remain the player’s; auto-optimization is an option, not an obligation. Includes telemetry v5, save v9, 178 unit tests and a green CI. Signed APK and Play AAB attached. SHA-256 APK: `a48fd03c1d7aee9ac168079a1e735cbba173beee20029af24a0ab806db6f3918`.
+v0.25.0 adds a memorable final guardian with adaptive HP and three phases (20–30 s target), the camp economy (guardian modifier reroll, camp merchant, 70% camp respec), and disables auto-optimization by default. The onboarding and FR/EN manual now state that the hero walks alone but the big decisions remain the player’s; auto-optimization is an option, not an obligation. Includes telemetry v5, save v9, 178 unit tests and a green CI. Signed APK and Play AAB attached. SHA-256 APK: a48fd03c1d7aee9ac168079a1e735cbba173beee20029af24a0ab806db6f3918.
 
 ---
 
