@@ -207,7 +207,7 @@
   <h1>THE MARCH OF SOULS</h1>
   <p>Complete user manual — a walking RPG where your steps become your progress.</p>
   <p class="lang"><a href="../index.html">Français</a> · <strong>English</strong></p>
-  <span class="badge">Version 0.22.1 · Android 14+ · Garmin or Health Connect</span>
+  <span class="badge">Version 0.23.0 · Android 14+ · Garmin or Health Connect</span>
 </header>
 
 <nav class="toc">
@@ -416,7 +416,8 @@
     <li>The panel also shows the hero's <strong>current / max HP</strong> and <strong>ATK</strong> to help you prepare.</li>
     <li>Choice: <strong>ENGAGE</strong>, <strong>FARM THIS FLOOR</strong> or <strong>CAMP</strong>. The fight only starts after ENGAGE, at 100 m.</li>
     <li><strong>Phase 2</strong> below 50% HP: telegraphed ability, with no permanent speed-up.</li>
-    <li><strong>Pity</strong>: each defeat weakens the guardian by <strong>−5% HP/ATK</strong>, up to <strong>−25%</strong>, reset on victory.</li>
+    <li><strong>Pity</strong>: each defeat weakens the guardian by <strong>-1% HP/ATK</strong>, up to <strong>-3%</strong>, reset on victory.</li>
+    <li><strong>After victory</strong>, HP is capped at <strong>65% of max HP</strong> (farming included): the hero leaves wounded and must manage rations.</li>
     <li>Possible modifiers: <strong>Fast</strong>, <strong>Armored</strong>, <strong>Berserk</strong>, <strong>Regenerating</strong>, <strong>Thief</strong>. <strong>Fast</strong> and <strong>Berserk</strong> never combine with a heavy ability (blow, breath, drain, pressure).</li>
   </ul>
   <h3>Guardian gate</h3>
@@ -481,7 +482,7 @@
     <li><strong>Rations:</strong> camp healing, automatic emergency healing in combat, waybread.</li>
     <li><strong>Shards:</strong> full heal, identification, forge, altars.</li>
     <li><strong>Gold:</strong> upgrades, merchant, statue, forge, wager.</li>
-    <li><strong>Loot:</strong> guardians give 3 shards and 3 rations; chests give 2 shards and 3 rations.</li>
+    <li><strong>Loot:</strong> guardians give 3 shards and 2 rations; chests give 2 shards and 3 rations.</li>
   </ul>
 </section>
 
@@ -586,7 +587,7 @@
     <li><strong>Bonuses</strong> only apply to <strong>equipped</strong> pieces: tiers at <strong>2, 4 and 6</strong> pieces. Having 6 pieces in the bag gives no bonus.</li>
     <li>Each biome only drops its own sets, on <strong>rare, epic or legendary</strong> loot, with a <strong>30%</strong> chance of being a set piece. The slot is random: duplicates are frequent.</li>
     <li>The forge unlocks after the first guardian is defeated.</li>
-    <li>Items may carry <strong>Vampirism</strong>, <strong>Bulwark</strong>, <strong>Frenzy</strong>, <strong>Hunt</strong>, <strong>Vitality</strong> or <strong>Precision</strong>.</li>
+    <li>Items may carry <strong>Vampirism</strong>, <strong>Bulwark</strong>, <strong>Frenzy</strong>, <strong>Hunt</strong>, <strong>Vitality</strong> or <strong>Precision</strong>. Lifesteal healing is capped at <strong>3% of max HP per second</strong>.</li>
     <li>The hero shows a <strong>paper doll</strong>: helmet, armour, legs, boots and weapon change with worn equipment.</li>
     <li>Appearance follows the <strong>item family</strong>: sword, axe, mace, staff, dagger, spear or whip; leather, mail, plate or robe; hood, helm or crown; leather or metal boots. Rarity separates items without a family.</li>
     <li><strong>Tap an equipped slot</strong> to open its sheet, compare and see its stats. Hands and talisman do not change the sprite.</li>
@@ -678,7 +679,8 @@
 <section id="progression">
   <h2>14. Progression and content</h2>
   <h3>Levels and experience</h3>
-  <p>Monsters, guardians, oaths and events give XP. Each level increases ATK, HP and SPD. The curve slows down gradually.</p>
+  <p>Monsters, guardians, oaths and events give XP. Each level increases ATK, HP and SPD, and heals <strong>25% of max HP</strong>. The curve slows down gradually.</p>
+  <p>A <strong>defeat</strong> grants <strong>25% of the fight's XP</strong>, without gold or loot: even without optimising, the hero eventually levels up and clears the floor.</p>
   <h3>Permanent upgrades</h3>
   <div class="grid">
     <figure class="shot">
@@ -724,7 +726,8 @@
     <tr><td>Throne</td><td>Soul pressure</td><td>+12% guardian damage · −8% max HP · empowered enemies.</td></tr>
     <tr><td>Throne (81+)</td><td>Broken Throne</td><td>+15% to +35% enemy HP and ATK · reinforced guardians · final boss on floor 100.</td></tr>
   </table>
-  <p><strong>Level gap:</strong> beyond <strong>4 levels ahead</strong> of the floor, enemies gain <strong>+5% HP and ATK per level of gap</strong>, capped at <strong>×2.0</strong>. At the floor's own level there is no penalty, so the early game stays accessible.</p>
+  <p><strong>Level gap:</strong> beyond <strong>4 levels ahead</strong> of the floor, enemies gain <strong>+2% HP and ATK per level of gap</strong>, capped at <strong>×1.25</strong>. At the floor's own level there is no penalty.</p>
+  <p><strong>Early-game floor curve:</strong> enemy HP and ATK rise progressively up to <strong>×3.0 HP / ×2.5 ATK</strong> between floors 8 and 15, then return to normal by floor 25. The first guardian and the very start remain accessible; the mid game rewards better gear.</p>
   <h3>Farm mode</h3>
   <figure class="shot">
     <img src="images/farm_mode.jpg" alt="Biome card with farm mode active and the FARM badge in the HUD">
@@ -735,6 +738,7 @@
     <li><strong>ENABLE:</strong> locks the current floor. A defeated guardian no longer advances to the next floor; the floor restarts from the beginning.</li>
     <li><strong>DISABLE:</strong> the next defeated guardian advances normally.</li>
     <li>A <strong>FARM</strong> badge shows in the HUD while the mode is active, with <strong>RECOVERY · +10% HP</strong> per farm win.</li>
+    <li>A <strong>farmed guardian</strong> also caps HP at 65% of max HP after victory: farming remains a source of loot, not a full heal.</li>
     <li>During farming, <strong>milestones are disabled</strong>: no +8 shards and no repeated legend entry. The guardian's loot, gold and XP remain.</li>
     <li>A farmed guardian gives <strong>+1 shard and +1 ration</strong>, capped at <strong>5 farmed guardians per day</strong>; beyond that, only loot continues.</li>
     <li>The setting is kept in the save and survives a restart.</li>
@@ -1084,7 +1088,7 @@
 </section>
 
 <footer>
-  The March of Souls · manual v0.22.1 · <a href="#top">Back to contents</a><br>
+  The March of Souls · manual v0.23.0 · <a href="#top">Back to contents</a><br>
   Garmin or Health Connect · no data sent to a publisher server.
 </footer>
 

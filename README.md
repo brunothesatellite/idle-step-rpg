@@ -11,7 +11,7 @@
 - **Hors ligne** — la progression continue avec les pas déjà récupérés.
 - **Français et anglais** — interface, journal, Codex, manuel et captures dans les deux langues.
 
-**Version :** 0.22.1 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version :** 0.23.0 · **Android :** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [APK Android](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manuel en ligne](https://brunothesatellite.github.io/idle-step-rpg/manuel/) ·
@@ -523,7 +523,7 @@ Détails : [`LICENSES.md`](LICENSES.md), [`assets/CREDITS.md`](assets/CREDITS.md
 - **Offline** — progress continues with the steps already fetched.
 - **French and English** — interface, journal, Codex, manual and screenshots in both languages.
 
-**Version:** 0.21.2 · **Android:** 14+ · `com.brunothesatellite.idlesteprpg`
+**Version:** 0.23.0 · **Android:** 14+ · `com.brunothesatellite.idlesteprpg`
 
 [Android APK](https://github.com/brunothesatellite/idle-step-rpg/releases/latest) ·
 [Manual online](https://brunothesatellite.github.io/idle-step-rpg/manuel/) ·

@@ -9,6 +9,7 @@ import com.brunothesatellite.idlesteprpg.engine.OfflineSim
 import com.brunothesatellite.idlesteprpg.engine.ReportStats
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.STEPS_PER_METER
+import com.brunothesatellite.idlesteprpg.engine.TELEMETRY_SCHEMA
 import com.brunothesatellite.idlesteprpg.engine.deepCopy
 import com.brunothesatellite.idlesteprpg.engine.statsOf
 import com.brunothesatellite.idlesteprpg.notify.GameNotifications
@@ -289,6 +290,7 @@ class GameRepository(
     /** Rapport local d'équilibrage : stats, équipement et télémétrie, sans journal ni inventaire. */
     suspend fun exportBalanceReport(appVersion: String): String = withContext(Dispatchers.IO) {
         val state = _state.value.deepCopy()
+        state.telemetry.schema = TELEMETRY_SCHEMA
         val s = statsOf(state)
         val report = BalanceReport(
             generatedAt = System.currentTimeMillis(),
@@ -306,6 +308,7 @@ class GameRepository(
             totalSteps = state.totalSteps,
             holdFloor = state.holdFloor,
             bossPity = state.bossPity,
+            retreats = state.retreats,
             stats = ReportStats(
                 atk = s.atk,
                 maxHp = s.maxHp,

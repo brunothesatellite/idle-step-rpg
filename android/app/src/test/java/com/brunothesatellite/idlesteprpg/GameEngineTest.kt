@@ -1683,7 +1683,7 @@ class GameEngineTest {
             )
         )
         assertTrue(reportJson.contains("telemetry"))
-        assertTrue(reportJson.contains("\"schema\":2"))
+        assertTrue(reportJson.contains("\"schema\":3"))
     }
 
     @Test
@@ -1696,10 +1696,150 @@ class GameEngineTest {
         assertEquals(1.0, GameEngine.levelGapMultiplier(state), 0.0001)
         state.floor = 9
         state.level = 24
-        assertEquals(1.55, GameEngine.levelGapMultiplier(state), 0.0001)
+        assertEquals(1.22, GameEngine.levelGapMultiplier(state), 0.0001)
         state.floor = 1
         state.level = 100
-        assertEquals(2.0, GameEngine.levelGapMultiplier(state), 0.0001)
+        assertEquals(1.25, GameEngine.levelGapMultiplier(state), 0.0001)
+    }
+
+    @Test
+    fun earlyFloorCurvePeaksBetweenEightAndFifteen() {
+        assertEquals(1.0, GameEngine.earlyThreatMultiplier(1, 3.0), 0.0001)
+        assertEquals(3.0, GameEngine.earlyThreatMultiplier(8, 3.0), 0.0001)
+        assertEquals(3.0, GameEngine.earlyThreatMultiplier(15, 3.0), 0.0001)
+        assertEquals(2.0, GameEngine.earlyThreatMultiplier(20, 3.0), 0.0001)
+        assertEquals(1.0, GameEngine.earlyThreatMultiplier(25, 3.0), 0.0001)
+        assertEquals(2.5, GameEngine.earlyThreatMultiplier(10, 2.5), 0.0001)
+    }
+
+    @Test
+    fun defeatGrantsQuarterXpAndRecordsLoss() {
+        val state = GameState().apply {
+            floor = 5
+            level = 50
+            hp = 1.0
+            xp = 0
+            day = LocalDate.now().toString()
+            mode = "fight"
+            fight = FightData(
+                enemyName = "Colosse de test",
+                enemyIcon = "x",
+                enemyLevel = 50,
+                enemyHp = 1_000_000.0,
+                enemyMaxHp = 1_000_000.0,
+                enemyAtk = 100_000.0,
+                enemyIntervalMs = 1_000L,
+                gold = 50,
+                xp = 100,
+                heroTimerMs = 60_000.0,
+                enemyTimerMs = 0.0
+            )
+        }
+        GameEngine.tick(state, 16.0)
+        assertNull(state.fight)
+        assertEquals(1, state.retreats)
+        assertEquals(25, state.xp)
+        assertEquals("farmWait", state.mode)
+        assertEquals(1, state.telemetry.floorStats[5]?.losses)
+        assertEquals(1, state.telemetry.days[state.day]?.losses)
+        val sample = state.telemetry.recentFights.single()
+        assertEquals(false, sample.win)
+        assertEquals(25, sample.xpGained)
+        assertEquals(0, sample.goldGained)
+    }
+
+    @Test
+    fun bossVictoryCapsRecoveryAtSixtyFivePercent() {
+        val state = GameState().apply { floor = 1 }
+        state.hp = statsOf(state).maxHp.toDouble()
+        val fight = FightData(
+            enemyName = "Gardien de test",
+            enemyIcon = "x",
+            enemyLevel = 1,
+            enemyHp = 1.0,
+            enemyMaxHp = 100.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 1_000L,
+            gold = 10,
+            xp = 0,
+            isBoss = true,
+            elapsedMs = 1_000.0
+        )
+        state.pendingBoss = fight
+        GameEngine.startBoss(state)
+        state.fight!!.enemyHp = 0.0
+        GameEngine.victory(state, state.fight!!)
+        assertEquals(
+            statsOf(state).maxHp * 0.65,
+            state.hp,
+            0.001
+        )
+    }
+
+    @Test
+    fun farmBossVictoryAlsoCapsRecovery() {
+        val state = GameState().apply {
+            floor = 10
+            holdFloor = true
+            oaths.bossesClaimed = true
+        }
+        state.hp = statsOf(state).maxHp.toDouble()
+        val fight = FightData(
+            enemyName = "Gardien farmé",
+            enemyIcon = "x",
+            enemyLevel = 12,
+            enemyHp = 1.0,
+            enemyMaxHp = 100.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 1_000L,
+            gold = 10,
+            xp = 0,
+            isBoss = true,
+            elapsedMs = 1_000.0
+        )
+        state.pendingBoss = fight
+        GameEngine.startBoss(state)
+        state.fight!!.enemyHp = 0.0
+        GameEngine.victory(state, state.fight!!)
+        assertEquals(10, state.floor)
+        assertEquals(
+            statsOf(state).maxHp * 0.65,
+            state.hp,
+            0.001
+        )
+    }
+
+    @Test
+    fun lifestealIsCappedAtThreePercentMaxHpPerSecond() {
+        val state = GameState()
+        state.day = LocalDate.now().toString()
+        state.equipment = state.equipment.map {
+            if (it.slot == "weapon") {
+                it.copy(effect = "vampirisme", atk = 200)
+            } else {
+                it
+            }
+        }
+        val maxHp = statsOf(state).maxHp.toDouble()
+        state.hp = maxHp * 0.5
+        state.mode = "fight"
+        state.fight = FightData(
+            enemyName = "Cible",
+            enemyIcon = "x",
+            enemyLevel = 1,
+            enemyHp = 1_000_000.0,
+            enemyMaxHp = 1_000_000.0,
+            enemyAtk = 0.0,
+            enemyIntervalMs = 60_000L,
+            gold = 0,
+            xp = 0,
+            heroTimerMs = 0.0,
+            enemyTimerMs = 60_000.0
+        )
+        GameEngine.tick(state, 1_000.0)
+        val fight = state.fight!!
+        assertTrue(fight.healLifesteal > 0.0)
+        assertTrue(fight.healLifesteal <= maxHp * 0.03 + 0.001)
     }
 
     @Test

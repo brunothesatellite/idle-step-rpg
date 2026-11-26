@@ -29,7 +29,7 @@ profit des agrégats par palier et par jour.
 
 ```json
 {
-  "schema": 2,
+  "schema": 3,
   "normalFights": 120,
   "normalWins": 118,
   "bossFights": 12,
@@ -82,6 +82,7 @@ profit des agrégats par palier et par jour.
     "9": {
       "attempts": 18,
       "wins": 17,
+      "losses": 1,
       "bossAttempts": 1,
       "bossWins": 1,
       "farmAttempts": 0,
@@ -111,6 +112,7 @@ profit des agrégats par palier et par jour.
       "day": "2026-11-25",
       "fights": 62,
       "wins": 61,
+      "losses": 1,
       "bossFights": 8,
       "bossWins": 8,
       "totalMs": 112600,
@@ -135,6 +137,11 @@ profit des agrégats par palier et par jour.
 - **Ennemi** : `enemyHp`, `enemyAtk`, `enemyIntervalMs`, `modifier`, `ability`.
 - **Progression** : `levelHistory` et `days[].levelStart/levelEnd`.
 - **Par palier** : `floorStats` pour les taux de victoire et les coûts cumulés.
+- **Replis** : `retreats` à la racine du rapport, et `floorStats[].losses` /
+  `days[].losses` pour les défaites. Une défaite accorde 25 % de l’XP du combat
+  (`recentFights[].xpGained` reflète déjà ce montant).
+- **Soin vampire** : plafonné à 3 % des PV max par seconde ; `healLifesteal`
+  mesure le soin réellement rendu.
 
 ## Confidentialité
 
@@ -144,7 +151,7 @@ profit des agrégats par palier et par jour.
 
 ## Compatibilité
 
-- Schéma de télémétrie : **2**.
+- Schéma de télémétrie : **3**.
 - Version de sauvegarde : inchangée (**7**).
 - Les anciennes sauvegardes sont complétées avec des champs vides ; les nouvelles
   sauvegardes restent lisibles par les versions qui ignorent les champs inconnus.

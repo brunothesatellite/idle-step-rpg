@@ -271,6 +271,20 @@ def _boss_depth_proposed(floor: int, tuning: "Tuning") -> float:
     return 1.0 if floor <= 10 else min(tuning.boss_hp_exp ** (floor - 10), tuning.boss_hp_cap)
 
 
+def _early_threat(floor: int, maximum: float) -> float:
+    """Courbe de palier early game, miroir de GameEngine.earlyThreatMultiplier()."""
+    start = int(TARGET["EARLY_CURVE_PEAK_START"])
+    peak_end = int(TARGET["EARLY_CURVE_PEAK_END"])
+    end = int(TARGET["EARLY_CURVE_END"])
+    if floor <= 1 or floor >= end:
+        return 1.0
+    if floor < start:
+        return 1.0 + (maximum - 1.0) * ((floor - 1) / (start - 1))
+    if floor <= peak_end:
+        return maximum
+    return 1.0 + (maximum - 1.0) * ((end - floor) / (end - peak_end))
+
+
 def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
              tuning: "Tuning" = None) -> Enemy:
     tuning = tuning or Tuning()
@@ -279,6 +293,8 @@ def make_mob(floor: int, curve: str, biome: str = "auto", elite: bool = False,
     if curve == "code":
         hp = (55 + 34 * (level - 1)) * (1.8 if elite else 1.0) * _code_mob_hp_scale(floor) * rule.enemy_hp
         atk = (6 + 2.2 * (level - 1)) * (1.15 if elite else 1.0) * _code_mob_atk_scale(floor) * rule.enemy_atk
+        hp *= _early_threat(floor, TARGET["EARLY_HP_MAX"])
+        atk *= _early_threat(floor, TARGET["EARLY_ATK_MAX"])
         interval = CURRENT["MOB_INTERVAL_MS"] / 1000.0 * rule.enemy_interval
         reward = min(6.0, math.sqrt(_depth(floor)))
         gold = (6 + 3 * level) * reward
@@ -403,6 +419,8 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "auto"
         weight = _target_weight(floor)
         hp = _lerp(legacy_hp, target_hp, weight)
         atk = _lerp(legacy_atk, target_atk, weight)
+        hp *= _early_threat(floor, TARGET["EARLY_HP_MAX"])
+        atk *= _early_threat(floor, TARGET["EARLY_ATK_MAX"])
         interval = CURRENT["MOB_INTERVAL_MS"] / 1000.0
         if modifier == "rapide":
             interval = CURRENT["BOSS_MOD_FAST_INTERVAL_MS"] / 1000.0
@@ -634,6 +652,8 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
         taken = 0.0
         hero_swings = 0
         enemy_swings = 0
+        lifesteal_cap = build.hp * TARGET["LIFESTEAL_PER_SECOND_CAP"]
+        lifesteal_budget = lifesteal_cap
 
         def crit_chance() -> float:
             return min(TARGET["CRIT_CAP"] / 100.0, (build.crit + ferveur * 0.02) / 100.0)
@@ -659,6 +679,9 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
             hero_timer -= dt
             enemy_timer -= dt
             ability_timer -= dt
+            lifesteal_budget = min(
+                lifesteal_cap, lifesteal_budget + lifesteal_cap * dt
+            )
 
             if enemy.regen_rate > 0 and enemy_hp < enemy.hp:
                 enemy_hp = min(enemy.hp, enemy_hp + enemy.hp * enemy.regen_rate * dt)
@@ -705,7 +728,10 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
                     dmg *= 1.0 - enemy.shield_reduction
                 enemy_hp -= dmg
                 if build.lifesteal > 0:
-                    hp = min(build.hp, hp + dmg * build.lifesteal)
+                    heal = min(dmg * build.lifesteal, lifesteal_budget)
+                    before = hp
+                    hp = min(build.hp, hp + heal)
+                    lifesteal_budget = max(0.0, lifesteal_budget - (hp - before))
                 hero_timer += attack_interval()
                 if enemy_hp <= 0:
                     wins += 1

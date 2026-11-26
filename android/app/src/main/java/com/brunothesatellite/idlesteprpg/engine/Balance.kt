@@ -109,7 +109,7 @@ object Balance {
     const val AUTO_RATION_THRESHOLD = 0.30
     const val AUTO_RATION_HEAL = 0.35
     const val DEFEAT_HP_RATIO = 0.6
-    const val LEVEL_UP_HEAL = 0.5
+    const val LEVEL_UP_HEAL = 0.25
     const val BOSS_BLESSING_STEP = 0.25
     const val BOSS_BLESSING_CAP = 0.75
 
@@ -154,7 +154,8 @@ object Balance {
         const val CRIT_DAMAGE_CAP = 1.0
         const val BOSS_DAMAGE_CAP = 0.5
         const val RATIONS_CAP = 30
-        const val BOSS_RATIONS = 3
+        const val BOSS_RATIONS = 2
+        const val BOSS_VICTORY_HP_CAP = 0.65
         const val CHEST_RATIONS = 3
         const val MOB_RATION_CHANCE = 0.20
         const val ELITE_RATION_GUARANTEED = 1
@@ -199,8 +200,15 @@ object Balance {
         const val FINAL_BOSS_HP_MULT = 1.40
         const val FINAL_BOSS_ATK_MULT = 1.15
         const val LEVEL_GAP_FREE = 4
-        const val LEVEL_GAP_PCT = 0.05
-        const val LEVEL_GAP_CAP = 2.0
+        const val LEVEL_GAP_PCT = 0.02
+        const val LEVEL_GAP_CAP = 1.25
+        const val EARLY_CURVE_PEAK_START = 8
+        const val EARLY_CURVE_PEAK_END = 15
+        const val EARLY_CURVE_END = 25
+        const val EARLY_HP_MAX = 3.0
+        const val EARLY_ATK_MAX = 2.5
+        const val DEFEAT_XP_RATIO = 0.25
+        const val LIFESTEAL_PER_SECOND_CAP = 0.03
         const val PITY_HP_STEP = 0.01
         const val PITY_CAP = 0.03
         const val FUSION_RATIO = 0.90

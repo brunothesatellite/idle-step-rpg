@@ -26,8 +26,8 @@ android {
         applicationId = "com.brunothesatellite.idlesteprpg"
         minSdk = 34
         targetSdk = 36
-        versionCode = 63
-        versionName = "0.22.1"
+        versionCode = 64
+        versionName = "0.23.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
         manifestPlaceholders["appIconRound"] = "@mipmap/ic_launcher_round"

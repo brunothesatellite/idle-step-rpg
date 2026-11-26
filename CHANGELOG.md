@@ -1,5 +1,15 @@
 # Journal des versions
 
+## v0.23.0
+- **Courbe de palier early game** : les PV ennemis montent jusqu'à **×3,0** et l'ATQ jusqu'à **×2,5** entre les paliers 8 et 15, puis reviennent à ×1 au palier 25. Aucun effet au palier 1 : le premier gardien reste accessible. La courbe s'applique aux monstres, aux gardiens et au farm.
+- **Écart de niveau réduit** : au-delà de 4 niveaux d'avance, **+2 % PV/ATQ par niveau**, plafond **×1,25**. L'écart redevient un garde-fou et non le moteur principal de la difficulté.
+- **XP de repli** : une défaite accorde **25 % de l'XP** du combat, sans or ni butin. Le joueur passif progresse malgré les replis et ne reste pas bloqué.
+- **Récupération après gardien** : les PV sont plafonnés à **65 % des PV max** après chaque gardien, **farm compris**. Le soin de level-up passe de 50 % à **25 %** et les gardiens donnent **2 rations** au lieu de 3.
+- **Plafond de vol de vie** : le soin vampire est limité à **3 % des PV max par seconde**, avec une réserve reconstituée en continu pendant le combat.
+- **Télémétrie v3** : `retreats` dans le rapport, `losses` par palier et par jour, XP/or réellement gagnés dans les échantillons de défaite.
+- **Tests** : **165 / 165**, lint OK.
+- **Build** : `versionCode 64`, `versionName 0.23.0`. Aucune release GitHub à ce stade.
+
 ## v0.22.1
 - **Correctif portail du gardien** : un drapeau de coffre resté ouvert après la disparition ou l'ouverture du coffre pouvait masquer la gate à 90 m et bloquer le héros avec de la réserve. Le drapeau est maintenant fermé dès que le coffre n'existe plus, et la gate ne dépend plus d'un coffre absent.
 - **Tests** : **160 / 160**, lint OK.

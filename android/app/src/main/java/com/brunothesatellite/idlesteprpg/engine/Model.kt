@@ -123,7 +123,7 @@ data class JournalEntry(
     val type: String = "neutral"
 )
 
-const val TELEMETRY_SCHEMA = 2
+const val TELEMETRY_SCHEMA = 3
 const val TELEMETRY_FIGHTS = 100
 const val TELEMETRY_DAYS = 60
 const val TELEMETRY_LEVELS = 200
@@ -177,6 +177,7 @@ data class FightSample(
 data class FloorTelemetry(
     var attempts: Int = 0,
     var wins: Int = 0,
+    var losses: Int = 0,
     var bossAttempts: Int = 0,
     var bossWins: Int = 0,
     var farmAttempts: Int = 0,
@@ -206,6 +207,7 @@ data class DayTelemetry(
     var day: String = "",
     var fights: Int = 0,
     var wins: Int = 0,
+    var losses: Int = 0,
     var bossFights: Int = 0,
     var bossWins: Int = 0,
     var totalMs: Long = 0L,
@@ -265,6 +267,7 @@ data class BalanceReport(
     var totalSteps: Int = 0,
     var holdFloor: Boolean = false,
     var bossPity: Double = 0.0,
+    var retreats: Int = 0,
     var stats: ReportStats = ReportStats(),
     var equipment: List<Item> = emptyList(),
     var upgrades: Upgrades = Upgrades(),
@@ -301,6 +304,8 @@ data class FightData(
     var startFerveur: Int = 0,
     var damageTaken: Double = 0.0,
     var healLifesteal: Double = 0.0,
+    /** Réserve de soin vampire, en PV, reconstituée à 3 % des PV max par seconde. */
+    var lifestealBudget: Double = 0.0,
     var healRegen: Double = 0.0,
     var healRation: Double = 0.0,
     var healPotion: Double = 0.0,

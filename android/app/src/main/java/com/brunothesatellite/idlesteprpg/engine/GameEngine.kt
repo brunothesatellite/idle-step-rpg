@@ -457,8 +457,12 @@ object GameEngine {
             ability = f.ability,
             heroHits = f.heroHits,
             enemyHits = f.enemyHits,
-            xpGained = f.xp,
-            goldGained = f.gold
+            xpGained = if (win) f.xp else if (f.xp > 0) {
+                max(1, (f.xp * Balance.Target.DEFEAT_XP_RATIO).roundToInt())
+            } else {
+                0
+            },
+            goldGained = if (win) f.gold else 0
         )
 
         state.telemetry.combatMs += duration
@@ -468,7 +472,7 @@ object GameEngine {
 
         val floorStat = state.telemetry.floorStats[sample.floor] ?: FloorTelemetry()
         floorStat.attempts++
-        if (win) floorStat.wins++
+        if (win) floorStat.wins++ else floorStat.losses++
         if (f.isBoss) {
             floorStat.bossAttempts++
             if (win) floorStat.bossWins++
@@ -492,7 +496,7 @@ object GameEngine {
         val dayStat = state.telemetry.days[dayKey]
             ?: DayTelemetry(day = dayKey, levelStart = state.level, levelEnd = state.level)
         dayStat.fights++
-        if (win) dayStat.wins++
+        if (win) dayStat.wins++ else dayStat.losses++
         if (f.isBoss) {
             dayStat.bossFights++
             if (win) dayStat.bossWins++
@@ -1326,6 +1330,8 @@ object GameEngine {
         f.startHp = state.hp
         f.startFerveur = state.ferveur
         f.heroAtStart = reportStats(statsOf(state))
+        f.lifestealBudget =
+            statsOf(state).maxHp * Balance.Target.LIFESTEAL_PER_SECOND_CAP
         f.buffsAtStart = state.buffs
             .filter { it.expiresAt > System.currentTimeMillis() }
             .map { it.type }
@@ -1340,6 +1346,8 @@ object GameEngine {
         f.startHp = state.hp
         f.startFerveur = state.ferveur
         f.heroAtStart = reportStats(statsOf(state))
+        f.lifestealBudget =
+            statsOf(state).maxHp * Balance.Target.LIFESTEAL_PER_SECOND_CAP
         f.buffsAtStart = state.buffs
             .filter { it.expiresAt > System.currentTimeMillis() }
             .map { it.type }
@@ -1381,8 +1389,7 @@ object GameEngine {
     }
 
     private fun startFarmFight(state: GameState) {
-        state.fight = makeFarm(state)
-        state.mode = "fight"
+        startFight(state, farm = true)
     }
 
     private fun depthMultiplier(floor: Int, boss: Boolean = false): Double {
@@ -1443,9 +1450,30 @@ object GameEngine {
             .coerceAtMost(Balance.Target.LEVEL_GAP_CAP)
     }
 
+    /**
+     * Courbe de palier early game. Elle protège le premier gardien (×1 au
+     * palier 1), monte jusqu'à EARLY_*_MAX entre les paliers 8 et 15, puis
+     * revient à ×1 au palier 25 avant la courbe cible.
+     */
+    internal fun earlyThreatMultiplier(floor: Int, maximum: Double): Double {
+        if (floor <= 1 || floor >= Balance.Target.EARLY_CURVE_END) return 1.0
+        val start = Balance.Target.EARLY_CURVE_PEAK_START
+        val peakEnd = Balance.Target.EARLY_CURVE_PEAK_END
+        val end = Balance.Target.EARLY_CURVE_END
+        return when {
+            floor < start -> 1.0 + (maximum - 1.0) *
+                ((floor - 1).toDouble() / (start - 1))
+            floor <= peakEnd -> maximum
+            else -> 1.0 + (maximum - 1.0) *
+                ((end - floor).toDouble() / (end - peakEnd))
+        }
+    }
+
     private fun makeMob(state: GameState): FightData {
         val pos = state.distance
         val gapMult = levelGapMultiplier(state)
+        val earlyHp = earlyThreatMultiplier(state.floor, Balance.Target.EARLY_HP_MAX)
+        val earlyAtk = earlyThreatMultiplier(state.floor, Balance.Target.EARLY_ATK_MAX)
         val biomePool = mobPoolFor(state.floor)
         val tier = when {
             pos >= 85 -> "hard"
@@ -1481,9 +1509,9 @@ object GameEngine {
             enemyIcon = t.icon,
             enemyId = t.id,
             enemyLevel = level,
-            enemyHp = hp * hpScale * rule.enemyHpMult * gapMult,
-            enemyMaxHp = hp * hpScale * rule.enemyHpMult * gapMult,
-            enemyAtk = atk * atkScale * rule.enemyAtkMult * gapMult,
+            enemyHp = hp * hpScale * rule.enemyHpMult * gapMult * earlyHp,
+            enemyMaxHp = hp * hpScale * rule.enemyHpMult * gapMult * earlyHp,
+            enemyAtk = atk * atkScale * rule.enemyAtkMult * gapMult * earlyAtk,
             enemyIntervalMs = ((if (elite) Balance.ELITE_INTERVAL_MS else Balance.MOB_INTERVAL_MS) *
                 rule.enemyIntervalMult).roundToLong(),
             gold = gold,
@@ -1557,6 +1585,8 @@ object GameEngine {
         val ability = bossAbilityFor(t.name, state.floor)
         val rule = biomeRuleFor(state.floor)
         val gapMult = levelGapMultiplier(state)
+        val earlyHp = earlyThreatMultiplier(state.floor, Balance.Target.EARLY_HP_MAX)
+        val earlyAtk = earlyThreatMultiplier(state.floor, Balance.Target.EARLY_ATK_MAX)
         val level = state.floor + Balance.Target.BOSS_LEVEL_OFFSET
         val finalHpMult =
             if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) Balance.Target.FINAL_BOSS_HP_MULT else 1.0
@@ -1596,9 +1626,9 @@ object GameEngine {
             enemyIcon = t.icon,
             enemyId = t.id,
             enemyLevel = level,
-            enemyHp = hp * hpMult * gapMult * (1.0 - pity),
-            enemyMaxHp = hp * hpMult * gapMult * (1.0 - pity),
-            enemyAtk = atk * atkMult * gapMult * (1.0 - pity),
+            enemyHp = hp * hpMult * gapMult * earlyHp * (1.0 - pity),
+            enemyMaxHp = hp * hpMult * gapMult * earlyHp * (1.0 - pity),
+            enemyAtk = atk * atkMult * gapMult * earlyAtk * (1.0 - pity),
             enemyIntervalMs = (interval * rule.enemyIntervalMult).roundToLong(),
             gold = (12 * (6 + 3 * level) * reward).roundToInt(),
             xp = bossXpReward(level, state.floor, state.level),
@@ -1622,10 +1652,12 @@ object GameEngine {
         val t = easy[rnd.nextInt(easy.size)]
         val rule = biomeRuleFor(state.floor)
         val level = max(1, state.floor - Balance.FARM_LEVEL_OFFSET)
+        val earlyHp = earlyThreatMultiplier(state.floor, Balance.Target.EARLY_HP_MAX)
+        val earlyAtk = earlyThreatMultiplier(state.floor, Balance.Target.EARLY_ATK_MAX)
         val hp = (Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)) *
-            Balance.FARM_HP_MULT * rule.enemyHpMult * levelGapMultiplier(state)
+            Balance.FARM_HP_MULT * rule.enemyHpMult * levelGapMultiplier(state) * earlyHp
         val atk = (Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)) *
-            Balance.FARM_ATK_MULT * rule.enemyAtkMult * levelGapMultiplier(state)
+            Balance.FARM_ATK_MULT * rule.enemyAtkMult * levelGapMultiplier(state) * earlyAtk
         return FightData(
             enemyName = t.name,
             enemyIcon = t.icon,
@@ -1644,6 +1676,12 @@ object GameEngine {
 
     private fun tickFight(state: GameState, dtMs: Double) {
         val f = state.fight ?: run { state.mode = "walk"; return }
+        val lifestealCap =
+            statsOf(state).maxHp * Balance.Target.LIFESTEAL_PER_SECOND_CAP
+        f.lifestealBudget = min(
+            lifestealCap,
+            f.lifestealBudget + lifestealCap * dtMs / 1000.0
+        )
         f.heroTimerMs -= dtMs
         f.enemyTimerMs -= dtMs
         f.elapsedMs += dtMs
@@ -1777,8 +1815,13 @@ object GameEngine {
         recordHit(state, dmg.roundToInt().coerceAtLeast(1), crit, onEnemy = true)
         if (s.lifesteal > 0.0) {
             val before = state.hp
-            state.hp = min(s.maxHp.toDouble(), state.hp + dmg * s.lifesteal)
-            f.healLifesteal += (state.hp - before).coerceAtLeast(0.0)
+            val heal = min(dmg * s.lifesteal, f.lifestealBudget)
+            if (heal > 0.0) {
+                state.hp = min(s.maxHp.toDouble(), state.hp + heal)
+                val actual = (state.hp - before).coerceAtLeast(0.0)
+                f.lifestealBudget = (f.lifestealBudget - actual).coerceAtLeast(0.0)
+                f.healLifesteal += actual
+            }
         }
         if (f.enemyHp <= 0) victory(state, f)
     }
@@ -1921,6 +1964,17 @@ object GameEngine {
                 }
             }
             checkOaths(state)
+            val maxHp = statsOf(state).maxHp.toDouble()
+            val cappedHp = maxHp * Balance.Target.BOSS_VICTORY_HP_CAP
+            if (state.hp > cappedHp) {
+                state.hp = cappedHp
+                state.journal = addJournal(
+                    state,
+                    "Après le gardien, la récupération est plafonnée à " +
+                        "${(Balance.Target.BOSS_VICTORY_HP_CAP * 100).roundToInt()} % des PV",
+                    "neutral"
+                )
+            }
         } else if (f.farm) {
             state.farmKills++
             val s = statsOf(state)
@@ -1975,6 +2029,12 @@ object GameEngine {
         state.retreats++
         state.distance = max(0.0, floor((state.distance - 20.0) / 10.0) * 10.0)
         state.nextFight = (state.distance + 10).toInt()
+        val retreatXp = if (f.xp > 0) {
+            max(1, (f.xp * Balance.Target.DEFEAT_XP_RATIO).roundToInt())
+        } else {
+            0
+        }
+        if (retreatXp > 0) gainXp(state, retreatXp)
         state.hp = statsOf(state).maxHp * Balance.DEFEAT_HP_RATIO
         state.mode = "farmWait"
         state.farmKills = 0
@@ -1986,7 +2046,12 @@ object GameEngine {
             )
             state.pendingBoss = null
         }
-        state.journal = addJournal(state, "Défaite — repli de 20 m dans la zone de farm", "bad")
+        val xpText = if (retreatXp > 0) " · +$retreatXp XP" else ""
+        state.journal = addJournal(
+            state,
+            "Défaite — repli de 20 m dans la zone de farm$xpText",
+            "bad"
+        )
     }
 
     private fun gainXp(state: GameState, amount: Int) {

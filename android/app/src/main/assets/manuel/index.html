@@ -207,7 +207,7 @@
   <h1>LA MARCHE DES ÂMES</h1>
   <p>Manuel utilisateur complet — un RPG de marche où vos pas deviennent votre progression.</p>
   <p class="lang"><strong>Français</strong> · <a href="en/index.html">English</a></p>
-  <span class="badge">Version 0.22.1 · Android 14+ · Garmin ou Santé Connect</span>
+  <span class="badge">Version 0.23.0 · Android 14+ · Garmin ou Santé Connect</span>
 </header>
 
 <nav class="toc">
@@ -416,7 +416,8 @@
     <li>La fiche compare aussi les <strong>PV actuels / PV max</strong> et l'<strong>ATQ du héros</strong> pour préparer l'engagement.</li>
     <li>Choix : <strong>ENGAGER</strong>, <strong>FARMER CE PALIER</strong> ou <strong>CAMPER</strong>. Le combat ne démarre qu'après ENGAGER, à 100 m.</li>
     <li><strong>Phase 2</strong> sous 50 % de PV : capacité télégraphiée, sans accélération permanente.</li>
-    <li><strong>Pitié</strong> : chaque défaite affaiblit le gardien de <strong>−5 % PV/ATQ</strong>, cumulable jusqu'à <strong>−25 %</strong>, remis à zéro à la victoire.</li>
+    <li><strong>Pitié</strong> : chaque défaite affaiblit le gardien de <strong>−1 % PV/ATQ</strong>, cumulable jusqu'à <strong>−3 %</strong>, remis à zéro à la victoire.</li>
+    <li><strong>Après la victoire</strong>, les PV sont plafonnés à <strong>65 % des PV max</strong> (farm compris) : le héros repart entamé et doit gérer ses rations.</li>
     <li>Modificateurs possibles : <strong>Rapide</strong>, <strong>Blindé</strong>, <strong>Berserk</strong>, <strong>Régénérant</strong>, <strong>Voleur</strong>. <strong>Rapide</strong> et <strong>Berserk</strong> ne se combinent jamais avec une capacité lourde (frappe, souffle, drain, pression).</li>
   </ul>
   <h3>Portail du gardien</h3>
@@ -481,7 +482,7 @@
     <li><strong>Rations :</strong> soin au camp, soin automatique d'urgence en combat, pain de route.</li>
     <li><strong>Éclats :</strong> soin complet, identification, forge, autels.</li>
     <li><strong>Or :</strong> améliorations, marchand, statue, forge, pari.</li>
-    <li><strong>Butin :</strong> les gardiens donnent 3 éclats et 3 rations ; les coffres donnent 2 éclats et 3 rations.</li>
+    <li><strong>Butin :</strong> les gardiens donnent 3 éclats et 2 rations ; les coffres donnent 2 éclats et 3 rations.</li>
   </ul>
 </section>
 
@@ -586,7 +587,7 @@
     <li>Les <strong>bonus</strong> ne s'appliquent qu'aux pièces <strong>équipées</strong> : paliers à <strong>2, 4 et 6</strong> pièces. Avoir 6 pièces au sac ne donne aucun bonus.</li>
     <li>Chaque biome ne fait tomber que ses propres ensembles, sur un butin <strong>rare, épique ou légendaire</strong>, avec <strong>30 %</strong> de chance d'être une pièce d'ensemble. Le slot est tiré au hasard : les doublons sont fréquents.</li>
     <li>La forge se débloque après le premier gardien vaincu.</li>
-    <li>Les objets peuvent porter <strong>Vampirisme</strong>, <strong>Rempart</strong>, <strong>Frénésie</strong>, <strong>Chasse</strong>, <strong>Vitalité</strong> ou <strong>Précision</strong>.</li>
+    <li>Les objets peuvent porter <strong>Vampirisme</strong>, <strong>Rempart</strong>, <strong>Frénésie</strong>, <strong>Chasse</strong>, <strong>Vitalité</strong> ou <strong>Précision</strong>. Le soin de vampire est plafonné à <strong>3 % des PV max par seconde</strong>.</li>
     <li>Le héros affiche un <strong>paper doll</strong> : casque, armure, jambes, bottes et arme changent selon l'équipement porté.</li>
     <li>L'apparence suit la <strong>famille d'objet</strong> : épée, hache, masse, bâton, dague, lance ou fouet ; cuir, maille, plate ou robe ; capuche, heaume ou couronne ; bottes de cuir ou de métal. La rareté départage les objets sans famille.</li>
     <li><strong>Touchez un emplacement équipé</strong> pour ouvrir sa fiche, comparer et voir ses statistiques. Les mains et le talisman ne changent pas le sprite.</li>
@@ -678,7 +679,8 @@
 <section id="progression">
   <h2>14. Progression et contenu</h2>
   <h3>Niveaux et expérience</h3>
-  <p>Les monstres, gardiens, serments et événements donnent de l'XP. Chaque niveau augmente l'ATQ, les PV et la VIT. La courbe ralentit progressivement.</p>
+  <p>Les monstres, gardiens, serments et événements donnent de l'XP. Chaque niveau augmente l'ATQ, les PV et la VIT, et soigne <strong>25 % des PV max</strong>. La courbe ralentit progressivement.</p>
+  <p>Une <strong>défaite</strong> accorde <strong>25 % de l'XP</strong> du combat, sans or ni butin : même sans optimiser, le héros finit par monter de niveau et par passer le palier.</p>
   <h3>Améliorations permanentes</h3>
   <div class="grid">
     <figure class="shot">
@@ -724,7 +726,8 @@
     <tr><td>Trône</td><td>Pression des âmes</td><td>+12 % dégâts gardiens · −8 % PV max · ennemis renforcés.</td></tr>
     <tr><td>Trône (81+)</td><td>Trône brisé</td><td>+15 à +35 % PV et ATQ ennemis · gardiens renforcés · boss final au palier 100.</td></tr>
   </table>
-  <p><strong>Écart de niveau :</strong> au-delà de <strong>4 niveaux d'avance</strong> sur le palier, les ennemis gagnent <strong>+5 % PV et ATQ par niveau d'écart</strong>, avec un plafond de <strong>×2,0</strong>. Au niveau du palier, aucun malus : le début de partie reste accessible.</p>
+  <p><strong>Écart de niveau :</strong> au-delà de <strong>4 niveaux d'avance</strong> sur le palier, les ennemis gagnent <strong>+2 % PV et ATQ par niveau d'écart</strong>, avec un plafond de <strong>×1,25</strong>. Au niveau du palier, aucun malus.</p>
+  <p><strong>Courbe de palier early game :</strong> les ennemis voient leurs PV et leur ATQ augmenter progressivement jusqu'à <strong>×3,0 PV / ×2,5 ATQ</strong> entre les paliers 8 et 15, puis revenir à la normale au palier 25. Le premier gardien et le début de partie restent accessibles ; le milieu de partie demande d'améliorer l'équipement.</p>
   <h3>Mode farm</h3>
   <figure class="shot">
     <img src="images/farm_mode.jpg" alt="Carte Biome avec le mode farm actif et le badge FARM dans le HUD">
@@ -735,6 +738,7 @@
     <li><strong>ACTIVER :</strong> verrouille le palier actuel. Le gardien vaincu ne fait plus passer au palier suivant ; le palier repart du début.</li>
     <li><strong>DÉSACTIVER :</strong> le prochain gardien vaincu fait avancer normalement.</li>
     <li>Un badge <strong>FARM</strong> s'affiche dans le HUD tant que le mode est actif, avec <strong>RÉCUPÉRATION · +10 % PV</strong> par victoire de farm.</li>
+    <li>Un <strong>gardien farmé</strong> plafonne aussi les PV à 65 % des PV max après la victoire : le farm reste une source de butin, pas un soin complet.</li>
     <li>Pendant le farm, les <strong>jalons sont désactivés</strong> : pas de +8 éclats ni d'entrée de légende répétée. Le butin, l'or et l'XP du gardien restent.</li>
     <li>Un gardien farmé donne <strong>+1 éclat et +1 ration</strong>, dans la limite de <strong>5 gardiens farmés par jour</strong> ; au-delà, seul le butin continue.</li>
     <li>Le réglage est conservé dans la sauvegarde et survit au redémarrage.</li>
@@ -1084,7 +1088,7 @@
 </section>
 
 <footer>
-  La Marche des Âmes · manuel v0.22.1 · <a href="#top">Retour au sommaire</a><br>
+  La Marche des Âmes · manuel v0.23.0 · <a href="#top">Retour au sommaire</a><br>
   Garmin ou Santé Connect · aucune donnée envoyée à un serveur éditeur.
 </footer>
 
