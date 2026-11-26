@@ -451,10 +451,12 @@ fun Scene(
         if (state.fight?.isBoss == true) {
             BossBanner(state)
             val fight = state.fight
-            if (fight != null && fight.enemyHp < fight.enemyMaxHp * 0.5) {
+            if (fight != null && (fight.enemyHp < fight.enemyMaxHp * 0.5 || fight.finalPhase > 0)) {
                 SceneTag(
-                    stringResource(R.string.scene_phase2),
-                    Ember,
+                    stringResource(
+                        if (fight.finalPhase > 0) R.string.scene_final_phase else R.string.scene_phase2
+                    ),
+                    if (fight.finalPhase > 0) Blood else Ember,
                     Modifier.align(Alignment.TopCenter).padding(top = 74.dp)
                 )
             }
@@ -1384,7 +1386,7 @@ private fun EnemyUnit(
             Modifier.height(height).width(if (fight.isBoss) 140.dp else 112.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
-            if (fight.isBoss && fight.enemyHp < fight.enemyMaxHp * 0.5 && !reducedMotion) {
+            if (fight.isBoss && (fight.enemyHp < fight.enemyMaxHp * 0.5 || fight.finalPhase > 0) && !reducedMotion) {
                 BossAura(Modifier.size(spriteSize).align(Alignment.BottomCenter))
             }
             if (fight.abilityFlashMs > 0.0 && fight.abilityLabel.isNotBlank()) {

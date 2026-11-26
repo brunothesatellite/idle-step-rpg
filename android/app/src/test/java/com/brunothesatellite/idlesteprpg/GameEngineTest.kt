@@ -18,6 +18,7 @@ import com.brunothesatellite.idlesteprpg.engine.OfflinePolicy
 import com.brunothesatellite.idlesteprpg.engine.SAVE_VERSION
 import com.brunothesatellite.idlesteprpg.engine.SpecialData
 import com.brunothesatellite.idlesteprpg.engine.TenacityState
+import com.brunothesatellite.idlesteprpg.engine.Upgrades
 import com.brunothesatellite.idlesteprpg.engine.fireTier
 import com.brunothesatellite.idlesteprpg.engine.bossFor
 import com.brunothesatellite.idlesteprpg.engine.lootFloorFor
@@ -1686,7 +1687,7 @@ class GameEngineTest {
             )
         )
         assertTrue(reportJson.contains("telemetry"))
-        assertTrue(reportJson.contains("\"schema\":4"))
+        assertTrue(reportJson.contains("\"schema\":5"))
     }
 
     @Test
@@ -1933,6 +1934,102 @@ class GameEngineTest {
         )
         assertEquals(1, result.chests)
         assertEquals("chest", state.mode)
+    }
+
+    @Test
+    fun finalBossPhasesTriggerAtThresholds() {
+        val state = GameState().apply {
+            floor = 100
+            mode = "boss"
+            hp = 100.0
+            fight = FightData(
+                enemyName = "L'Âme Première",
+                enemyIcon = "x",
+                enemyLevel = 101,
+                enemyHp = 65.0,
+                enemyMaxHp = 100.0,
+                enemyAtk = 10.0,
+                enemyIntervalMs = 60_000L,
+                gold = 0,
+                xp = 0,
+                isBoss = true,
+                heroTimerMs = 60_000.0,
+                enemyTimerMs = 60_000.0
+            )
+        }
+        GameEngine.tick(state, 16.0)
+        assertEquals(1, state.fight!!.finalPhase)
+        state.fight!!.enemyHp = 32.0
+        GameEngine.tick(state, 16.0)
+        assertEquals(2, state.fight!!.finalPhase)
+    }
+
+    @Test
+    fun finalBossGearScalingRewardsStrongerHeroesWithMoreHp() {
+        val weak = GameState().apply {
+            floor = 100
+            level = 1
+            mode = "walk"
+        }
+        val strong = GameState().apply {
+            floor = 100
+            level = 100
+            mode = "walk"
+            equipment = equipment.map {
+                if (it.slot == "weapon") it.copy(atk = 5_000, level = 100) else it
+            }
+        }
+        GameEngine.prepareGate(weak)
+        GameEngine.prepareGate(strong)
+        assertTrue(strong.pendingBoss!!.enemyMaxHp > weak.pendingBoss!!.enemyMaxHp)
+    }
+
+    @Test
+    fun rerollBossModifierCostsGoldAndWorksOnce() {
+        val state = GameState().apply {
+            floor = 10
+            level = 20
+            gold = 10_000
+            mode = "gate"
+            pendingBoss = FightData(
+                enemyName = "Gardien",
+                enemyIcon = "x",
+                enemyLevel = 11,
+                enemyHp = 100.0,
+                enemyMaxHp = 100.0,
+                enemyAtk = 10.0,
+                enemyIntervalMs = 1_000L,
+                gold = 0,
+                xp = 0,
+                isBoss = true
+            )
+        }
+        assertTrue(GameEngine.rerollBossModifier(state))
+        assertTrue(state.bossRerolled)
+        assertTrue(state.gold < 10_000)
+        assertTrue(!GameEngine.rerollBossModifier(state))
+    }
+
+    @Test
+    fun campConsumablePurchaseAndRespec() {
+        val state = GameState().apply {
+            floor = 10
+            gold = 5_000
+            consumables = emptyMap()
+            upgrades = Upgrades(blade = 3, breath = 2, swift = 1)
+            campInvested = 1_000
+        }
+        assertTrue(GameEngine.buyCampConsumable(state, "potion_soin"))
+        assertEquals(1, state.consumables["potion_soin"])
+        assertTrue(state.gold < 5_000)
+
+        val goldBefore = state.gold
+        assertEquals(700, GameEngine.respecCamp(state))
+        assertEquals(0, state.upgrades.blade)
+        assertEquals(0, state.upgrades.breath)
+        assertEquals(0, state.upgrades.swift)
+        assertEquals(goldBefore + 700, state.gold)
+        assertEquals(0, GameEngine.respecCamp(state))
     }
 
     @Test

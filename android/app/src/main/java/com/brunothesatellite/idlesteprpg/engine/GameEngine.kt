@@ -2,6 +2,7 @@ package com.brunothesatellite.idlesteprpg.engine
 
 import java.time.LocalDate
 import java.time.temporal.IsoFields
+import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -161,6 +162,16 @@ object GameEngine {
         // Collection permanente : recale les pièces déjà possédées (anciennes
         // sauvegardes, import, pièces acquises avant la v0.17.2).
         seedSetCollections(state)
+        if (state.campInvested == 0) {
+            val levels = state.upgrades.blade + state.upgrades.breath + state.upgrades.swift
+            if (levels > 0) {
+                state.campInvested = listOf("blade", "breath", "swift").sumOf { key ->
+                    (0 until upgradeLevel(state, key)).sumOf { level ->
+                        upgradeCost(key, level, state.floor)
+                    }
+                }
+            }
+        }
         return state
     }
 
@@ -457,6 +468,7 @@ object GameEngine {
             enemyIntervalMs = f.enemyIntervalMs,
             modifier = f.modifier,
             ability = f.ability,
+            finalPhase = f.finalPhase,
             heroHits = f.heroHits,
             enemyHits = f.enemyHits,
             xpGained = if (win) f.xp else if (f.xp > 0) {
@@ -1372,6 +1384,7 @@ object GameEngine {
         state.distance = GATE_METERS
         state.nextFight = FLOOR_METERS
         state.pendingBoss = makeBoss(state)
+        state.bossRerolled = false
         state.mode = "gate"
         state.journal = addJournal(state, "Portail du gardien — ${state.pendingBoss?.enemyName}", "neutral")
     }
@@ -1559,6 +1572,27 @@ object GameEngine {
         return atk * (1.0 + crit / 100.0 * 0.6) / referenceInterval(floor, rule)
     }
 
+    /**
+     * Le gardien final adapte ses PV au DPS réel du héros pour rester un combat
+     * de 20 à 30 secondes. Le multiplicateur reste borné : un héros faible ne
+     * voit pas le gardien devenir trivial, un héros sur-stuffé garde un vrai
+     * combat. Cette adaptation ne s'applique qu'au palier 100.
+     */
+    private fun finalBossGearHp(state: GameState): Double {
+        val rule = biomeRuleFor(Balance.Target.ENDGAME_FINAL_FLOOR)
+        val s = statsOf(state)
+        val interval = max(
+            Balance.Target.HERO_MIN_INTERVAL_MS / 1000.0,
+            1.0 / (s.vit * 1.4)
+        )
+        val critChance = min(Balance.Target.CRIT_CAP / 100.0, (s.crit + 2.0) / 100.0)
+        val dps = s.atk * (1.0 + critChance * (0.6 + s.critDamage)) / interval *
+            (1.0 + s.bossDamage)
+        val ratio = (dps / referenceDps(Balance.Target.ENDGAME_FINAL_FLOOR, rule))
+            .coerceIn(0.35, 4.0)
+        return ratio.pow(0.85).coerceIn(0.75, 3.5)
+    }
+
     private fun referenceEhp(floor: Int, rule: BiomeRule): Double {
         val hp = (1800.0 + 55.0 * floor) * (1.0 + rule.hpPct)
         val dr = min(Balance.Target.DAMAGE_REDUCTION_CAP, 0.06 + rule.damageReduction)
@@ -1598,8 +1632,10 @@ object GameEngine {
             if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) Balance.Target.FINAL_BOSS_HP_MULT else 1.0
         val finalAtkMult =
             if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) Balance.Target.FINAL_BOSS_ATK_MULT else 1.0
-        val hpMult = rule.enemyHpMult * rule.bossHpMult * finalHpMult
-        val atkMult = rule.enemyAtkMult * rule.bossAtkMult * finalAtkMult
+        val finalGearHp =
+            if (state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) finalBossGearHp(state) else 1.0
+        val hpMult = rule.enemyHpMult * rule.bossHpMult
+        val atkMult = rule.enemyAtkMult * rule.bossAtkMult
         val weight = targetWeight(state.floor)
         val baseHp = Balance.MOB_HP_BASE + Balance.MOB_HP_PER_LEVEL * (level - 1)
         val baseAtk = Balance.MOB_ATK_BASE + Balance.MOB_ATK_PER_LEVEL * (level - 1)
@@ -1632,9 +1668,9 @@ object GameEngine {
             enemyIcon = t.icon,
             enemyId = t.id,
             enemyLevel = level,
-            enemyHp = hp * hpMult * gapMult * earlyHp * (1.0 - pity),
-            enemyMaxHp = hp * hpMult * gapMult * earlyHp * (1.0 - pity),
-            enemyAtk = atk * atkMult * gapMult * earlyAtk * (1.0 - pity),
+            enemyHp = hp * hpMult * gapMult * earlyHp * finalHpMult * finalGearHp * (1.0 - pity),
+            enemyMaxHp = hp * hpMult * gapMult * earlyHp * finalHpMult * finalGearHp * (1.0 - pity),
+            enemyAtk = atk * atkMult * gapMult * earlyAtk * finalAtkMult * (1.0 - pity),
             enemyIntervalMs = (interval * rule.enemyIntervalMult).roundToLong(),
             gold = (12 * (6 + 3 * level) * reward).roundToInt(),
             xp = bossXpReward(level, state.floor, state.level),
@@ -1696,10 +1732,34 @@ object GameEngine {
         f.shieldMs = (f.shieldMs - dtMs).coerceAtLeast(0.0)
 
         if (f.isBoss && !f.phase2 &&
+            state.floor < Balance.Target.ENDGAME_FINAL_FLOOR &&
             f.enemyHp < f.enemyMaxHp * Balance.BOSS_PHASE_THRESHOLD
         ) {
             f.phase2 = true
             state.journal = addJournal(state, "Le gardien entre en phase 2", "bad")
+        }
+        if (f.isBoss && state.floor >= Balance.Target.ENDGAME_FINAL_FLOOR) {
+            if (f.finalPhase == 0 && f.enemyHp < f.enemyMaxHp * 0.66) {
+                f.finalPhase = 1
+                f.enemyAtk *= 1.08
+                f.specialMs = min(f.specialMs, 2_500.0)
+                f.abilityFlashMs = 1_400.0
+                state.journal = addJournal(
+                    state,
+                    "L'Âme Première fissure le Trône — sa garde s'embrase",
+                    "bad"
+                )
+            } else if (f.finalPhase == 1 && f.enemyHp < f.enemyMaxHp * 0.33) {
+                f.finalPhase = 2
+                f.enemyAtk *= 1.12
+                f.specialMs = min(f.specialMs, 1_500.0)
+                f.abilityFlashMs = 1_400.0
+                state.journal = addJournal(
+                    state,
+                    "L'Âme Première brûle ses derniers serments — phase finale",
+                    "bad"
+                )
+            }
         }
         if (f.isBoss && f.modifier == "RÉGÉNÉRANT" && f.enemyHp < f.enemyMaxHp) {
             f.enemyHp = min(
@@ -1712,8 +1772,10 @@ object GameEngine {
             if (state.fight == null) return
             f.specialMs = if (f.ability == "shield") {
                 Balance.Target.SHIELD_PERIOD_MS
-            } else {
-                Balance.Target.BOSS_ABILITY_INTERVAL_MS
+            } else when {
+                f.finalPhase >= 2 -> 5_800.0
+                f.finalPhase == 1 -> 6_500.0
+                else -> Balance.Target.BOSS_ABILITY_INTERVAL_MS
             }
         }
 
@@ -2179,6 +2241,7 @@ object GameEngine {
         if (state.gold < cost) return false
         val oldMax = statsOf(state).maxHp
         state.gold -= cost
+        state.campInvested += cost
         when (key) {
             "blade" -> state.upgrades.blade++
             "breath" -> state.upgrades.breath++
@@ -2189,6 +2252,77 @@ object GameEngine {
         state.hp = min(state.hp, newMax.toDouble())
         state.journal = addJournal(state, "${upgradeName(key)} niveau ${upgradeLevel(state, key)}", "good")
         return true
+    }
+
+    fun bossRerollCost(state: GameState): Int = 200 + 30 * state.floor
+
+    /**
+     * Relance le modificateur du gardien affiché au portail. Une fois par
+     * portail, coût en or indexé sur le palier. Conserve la capacité et la pitié.
+     */
+    fun rerollBossModifier(state: GameState): Boolean {
+        if (state.mode != "gate" || state.pendingBoss == null || state.bossRerolled) return false
+        val cost = bossRerollCost(state)
+        if (state.gold < cost) return false
+        state.gold -= cost
+        state.bossRerolled = true
+        state.pendingBoss = makeBoss(state)
+        state.journal = addJournal(state, "Modificateur du gardien relancé · -$cost or", "neutral")
+        return true
+    }
+
+    /** Prix d'un consommable au marchand de camp, indexé sur le palier. */
+    fun campConsumablePrice(state: GameState, id: String): Int {
+        val base = when (id) {
+            "potion_soin" -> 60
+            "ecorce_fer" -> 90
+            "potion_force" -> 120
+            "elixir_veilleur" -> 200
+            else -> 0
+        }
+        if (base <= 0) return 0
+        val factor = 1.0 + 0.02 * (state.floor - 1).coerceAtLeast(0)
+        return (ceil(base * factor / 5.0) * 5).toInt()
+    }
+
+    fun buyCampConsumable(state: GameState, id: String): Boolean {
+        val price = campConsumablePrice(state, id)
+        if (price <= 0 || state.gold < price) return false
+        state.gold -= price
+        addConsumable(state, id)
+        state.journal = addJournal(
+            state,
+            "${consumableById(id)?.name ?: id} acheté au camp (+$price or)",
+            "neutral"
+        )
+        return true
+    }
+
+    fun campRespecRefund(state: GameState): Int {
+        val invested = if (state.campInvested > 0) {
+            state.campInvested
+        } else {
+            listOf("blade", "breath", "swift").sumOf { key ->
+                (0 until upgradeLevel(state, key)).sumOf { level ->
+                    upgradeCost(key, level, state.floor)
+                }
+            }
+        }
+        return (invested * 0.70).roundToInt()
+    }
+
+    /** Rembourse 70 % du camp et remet les trois améliorations à zéro. */
+    fun respecCamp(state: GameState): Int {
+        val levels = state.upgrades.blade + state.upgrades.breath + state.upgrades.swift
+        if (levels <= 0) return 0
+        val refund = campRespecRefund(state)
+        state.gold += refund
+        state.upgrades = Upgrades()
+        state.campInvested = 0
+        val newMax = statsOf(state).maxHp
+        state.hp = min(state.hp, newMax.toDouble())
+        state.journal = addJournal(state, "Camp remis à zéro · +$refund or remboursés", "neutral")
+        return refund
     }
 
     fun equipItem(state: GameState, itemId: String): Boolean {

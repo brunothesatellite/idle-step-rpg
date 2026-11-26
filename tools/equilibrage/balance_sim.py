@@ -410,8 +410,8 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "auto"
         base_atk = 6 + 2.2 * (level - 1)
         final_hp = TARGET["FINAL_BOSS_HP_MULT"] if floor >= int(TARGET["ENDGAME_FINAL_FLOOR"]) else 1.0
         final_atk = TARGET["FINAL_BOSS_ATK_MULT"] if floor >= int(TARGET["ENDGAME_FINAL_FLOOR"]) else 1.0
-        legacy_hp = base_hp * _code_boss_hp_scale(floor) * rule.enemy_hp * rule.boss_hp * final_hp
-        legacy_atk = base_atk * _code_boss_atk_scale(floor) * rule.enemy_atk * rule.boss_atk * final_atk
+        legacy_hp = base_hp * _code_boss_hp_scale(floor) * rule.enemy_hp * rule.boss_hp
+        legacy_atk = base_atk * _code_boss_atk_scale(floor) * rule.enemy_atk * rule.boss_atk
         ttk = TARGET["BOSS_TARGET_TTK"]
         divisor = _atk_divisor(ability)
         target_hp = _ref_dps(floor, rule) * ttk * _shield_factor(ability)
@@ -419,6 +419,8 @@ def make_boss(floor: int, curve: str, biome: str = "auto", ability: str = "auto"
         weight = _target_weight(floor)
         hp = _lerp(legacy_hp, target_hp, weight)
         atk = _lerp(legacy_atk, target_atk, weight)
+        hp *= final_hp
+        atk *= final_atk
         hp *= _early_threat(floor, TARGET["EARLY_HP_MAX"])
         atk *= _early_threat(floor, TARGET["EARLY_ATK_MAX"])
         interval = CURRENT["MOB_INTERVAL_MS"] / 1000.0

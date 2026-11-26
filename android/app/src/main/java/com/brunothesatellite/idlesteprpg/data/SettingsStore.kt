@@ -69,8 +69,8 @@ class SettingsStore(context: Context) {
         set(value) = prefs.edit().putBoolean("auto_sell_commons", value).apply()
 
     var autoOptimize: Boolean
-        get() = prefs.getBoolean("auto_optimize", true)
-        set(value) = prefs.edit().putBoolean("auto_optimize", value).apply()
+        get() = prefs.getBoolean("auto_optimize_v2", false)
+        set(value) = prefs.edit().putBoolean("auto_optimize_v2", value).apply()
 
     var autoOpenChests: Boolean
         get() = prefs.getBoolean("auto_open_chests", true)

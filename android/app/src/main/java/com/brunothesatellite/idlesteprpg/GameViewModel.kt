@@ -99,7 +99,7 @@ data class UiState(
     val notifyBossWaiting: Boolean = true,
     val quietHours: Boolean = false,
     val autoSellCommons: Boolean = false,
-    val autoOptimize: Boolean = true,
+    val autoOptimize: Boolean = false,
     val autoOpenChests: Boolean = true,
     val autoHeal: Boolean = true,
     val offlineMode: String = "percent",
@@ -1291,6 +1291,33 @@ class GameViewModel(private val container: AppContainer) : ViewModel() {
             var ok = false
             container.gameRepository.mutate { ok = GameEngine.buyUpgrade(it, key) }
             if (ok) SoundFx.play(container.context, "upgrade", 0.9f)
+        }
+    }
+
+    fun rerollBossModifier() {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.rerollBossModifier(it) }
+            _toasts.tryEmit(tr(if (ok) R.string.toast_reroll_ok else R.string.toast_reroll_fail))
+        }
+    }
+
+    fun buyCampConsumable(id: String) {
+        viewModelScope.launch {
+            var ok = false
+            container.gameRepository.mutate { ok = GameEngine.buyCampConsumable(it, id) }
+            _toasts.tryEmit(tr(if (ok) R.string.toast_camp_buy_ok else R.string.toast_camp_buy_fail))
+        }
+    }
+
+    fun respecCamp() {
+        viewModelScope.launch {
+            var refund = 0
+            container.gameRepository.mutate { refund = GameEngine.respecCamp(it) }
+            _toasts.tryEmit(
+                if (refund > 0) tr(R.string.toast_respec_ok, refund)
+                else tr(R.string.toast_respec_fail)
+            )
         }
     }
 

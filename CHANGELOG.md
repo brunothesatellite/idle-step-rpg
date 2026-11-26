@@ -1,5 +1,14 @@
 # Journal des versions
 
+## v0.25.0
+- **Optimisation automatique désactivée par défaut** : elle reste disponible dans Réglages → Inventaire, avec les coffres et soins automatiques.
+- **Gardien final mémorable** : au palier 100, L’Âme Première adapte ses PV au DPS du héros pour viser **20–30 s** de combat, avec trois phases à 66 % et 33 % (ATQ +8 % puis +12 %, capacités plus rapides). Les multiplicateurs finaux sont maintenant réellement appliqués.
+- **Économie** : relance du modificateur de gardien au portail (une fois par gardien, coût en or), marchand de camp (potions, écorce, force, élixir) et respec du camp (remboursement de 70 %).
+- **Télémétrie v5** : phase finale, or investi dans le camp, nouveaux compteurs.
+- **Sauvegarde v9** : migration automatique.
+- **Tests** : **178 / 178**, lint OK.
+- **Build** : `versionCode 66`, `versionName 0.25.0`. Aucune release GitHub à ce stade.
+
 ## v0.24.0
 - **Optimisation automatique** : nouveau mode activé par défaut. Il identifie les objets, fusionne les doublons non-set, forge avec réserves d’or/éclats, achète le camp, équipe le meilleur stuff, ouvre les coffres et utilise les soins automatiques. Désactivable dans Réglages → Inventaire.
 - **Ténacité** : chaque défaite sur un palier donne **+5 % ATQ/PV** (max **+25 %**), remis à zéro à la victoire du gardien ou au changement de palier. Le portail et le HUD affichent le bonus.

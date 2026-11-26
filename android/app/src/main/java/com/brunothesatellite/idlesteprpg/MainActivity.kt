@@ -331,6 +331,8 @@ private fun GameRoot(vm: GameViewModel) {
                         activeTab = "inventory"
                     },
                     onOpenConsumables = vm::openConsumables,
+                    onBuyConsumable = vm::buyCampConsumable,
+                    onRespec = vm::respecCamp,
                     onResume = vm::closeCamp,
                     reducedMotion = ui.reducedMotion
                 )
@@ -344,7 +346,8 @@ private fun GameRoot(vm: GameViewModel) {
                     state = state,
                     onEngage = vm::engageBoss,
                     onFarm = vm::farmFromGate,
-                    onCamp = vm::openCamp
+                    onCamp = vm::openCamp,
+                    onReroll = vm::rerollBossModifier
                 )
             }
             if (state.endingPending || ui.endingPreview) {

@@ -81,7 +81,7 @@ const val MAX_RATIONS = Balance.Target.RATIONS_CAP
 const val FERVEUR_GRACE_MS = 2L * 60L * 60L * 1000L
 const val FERVEUR_DECAY_STEP_MS = 180_000.0
 const val MAX_STEPS_PER_MINUTE = 250
-const val SAVE_VERSION = 8
+const val SAVE_VERSION = 9
 
 @Serializable
 data class Upgrades(
@@ -156,7 +156,7 @@ data class JournalEntry(
     val type: String = "neutral"
 )
 
-const val TELEMETRY_SCHEMA = 4
+const val TELEMETRY_SCHEMA = 5
 const val TELEMETRY_FIGHTS = 100
 const val TELEMETRY_DAYS = 60
 const val TELEMETRY_LEVELS = 200
@@ -202,6 +202,7 @@ data class FightSample(
     var enemyIntervalMs: Long = 0L,
     var modifier: String = "",
     var ability: String = "",
+    var finalPhase: Int = 0,
     var heroHits: Int = 0,
     var enemyHits: Int = 0,
     var xpGained: Int = 0,
@@ -313,6 +314,7 @@ data class BalanceReport(
     var retreats: Int = 0,
     var autoOptimize: Boolean = false,
     var tenacityMax: Int = 0,
+    var campInvested: Int = 0,
     var stats: ReportStats = ReportStats(),
     var equipment: List<Item> = emptyList(),
     var upgrades: Upgrades = Upgrades(),
@@ -345,6 +347,8 @@ data class FightData(
     var abilityFlashMs: Double = 0.0,
     var shieldMs: Double = 0.0,
     var phase2: Boolean = false,
+    /** Phase scriptée du gardien final (0 = normale, 1 = 66 %, 2 = 33 %). */
+    var finalPhase: Int = 0,
     var startHp: Double = 0.0,
     var startFerveur: Int = 0,
     var tenacityStacks: Int = 0,
@@ -596,6 +600,8 @@ data class GameState(
     var pendingBoss: FightData? = null,
     var bossPity: Double = 0.0,
     var tenacity: TenacityState = TenacityState(),
+    var bossRerolled: Boolean = false,
+    var campInvested: Int = 0,
     var chest: ChestData? = null,
     /** Or du dernier coffre ouvert, pour le toast (non sérialisé). */
     @Transient var chestFlashGold: Int = 0,

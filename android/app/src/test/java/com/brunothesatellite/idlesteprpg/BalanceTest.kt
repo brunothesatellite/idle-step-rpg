@@ -259,6 +259,8 @@ class BalanceTest {
     @Test
     fun guardianCalibrationIsLocked() {
         assertEquals(18.0, Balance.Target.BOSS_TARGET_TTK, 0.0001)
+        assertEquals(1.35, Balance.Target.FINAL_BOSS_HP_MULT, 0.0001)
+        assertEquals(0.80, Balance.Target.FINAL_BOSS_ATK_MULT, 0.0001)
         assertEquals(14.5, Balance.Target.BOSS_DIV_SHIELD, 0.0001)
         assertEquals(19.0, Balance.Target.BOSS_DIV_BREATH, 0.0001)
         assertEquals(16.0, Balance.Target.BOSS_DIV_PRESSURE, 0.0001)

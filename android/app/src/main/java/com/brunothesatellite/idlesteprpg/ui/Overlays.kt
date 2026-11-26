@@ -1352,7 +1352,8 @@ fun GuardianGateDialog(
     state: GameState,
     onEngage: () -> Unit,
     onFarm: () -> Unit,
-    onCamp: () -> Unit
+    onCamp: () -> Unit,
+    onReroll: () -> Unit
 ) {
     val boss = state.pendingBoss ?: return
     Box(
@@ -1434,6 +1435,14 @@ fun GuardianGateDialog(
                     color = Green
                 )
             }
+            val rerollCost = GameEngine.bossRerollCost(state)
+            Spacer(Modifier.height(5.dp))
+            OverlayAction(
+                stringResource(R.string.gate_reroll, rerollCost),
+                Modifier.fillMaxWidth(),
+                onClick = onReroll,
+                enabled = !state.bossRerolled && state.gold >= rerollCost
+            )
             Spacer(Modifier.height(9.dp))
             GoldButton(stringResource(R.string.gate_engage), onClick = onEngage)
             Spacer(Modifier.height(6.dp))
@@ -1630,11 +1639,14 @@ fun CampOverlay(
     onOpenJournal: () -> Unit,
     onOpenInventory: () -> Unit,
     onOpenConsumables: () -> Unit,
+    onBuyConsumable: (String) -> Unit,
+    onRespec: () -> Unit,
     onResume: () -> Unit,
     reducedMotion: Boolean = false
 ) {
     val stats = statsOf(state)
     var cardHeight by remember { mutableStateOf(0) }
+    var confirmRespec by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val constrainedCard = density.fontScale > 1.5f && landscape
@@ -1918,6 +1930,41 @@ fun CampOverlay(
                 enabled = state.freeRestDay != state.day && state.hp < stats.maxHp,
                 onClick = { pendingAction = vigilLabel; onFreeRest() }
             )
+            Spacer(Modifier.height(7.dp))
+            SectionLabel(stringResource(R.string.overlay_camp_shop))
+            Text(
+                stringResource(R.string.overlay_camp_shop_desc),
+                fontSize = 5.8.sp,
+                color = Muted2,
+                lineHeight = 8.sp
+            )
+            Spacer(Modifier.height(4.dp))
+            listOf(
+                Triple("potion_soin", "item/cons_potion_red.png", "soin"),
+                Triple("ecorce_fer", "item/cons_shield.png", "def"),
+                Triple("potion_force", "item/i-might.png", "atk")
+            ).forEach { (id, icon, _) ->
+                val price = GameEngine.campConsumablePrice(state, id)
+                CampAction(
+                    consumableNameRes(id),
+                    stringResource(R.string.overlay_camp_price, price),
+                    icon,
+                    price.toString(),
+                    enabled = state.gold >= price,
+                    onClick = { onBuyConsumable(id) }
+                )
+                Spacer(Modifier.height(4.dp))
+            }
+            val respecRefund = GameEngine.campRespecRefund(state)
+            val campLevels = state.upgrades.blade + state.upgrades.breath + state.upgrades.swift
+            CampAction(
+                stringResource(R.string.overlay_camp_respec),
+                stringResource(R.string.overlay_camp_respec_desc),
+                "item/misc_crystal.png",
+                stringResource(R.string.overlay_camp_price, respecRefund),
+                enabled = campLevels > 0,
+                onClick = { confirmRespec = true }
+            )
             if (state.stash.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
                 val canTakeAll = state.stash.size <= GameEngine.freeInventorySlots(state)
@@ -1951,6 +1998,26 @@ fun CampOverlay(
                 lineHeight = 9.sp
             )
         }
+    }
+    if (confirmRespec) {
+        AlertDialog(
+            onDismissRequest = { confirmRespec = false },
+            title = { Text(stringResource(R.string.overlay_confirm_respec_title), color = GoldLight) },
+            text = { Text(stringResource(R.string.overlay_confirm_respec_text), color = Parchment) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmRespec = false
+                    onRespec()
+                }) {
+                    Text(stringResource(R.string.overlay_confirm_respec), color = Blood)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmRespec = false }) {
+                    Text(stringResource(R.string.overlay_cancel), color = Muted)
+                }
+            }
+        )
     }
 }
 

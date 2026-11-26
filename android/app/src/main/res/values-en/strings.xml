@@ -813,6 +813,9 @@
     <string name="overlay_confirm_salvage_text">Salvage %1$s? You will gain %2$d shard(s). The item will be permanently lost.</string>
     <string name="overlay_confirm_reforge_title">Reforge this item?</string>
     <string name="overlay_confirm_reforge_text">Reforge %1$s? Cost: 2 shards. Level, stats and set do not change; only the effect can change.</string>
+    <string name="overlay_confirm_respec_title">Respec the camp?</string>
+    <string name="overlay_confirm_respec_text">Refund 70% of invested gold and reset all three upgrades?</string>
+    <string name="overlay_confirm_respec">RESPEC</string>
     <string name="overlay_equipped">EQUIPPED</string>
     <string name="overlay_equip">EQUIP</string>
     <string name="overlay_forge_locked">The forge unlocks after your first guardian is defeated.</string>
@@ -877,6 +880,11 @@
     <string name="overlay_camp_stash">Camp stash</string>
     <string name="overlay_camp_stash_desc">Retrieve stashed items</string>
     <string name="overlay_camp_stash_desc_full">Not enough room to take everything</string>
+    <string name="overlay_camp_shop">CAMP MERCHANT</string>
+    <string name="overlay_camp_shop_desc">Buy consumables with gold.</string>
+    <string name="overlay_camp_respec">Camp respec</string>
+    <string name="overlay_camp_respec_desc">Refunds 70% of invested gold and resets Blade, Breath and Swift.</string>
+    <string name="overlay_camp_price">%1$d gold</string>
     <string name="overlay_resume_expedition">RESUME EXPEDITION</string>
     <string name="overlay_camp_quote">“Defeat is only a detour. Twenty metres back, the gold still flows.”</string>
     <string name="overlay_journal">JOURNAL</string>
@@ -1085,6 +1093,7 @@
     <string name="codex_guardians">GUARDIANS</string>
     <string name="codex_ability_line">ABILITY · %1$s</string>
     <string name="scene_phase2">PHASE 2 · ABLAZE</string>
+    <string name="scene_final_phase">FINAL PHASE</string>
     <string name="scene_blessing">BLESSING +%1$d%%</string>
     <string name="scene_pity" formatted="false">GUARDIAN WEAKENED −%1$d %%</string>
     <string name="scene_farm_recovery" formatted="false">RECOVERY · +%1$d%% HP PER WIN</string>
@@ -1097,6 +1106,7 @@
     <string name="gate_engage">ENGAGE</string>
     <string name="gate_farm">FARM THIS FLOOR</string>
     <string name="gate_camp">CAMP</string>
+    <string name="gate_reroll">REROLL MODIFIER · %1$d GOLD</string>
     <string name="gate_hero_stats">Hero · HP %1$s / %2$s · ATK %3$s</string>
     <string name="gate_hint">Your choice: engage, farm or camp before the guardian.</string>
     <string name="scene_chest_force">FORCING CHEST</string>
@@ -1219,6 +1229,12 @@
     <string name="toast_sold">%1$s sold.</string>
     <string name="toast_rest_ok">Rest at the fire.</string>
     <string name="toast_rest_fail">Unable to rest.</string>
+    <string name="toast_reroll_ok">Guardian modifier rerolled.</string>
+    <string name="toast_reroll_fail">Reroll unavailable.</string>
+    <string name="toast_camp_buy_ok">Purchase complete.</string>
+    <string name="toast_camp_buy_fail">Not enough gold.</string>
+    <string name="toast_respec_ok">Camp reset · +%1$d gold.</string>
+    <string name="toast_respec_fail">No upgrade to refund.</string>
     <string name="toast_hp_restored">HP restored.</string>
     <string name="toast_heal_fail">Unable to heal.</string>
     <string name="toast_force_fight">Finish the fight before forcing the chest.</string>

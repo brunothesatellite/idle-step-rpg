@@ -207,7 +207,7 @@
   <h1>THE MARCH OF SOULS</h1>
   <p>Complete user manual — a walking RPG where your steps become your progress.</p>
   <p class="lang"><a href="../index.html">Français</a> · <strong>English</strong></p>
-  <span class="badge">Version 0.24.0 · Android 14+ · Garmin or Health Connect</span>
+  <span class="badge">Version 0.25.0 · Android 14+ · Garmin or Health Connect</span>
 </header>
 
 <nav class="toc">
@@ -417,6 +417,7 @@
     <li>Choice: <strong>ENGAGE</strong>, <strong>FARM THIS FLOOR</strong> or <strong>CAMP</strong>. The fight only starts after ENGAGE, at 100 m.</li>
     <li><strong>Phase 2</strong> below 50% HP: telegraphed ability, with no permanent speed-up.</li>
     <li><strong>Pity</strong>: each defeat weakens the guardian by <strong>-3% HP/ATK</strong>, up to <strong>-15%</strong>, reset on victory.</li>
+    <li><strong>Reroll</strong>: at the gate, once per guardian, you can reroll its modifier for gold (cost scales with the floor).</li>
     <li><strong>Tenacity</strong>: each defeat on a floor grants <strong>+5% ATK/HP</strong> (max <strong>+25%</strong>), reset on guardian victory or floor change. The gate and HUD show the bonus.</li>
     <li><strong>After victory</strong>, HP is capped at <strong>65% of max HP</strong> (farming included): the hero leaves wounded and must manage rations.</li>
     <li>Possible modifiers: <strong>Fast</strong>, <strong>Armored</strong>, <strong>Berserk</strong>, <strong>Regenerating</strong>, <strong>Thief</strong>. <strong>Fast</strong> and <strong>Berserk</strong> never combine with a heavy ability (blow, breath, drain, pressure).</li>
@@ -567,7 +568,7 @@
   <h3>Actions</h3>
   <ul>
     <li><strong>Equip best:</strong> compares the six slots and equips every improvement.</li>
-    <li><strong>Automatic optimization:</strong> enabled in <strong>Settings → Inventory</strong>. It identifies items, fuses non-set duplicates, forges with reserves, buys camp upgrades, equips gear, opens chests and heals automatically. It never touches locked items or set pieces.</li>
+    <li><strong>Automatic optimization:</strong> disabled by default; enable it in <strong>Settings → Inventory</strong>. It identifies items, fuses non-set duplicates, forges with reserves, buys camp upgrades, equips gear, opens chests and heals automatically. It never touches locked items or set pieces.</li>
     <li><strong>Sell commons:</strong> converts unlocked common items into gold.</li>
     <li><strong>Lock:</strong> protects an item from selling and fusion.</li>
     <li><strong>Fuse:</strong> the open item and the <strong>two best</strong> identified, unlocked items of the same slot and rarity give an item of higher rarity. Three legendaries give a fused legendary. The result keeps <strong>90%</strong> of the summed stats, along with the effect and set. The button shows <strong>FUSE</strong> when all three are gathered, otherwise <strong>FUSE 2/3</strong> and stays greyed out.</li>
@@ -742,6 +743,8 @@
     <li><strong>DISABLE:</strong> the next defeated guardian advances normally.</li>
     <li>A <strong>FARM</strong> badge shows in the HUD while the mode is active, with <strong>RECOVERY · +10% HP</strong> per farm win.</li>
     <li>A <strong>farmed guardian</strong> also caps HP at 65% of max HP after victory: farming remains a source of loot, not a full heal.</li>
+    <li><strong>Camp merchant:</strong> buy healing potions, ironbark, force potion or elixir with gold.</li>
+    <li><strong>Respec:</strong> refunds 70% of invested gold and resets Sharpened Blade, Ancient Breath and Swift Steps.</li>
     <li>During farming, <strong>milestones are disabled</strong>: no +8 shards and no repeated legend entry. The guardian's loot, gold and XP remain.</li>
     <li>A farmed guardian gives <strong>+1 shard and +1 ration</strong>, capped at <strong>5 farmed guardians per day</strong>; beyond that, only loot continues.</li>
     <li>The setting is kept in the save and survives a restart.</li>
@@ -759,7 +762,7 @@
   <h3>End of the path · floor 100</h3>
   <p>From floor <strong>81</strong> to floor <strong>100</strong>, the <strong>Broken Throne</strong> rule replaces Soul pressure. Pressure rises gradually: <strong>+15%</strong> enemy HP and ATK on floor 81, <strong>+35%</strong> on floor 100, then caps. Throne guardians also get <strong>+10% HP</strong> and <strong>+5% ATK</strong>.</p>
   <ul>
-    <li><strong>Floor 100:</strong> <strong>The First Soul</strong> becomes a final boss (HP ×1.40, ATK ×1.15) and casts <strong>THRONE RUPTURE</strong>: 230% of its ATK, −20 fervour and 3% HP restored.</li>
+    <li><strong>Floor 100:</strong> <strong>The First Soul</strong> becomes a final boss whose HP adapts to the hero's DPS to target a <strong>20–30 s</strong> fight (base ×1.35, multiplier 0.75–3.5 depending on power), with base ATK ×0.80. Three phases: 100–66%, 66–33%, 33–0%; the ability speeds up and ATK rises by <strong>+8%</strong> then <strong>+12%</strong>. It casts <strong>THRONE RUPTURE</strong>: 230% of its ATK, −20 fervour and 3% HP restored.</li>
     <li><strong>Victory:</strong> an ending screen appears <strong>once</strong>: hero stats, progression, telemetry, guardians 81-100, economy, worn equipment, collections and milestones. A button exports this report as HTML. A legend entry is added to the journal.</li>
     <li><strong>CONTINUE ENDLESS:</strong> play resumes on floor 101. Difficulty stays capped; guardians and milestones continue (125, 150, 200…).</li>
     <li><strong>At camp:</strong> the golden aura and the hero statue remain visible after floor 100.</li>
@@ -1091,7 +1094,7 @@
 </section>
 
 <footer>
-  The March of Souls · manual v0.24.0 · <a href="#top">Back to contents</a><br>
+  The March of Souls · manual v0.25.0 · <a href="#top">Back to contents</a><br>
   Garmin or Health Connect · no data sent to a publisher server.
 </footer>
 

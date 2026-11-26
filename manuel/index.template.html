@@ -417,6 +417,7 @@
     <li>Choix : <strong>ENGAGER</strong>, <strong>FARMER CE PALIER</strong> ou <strong>CAMPER</strong>. Le combat ne démarre qu'après ENGAGER, à 100 m.</li>
     <li><strong>Phase 2</strong> sous 50 % de PV : capacité télégraphiée, sans accélération permanente.</li>
     <li><strong>Pitié</strong> : chaque défaite affaiblit le gardien de <strong>−3 % PV/ATQ</strong>, cumulable jusqu’à <strong>−15 %</strong>, remis à zéro à la victoire.</li>
+    <li><strong>Relance</strong> : au portail, une fois par gardien, vous pouvez relancer son modificateur pour de l’or (coût indexé sur le palier).</li>
     <li><strong>Ténacité</strong> : chaque défaite sur un palier donne <strong>+5 % ATQ/PV</strong> (max <strong>+25 %</strong>), remis à zéro à la victoire du gardien ou au changement de palier. Le portail et le HUD affichent le bonus.</li>
     <li><strong>Après la victoire</strong>, les PV sont plafonnés à <strong>65 % des PV max</strong> (farm compris) : le héros repart entamé et doit gérer ses rations.</li>
     <li>Modificateurs possibles : <strong>Rapide</strong>, <strong>Blindé</strong>, <strong>Berserk</strong>, <strong>Régénérant</strong>, <strong>Voleur</strong>. <strong>Rapide</strong> et <strong>Berserk</strong> ne se combinent jamais avec une capacité lourde (frappe, souffle, drain, pression).</li>
@@ -567,7 +568,7 @@
   <h3>Actions</h3>
   <ul>
     <li><strong>Équiper le meilleur :</strong> compare les six emplacements et équipe chaque amélioration.</li>
-    <li><strong>Optimisation automatique :</strong> active dans <strong>Réglages → Inventaire</strong>. Le mode identifie, fusionne les doublons non-set, forge avec réserves, achète le camp, équipe, ouvre les coffres et soigne automatiquement. Il ne touche pas aux objets verrouillés ni aux pièces de set.</li>
+    <li><strong>Optimisation automatique :</strong> désactivée par défaut ; activez-la dans <strong>Réglages → Inventaire</strong>. Le mode identifie, fusionne les doublons non-set, forge avec réserves, achète le camp, équipe, ouvre les coffres et soigne automatiquement. Il ne touche pas aux objets verrouillés ni aux pièces de set.</li>
     <li><strong>Vendre les communs :</strong> convertit les objets communs non verrouillés en or.</li>
     <li><strong>Verrouiller :</strong> protège un objet de la vente et de la fusion.</li>
     <li><strong>Fusionner :</strong> l'objet ouvert et les <strong>deux meilleurs</strong> objets identifiés et non verrouillés du même emplacement et de la même rareté donnent un objet de rareté supérieure. Trois légendaires donnent un légendaire fusionné. Le résultat conserve <strong>90 %</strong> de la somme des statistiques, ainsi que l'effet et l'ensemble. Le bouton affiche <strong>FUSIONNER</strong> quand les trois sont réunis, sinon <strong>FUSIONNER 2/3</strong> et reste grisé.</li>
@@ -742,6 +743,8 @@
     <li><strong>DÉSACTIVER :</strong> le prochain gardien vaincu fait avancer normalement.</li>
     <li>Un badge <strong>FARM</strong> s'affiche dans le HUD tant que le mode est actif, avec <strong>RÉCUPÉRATION · +10 % PV</strong> par victoire de farm.</li>
     <li>Un <strong>gardien farmé</strong> plafonne aussi les PV à 65 % des PV max après la victoire : le farm reste une source de butin, pas un soin complet.</li>
+    <li><strong>Marchand de camp :</strong> achetez potions de soin, écorce de fer, potion de force ou élixir avec de l'or.</li>
+    <li><strong>Respec :</strong> rembourse 70 % de l'or investi et remet Lame affûtée, Souffle ancien et Pas vifs à zéro.</li>
     <li>Pendant le farm, les <strong>jalons sont désactivés</strong> : pas de +8 éclats ni d'entrée de légende répétée. Le butin, l'or et l'XP du gardien restent.</li>
     <li>Un gardien farmé donne <strong>+1 éclat et +1 ration</strong>, dans la limite de <strong>5 gardiens farmés par jour</strong> ; au-delà, seul le butin continue.</li>
     <li>Le réglage est conservé dans la sauvegarde et survit au redémarrage.</li>
@@ -759,7 +762,7 @@
   <h3>Fin du sentier · palier 100</h3>
   <p>Du palier <strong>81</strong> au palier <strong>100</strong>, la règle <strong>Trône brisé</strong> remplace Pression des âmes. La pression monte progressivement : <strong>+15 %</strong> de PV et ATQ ennemis au palier 81, <strong>+35 %</strong> au palier 100, puis plafond. Les gardiens du Trône reçoivent en plus <strong>+10 % PV</strong> et <strong>+5 % ATQ</strong>.</p>
   <ul>
-    <li><strong>Palier 100 :</strong> <strong>L'Âme Première</strong> devient un boss final (PV ×1,40, ATQ ×1,15) et lance <strong>RUPTURE DU TRÔNE</strong> : 230 % de son ATQ, −20 ferveur et 3 % de PV rendus.</li>
+    <li><strong>Palier 100 :</strong> <strong>L'Âme Première</strong> devient un boss final dont les PV s'adaptent au DPS du héros pour viser <strong>20–30 s</strong> de combat (base ×1,35, multiplicateur 0,75–3,5 selon la puissance), avec une ATQ de base ×0,80. Trois phases : 100–66 %, 66–33 %, 33–0 % ; la capacité s'accélère et l'ATQ augmente de <strong>+8 %</strong> puis <strong>+12 %</strong>. Elle lance <strong>RUPTURE DU TRÔNE</strong> : 230 % de son ATQ, −20 ferveur et 3 % de PV rendus.</li>
     <li><strong>Victoire :</strong> un écran de fin s'affiche <strong>une seule fois</strong> : statistiques du héros, progression, télémétrie, gardiens 81-100, économie, équipement porté, collections et jalons. Un bouton exporte ce rapport en HTML. Une entrée de légende est ajoutée au journal.</li>
     <li><strong>CONTINUER SANS FIN :</strong> le jeu reprend au palier 101. La difficulté reste plafonnée, les gardiens et les jalons continuent (125, 150, 200…).</li>
     <li><strong>Au camp :</strong> l'aura dorée et la statue du héros restent visibles après le palier 100.</li>

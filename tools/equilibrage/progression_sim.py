@@ -36,6 +36,7 @@ from balance_sim import (
     _code_mob_hp_scale,
     _depth,
     _early_threat,
+    _ref_dps,
     ability_for,
     boss_variants,
     make_boss,
@@ -691,6 +692,16 @@ def gear_scale(hero: Hero, floor: int) -> float:
     return min(2.20, 1.0 + 0.90 * max(0.0, ratio - 1.15))
 
 
+def final_boss_gear_hp(hero: Hero, floor: int = 100) -> float:
+    s = hero.stats(floor)
+    interval = max(0.18, 1.0 / (s.vit * 1.4))
+    crit = min(0.75, (s.crit + 2.0) / 100.0)
+    dps = s.atk * (1.0 + crit * (0.6 + s.crit_damage)) / interval * (1.0 + s.boss_damage)
+    ref = _ref_dps(floor, rule_for(floor, "auto"))
+    ratio = min(4.0, max(0.35, dps / max(ref, 1.0)))
+    return min(3.5, max(0.75, ratio ** 0.85))
+
+
 def boss_estimate(hero: Hero, floor: int) -> float:
     """Estimation rapide de la marge de victoire (0 = perdu, 1 = confortable)."""
     rule = rule_for(floor, "auto")
@@ -701,6 +712,13 @@ def boss_estimate(hero: Hero, floor: int) -> float:
     if GEAR_SCALING:
         scale = gear_scale(hero, floor)
         enemy = replace(enemy, hp=enemy.hp * scale, atk=enemy.atk * scale)
+    if floor >= int(TARGET["ENDGAME_FINAL_FLOOR"]):
+        enemy = replace(
+            enemy,
+            hp=enemy.hp * final_boss_gear_hp(hero, floor),
+            atk=enemy.atk * 1.08,
+            ability_period=6.0,
+        )
     s = hero.stats(floor)
     interval = hero_interval(s)
     dps = s.atk * expected_multiplier(s) / interval * (1.0 + s.boss_damage)
@@ -1332,6 +1350,13 @@ class Progression:
         if GEAR_SCALING:
             scale = gear_scale(self.hero, self.floor)
             enemy = replace(enemy, hp=enemy.hp * scale, atk=enemy.atk * scale)
+        if self.floor >= int(TARGET["ENDGAME_FINAL_FLOOR"]):
+            enemy = replace(
+                enemy,
+                hp=enemy.hp * final_boss_gear_hp(self.hero, self.floor),
+                atk=enemy.atk * 1.08,
+                ability_period=6.0,
+            )
         build = self.hero.build(self.floor)
         potion = self.default_potion()
         if potion:
@@ -1592,6 +1617,12 @@ def ttk_table(result: RunResult, potion: str = "") -> list[dict]:
         if GEAR_SCALING:
             scale = gear_scale(hero, floor)
             variants = [(w, replace(e, hp=e.hp * scale, atk=e.atk * scale)) for w, e in variants]
+        if floor >= int(TARGET["ENDGAME_FINAL_FLOOR"]):
+            final_scale = final_boss_gear_hp(hero, floor)
+            variants = [
+                (w, replace(e, hp=e.hp * final_scale, atk=e.atk * 1.08, ability_period=6.0))
+                for w, e in variants
+            ]
         res = simulate_mixed(build, variants, 200, potion, rule_for(floor, "auto"), seed=1236)
         row["ttk_boss"] = round(res.ttk, 1) if res.ttk else None
         row["win_boss"] = round(res.win_rate, 0)

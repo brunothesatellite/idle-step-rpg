@@ -314,6 +314,7 @@ class GameRepository(
             retreats = state.retreats,
             autoOptimize = settings.autoOptimize,
             tenacityMax = state.telemetry.tenacityMax,
+            campInvested = state.campInvested,
             stats = ReportStats(
                 atk = s.atk,
                 maxHp = s.maxHp,

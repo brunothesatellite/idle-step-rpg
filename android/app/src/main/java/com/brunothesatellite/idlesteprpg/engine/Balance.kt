@@ -10,7 +10,7 @@ package com.brunothesatellite.idlesteprpg.engine
  * et vérifiée par `tools/equilibrage/check_constants.py`.
  */
 object Balance {
-    const val VERSION = "0.24.0"
+    const val VERSION = "0.25.0"
 
     // --- Comportement courant (0.20.0) ---
     const val XP_BASE = 120.0
@@ -197,8 +197,8 @@ object Balance {
         const val ENDGAME_ENEMY_MULT_END = 1.35
         const val ENDGAME_BOSS_HP_MULT = 1.10
         const val ENDGAME_BOSS_ATK_MULT = 1.05
-        const val FINAL_BOSS_HP_MULT = 1.40
-        const val FINAL_BOSS_ATK_MULT = 1.15
+        const val FINAL_BOSS_HP_MULT = 1.35
+        const val FINAL_BOSS_ATK_MULT = 0.80
         const val LEVEL_GAP_FREE = 4
         const val LEVEL_GAP_PCT = 0.02
         const val LEVEL_GAP_CAP = 1.25

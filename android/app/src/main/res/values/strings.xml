@@ -815,6 +815,9 @@
     <string name="overlay_confirm_salvage_text">Démonter %1$s ? Vous gagnerez %2$d éclat(s). L’objet sera définitivement perdu.</string>
     <string name="overlay_confirm_reforge_title">Reforger cet objet ?</string>
     <string name="overlay_confirm_reforge_text">Reforger %1$s ? Coût : 2 éclats. Le niveau, les statistiques et l’ensemble ne changent pas ; seul l’effet peut changer.</string>
+    <string name="overlay_confirm_respec_title">Respec du camp ?</string>
+    <string name="overlay_confirm_respec_text">Rembourser 70 % de l’or investi et remettre les trois améliorations à zéro ?</string>
+    <string name="overlay_confirm_respec">RESPEC</string>
     <string name="overlay_equipped">ÉQUIPÉ</string>
     <string name="overlay_equip">ÉQUIPER</string>
     <string name="overlay_forge_locked">La forge se débloque après le premier gardien vaincu.</string>
@@ -879,6 +882,11 @@
     <string name="overlay_camp_stash">Coffre de camp</string>
     <string name="overlay_camp_stash_desc">Récupérer les objets en réserve</string>
     <string name="overlay_camp_stash_desc_full">Pas assez de place pour tout récupérer</string>
+    <string name="overlay_camp_shop">MARCHAND DE CAMP</string>
+    <string name="overlay_camp_shop_desc">Acheter des consommables avec de l\'or.</string>
+    <string name="overlay_camp_respec">Respec du camp</string>
+    <string name="overlay_camp_respec_desc">Rembourse 70 % de l\'or investi et remet Lame, Souffle et Pas vifs à zéro.</string>
+    <string name="overlay_camp_price">%1$d or</string>
     <string name="overlay_resume_expedition">REPRENDRE L\'EXPÉDITION</string>
     <string name="overlay_camp_quote">« La défaite n\'est qu\'un détour. Vingt mètres en arrière, l\'or coule encore. »</string>
     <string name="overlay_journal">JOURNAL</string>
@@ -1087,6 +1095,7 @@
     <string name="codex_guardians">GARDIENS</string>
     <string name="codex_ability_line">CAPACITÉ · %1$s</string>
     <string name="scene_phase2">PHASE 2 · EMBRASÉ</string>
+    <string name="scene_final_phase">PHASE FINALE</string>
     <string name="scene_blessing">BÉNÉDICTION +%1$d %%</string>
     <string name="scene_pity" formatted="false">GARDIEN AFFAIBLI −%1$d %%</string>
     <string name="scene_farm_recovery" formatted="false">RÉCUPÉRATION · +%1$d %% PV PAR VICTOIRE</string>
@@ -1099,6 +1108,7 @@
     <string name="gate_engage">ENGAGER</string>
     <string name="gate_farm">FARMER CE PALIER</string>
     <string name="gate_camp">CAMPER</string>
+    <string name="gate_reroll">RELANCER LE MODIFICATEUR · %1$d OR</string>
     <string name="gate_hero_stats">Héros · PV %1$s / %2$s · ATQ %3$s</string>
     <string name="gate_hint">Le choix est libre : engagez, farmez ou campez avant le gardien.</string>
     <string name="scene_chest_force">FORÇAGE DU COFFRE</string>
@@ -1221,6 +1231,12 @@
     <string name="toast_sold">%1$s vendu.</string>
     <string name="toast_rest_ok">Repos au feu.</string>
     <string name="toast_rest_fail">Impossible de se reposer.</string>
+    <string name="toast_reroll_ok">Modificateur du gardien relancé.</string>
+    <string name="toast_reroll_fail">Relance impossible.</string>
+    <string name="toast_camp_buy_ok">Achat effectué.</string>
+    <string name="toast_camp_buy_fail">Or insuffisant.</string>
+    <string name="toast_respec_ok">Camp remis à zéro · +%1$d or.</string>
+    <string name="toast_respec_fail">Aucune amélioration à rembourser.</string>
     <string name="toast_hp_restored">PV restaurés.</string>
     <string name="toast_heal_fail">Impossible de se soigner.</string>
     <string name="toast_force_fight">Terminez le combat avant de forcer le coffre.</string>

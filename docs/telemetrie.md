@@ -29,7 +29,7 @@ profit des agrégats par palier et par jour.
 
 ```json
 {
-  "schema": 4,
+  "schema": 5,
   "normalFights": 120,
   "normalWins": 118,
   "bossFights": 12,
@@ -80,6 +80,7 @@ profit des agrégats par palier et par jour.
       "enemyIntervalMs": 1250,
       "modifier": "",
       "ability": "",
+      "finalPhase": 0,
       "heroHits": 9,
       "enemyHits": 5,
       "xpGained": 112,
@@ -169,6 +170,6 @@ profit des agrégats par palier et par jour.
 ## Compatibilité
 
 - Schéma de télémétrie : **4**.
-- Version de sauvegarde : **8**.
+- Version de sauvegarde : **9**.
 - Les anciennes sauvegardes sont complétées avec des champs vides ; les nouvelles
   sauvegardes restent lisibles par les versions qui ignorent les champs inconnus.
