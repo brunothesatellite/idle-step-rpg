@@ -653,7 +653,7 @@ def simulate(build: Build, enemy: Enemy, runs: int = 200, max_seconds: float = 1
         hero_swings = 0
         enemy_swings = 0
         lifesteal_cap = build.hp * TARGET["LIFESTEAL_PER_SECOND_CAP"]
-        lifesteal_budget = lifesteal_cap
+        lifesteal_budget = 0.0
 
         def crit_chance() -> float:
             return min(TARGET["CRIT_CAP"] / 100.0, (build.crit + ferveur * 0.02) / 100.0)

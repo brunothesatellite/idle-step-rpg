@@ -1330,8 +1330,6 @@ object GameEngine {
         f.startHp = state.hp
         f.startFerveur = state.ferveur
         f.heroAtStart = reportStats(statsOf(state))
-        f.lifestealBudget =
-            statsOf(state).maxHp * Balance.Target.LIFESTEAL_PER_SECOND_CAP
         f.buffsAtStart = state.buffs
             .filter { it.expiresAt > System.currentTimeMillis() }
             .map { it.type }
@@ -1346,8 +1344,6 @@ object GameEngine {
         f.startHp = state.hp
         f.startFerveur = state.ferveur
         f.heroAtStart = reportStats(statsOf(state))
-        f.lifestealBudget =
-            statsOf(state).maxHp * Balance.Target.LIFESTEAL_PER_SECOND_CAP
         f.buffsAtStart = state.buffs
             .filter { it.expiresAt > System.currentTimeMillis() }
             .map { it.type }
