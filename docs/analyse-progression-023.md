@@ -56,7 +56,9 @@ Le **passif minimal ne termine pas** : il reste bloqué au palier 21, même à 1
 
 Les tableaux ci-dessous sont donnés à **8 000 pas/jour**, le rythme médian. Les tableaux complets 5 000 / 8 000 / 15 000 sont dans le JSON de simulation ; la section 5 donne les TTK gardien pour les trois rythmes.
 
-Un tiret dans la colonne **TTK élite** signifie qu’aucun combat n’a été gagné sur 120 simulations, pas une donnée manquante. Les élites sont le principal générateur de replis des profils normal et optimisé.
+Un tiret dans une colonne **TTK** (élite ou gardien) signifie qu’aucun combat n’a été gagné sur les simulations, pas une donnée manquante. Les élites sont le principal générateur de replis des profils normal et optimisé.
+
+Les win rates sont mesurés **à l’arrivée au palier**, avec le stuff du moment, pas après le farm et les retries. Un 0 % à l’arrivée peut donc être suivi d’une victoire après quelques replis ; à l’inverse, un 100 % peut masquer un stuff déjà sur-optimisé.
 
 `Camp (A/S/V)` = niveaux de **Lame affûtée / Souffle ancien / Pas vifs**. Les TTK sont en secondes ; `PV perdus gardien` est la perte moyenne sur les victoires, avec une ration automatique.
 
