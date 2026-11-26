@@ -119,6 +119,8 @@ Le HTML publié et les assets sont générés au build depuis `manuel/index.temp
 2. Sur le téléphone, autorisez l’installation d’applications inconnues pour le navigateur ou le gestionnaire de fichiers.
 3. Ouvrez l’APK et installez-le.
 
+Les releases GitHub ne conservent que la **dernière** version et la **précédente**. Les notes des versions plus anciennes sont archivées dans [`docs/historique-releases.md`](docs/historique-releases.md) ; les tags Git restent disponibles.
+
 ### Avec ADB
 
 ```bash
@@ -630,6 +632,8 @@ The published HTML and the assets are generated at build time from `manuel/index
 1. Download the latest APK: [releases/latest](https://github.com/brunothesatellite/idle-step-rpg/releases/latest).
 2. On the phone, allow installing unknown apps for your browser or file manager.
 3. Open the APK and install it.
+
+GitHub releases keep only the **latest** and **previous** versions. Notes for older versions are archived in [`docs/historique-releases.md`](docs/historique-releases.md); Git tags remain available.
 
 ### With ADB
 
